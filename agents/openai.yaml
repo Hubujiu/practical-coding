@@ -1,0 +1,6 @@
+interface:
+  display_name: "Practical Coding"
+  short_description: "Choose the smallest reliable coding solution"
+  default_prompt: "Use $practical-coding for this coding task."
+policy:
+  allow_implicit_invocation: true
