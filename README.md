@@ -11,6 +11,16 @@ Practical Coding 是一个默认应用于编码任务的 Agent Skill。它把 Po
 
 它不是另一个需要与 Brainstorming、TDD、Writing Plans、Executing Plans 和多轮 Review 叠加使用的流程。它替代这些彼此重叠或冲突的通用 Coding Skills，只保留代码库检索、浏览器、设计、文档和其他领域工具。
 
+### 一句话安装
+
+把下面整句话复制给你的 Coding Agent：
+
+```text
+请帮我安装并启用这个 Skill：https://github.com/Hubujiu/practical-coding；先识别当前 Agent 和它的用户级 Skills 目录，阅读仓库 README，检测所有已安装的冲突 Coding Skills，把冲突项安全、可恢复地禁用而不是删除，保留不冲突的领域 Skills，然后安装 Practical Coding、验证它能被发现，并告诉我安装位置和具体禁用了哪些 Skill。
+```
+
+这条指令适用于 Codex、Cursor、Claude Code，以及其他支持 Agent Skills 的编码工具。Agent 应优先使用平台提供的 Skill 管理界面或命令；需要移动本地目录时，应先确认精确路径，并移动到平台不会扫描的备份目录。
+
 ### 它解决什么问题
 
 Coding Agent 经常把写代码变成制造代码：为简单需求增加抽象和依赖，为每个后端功能生成测试类，功能修改后继续维护已经失效的测试，甚至围绕测试基础设施产生更多测试与修改。
@@ -168,6 +178,16 @@ practical-coding/
 Practical Coding is the only general-purpose coding skill you need. It combines Ponytail's implementation restraint, Marcos Hernanz's engineering boundaries, grill-me's focused clarification, research-before-reinvention, no default backend tests, user-approved execution documents, resumable handoffs, and coherent Git checkpoints.
 
 It addresses speculative abstractions, unnecessary dependencies, test classes that become a parallel implementation, stale tests after behavior changes, oversized plans, lost progress after context exhaustion, and hallucinated status during handoff.
+
+### One-line installation
+
+Copy this entire instruction to your coding agent:
+
+```text
+Install and enable this Skill for me: https://github.com/Hubujiu/practical-coding; first identify the current agent and its user-level Skills directory, read the repository README, detect every installed conflicting coding workflow skill, disable conflicts safely and reversibly instead of deleting them, preserve non-conflicting domain skills, install Practical Coding, verify that the agent discovers it, and report the install path and every skill you disabled.
+```
+
+This instruction works with Codex, Cursor, Claude Code, and other tools that support Agent Skills. The agent should prefer the platform's Skill-management UI or commands and verify exact paths before moving local directories into a backup location the platform does not scan.
 
 ### Workflow
 
