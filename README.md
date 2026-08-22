@@ -3,6 +3,10 @@
 > **你只需要这一个 Coding Skill。**
 > **The only general-purpose coding skill you need.**
 
+**约 20–50% 更少 Token · 约 30–100% 更高交付效率 · 测试膨胀场景最高约 7× 更快**
+
+**Target 20–50% fewer tokens · 30–100% faster delivery · up to 7× faster when backend test churn dominates**
+
 [中文](#中文) · [English](#english)
 
 ## 中文
@@ -26,6 +30,17 @@ Practical Coding 是一个默认应用于编码任务的 Agent Skill。它把 Po
 Coding Agent 经常把写代码变成制造代码：为简单需求增加抽象和依赖，为每个后端功能生成测试类，功能修改后继续维护已经失效的测试，甚至围绕测试基础设施产生更多测试与修改。
 
 这个 Skill 针对一种真实但低效的体验：功能实现只需约 10 分钟，自动生成和反复修正测试却可能耗费约 1 小时。这里的时间比例描述的是本项目要解决的使用体验，不是通用性能统计。
+
+### 能节省多少
+
+Practical Coding 的宣传目标是：
+
+- 减少约 **20–50%** 的总 Token 消耗。
+- 提升约 **30–100%** 的端到端交付效率。
+- 在“实现 10 分钟、测试生成与维护 60 分钟”的后端任务中，把约 70 分钟的流程压缩到约 10 分钟，最高约 **7×** 更快，并减少约 **86%** 的非必要工作时间。
+- 减少因上下文耗尽、重复规划、过度抽象、重复调研和 Agent 交接失败造成的返工。
+
+这些区间是产品定位和经验性估算，不是 Practical Coding 自己的正式 Benchmark；任务已经足够精简时，收益可能接近零。作为可比较的公开参考，[Ponytail 的 Agentic Benchmark](https://github.com/DietrichGebert/ponytail/blob/main/benchmarks/results/2026-06-18-agentic.md)报告平均减少 **54% LOC、22% Token、20% 成本和 27% 时间**。Practical Coding 继承其实现克制，同时进一步移除后端测试膨胀、重复规划和多轮强制审查，因此以更宽的效率目标进行宣传。
 
 Practical Coding 要求 Agent：
 
@@ -178,6 +193,17 @@ practical-coding/
 Practical Coding is the only general-purpose coding skill you need. It combines Ponytail's implementation restraint, Marcos Hernanz's engineering boundaries, grill-me's focused clarification, research-before-reinvention, no default backend tests, user-approved execution documents, resumable handoffs, and coherent Git checkpoints.
 
 It addresses speculative abstractions, unnecessary dependencies, test classes that become a parallel implementation, stale tests after behavior changes, oversized plans, lost progress after context exhaustion, and hallucinated status during handoff.
+
+### Expected impact
+
+Practical Coding is positioned to deliver:
+
+- Roughly **20–50% fewer total tokens**.
+- Roughly **30–100% faster end-to-end delivery**.
+- Up to **7× faster completion** and about **86% less unnecessary work** in the motivating backend case where implementation takes ten minutes and generated test maintenance takes sixty.
+- Less rework from context exhaustion, repeated planning, speculative architecture, duplicate research, and failed agent handoffs.
+
+These ranges are marketing targets and experience-based estimates, not a formal Practical Coding benchmark; already-minimal tasks may see little or no improvement. As a public reference point, [Ponytail's agentic benchmark](https://github.com/DietrichGebert/ponytail/blob/main/benchmarks/results/2026-06-18-agentic.md) reports **54% less LOC, 22% fewer tokens, 20% lower cost, and 27% less time** on average. Practical Coding adopts that implementation restraint and additionally removes backend test churn, repeated planning, and mandatory review loops.
 
 ### One-line installation
 
