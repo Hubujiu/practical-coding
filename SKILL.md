@@ -8,6 +8,8 @@ description: Use when implementing, modifying, debugging, refactoring, or review
 ## Boundaries
 
 - Understand the current requirement and inspect the relevant code and real execution flow before designing a solution.
+- Resolve material ambiguity before implementation, and inspect the available code and context instead of asking questions they can answer.
+- When a user decision is required, ask one focused question at a time and stop once the current task is clear.
 - Do not build capabilities that the current requirement does not need.
 - Choose the simplest implementation that fully satisfies the current requirement.
 - Prefer existing code, standard libraries, platform-native capabilities, and installed dependencies before adding code or packages.
@@ -23,11 +25,24 @@ description: Use when implementing, modifying, debugging, refactoring, or review
 - Trust backend code logic unless the user explicitly reports a bug.
 - When diagnosing a user-reported backend bug, use targeted logging and log analysis instead of writing tests.
 - Frontend work may add Mock.js to provide representative data for layout inspection.
+- Before implementation, confirm that the workspace is a Git repository, and stop to ask the user to create or select one when it is not.
+- Create an execution document only for multi-step, long-running, oversized, or handoff-prone work, and keep its progress current.
+- Treat the repository, Git state, and recorded evidence as the source of truth instead of reconstructing progress from memory.
+- Split oversized work into bounded phases and keep only one phase in progress at a time.
+- After creating or restoring an execution document, present it to the user and do not implement it without explicit confirmation.
+- When the user changes the proposed execution document, return to requirement clarification and present every affected decision and phase again.
+- Commit every coherent checkpoint without mixing unrelated changes, and never push unless the user requests it.
 
 ## Decision Flow
 
 ```text
 Understand the requirement
+→ Is any material decision unresolved?
+  → Can the codebase, documentation, or supplied context resolve it?
+    → Yes: inspect them and decide
+  → Does it require the user's product, scope, or risk decision?
+    → Yes: ask one focused question
+    → Repeat only until the current task is clear
 → Inspect the relevant code and real flow
 → Does this need to exist?
   → No: stop
@@ -44,7 +59,27 @@ Understand the requirement
 → Is a new dependency justified?
   → Yes: add the smallest suitable dependency
   → No: implement the smallest custom solution informed by the research
-→ Deliver the smallest working end-to-end change
+→ Is the workspace a Git repository?
+  → No: ask the user to create or select a Git environment, then stop
+→ Does an execution document already exist?
+  → Yes: read it, then reconcile it with Git status, log, and diff
+→ Is the task multi-step, long-running, oversized, or likely to require handoff?
+  → Yes: read references/execution-document.md
+         → Create or resume the execution document
+         → Split the work into bounded phases
+         → Keep exactly one phase in progress
+         → Present the plan and current state to the user
+         → User confirms the current execution document?
+           → No: record the requested changes
+                 → Return to requirement clarification
+                 → Revise every affected decision and phase
+                 → Present the updated execution document again
+           → Yes: commit the approved execution document
+→ Deliver the smallest working end-to-end change or current approved phase
+→ Update the execution document after every completed, changed, or blocked phase
+→ Did execution reveal a material scope, architecture, dependency, or risk change?
+  → Yes: pause and return to the execution-document confirmation loop
+→ Commit the coherent checkpoint without unrelated changes
 → Backend?
   → Trust the implementation
   → Do not write tests or proactively search for bugs

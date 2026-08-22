@@ -1,6 +1,6 @@
 interface:
   display_name: "Practical Coding"
-  short_description: "Choose the smallest reliable coding solution"
+  short_description: "The only general-purpose coding skill you need"
   default_prompt: "Use $practical-coding for this coding task."
 policy:
   allow_implicit_invocation: true
