@@ -32,6 +32,7 @@ MAX_FILE_BYTES = 2 * 1024 * 1024
 MAX_QUERY_ROWS = 1000
 MAX_QUERY_BUDGET_MS = 5000
 DEFAULT_QUERY_BUDGET_MS = 1000
+SQLITE_BATCH_SIZE = 500
 IGNORED_DIRS = {
     ".git", ".hg", ".svn", ".idea", ".vscode", ".next", ".nuxt",
     ".svelte-kit", ".gradle", ".mvn", ".cache", ".venv", "venv",
@@ -495,6 +496,11 @@ def replace_file_graph(
     )
 
 
+def _batches(values: Sequence[object], size: int = SQLITE_BATCH_SIZE):
+    for start in range(0, len(values), size):
+        yield values[start:start + size]
+
+
 def _resolve_call_rows(con: sqlite3.Connection, rows: Sequence[sqlite3.Row]) -> int:
     inserted = 0
     for r in rows:
@@ -504,7 +510,14 @@ def _resolve_call_rows(con: sqlite3.Connection, rows: Sequence[sqlite3.Row]) -> 
         ).fetchall()
         if not targets:
             targets = con.execute(
-                "SELECT id FROM symbols WHERE name=? LIMIT 32", (r["callee_name"],)
+                """
+                SELECT s.id
+                FROM symbols s JOIN files f ON f.id=s.file_id
+                WHERE s.name=?
+                ORDER BY f.path,s.qualified_name,s.line
+                LIMIT 32
+                """,
+                (r["callee_name"],),
             ).fetchall()
         for t in targets:
             if t["id"] == r["caller_symbol_id"]:
@@ -518,16 +531,17 @@ def _resolve_call_rows(con: sqlite3.Connection, rows: Sequence[sqlite3.Row]) -> 
     return inserted
 
 
-def rebuild_call_edges(con: sqlite3.Connection) -> int:
+def rebuild_call_edges(con: sqlite3.Connection) -> tuple[int, int]:
     con.execute("DELETE FROM call_edges")
     rows = con.execute(
         """
         SELECT c.id AS call_id, c.file_id, c.caller_symbol_id, c.callee_name
         FROM calls c
         WHERE c.caller_symbol_id IS NOT NULL
+        ORDER BY c.id
         """
     ).fetchall()
-    return _resolve_call_rows(con, rows)
+    return len(rows), _resolve_call_rows(con, rows)
 
 
 def refresh_call_edges(
@@ -538,43 +552,47 @@ def refresh_call_edges(
     """Re-resolve only calls whose caller file or target-name set may have changed."""
     affected_call_ids: set[int] = set()
 
-    if changed_paths:
-        placeholders = ",".join("?" for _ in changed_paths)
+    for paths in _batches(sorted(changed_paths)):
+        placeholders = ",".join("?" for _ in paths)
         affected_call_ids.update(
             r["id"]
             for r in con.execute(
                 f"SELECT c.id FROM calls c JOIN files f ON f.id=c.file_id "
                 f"WHERE f.path IN ({placeholders}) AND c.caller_symbol_id IS NOT NULL",
-                tuple(sorted(changed_paths)),
+                tuple(paths),
             )
         )
 
-    if dirty_names:
-        placeholders = ",".join("?" for _ in dirty_names)
+    for names in _batches(sorted(dirty_names)):
+        placeholders = ",".join("?" for _ in names)
         affected_call_ids.update(
             r["id"]
             for r in con.execute(
                 f"SELECT id FROM calls WHERE caller_symbol_id IS NOT NULL "
                 f"AND callee_name IN ({placeholders})",
-                tuple(sorted(dirty_names)),
+                tuple(names),
             )
         )
 
     if not affected_call_ids:
         return 0, 0
 
+    rows: list[sqlite3.Row] = []
     ids = sorted(affected_call_ids)
-    placeholders = ",".join("?" for _ in ids)
-    con.execute(f"DELETE FROM call_edges WHERE call_id IN ({placeholders})", ids)
-    rows = con.execute(
-        f"""
-        SELECT c.id AS call_id, c.file_id, c.caller_symbol_id, c.callee_name
-        FROM calls c
-        WHERE c.id IN ({placeholders}) AND c.caller_symbol_id IS NOT NULL
-        ORDER BY c.id
-        """,
-        ids,
-    ).fetchall()
+    for call_ids in _batches(ids):
+        placeholders = ",".join("?" for _ in call_ids)
+        con.execute(f"DELETE FROM call_edges WHERE call_id IN ({placeholders})", tuple(call_ids))
+        rows.extend(
+            con.execute(
+                f"""
+                SELECT c.id AS call_id, c.file_id, c.caller_symbol_id, c.callee_name
+                FROM calls c
+                WHERE c.id IN ({placeholders}) AND c.caller_symbol_id IS NOT NULL
+                ORDER BY c.id
+                """,
+                tuple(call_ids),
+            ).fetchall()
+        )
     return len(rows), _resolve_call_rows(con, rows)
 
 
@@ -642,7 +660,7 @@ def cmd_index(args: argparse.Namespace) -> int:
         changed += 1
 
     if args.full_rebuild:
-        edge_calls, edge_count = 0, rebuild_call_edges(con)
+        edge_calls, edge_count = rebuild_call_edges(con)
         edge_mode = "full"
     else:
         edge_calls, edge_count = refresh_call_edges(con, changed_paths, dirty_names)
@@ -675,10 +693,9 @@ def cmd_index(args: argparse.Namespace) -> int:
             "calls_rechecked": edge_calls,
             "edges_inserted": edge_count,
         },
-        # Preserve the old output key for callers that only need a count from
-        # this run. On incremental refresh it is the number of inserted edges,
-        # not the total graph edge count; totals.call_edges is authoritative.
-        "resolved_call_edges": edge_count,
+        # Preserve the pre-incremental output contract: this is the total
+        # number of resolved edges after indexing, not only this run's inserts.
+        "resolved_call_edges": totals["call_edges"],
         "totals": dict(totals),
     })
     return 0
@@ -957,7 +974,6 @@ def cmd_query(args: argparse.Namespace) -> int:
     sql = args.sql.strip()
     if not re.match(r"^(SELECT|WITH)\b", sql, re.I):
         raise SystemExit("query is read-only: SQL must start with SELECT or WITH")
-
     limit = max(1, min(args.limit, MAX_QUERY_ROWS))
     budget_ms = max(1, min(args.budget_ms, MAX_QUERY_BUDGET_MS))
     deadline = time.monotonic() + budget_ms / 1000.0

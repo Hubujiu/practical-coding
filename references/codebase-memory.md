@@ -16,12 +16,12 @@ The embedded runtime is intentionally narrower than upstream Codebase Memory. It
 
 - persistent SQLite graph storage;
 - file, symbol, import, and call relationships;
-- incremental refresh based on file content hashes;
+- incremental refresh with a file-metadata fast path and content-hash verification;
 - architecture summaries;
 - symbol search;
 - inbound/outbound call tracing;
 - changed-file impact analysis;
-- read-only SQL for questions not covered by the built-ins.
+- bounded read-only SQL for questions not covered by the built-ins.
 
 It deliberately omits:
 
@@ -136,9 +136,25 @@ Use the narrowest operation that answers the structural question.
 python <skill-root>/runtime/codebase_memory.py --repo <project-root> index
 ```
 
-The first run creates the graph. Later runs hash candidate source files and reparses only changed files, removes deleted files, then refreshes resolved call edges.
+The first run creates the graph. Normal refresh first trusts unchanged `mtime_ns` plus file size and does not re-read or hash those files. If metadata changed, the runtime hashes the file and reparses only when the content hash changed. Deleted files are removed and only affected call edges are re-resolved.
 
 Run this before structural analysis when the source may have changed.
+
+When timestamps or file metadata may be unreliable, force content verification:
+
+```bash
+python <skill-root>/runtime/codebase_memory.py --repo <project-root> index --verify-hashes
+```
+
+`--verify-hashes` hashes every candidate source file before deciding whether parsing is needed. Use it after file copies/restores, unusual build tooling, filesystem timestamp preservation, or when exact freshness matters more than the metadata fast path.
+
+For correctness verification or debugging the incremental index, rebuild graph rows from source:
+
+```bash
+python <skill-root>/runtime/codebase_memory.py --repo <project-root> index --full-rebuild
+```
+
+`--full-rebuild` is the correctness oracle for incremental state. Call-edge target selection is deterministic, so an incremental graph and a full rebuild should have the same graph semantics for the same source tree.
 
 ### Status
 
@@ -198,10 +214,11 @@ Impact combines reverse call edges with lightweight reverse-import evidence.
 
 ```bash
 python <skill-root>/runtime/codebase_memory.py --repo <project-root> query \
-  "SELECT name, qualified_name FROM symbols WHERE kind='function' LIMIT 20"
+  "SELECT name, qualified_name FROM symbols WHERE kind='function' LIMIT 20" \
+  --budget-ms 1000
 ```
 
-Only `SELECT` and `WITH` queries are accepted. Do not mutate the graph with ad hoc SQL.
+Only `SELECT` and `WITH` queries are accepted. The database is opened read-only with SQLite `query_only`, returned rows are capped, and execution receives a wall-clock budget. The default budget is 1000 ms and is clamped to at most 5000 ms. Do not mutate the graph with ad hoc SQL.
 
 ## Parsing Model
 

@@ -81,11 +81,13 @@ class IncrementalGraphRuntimeTest(unittest.TestCase):
 
     def test_noop_index_uses_metadata_fast_path(self):
         (self.repo / "a.py").write_text("def f():\n    return 1\n", encoding="utf-8")
-        self.run_cli("index")
+        first = self.run_cli("index")
         second = self.run_cli("index")
         self.assertEqual(second["changed_files"], 0)
         self.assertEqual(second["hashed_files"], 0)
         self.assertEqual(second["metadata_fast_path_files"], 1)
+        self.assertEqual(first["resolved_call_edges"], first["totals"]["call_edges"])
+        self.assertEqual(second["resolved_call_edges"], second["totals"]["call_edges"])
 
     def test_verify_hashes_catches_preserved_metadata_change(self):
         path = self.repo / "a.py"
@@ -132,6 +134,30 @@ class IncrementalGraphRuntimeTest(unittest.TestCase):
 
         rebuilt = self.run_cli("index", "--full-rebuild")
         self.assertEqual(rebuilt["edge_resolution"]["mode"], "full")
+        self.assertEqual(rebuilt["edge_resolution"]["calls_rechecked"], 1)
+        self.assertEqual(incremental, self.graph_semantics())
+
+    def test_duplicate_target_limit_is_deterministic(self):
+        (self.repo / "caller.py").write_text(
+            "def run():\n    return helper()\n", encoding="utf-8"
+        )
+        for i in range(40):
+            (self.repo / f"h{i:02}.py").write_text(
+                "def helper():\n    return 1\n", encoding="utf-8"
+            )
+        self.run_cli("index")
+
+        # Replacing h00 gives its symbol a new rowid. Resolution must still be
+        # based on stable source identity rather than insertion/rowid order.
+        (self.repo / "h00.py").write_text(
+            "def helper():\n    return 100\n", encoding="utf-8"
+        )
+        self.run_cli("index")
+        incremental = self.graph_semantics()
+        caller_edges = [e for e in incremental["edges"] if e[0] == "caller.py.run"]
+        self.assertEqual(len(caller_edges), 32)
+
+        self.run_cli("index", "--full-rebuild")
         self.assertEqual(incremental, self.graph_semantics())
 
     def test_raw_query_has_execution_budget(self):
