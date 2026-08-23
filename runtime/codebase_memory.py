@@ -577,23 +577,23 @@ def refresh_call_edges(
     if not affected_call_ids:
         return 0, 0
 
-    rows: list[sqlite3.Row] = []
-    ids = sorted(affected_call_ids)
-    for call_ids in _batches(ids):
+    calls_rechecked = 0
+    edges_inserted = 0
+    for call_ids in _batches(sorted(affected_call_ids)):
         placeholders = ",".join("?" for _ in call_ids)
         con.execute(f"DELETE FROM call_edges WHERE call_id IN ({placeholders})", tuple(call_ids))
-        rows.extend(
-            con.execute(
-                f"""
-                SELECT c.id AS call_id, c.file_id, c.caller_symbol_id, c.callee_name
-                FROM calls c
-                WHERE c.id IN ({placeholders}) AND c.caller_symbol_id IS NOT NULL
-                ORDER BY c.id
-                """,
-                tuple(call_ids),
-            ).fetchall()
-        )
-    return len(rows), _resolve_call_rows(con, rows)
+        rows = con.execute(
+            f"""
+            SELECT c.id AS call_id, c.file_id, c.caller_symbol_id, c.callee_name
+            FROM calls c
+            WHERE c.id IN ({placeholders}) AND c.caller_symbol_id IS NOT NULL
+            ORDER BY c.id
+            """,
+            tuple(call_ids),
+        ).fetchall()
+        calls_rechecked += len(rows)
+        edges_inserted += _resolve_call_rows(con, rows)
+    return calls_rechecked, edges_inserted
 
 
 def cmd_index(args: argparse.Namespace) -> int:

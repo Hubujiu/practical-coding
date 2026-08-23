@@ -80,13 +80,23 @@ class IncrementalGraphRuntimeTest(unittest.TestCase):
             con.close()
 
     def test_noop_index_uses_metadata_fast_path(self):
-        (self.repo / "a.py").write_text("def f():\n    return 1\n", encoding="utf-8")
+        (self.repo / "a.py").write_text(
+            "def helper():\n"
+            "    return 1\n"
+            "\n"
+            "def run():\n"
+            "    return helper()\n",
+            encoding="utf-8",
+        )
         first = self.run_cli("index")
         second = self.run_cli("index")
+        self.assertEqual(first["resolved_call_edges"], 1)
+        self.assertEqual(first["resolved_call_edges"], first["totals"]["call_edges"])
         self.assertEqual(second["changed_files"], 0)
         self.assertEqual(second["hashed_files"], 0)
         self.assertEqual(second["metadata_fast_path_files"], 1)
-        self.assertEqual(first["resolved_call_edges"], first["totals"]["call_edges"])
+        self.assertEqual(second["edge_resolution"]["edges_inserted"], 0)
+        self.assertEqual(second["resolved_call_edges"], 1)
         self.assertEqual(second["resolved_call_edges"], second["totals"]["call_edges"])
 
     def test_verify_hashes_catches_preserved_metadata_change(self):
@@ -156,6 +166,68 @@ class IncrementalGraphRuntimeTest(unittest.TestCase):
         incremental = self.graph_semantics()
         caller_edges = [e for e in incremental["edges"] if e[0] == "caller.py.run"]
         self.assertEqual(len(caller_edges), 32)
+
+        self.run_cli("index", "--full-rebuild")
+        self.assertEqual(incremental, self.graph_semantics())
+
+    def test_incremental_refresh_batches_large_dirty_sets(self):
+        names = [f"helper_{i:03}" for i in range(501)]
+        for name in names:
+            (self.repo / f"{name}.py").write_text(
+                f"def {name}():\n    return 1\n", encoding="utf-8"
+            )
+        caller = "def run():\n" + "".join(f"    {name}()\n" for name in names)
+        (self.repo / "caller.py").write_text(caller, encoding="utf-8")
+
+        first = self.run_cli("index")
+        self.assertEqual(first["totals"]["call_edges"], 501)
+
+        for name in names:
+            (self.repo / f"{name}.py").write_text(
+                f"def {name}():\n    return 2\n", encoding="utf-8"
+            )
+        refreshed = self.run_cli("index")
+        self.assertEqual(refreshed["changed_files"], 501)
+        self.assertEqual(refreshed["edge_resolution"]["calls_rechecked"], 501)
+        self.assertEqual(refreshed["edge_resolution"]["edges_inserted"], 501)
+        incremental = self.graph_semantics()
+
+        self.run_cli("index", "--full-rebuild")
+        self.assertEqual(incremental, self.graph_semantics())
+
+    def test_symbol_removal_clears_edges_incrementally(self):
+        (self.repo / "helper.py").write_text(
+            "def helper():\n    return 1\n", encoding="utf-8"
+        )
+        (self.repo / "caller.py").write_text(
+            "def run():\n    return helper()\n", encoding="utf-8"
+        )
+        self.run_cli("index")
+
+        (self.repo / "helper.py").write_text("VALUE = 1\n", encoding="utf-8")
+        refreshed = self.run_cli("index")
+        self.assertEqual(refreshed["edge_resolution"]["calls_rechecked"], 1)
+        self.assertEqual(refreshed["totals"]["call_edges"], 0)
+        incremental = self.graph_semantics()
+
+        self.run_cli("index", "--full-rebuild")
+        self.assertEqual(incremental, self.graph_semantics())
+
+    def test_call_removal_clears_edges_incrementally(self):
+        (self.repo / "helper.py").write_text(
+            "def helper():\n    return 1\n", encoding="utf-8"
+        )
+        (self.repo / "caller.py").write_text(
+            "def run():\n    return helper()\n", encoding="utf-8"
+        )
+        self.run_cli("index")
+
+        (self.repo / "caller.py").write_text(
+            "def run():\n    return 0\n", encoding="utf-8"
+        )
+        refreshed = self.run_cli("index")
+        self.assertEqual(refreshed["totals"]["call_edges"], 0)
+        incremental = self.graph_semantics()
 
         self.run_cli("index", "--full-rebuild")
         self.assertEqual(incremental, self.graph_semantics())
