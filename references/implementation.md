@@ -20,7 +20,7 @@ Load this module when changing code or project files.
 ## Match Error Handling to Real Boundaries
 
 - Every failure path in the code corresponds to an actual external boundary, invariant, security rule, data-integrity requirement, or observed behavior.
-- A retry, fallback, broad catch, null guard, compatibility layer, or recovery path is a response to a demonstrated failure mode; name that failure mode when adding one.
+- A retry, fallback, broad catch, null guard, compatibility layer, or recovery path responds to a concrete, documented, or observed failure mode; name that failure mode when adding one.
 - Necessary validation lives once, at the narrowest authoritative boundary.
 - Required safety and integrity checks stay in place even when trimming code.
 
