@@ -1,285 +1,186 @@
 # Practical Coding
 
-> **你只需要这一个 Coding Skill。**
-> **The only general-purpose coding skill you need.**
+> **一个 Skill，按需加载。**  
+> **One skill, load only what the task needs.**
 
-**约 20–50% 更少 Token · 约 30–100% 更高交付效率 · 测试膨胀场景最高约 7× 更快**
+Practical Coding 是一个面向 Coding Agent 的轻量工程方法。目标不是让 Agent 少思考，而是让它减少无收益的工程工作：**更少代码、更少测试、更少文档、更少防御性编程、更少流程，同时用与风险匹配的证据提高交付质量。**
 
-**Target 20–50% fewer tokens · 30–100% faster delivery · up to 7× faster when backend test churn dominates**
+它不把 Brainstorming、Planning、TDD、Debugging、Review、Git Workflow 强制串成固定流水线。主 `SKILL.md` 只负责最小规则和路由，真正的规则按任务需要从 `references/` 加载。
 
 [中文](#中文) · [English](#english)
 
 ## 中文
 
-Practical Coding 是一个默认应用于编码任务的 Agent Skill。它把 Ponytail 的实现克制、Marcos Hernanz 的工程边界、grill-me 的必要澄清，以及“先寻找成熟实现、不默认生成测试、按风险验证”的实践合并成一个可恢复、可交接的编码决策流程。
-
-它不是另一个需要与 Brainstorming、TDD、Writing Plans、Executing Plans 和多轮 Review 叠加使用的流程。它替代这些彼此重叠或冲突的通用 Coding Skills，只保留代码库检索、浏览器、设计、文档和其他领域工具。
-
-### 一句话安装
-
-把下面整句话复制给你的 Coding Agent：
+### 核心思想
 
 ```text
-请帮我安装并启用这个 Skill：https://github.com/Hubujiu/practical-coding；先识别当前 Agent 和它的用户级 Skills 目录，阅读仓库 README，检测所有已安装的冲突 Coding Skills，把冲突项安全、可恢复地禁用而不是删除，保留不冲突的领域 Skills，然后安装 Practical Coding、验证它能被发现，并告诉我安装位置和具体禁用了哪些 Skill。
+理解当前需求
+→ 只加载当前任务需要的模块
+→ 用最小上下文完成最小且持久的修改
+→ 用最低成本的充分证据验证结果
 ```
 
-这条指令适用于 Codex、Cursor、Claude Code，以及其他支持 Agent Skills 的编码工具。Agent 应优先使用平台提供的 Skill 管理界面或命令；需要移动本地目录时，应先确认精确路径，并移动到平台不会扫描的备份目录。
+Practical Coding 默认反对以下无明确收益的工作：
 
-### 它解决什么问题
+- 为假想未来需求增加抽象、配置和扩展点；
+- 为简单能力重复造轮子；
+- 为每次修改机械新增测试；
+- 把能从代码或 Git 重建的事实重复写成文档；
+- 为未观察到的失败增加大量 fallback、retry、guard 和重复校验；
+- 因为“标准流程如此”就强制写计划、开分支、提交 checkpoint 或多轮 Review。
 
-Coding Agent 经常把写代码变成制造代码：为简单需求增加抽象和依赖，为每个功能机械生成测试，功能修改后继续维护已经失效的测试，甚至围绕测试基础设施产生更多测试与修改。
+必要的安全、权限、数据完整性、兼容性和项目门禁不属于“多余工作”，不能以精简为理由移除。
 
-这个 Skill 针对一种真实但低效的体验：功能实现只需约 10 分钟，自动生成和反复修正测试却可能耗费约 1 小时。这里的时间比例描述的是本项目要解决的使用体验，不是通用性能统计。
+### 按需模块
 
-### 能节省多少
+| 模块 | 什么时候加载 | 什么时候不加载 |
+|---|---|---|
+| `decision.md` | 新能力、架构、依赖、API、数据模型、兼容性或存在多个实质方案 | 改文案、移动按钮、简单 CSS、rename、机械修改 |
+| `implementation.md` | 需要修改代码或项目文件 | 纯讨论或只读架构分析 |
+| `debugging.md` | 已观察到 bug、回归、错误行为或验证失败 | 正常实现，不主动找 bug |
+| `verification.md` | 风险或不确定性使“怎么验证”本身成为一个问题 | trivial 修改直接 diff/render/compile 即可 |
 
-Practical Coding 的宣传目标是：
+这些模块**不是四个阶段**，也没有固定顺序。任务可以只加载一个，也可以在执行过程中发现新的触发条件后再加载另一个。
 
-- 减少约 **20–50%** 的总 Token 消耗。
-- 提升约 **30–100%** 的端到端交付效率。
-- 在“实现 10 分钟、测试生成与维护 60 分钟”的后端任务中，把约 70 分钟的流程压缩到约 10 分钟，最高约 **7×** 更快，并减少约 **86%** 的非必要工作时间。
-- 减少因上下文耗尽、重复规划、过度抽象、重复调研和 Agent 交接失败造成的返工。
-
-这些区间是产品定位和经验性估算，不是 Practical Coding 自己的正式 Benchmark；任务已经足够精简时，收益可能接近零。作为可比较的公开参考，[Ponytail 的 Agentic Benchmark](https://github.com/DietrichGebert/ponytail/blob/main/benchmarks/results/2026-06-18-agentic.md)报告平均减少 **54% LOC、22% Token、20% 成本和 27% 时间**。Practical Coding 继承其实现克制，同时进一步减少默认测试生成、重复规划和多轮强制审查，因此以更宽的效率目标进行宣传。
-
-Practical Coding 要求 Agent：
-
-- 只澄清会改变产品、范围、风险或实现的实质性问题。
-- 能从代码、文档和现有上下文查明的事情不询问用户。
-- 按“现有代码 → 标准库 → 平台原生能力 → 已有依赖 → 调研成熟实现 → 新依赖 → 最小自研”选择方案。
-- 在增加依赖或实现非简单能力前，比较官方资料、成熟项目、现有产品和工程讨论。
-- 不默认生成测试；是否新增测试及采用何种验证，由变更风险、不确定性、项目要求和用户要求决定。
-- 不把验证扩大成脱离需求范围的开放式找 bug，并且只有取得与变更相匹配的新证据后才宣称完成。
-- 遇到已报告或范围内观察到的故障时，沿执行路径追溯最早的错误状态，一次验证一个假设，修复根因并确认原始症状消失。
-- 从最小相关上下文开始，只有当前证据不足时才扩大读取范围。
-- 前端需要代表性数据检查布局时，可以加入 Mock.js。
-- 在 Git 环境中工作，并在每个完整阶段创建本地 commit。
-- 为大型、长期或可能交接的任务维护执行文档，避免上下文耗尽、项目过大或更换 Agent 后凭记忆继续。
-
-### 核心工作流
+例如：
 
 ```text
-必要澄清
-→ 检查代码和真实流程
-→ 复用与调研决策
-→ 选择最小方案
-→ 检查 Git 环境
-→ 必要时创建或恢复执行文档
-→ 把执行方案和当前状态发给用户
-→ 用户确认？
-  → 否：返回必要澄清并重新提交方案
-  → 是：提交批准后的执行文档
-→ 分阶段执行
-→ 实时更新进度、决定、文件、阻塞和下一步
-→ 按风险选择验证并取得与完成声明相匹配的新证据
-→ Git checkpoint
-→ 完成或安全交接
+“把按钮文字改成保存”
+→ implementation
+→ 看 diff / 页面
+
+“把登录系统接入新的 OAuth Provider”
+→ decision + implementation + verification
+
+“这个接口线上返回 500”
+→ debugging + implementation
+→ 只有风险需要时才加载 verification
 ```
 
-执行文档保存在目标仓库的 `.practical-coding/execution/<task-slug>.md`。恢复任务时，Agent 必须先读取仓库指令、执行文档、`git status`、近期提交和当前 diff，再把恢复后的方案发给用户确认。用户没有确认前不能修改产品代码。
+### 决策：先复用，再发明
 
-简单单步任务不创建执行文档，但仍然需要 Git 环境和本地提交。如果当前目录不是 Git 仓库，Agent 必须提示用户创建或选择 Git 环境，不能擅自初始化仓库。
+需要技术决策时采用以下优先级：
 
-### 为什么不默认生成测试
+```text
+现有代码
+→ 标准库
+→ 平台 / 框架原生能力
+→ 已安装依赖
+→ 调研成熟方案
+→ 新依赖
+→ 最小自研
+```
 
-本项目有意移除 Agent 默认生成测试的行为，而且不限于后端。目标不是声称测试没有价值，而是阻止测试成为与产品代码平行增长的第二套实现：每增加一个功能就机械增加测试，每修改一个功能又同步修改低价值测试，最终维护测试的时间超过实现本身。
+增加依赖或实现非简单能力前先查官方资料、成熟库、维护中的实现和可信工程讨论；简单本地修改不为了流程去做无意义调研。
 
-Practical Coding 仍然要求验证，但验证成本必须与风险、不确定性、项目门禁和用户要求相称。低风险修改可以使用编译、类型检查、现有测试或直接行为检查；支付、权限、并发、数据迁移等高风险修改可以合理地新增最小且有针对性的测试。没有适当的新证据，Agent 不得宣称完成。
+### 实现：减少代码，也减少防御性代码
 
-### 冲突的通用 Coding Skills
+Practical Coding 追求最小 coherent diff，而不是最少字符。真实外部边界、安全规则、权限、数据完整性和已观察到的失败必须正确处理；但不会因为“也许未来会失败”就默认增加 retry、fallback、重复校验、兼容层、宽泛 catch、null guard 或多层包装。
 
-安装 Practical Coding 前，禁用或卸载下列 Skill；否则同一个任务可能同时进入多套互相矛盾的工作流。
+### Debug：证据 → 根因 → 最小修复
 
-| 冲突 Skill | Practical Coding 已替代的内容 |
-|---|---|
-| `brainstorming` | 必要澄清、用户确认和方案循环。 |
-| `writing-plans` | 最小执行文档和阶段拆分。 |
-| `executing-plans` | 按阶段执行、持续进度和阻塞恢复。 |
-| `test-driven-development` | Practical Coding 不默认生成测试，只在风险、项目或用户要求证明其成本合理时增加测试。 |
-| `verification-before-completion` | Practical Coding 已提供按风险选择证据的轻量完成门槛，不强制每次运行完整测试流程。 |
-| `systematic-debugging` | Practical Coding 已提供轻量根因调试流程，不引入强制阶段和默认测试要求。 |
-| `requesting-code-review` | 不再自动增加强制审查阶段。 |
-| `subagent-driven-development` | 不再为每个任务增加 Agent 和两轮审查。 |
-| `finishing-a-development-branch` | 不再引入测试门禁和额外收尾流程。 |
-| `writing-skills` | Skill 创建继续使用平台的 `skill-creator`，不强制压力测试。 |
+只有出现实际故障才加载 Debugging：先复现或收集证据，沿真实执行路径找到最早错误状态，一次验证一个假设，修复根因并确认原症状消失。Debug 不自动触发新增测试，也不会扩大成全仓库 bug hunting。
 
-以下能力不冲突，可以继续保留：代码库检索、Codebase Memory、并行 Agent、Git worktree、接收外部 Code Review、显式只读 Review、Playwright、前端设计、ImageGen、PDF、OpenAI Docs、Skill Creator、Plugin Creator 及其他领域 Skill。
+### Verification：测试是证据，不是默认产物
 
-### Codex
+低风险修改通常只需要 diff、页面渲染、编译、类型检查或已有定向测试。支付、权限、并发、数据迁移、公共 API、跨服务集成等高风险修改才需要更强证据，并可能值得增加最小且有长期价值的自动化测试。
 
-Codex 版本和已安装插件不同，[OpenAI 官方 Codex 文档](https://developers.openai.com/codex/use-cases)没有承诺一份长期固定的预装 Skill 名单。Codex 自带或由 OpenAI 提供的 ImageGen、OpenAI Docs、Skill Creator、Plugin Creator、Skill Installer 等领域 Skill 与 Practical Coding 不冲突，无需删除。
+核心规则是：
 
-真正需要处理的通常是用户另外安装的通用编码工作流，例如 Superpowers 或同名个人 Skill。打开 **Customize → Skills**，如果发现上表中的冲突 Skill，请禁用它们。
+> **Risk → cheapest sufficient evidence.**
 
-安装到 Codex 用户 Skill 目录：
+不因为“完成前必须测试”就机械运行完整测试套件，也不因为“不默认写测试”就跳过必要验证。
+
+### Git 和文档
+
+Git 是证据源，不是前置条件。存在 Git 时可以用 diff、log、blame 理解修改与历史；没有 Git 仍然可以完成普通编码任务。除非用户或项目要求，否则 Practical Coding 不强制创建仓库、分支、commit、execution document 或 checkpoint。
+
+文档同理：只记录代码本身无法廉价重建、未来又很可能被重新讨论的重要技术决策。文件位置、调用关系、改了哪些文件、任务进度等事实不重复写文档。
+
+### Structured Codebase Memory
+
+结构化代码图谱是计划中的**可选扩展**，本版本不包含 Codebase Memory，也不会自动安装或初始化代码图谱。
+
+后续接入时仍遵循同一个原则：小型 Demo 默认不承担索引和上下文成本；大型生产项目、多模块项目或频繁做影响分析的代码库可以开启，以结构化查询减少反复扫描源码的 Token 成本。Codebase Memory 会作为可选能力接入，而不是让所有任务强制依赖它。
+
+### 为什么不采用 Superpowers 式固定流程
+
+Superpowers 的优势是流程完整和强约束，但它会把 brainstorming、planning、TDD、review 等流程技能按规则串联。Practical Coding 选择另一条路线：保留这些工程问题背后的必要原则，但把它们拆成条件模块，只在当前任务真正需要时加载。
+
+这种结构也符合 Agent Skills 的 progressive disclosure：主 Skill 保持短小，条件性规则放入独立 reference，并由明确触发条件决定是否读取。
+
+### 安装
+
+Codex：
 
 ```powershell
 git clone https://github.com/Hubujiu/practical-coding.git "$env:USERPROFILE\.codex\skills\practical-coding"
 ```
 
-重新启动 Codex 或新建任务。Skill 会自动应用于编码任务，也可以显式调用：
-
-```text
-$practical-coding
-```
-
-### Cursor
-
-[Cursor 官方 Agent Skills 文档](https://cursor.com/docs/skills)说明 Cursor 会自动发现 `.agents/skills/`、`.cursor/skills/`、`.claude/skills/` 和 `.codex/skills/` 中的 Skill。如果已经在同一台机器为 Codex 安装了 Practical Coding，Cursor 通常可以直接发现它；Cursor-only 安装建议使用通用目录：
+Cursor：
 
 ```powershell
 git clone https://github.com/Hubujiu/practical-coding.git "$env:USERPROFILE\.agents\skills\practical-coding"
 ```
 
-Cursor 当前内置 `/automate`、`/babysit`、`/canvas`、`/create-hook`、`/create-rule`、`/create-skill`、`/create-subagent`、`/cursor-blame`、`/loop`、`/migrate-to-skills`、`/review`、`/review-bugbot`、`/review-security`、`/sdk`、`/shell`、`/split-to-prs`、`/statusline`、`/update-cli-config` 和 `/update-cursor-settings` 等 Skill。
-
-这些 Cursor 内置项由 Cursor 管理，不需要全部卸载。为避免与 Practical Coding 的“不主动测试和审查”冲突，请在 **Customize → Skills** 中把 `/babysit`、`/review`、`/review-bugbot` 和 `/review-security` 保持为手动调用，不要加入自动编码流程。同时删除或禁用项目规则、用户规则及外部 Skill 中任何强制 Brainstorming、TDD、Writing Plans、测试、主动 Review 或完成验证的规则。
-
-在 Cursor 中可以直接输入：
-
-```text
-/practical-coding
-```
-
-### Claude Code
-
-[Claude Code 官方 Skills 文档](https://code.claude.com/docs/en/skills)说明 Claude Code 当前在每个会话提供 `/simplify`、`/batch`、`/debug`、`/loop` 和 `/claude-api` 等 bundled skills。它们是平台能力，不需要全部卸载；Practical Coding 已包含简化和根因调试逻辑，因此不要把 `/simplify` 或 `/debug` 再加入同一自动编码流程。
-
-如果安装了 Superpowers 或其他提供上表冲突 Skill 的 Claude Code 插件，请先卸载该插件，或者禁用其中的冲突 Skill，再安装 Practical Coding。
-
-安装到 Claude Code 用户 Skill 目录：
+Claude Code：
 
 ```powershell
 git clone https://github.com/Hubujiu/practical-coding.git "$env:USERPROFILE\.claude\skills\practical-coding"
 ```
 
-重新启动 Claude Code 后，它可以根据描述自动加载，也可以显式调用：
+支持 Agent Skills 标准的其他工具可以直接使用仓库中的 `SKILL.md`。
 
-```text
-/practical-coding
-```
+### 与其他 Skills 共存
 
-### 其他 Agent 和精简提示词
+不需要为了安装 Practical Coding 删除领域 Skill，例如前端设计、Playwright、PDF、文档、图像、数据库或平台专用 Skill。
 
-支持 Agent Skills 标准的工具可以直接使用仓库中的 `SKILL.md`。更换到 Hermes 或其他 Agent 接手时，应让它先读取执行文档和 Git 状态。
-
-不支持 Skill 的 Agent 可以使用：
-
-```text
-务实编码：先澄清、复用和调研，再提交最小方案给我确认；不默认生成测试，按风险选择验证并用新证据支持完成声明；遇到故障先追溯根因；大型任务实时维护执行文档并分阶段 Git 提交。
-```
+需要避免的是**同一个任务同时自动运行多套通用编码流程**。如果已有 Skill 强制所有任务执行 brainstorming、完整计划、TDD、多轮 review 或固定 Git 流程，应将其中冲突的自动流程关闭或改为手动调用。
 
 ### 思想来源
 
-- [Ponytail](https://github.com/DietrichGebert/ponytail)：参考其“先判断是否需要存在，再依次复用现有代码、标准库、平台能力和已有依赖，最后才写最小实现”的决策梯子。
-- [Marcos Hernanz 的 AGENTS.md](https://x.com/marcoshernanz/status/2083954734487212511?s=46)：参考其简单实现、分层成长、模块化、依赖复用、成熟产品调研和长期架构边界。
-- [grill-me](https://github.com/RobMitt/grill-me-skill)：参考其共同理解、一次处理一个关键问题，以及能从代码中调查就不询问用户的思想；没有采用穷尽式访谈，也没有复制其未声明许可证的文本。
-- [Superpowers `systematic-debugging`](https://github.com/obra/superpowers/blob/main/skills/systematic-debugging/SKILL.md)：参考其先调查根因、沿执行路径回溯、一次验证一个假设和修复后复核的思想；没有采用其强制阶段、TDD 或测试优先要求。
-- [Superpowers `verification-before-completion`](https://github.com/obra/superpowers/blob/main/skills/verification-before-completion/SKILL.md)：参考其“完成声明必须有新证据”的原则，并改为与风险和变更类型相匹配的验证，而不是固定测试门槛。
-- [Matt Pocock `setup-matt-pocock-skills`](https://github.com/mattpocock/skills/blob/main/skills/engineering/setup-matt-pocock-skills/SKILL.md)：参考其在改变架构前读取项目上下文和既有 ADR 的思想；Practical Coding 不强制项目采用特定文档结构。
-- [OpenViking Context Layers](https://github.com/volcengine/OpenViking/blob/main/docs/en/concepts/03-context-layers.md)：参考其按需逐层加载上下文的思想；Practical Coding 不引入上下文数据库或长期记忆系统。
+- [Ponytail](https://github.com/DietrichGebert/ponytail)：YAGNI、reuse-first、stdlib/native-first 和极小实现。
+- [Matt Pocock / skills](https://github.com/mattpocock/skills)：面向 Agent 写作与 progressive disclosure 的结构原则。
+- [Superpowers](https://github.com/obra/superpowers)：完整工程工作流的参考，以及 Practical Coding 有意避免的强制流程耦合。
+- [Agent Skills specification](https://agentskills.io/specification)：Skill 目录结构与 progressive disclosure。
 
-Practical Coding 是独立融合与扩展。它额外强化了实现前调研、不默认生成测试、按风险验证、轻量根因调试、用户审批、执行文档、可恢复交接和 Git checkpoint。
-
-### 项目结构
-
-```text
-practical-coding/
-├─ SKILL.md
-├─ agents/
-│  └─ openai.yaml
-├─ references/
-│  └─ execution-document.md
-├─ CONTRIBUTING.md
-├─ LICENSE
-└─ README.md
-```
+---
 
 ## English
 
-Practical Coding is the only general-purpose coding skill you need. It combines Ponytail's implementation restraint, Marcos Hernanz's engineering boundaries, grill-me's focused clarification, research-before-reinvention, no default test generation, risk-proportional verification, user-approved execution documents, resumable handoffs, and coherent Git checkpoints.
+Practical Coding is one compact coding skill with independently loadable modules. It aims for **less code, fewer low-value tests, less redundant documentation, less defensive bloat, and less process while preserving enough evidence to justify confidence.**
 
-It addresses speculative abstractions, unnecessary dependencies, test classes that become a parallel implementation, stale tests after behavior changes, oversized plans, lost progress after context exhaustion, and hallucinated status during handoff.
+### Architecture
 
-### Expected impact
+`SKILL.md` is a lightweight router. It loads only the reference modules whose triggers match the current task:
 
-Practical Coding is positioned to deliver:
+| Module | Load when |
+|---|---|
+| `decision.md` | A material architecture, dependency, API, data, compatibility, or implementation choice exists. |
+| `implementation.md` | Code or project files need to change. |
+| `debugging.md` | An observed failure, regression, incorrect behavior, or failed verification needs diagnosis. |
+| `verification.md` | Risk or uncertainty makes verification strategy non-trivial. |
 
-- Roughly **20–50% fewer total tokens**.
-- Roughly **30–100% faster end-to-end delivery**.
-- Up to **7× faster completion** and about **86% less unnecessary work** in the motivating backend case where implementation takes ten minutes and generated test maintenance takes sixty.
-- Less rework from context exhaustion, repeated planning, speculative architecture, duplicate research, and failed agent handoffs.
+The modules are not mandatory stages and do not form a fixed chain. A copy change may need only Implementation and a direct visual check. A new authentication provider may need Decision, Implementation, and Verification. A production failure may start with Debugging and load other modules only when their triggers appear.
 
-These ranges are marketing targets and experience-based estimates, not a formal Practical Coding benchmark; already-minimal tasks may see little or no improvement. As a public reference point, [Ponytail's agentic benchmark](https://github.com/DietrichGebert/ponytail/blob/main/benchmarks/results/2026-06-18-agentic.md) reports **54% less LOC, 22% fewer tokens, 20% lower cost, and 27% less time** on average. Practical Coding adopts that implementation restraint and additionally reduces default test generation, repeated planning, and mandatory review loops.
+### Principles
 
-### One-line installation
+- **Reuse before invention:** existing code → stdlib → native platform → installed dependency → research proven solutions → new dependency → minimal custom implementation.
+- **Smallest coherent change:** avoid speculative abstractions, configuration, wrappers, unrelated cleanup, and future-proofing without a present need.
+- **No defensive bloat:** handle real boundaries and invariants, not imagined failures; never remove necessary security or integrity checks.
+- **Evidence-driven debugging:** observed evidence → earliest incorrect state → one hypothesis at a time → root cause → minimal fix.
+- **Risk-proportional verification:** tests are evidence, not a default deliverable; use the cheapest sufficient fresh evidence.
+- **Document decisions, not reconstructable facts:** do not duplicate information already recoverable from code or Git.
+- **Git is evidence, not ceremony:** repositories, branches, commits, plans, and checkpoints are not universal prerequisites.
 
-Copy this entire instruction to your coding agent:
+### Optional structured codebase memory
 
-```text
-Install and enable this Skill for me: https://github.com/Hubujiu/practical-coding; first identify the current agent and its user-level Skills directory, read the repository README, detect every installed conflicting coding workflow skill, disable conflicts safely and reversibly instead of deleting them, preserve non-conflicting domain skills, install Practical Coding, verify that the agent discovers it, and report the install path and every skill you disabled.
-```
+Codebase Memory is intentionally not bundled in this version. A future integration will remain optional and should only be enabled when the savings from structured navigation and impact analysis justify indexing and context cost, especially for large production codebases.
 
-This instruction works with Codex, Cursor, Claude Code, and other tools that support Agent Skills. The agent should prefer the platform's Skill-management UI or commands and verify exact paths before moving local directories into a backup location the platform does not scan.
+### Sources
 
-### Workflow
+Practical Coding draws on Ponytail's implementation restraint, Matt Pocock's agent-writing and progressive-disclosure guidance, the engineering coverage of Superpowers without its mandatory workflow coupling, and the Agent Skills specification.
 
-```text
-Clarify only material uncertainty
-→ Inspect the code and real flow
-→ Reuse and research before implementing
-→ Choose the smallest solution
-→ Require a Git environment
-→ Create or restore an execution document when needed
-→ Present it to the user
-→ Confirmed?
-  → No: return to clarification and revise
-  → Yes: commit the approved document
-→ Execute one bounded phase
-→ Update live progress
-→ Select verification proportional to risk and collect fresh evidence for the completion claim
-→ Commit the checkpoint
-→ Complete or hand off safely
-```
+### License
 
-The execution document lives at `.practical-coding/execution/<task-slug>.md`. Product code cannot be changed until the user approves a newly created or restored execution document. Material scope, architecture, dependency, permission, or risk changes return to the approval loop.
-
-### Conflicts
-
-Disable or uninstall these overlapping workflow skills before using Practical Coding:
-
-`brainstorming`, `writing-plans`, `executing-plans`, `test-driven-development`, `verification-before-completion`, `systematic-debugging`, `requesting-code-review`, `subagent-driven-development`, `finishing-a-development-branch`, and `writing-skills`.
-
-Repository navigation, Codebase Memory, parallel agents, Git worktrees, receiving external review, explicit read-only review, Playwright, frontend design, image, PDF, documentation, plugin, and skill-management capabilities can remain installed.
-
-### Platform notes
-
-- **Codex:** install under `~/.codex/skills/practical-coding`; disable conflicting user-installed workflow skills in Customize; invoke with `$practical-coding`.
-- **Cursor:** install under `~/.agents/skills/practical-coding` or another discovered Skill directory; keep built-in review skills manual; invoke with `/practical-coding`.
-- **Claude Code:** install under `~/.claude/skills/practical-coding`; remove overlapping workflow plugins such as Superpowers or disable their conflicting skills; invoke with `/practical-coding`.
-
-### Testing and verification stance
-
-Practical Coding intentionally removes default test generation for all kinds of code, not only backend code. It still requires verification proportional to the change's risk, uncertainty, project gates, and user request. Low-risk work may be supported by a build, typecheck, existing tests, or direct behavioral evidence; security, payment, concurrency, migration, and other high-risk work may justify the smallest targeted new tests. The agent must not claim completion without appropriate fresh evidence.
-
-### Prompt-only use
-
-```text
-Use practical coding: clarify, reuse, and research first, then present the smallest plan for my approval; do not generate tests by default, verify in proportion to risk with fresh evidence for completion claims, trace failures to their root cause, and maintain a live execution document with phased Git commits for large work.
-```
-
-### Influences
-
-- [Ponytail](https://github.com/DietrichGebert/ponytail)
-- [Marcos Hernanz's AGENTS.md](https://x.com/marcoshernanz/status/2083954734487212511?s=46)
-- [grill-me](https://github.com/RobMitt/grill-me-skill)
-- [Superpowers `systematic-debugging`](https://github.com/obra/superpowers/blob/main/skills/systematic-debugging/SKILL.md) — root-cause investigation, backward tracing, one hypothesis at a time, and post-fix verification, without adopting its mandatory phases, TDD, or test-first requirements.
-- [Superpowers `verification-before-completion`](https://github.com/obra/superpowers/blob/main/skills/verification-before-completion/SKILL.md) — fresh evidence before completion claims, adapted into risk- and change-proportional verification instead of a fixed test gate.
-- [Matt Pocock `setup-matt-pocock-skills`](https://github.com/mattpocock/skills/blob/main/skills/engineering/setup-matt-pocock-skills/SKILL.md) — inspect existing project context and ADRs before changing architecture, without requiring a particular documentation layout.
-- [OpenViking Context Layers](https://github.com/volcengine/OpenViking/blob/main/docs/en/concepts/03-context-layers.md) — progressively load context on demand, without adding a context database or long-term memory system.
-
-Practical Coding is an independent synthesis and extension. The linked projects informed decision principles; their workflows and text were not copied wholesale. No text was copied from grill-me, whose repository did not declare a license when this project reviewed it.
-
-## License
-
-[MIT](LICENSE)
+See [LICENSE](LICENSE).
