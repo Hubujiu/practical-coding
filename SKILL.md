@@ -1,6 +1,10 @@
 ---
 name: practical-coding
-description: Use for software implementation, modification, debugging, refactoring, review, architecture, dependency, and verification tasks. Routes each task to only the minimum Practical Coding modules it actually needs.
+description: Use when implementing, modifying, or refactoring code, fixing a bug, regression, error, or failed check, choosing an architecture, dependency, API, or data model, reviewing changes, or deciding how to verify a change. Also use when a task risks over-engineering, speculative abstraction, defensive bloat, unnecessary tests or documentation, or process overhead.
+license: MIT
+metadata:
+  author: Hubujiu
+  version: "1.0"
 ---
 
 # Practical Coding
@@ -15,7 +19,7 @@ Produce the smallest durable change with enough evidence to justify confidence w
 
 - Understand the requested outcome and inspect the smallest relevant code or project context before changing anything.
 - Expand context only when current evidence is insufficient.
-- Do not add capabilities, abstractions, dependencies, validation, fallbacks, retries, configuration, documentation, or tests without a concrete reason from the requirement, an actual boundary, project policy, or observed risk.
+- Every capability, abstraction, dependency, validation, fallback, retry, configuration item, document, or test you add must trace to a concrete requirement, an actual boundary, project policy, or observed risk.
 - Preserve required security, permissions, data integrity, accessibility, compatibility, and explicit project constraints.
 - Keep unrelated code and user changes untouched.
 - Treat existing code, project instructions, documentation, and Git history as evidence when useful, not as mandatory ceremony.
@@ -78,6 +82,6 @@ Review an architecture proposal without changing code
 ## Escalation
 
 - A module may load another module only when work reveals that module's trigger.
-- Do not create plans, execution documents, test suites, review stages, commits, branches, or extra artifacts merely because a generic coding workflow usually does so.
+- Create plans, execution documents, test suites, review stages, commits, branches, or other process artifacts only when the user, the project, or the task itself requires them; a generic workflow habit is not a requirement.
 - If the project or user explicitly requires one of those artifacts or gates, follow that requirement with the smallest sufficient implementation.
 - Record a durable technical decision only when the reason cannot be cheaply reconstructed from code, existing documentation, or history and is likely to matter later.

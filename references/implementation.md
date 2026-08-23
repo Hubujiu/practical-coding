@@ -13,16 +13,16 @@ Load this module when changing code or project files.
 ## Keep Code Small
 
 - Reuse existing helpers and patterns before adding new ones.
-- Remove accidental complexity exposed by the change when doing so is local and clearly safe, but do not expand the task into a cleanup project.
-- Do not create interfaces, factories, adapters, wrappers, configuration switches, extension points, or generic utilities for hypothetical future needs.
-- Do not add comments or documentation that merely restate what readable code already says.
+- Remove accidental complexity exposed by the change when doing so is local and clearly safe, but keep the task's scope; cleanup beyond the change is a separate task.
+- Create an interface, factory, adapter, wrapper, configuration switch, extension point, or generic utility only when the current task demonstrates the need for it.
+- Write comments and documentation for intent, constraints, and reasons the code cannot express; readable code carries the rest.
 
-## Avoid Defensive Bloat
+## Match Error Handling to Real Boundaries
 
-- Handle failures that are required by an actual external boundary, invariant, security rule, data-integrity requirement, or observed behavior.
-- Do not add retries, fallbacks, duplicate validation, broad exception swallowing, null guards, compatibility layers, or recovery paths solely for imagined possibilities.
-- Keep necessary validation at the narrowest authoritative boundary instead of duplicating it across layers.
-- Never remove required safety or integrity checks in the name of fewer lines.
+- Every failure path in the code corresponds to an actual external boundary, invariant, security rule, data-integrity requirement, or observed behavior.
+- A retry, fallback, broad catch, null guard, compatibility layer, or recovery path responds to a concrete, documented, or observed failure mode; name that failure mode when adding one.
+- Necessary validation lives once, at the narrowest authoritative boundary.
+- Required safety and integrity checks stay in place even when trimming code.
 
 ## Existing Tools and State
 
