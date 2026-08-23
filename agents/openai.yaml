@@ -1,6 +1,6 @@
 interface:
   display_name: "Practical Coding"
   short_description: "Lean coding rules loaded only when needed"
-  default_prompt: "Use the practical-coding skill and load only the modules this task needs."
+  default_prompt: "Use $practical-coding and load only the modules this task needs."
 policy:
   allow_implicit_invocation: true

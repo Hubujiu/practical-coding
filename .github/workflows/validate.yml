@@ -20,3 +20,6 @@ jobs:
         run: pip install "git+https://github.com/agentskills/agentskills.git#subdirectory=skills-ref"
       - name: Validate SKILL.md
         run: skills-ref validate ./practical-coding
+      - name: Check Codex default_prompt references the skill as $skill-name
+        # Codex requires interface.default_prompt to mention the skill as $skill-name.
+        run: grep -qF '$practical-coding' practical-coding/agents/openai.yaml
