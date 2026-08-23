@@ -1,14 +1,55 @@
 # Structured Codebase Memory
 
-Load this module only when structured code navigation is worth its indexing and context cost. It is an optional evidence source, not a mandatory workflow stage.
+Load this module only when structured navigation is worth its indexing and context cost. It is an optional evidence source, not a mandatory workflow stage.
 
-## Default Provider
+## Embedded Runtime
 
-The default provider is [DeusData/codebase-memory-mcp](https://github.com/DeusData/codebase-memory-mcp), an MIT-licensed local code-intelligence backend built around persistent structural indexes and graph queries.
+Practical Coding ships its own lightweight graph runtime:
 
-Practical Coding intentionally does **not** vendor the provider runtime. Reuse the installed MCP server or its one-shot CLI instead of copying its daemon, UI, parser bundle, semantic model, or storage engine into this skill.
+```text
+runtime/codebase_memory.py
+```
 
-If future changes copy or substantially adapt upstream source code, preserve the upstream MIT copyright and license notice as required by that license.
+Installing the skill installs the graph capability. Do **not** require the user to separately install `DeusData/codebase-memory-mcp`, configure an MCP server, run a WebUI, or start a daemon.
+
+The embedded runtime is intentionally narrower than upstream Codebase Memory. It keeps the parts that matter for agent navigation:
+
+- persistent SQLite graph storage;
+- file, symbol, import, and call relationships;
+- incremental refresh based on file content hashes;
+- architecture summaries;
+- symbol search;
+- inbound/outbound call tracing;
+- changed-file impact analysis;
+- read-only SQL for questions not covered by the built-ins.
+
+It deliberately omits:
+
+- MCP transport and client configuration;
+- WebUI / 3D graph visualization;
+- background daemon and watcher;
+- semantic embedding model;
+- automatic agent installation/adapters;
+- shared graph artifacts;
+- the large bundled Tree-sitter/LSP parser set.
+
+The design is inspired by [DeusData/codebase-memory-mcp](https://github.com/DeusData/codebase-memory-mcp), which is MIT-licensed. The embedded runtime is a lightweight implementation maintained inside Practical Coding rather than a vendored copy of the upstream runtime.
+
+## Runtime Requirements
+
+The runtime uses only the Python standard library: `sqlite3`, `ast`, `re`, `hashlib`, `subprocess`, and related modules.
+
+No `pip install`, network access, API key, MCP registration, database server, or background service is required.
+
+Use the Python executable already available in the coding environment:
+
+```bash
+python <skill-root>/runtime/codebase_memory.py --repo <project-root> index
+```
+
+If the environment uses `python3`, use that name instead.
+
+If Python is unavailable, do not install extra software automatically. Fall back to normal source search and direct reads.
 
 ## Activation Gate
 
@@ -23,92 +64,172 @@ Skip it when targeted source search is cheaper, including:
 
 - copy, CSS, rename, or obvious local edits;
 - a small demo or one-off script;
-- a task whose relevant files and execution path are already known;
-- situations where the index is unavailable and creating it would cost more than direct inspection.
+- a task whose relevant files and execution path are already known.
 
 ## Project Configuration
 
-Practical Coding recognizes one small project-level contract:
+Practical Coding recognizes one project-level opt-in:
 
 ```yaml
 version: 1
 codebase_memory:
   enabled: true
-  provider: codebase-memory-mcp
 ```
 
 The file lives at `.practical-coding.yaml` in the project root.
 
-Keep provider-specific settings in the provider's own configuration. Do not mirror every Codebase Memory option into Practical Coding.
-
 Behavior:
 
-- `enabled: false` — do not query, install, or index codebase memory for this project.
-- `enabled: true` — codebase memory may be used when the current task benefits from it.
-- missing config — skip silently for cheap/local work; if a graph would materially help, ask the user once whether to enable it and persist the answer only when a durable project setting is wanted.
+- `enabled: false` — do not index or query the embedded graph for this project.
+- `enabled: true` — the embedded graph may be used when the current task benefits from it.
+- missing config — skip silently for cheap/local work; if a graph would materially help, ask once whether to enable it and persist the answer only when a durable project setting is wanted.
 
-Enabling this setting is permission to **use** an available provider when useful. It is not permission to install software, start background watchers, commit graph artifacts, or make unrelated project changes.
+Do not add more graph configuration until a real project need requires it.
 
-## Provider Availability
+## Index Storage
 
-Prefer an already-configured MCP provider. If the MCP tools are unavailable but the `codebase-memory-mcp` executable is already installed, its one-shot CLI is an acceptable fallback.
+The runtime does not write the SQLite graph into the project.
 
-Do not block the coding task on Codebase Memory. If the provider is unavailable or indexing fails, fall back to ordinary source search and direct reads.
+Default cache locations:
 
-Do not automatically install the provider. Ask before installation because it is external executable software that reads the repository and may write agent configuration or local indexes.
+- Linux: `${XDG_CACHE_HOME:-~/.cache}/practical-coding/codebase-memory/`
+- macOS: `~/Library/Caches/practical-coding/codebase-memory/`
+- Windows: `%LOCALAPPDATA%\practical-coding\cache\codebase-memory\`
+
+Set `PRACTICAL_CODING_CACHE_DIR` only when the user/project has a concrete reason to override the cache root.
+
+Each repository gets a stable database name derived from its canonical path.
 
 ## Query Strategy
 
-Use the narrowest graph operation that answers the structural question.
+Use the narrowest operation that answers the structural question.
 
-| Need | Preferred provider operation |
-|---|---|
-| Check whether the project is indexed/fresh | `list_projects`, `index_status` |
-| Create or refresh the index | `index_repository` |
-| Understand packages, routes, hotspots, boundaries | `get_architecture` |
-| Find symbols/files by structural properties | `search_graph` |
-| Trace callers/callees | `trace_path` |
-| Map a Git diff to affected symbols and blast radius | `detect_changes` |
-| Read the indexed source for a known symbol | `get_code_snippet` |
-| Ask a relationship question not covered by built-ins | `get_graph_schema` then `query_graph` |
-| Grep indexed project text | `search_code` |
+### Index or refresh
 
-Use a simple two-level discipline adapted from Codebase Memory's own agent guidance:
+```bash
+python <skill-root>/runtime/codebase_memory.py --repo <project-root> index
+```
+
+The first run creates the graph. Later runs hash candidate source files and reparses only changed files, removes deleted files, then refreshes resolved call edges.
+
+Run this before structural analysis when the source may have changed.
+
+### Status
+
+```bash
+python <skill-root>/runtime/codebase_memory.py --repo <project-root> status
+```
+
+Use this to confirm the graph exists and inspect file/symbol/edge counts.
+
+### Architecture
+
+```bash
+python <skill-root>/runtime/codebase_memory.py --repo <project-root> architecture
+```
+
+Returns languages, top-level areas, and inbound-call hotspots.
+
+### Search symbols
+
+```bash
+python <skill-root>/runtime/codebase_memory.py --repo <project-root> search ProcessOrder
+```
+
+Use this before tracing when the symbol name or qualified name is uncertain.
+
+### Trace callers/callees
+
+```bash
+python <skill-root>/runtime/codebase_memory.py --repo <project-root> trace ProcessOrder --direction both --depth 3
+```
+
+Directions:
+
+- `in` — callers;
+- `out` — callees;
+- `both` — traverse both directions.
+
+If an unqualified symbol is ambiguous, the runtime returns candidates instead of silently choosing one. Re-run with a qualified name.
+
+### Impact analysis
+
+For current Git changes:
+
+```bash
+python <skill-root>/runtime/codebase_memory.py --repo <project-root> impact --git-diff
+```
+
+For explicit files:
+
+```bash
+python <skill-root>/runtime/codebase_memory.py --repo <project-root> impact --files src/order.py,src/payment.py
+```
+
+Impact combines reverse call edges with lightweight reverse-import evidence.
+
+### Read-only graph query
+
+```bash
+python <skill-root>/runtime/codebase_memory.py --repo <project-root> query \
+  "SELECT name, qualified_name FROM symbols WHERE kind='function' LIMIT 20"
+```
+
+Only `SELECT` and `WITH` queries are accepted. Do not mutate the graph with ad hoc SQL.
+
+## Parsing Model
+
+Python uses the standard-library AST and therefore has stronger symbol/import/call extraction.
+
+The embedded runtime also recognizes common source extensions for:
+
+- JavaScript / TypeScript / JSX / TSX;
+- Java / Kotlin;
+- Go;
+- Rust;
+- C / C++;
+- C#;
+- PHP;
+- Ruby;
+- Vue / Svelte;
+- Scala;
+- Swift.
+
+Those languages currently use lightweight syntax-oriented extraction rather than the upstream project's full Tree-sitter + LSP pipeline.
+
+This is intentional: the runtime is designed to be immediately available with the Skill and remain small. It is not presented as a drop-in replacement for every Codebase Memory feature.
+
+## Evidence Discipline
+
+Use a two-level discipline:
 
 ### Discovery
 
-Use a few narrow structural queries to locate likely symbols, paths, callers, packages, routes, or affected areas. Positive discovery can be provisional.
+Use the graph to cheaply locate likely symbols, callers, imports, hotspots, and affected areas.
 
-Do not turn every task into exhaustive graph analysis.
+Positive discovery may be provisional. Do not turn every task into exhaustive graph analysis.
 
 ### Verification
 
-Before making an exact or negative claim such as “nothing else calls this,” “only these files are affected,” or “this path is complete”:
+Before exact, negative, or exhaustive claims such as:
 
-- confirm the project/index identity and freshness;
-- inspect pagination or query scope rather than assuming the first result set is complete;
-- use provider coverage checks when the installed provider exposes them;
-- read the decisive source ranges directly before editing or making high-confidence claims.
+- “nothing else calls this”;
+- “only these files are affected”;
+- “this is the complete execution path”;
 
-The graph is an acceleration structure, not the final authority. Source code and current project state win when they disagree with an index.
+read the decisive source ranges directly and, when relevant, use Git/runtime/test evidence.
 
-## Index Lifecycle
+The embedded non-Python parsers are intentionally heuristic, and even exact parsers can become stale between index refreshes.
 
-Index only when the current task benefits from it and the user has consented to using Codebase Memory.
-
-Prefer explicit/on-demand indexing as the Practical Coding default. Do not enable auto-indexing or watchers merely because the provider supports them.
-
-A provider may support a shared `.codebase-memory/graph.db.zst` artifact. Treat that as a separate project decision: do not commit it unless the user or project explicitly wants a shared graph snapshot.
-
-After source changes, rely on the provider's documented incremental refresh when available, but verify freshness before impact analysis or exhaustive structural claims.
+The graph is an acceleration structure, not the final authority. Current source code wins.
 
 ## Boundaries with Other Modules
 
-Codebase Memory is independent:
+Codebase Memory remains independent:
 
 - architecture discovery can use Codebase Memory without loading Decision;
 - a local edit can use Implementation without Codebase Memory;
-- debugging can use graph traces as evidence without making the graph mandatory;
-- Verification may use graph impact information, but risk determines verification depth, not graph availability.
+- Debugging can use graph traces as evidence without making the graph mandatory;
+- Verification may use impact information, but risk determines verification depth.
 
-Do not record reconstructable graph facts as durable decision documentation. Persist only reasons and constraints that cannot be cheaply reconstructed from source, the graph, or Git history.
+Do not record reconstructable graph facts as durable decision documentation. Persist only reasons and constraints that cannot be cheaply reconstructed from source, graph, or Git history.

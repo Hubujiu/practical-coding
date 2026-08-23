@@ -1,7 +1,6 @@
-# Copy this file to the target project's root as `.practical-coding.yaml`
-# only when you want a durable project-level choice.
 version: 1
 
+# Optional project-level preference.
+# The graph runtime itself is bundled with Practical Coding.
 codebase_memory:
   enabled: true
-  provider: codebase-memory-mcp

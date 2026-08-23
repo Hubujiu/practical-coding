@@ -4,7 +4,7 @@ description: Use when implementing, modifying, or refactoring code, fixing a bug
 license: MIT
 metadata:
   author: Hubujiu
-  version: "1.1"
+  version: "1.2"
 ---
 
 # Practical Coding
@@ -22,7 +22,7 @@ Produce the smallest durable change with enough evidence to justify confidence w
 - Every capability, abstraction, dependency, validation, fallback, retry, configuration item, document, or test you add must trace to a concrete requirement, an actual boundary, project policy, or observed risk.
 - Preserve required security, permissions, data integrity, accessibility, compatibility, and explicit project constraints.
 - Keep unrelated code and user changes untouched.
-- Treat existing code, project instructions, documentation, structured codebase indexes, and Git history as evidence when useful, not as mandatory ceremony.
+- Treat existing code, project instructions, documentation, the embedded code graph, and Git history as evidence when useful, not as mandatory ceremony.
 - Obtain the cheapest fresh evidence sufficient for the change before claiming completion.
 
 ## Module Router
@@ -57,16 +57,22 @@ Read `references/verification.md` when risk, uncertainty, project gates, public 
 
 Read `references/codebase-memory.md` only when structured code navigation would materially reduce repeated source scanning: large or multi-module repositories, call-chain analysis, impact analysis, cross-service relationships, architecture discovery, or repeated multi-agent exploration.
 
-Project configuration lives in `.practical-coding.yaml` and is intentionally minimal. If it exists, respect its `codebase_memory.enabled` value.
+The graph runtime is bundled with this skill at `runtime/codebase_memory.py`. Do not require or install `codebase-memory-mcp`; MCP, WebUI, daemon, watcher, semantic model, and upstream installation machinery are not required.
+
+Project opt-in lives in `.practical-coding.yaml`:
+
+```yaml
+version: 1
+codebase_memory:
+  enabled: true
+```
 
 If no project configuration exists:
 
 - for a small project or a local edit that targeted search can handle cheaply, skip codebase memory without asking;
-- when the repository or task would materially benefit from a graph, ask once whether the user wants codebase memory enabled for this project, then persist that choice in `.practical-coding.yaml` if the user wants a durable project setting.
+- when the repository or task would materially benefit from a graph, ask once whether the user wants codebase memory enabled for this project, then persist that choice only if the user wants a durable project setting.
 
-Enabling codebase memory means it is available when useful, not that every task must query it. Never install a provider, start indexing, enable watchers, or commit a graph artifact without user consent. If the provider is unavailable, fall back to normal source search rather than blocking the coding task.
-
-The default provider is `codebase-memory-mcp`. Practical Coding does not vendor its runtime.
+Enabling codebase memory means the bundled runtime may be used when useful, not that every task must query it. Index on demand and refresh incrementally before structural claims when source may have changed. If Python is unavailable, fall back to normal source search rather than blocking the coding task.
 
 ## Routing Examples
 
@@ -99,4 +105,4 @@ Review an architecture proposal without changing code
 - A module may load another module only when work reveals that module's trigger.
 - Create plans, execution documents, test suites, review stages, commits, branches, or other process artifacts only when the user, the project, or the task itself requires them; a generic workflow habit is not a requirement.
 - If the project or user explicitly requires one of those artifacts or gates, follow that requirement with the smallest sufficient implementation.
-- Record a durable technical decision only when the reason cannot be cheaply reconstructed from code, existing documentation, structured indexes, or history and is likely to matter later.
+- Record a durable technical decision only when the reason cannot be cheaply reconstructed from code, existing documentation, the code graph, or history and is likely to matter later.

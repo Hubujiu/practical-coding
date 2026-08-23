@@ -21,5 +21,6 @@ jobs:
       - name: Validate SKILL.md
         run: skills-ref validate ./practical-coding
       - name: Check Codex default_prompt references the skill as $skill-name
-        # Codex requires interface.default_prompt to mention the skill as $skill-name.
         run: grep -qF '$practical-coding' practical-coding/agents/openai.yaml
+      - name: Test embedded Codebase Memory runtime
+        run: python practical-coding/runtime/test_codebase_memory.py
