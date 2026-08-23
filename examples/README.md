@@ -1,8 +1,8 @@
 # Examples
 
-真实任务里，装与不装 Practical Coding 的差别。每个例子都是同一个请求的两种产出。
+每个例子都是同一个请求的两种产出：典型的过度工程结果，对比 Practical Coding 引导下的结果。对照组展示的是常见的过度工程模式，而不是任何特定 agent 的必然行为。
 
-What the same request produces with and without Practical Coding.
+Each example shows two outcomes of the same request: a typical over-engineered result versus the outcome guided by Practical Coding. The baseline illustrates a common over-engineering pattern, not the guaranteed behavior of any particular agent.
 
 ---
 
@@ -10,7 +10,7 @@ What the same request produces with and without Practical Coding.
 
 **Request:** "Add a date picker to the signup form."
 
-**Without the skill:**
+**Typical over-engineered outcome:**
 
 ```text
 + package.json          (new dependency: a date-picker library)
@@ -31,7 +31,7 @@ What the same request produces with and without Practical Coding.
 
 **Request:** "Read the API base URL from the config file."
 
-**Without the skill:**
+**Typical over-engineered outcome:**
 
 ```ts
 function getApiBaseUrl(): string {
@@ -67,7 +67,7 @@ A missing or malformed config file is a startup error the operator must see, not
 
 **Request:** "Change the button text from 'Submit' to 'Save'."
 
-**Without the skill (fixed-pipeline workflow):**
+**With a fixed-pipeline workflow:**
 
 ```text
 1. Brainstorming session about button copy

@@ -84,7 +84,7 @@ Practical Coding 不是“少做工程”，而是：
 → 风险较高时再加载 Verification
 ```
 
-简单任务不会因为安装了 Practical Coding 就承担复杂任务的流程成本。更多装与不装的 before/after 对比见 [examples/](examples/README.md)。
+简单任务不会因为安装了 Practical Coding 就承担复杂任务的流程成本。更多 before/after 对比见 [examples/](examples/README.md)。
 
 ### Decision：先复用，再发明
 
