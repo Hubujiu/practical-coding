@@ -84,7 +84,7 @@ Practical Coding 不是“少做工程”，而是：
 → 风险较高时再加载 Verification
 ```
 
-简单任务不会因为安装了 Practical Coding 就承担复杂任务的流程成本。
+简单任务不会因为安装了 Practical Coding 就承担复杂任务的流程成本。更多装与不装的 before/after 对比见 [examples/](examples/README.md)。
 
 ### Decision：先复用，再发明
 
@@ -248,25 +248,43 @@ Practical Coding：任务 → Router → 当前真正需要的能力
 
 ### 安装
 
-#### Codex
+#### 一键安装
 
-```powershell
-git clone https://github.com/Hubujiu/practical-coding.git "$env:USERPROFILE\.codex\skills\practical-coding"
+[skills.sh](https://skills.sh) 的通用安装器可以交互式选择要安装到哪些 agent：
+
+```bash
+npx skills@latest add Hubujiu/practical-coding
 ```
 
-#### Cursor
+#### 手动安装（git clone）
+
+**Codex / Cursor / Copilot CLI / Gemini CLI** —— 共享的跨工具用户级路径 `~/.agents/skills/`，装一次全部生效：
+
+```bash
+# macOS / Linux
+git clone https://github.com/Hubujiu/practical-coding.git ~/.agents/skills/practical-coding
+```
 
 ```powershell
+# Windows PowerShell
 git clone https://github.com/Hubujiu/practical-coding.git "$env:USERPROFILE\.agents\skills\practical-coding"
 ```
 
-#### Claude Code
+**Claude Code** —— 用户级路径 `~/.claude/skills/`：
+
+```bash
+# macOS / Linux
+git clone https://github.com/Hubujiu/practical-coding.git ~/.claude/skills/practical-coding
+```
 
 ```powershell
+# Windows PowerShell
 git clone https://github.com/Hubujiu/practical-coding.git "$env:USERPROFILE\.claude\skills\practical-coding"
 ```
 
-其他支持 Agent Skills 的工具可以直接使用仓库中的 `SKILL.md`。
+**项目级安装** —— 把本仓库放进项目的 `.agents/skills/practical-coding`，与项目一起提交、团队共享（Cursor 也识别 `.cursor/skills/`，Claude Code 识别 `.claude/skills/`，Codex 识别 `.codex/skills/`）。
+
+其他支持 Agent Skills 的工具可以直接使用仓库中的 `SKILL.md`；自动读取 `AGENTS.md` 的工具（OpenCode、Amp、Jules 等）从仓库根目录的 `AGENTS.md` 获得同样的路由规则。
 
 ### 与其他 Skills 共存
 
@@ -281,16 +299,22 @@ Practical Coding 不替代领域能力。前端设计、Playwright、数据库�
 ```text
 practical-coding/
 ├── SKILL.md
+├── AGENTS.md
 ├── README.md
 ├── CONTRIBUTING.md
 ├── LICENSE
 ├── agents/
 │   └── openai.yaml
-└── references/
-    ├── decision.md
-    ├── implementation.md
-    ├── debugging.md
-    └── verification.md
+├── examples/
+│   └── README.md
+├── references/
+│   ├── decision.md
+│   ├── implementation.md
+│   ├── debugging.md
+│   └── verification.md
+└── .github/
+    └── workflows/
+        └── validate.yml
 ```
 
 ### 思想来源
@@ -334,7 +358,7 @@ These are independent capabilities, not mandatory stages.
 | `references/debugging.md` | An observed failure, regression, incorrect behavior, or failed verification needs diagnosis. |
 | `references/verification.md` | Risk or uncertainty makes verification strategy non-trivial. |
 
-A text or button-position change may need only Implementation plus a direct visual check. A new authentication provider may need Decision, Implementation, and Verification. A production failure may start with Debugging and load other modules only when their triggers appear.
+A text or button-position change may need only Implementation plus a direct visual check. A new authentication provider may need Decision, Implementation, and Verification. A production failure may start with Debugging and load other modules only when their triggers appear. See [examples/](examples/README.md) for before/after comparisons.
 
 ### Principles
 
@@ -357,25 +381,43 @@ Enabling codebase memory will mean “available when useful,” not “query it 
 
 ### Installation
 
-#### Codex
+#### One-command install
 
-```powershell
-git clone https://github.com/Hubujiu/practical-coding.git "$env:USERPROFILE\.codex\skills\practical-coding"
+The universal [skills.sh](https://skills.sh) installer lets you pick the agents to install into:
+
+```bash
+npx skills@latest add Hubujiu/practical-coding
 ```
 
-#### Cursor
+#### Manual install (git clone)
+
+**Codex / Cursor / Copilot CLI / Gemini CLI** — one clone into the shared cross-tool user path `~/.agents/skills/` covers all of them:
+
+```bash
+# macOS / Linux
+git clone https://github.com/Hubujiu/practical-coding.git ~/.agents/skills/practical-coding
+```
 
 ```powershell
+# Windows PowerShell
 git clone https://github.com/Hubujiu/practical-coding.git "$env:USERPROFILE\.agents\skills\practical-coding"
 ```
 
-#### Claude Code
+**Claude Code** — user-level path `~/.claude/skills/`:
+
+```bash
+# macOS / Linux
+git clone https://github.com/Hubujiu/practical-coding.git ~/.claude/skills/practical-coding
+```
 
 ```powershell
+# Windows PowerShell
 git clone https://github.com/Hubujiu/practical-coding.git "$env:USERPROFILE\.claude\skills\practical-coding"
 ```
 
-Other Agent Skills-compatible tools can use `SKILL.md` directly.
+**Project-level** — commit the repo into your project's `.agents/skills/practical-coding` to share it with the team (Cursor also reads `.cursor/skills/`, Claude Code reads `.claude/skills/`, Codex reads `.codex/skills/`).
+
+Other Agent Skills-compatible tools can use `SKILL.md` directly; tools that auto-load `AGENTS.md` (OpenCode, Amp, Jules, and others) pick up the same routing rules from the repository root `AGENTS.md`.
 
 ### Sources
 
