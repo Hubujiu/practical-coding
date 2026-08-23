@@ -139,6 +139,8 @@ python <skill-root>/runtime/codebase_memory.py --repo <project-root> trace Proce
 python <skill-root>/runtime/codebase_memory.py --repo <project-root> impact --git-diff
 ```
 
+实际执行前会解析可用的 Python 3 命令：优先 `python`，其次 `python3`，Windows 还可以使用 `py -3`。
+
 索引默认放在用户缓存目录，不污染项目工作树：
 
 | 系统 | 默认位置 |
@@ -189,7 +191,10 @@ codebase_memory:
 - 大型仓库、调用链、影响分析等明显受益时：询问一次是否为该项目启用；
 - `enabled: true` 只表示需要时可以用，不代表每次任务都索引/查询；
 - runtime 增量刷新，只重解析内容发生变化的文件；
-- Python 不可用时退回普通源码搜索，不自动安装额外依赖。
+- 已启用但找不到可用 Python 3 时：提示用户安装/启用 Python，把 `.practical-coding.yaml` 的 `codebase_memory.enabled` 改为 `false`，本次继续普通源码搜索；
+- `enabled: false` 时不重复检测/提示；用户之后准备好 Python 并希望重新启用时，再改回 `true`。
+
+不会自动安装 Python，也不会因为代码图谱不可用而阻塞普通编码任务。
 
 ## 安装
 
@@ -309,6 +314,8 @@ codebase_memory:
 ```
 
 Small/local tasks skip the graph. Large or structurally complex tasks may use it when the navigation savings justify indexing.
+
+When enabled, resolve a Python 3 command (`python`, `python3`, or Windows `py -3`) before using the runtime. If Python is unavailable, explain the requirement, persist `codebase_memory.enabled: false`, and continue with normal source search. Do not auto-install Python or repeatedly retry while the project remains disabled. Re-enable the setting after the user makes Python available and wants the graph again.
 
 ### Installation
 

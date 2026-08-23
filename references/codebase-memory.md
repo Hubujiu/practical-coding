@@ -41,15 +41,41 @@ The runtime uses only the Python standard library: `sqlite3`, `ast`, `re`, `hash
 
 No `pip install`, network access, API key, MCP registration, database server, or background service is required.
 
-Use the Python executable already available in the coding environment:
+Before invoking the graph runtime, resolve an available Python 3 command in this order where applicable:
+
+```text
+python
+python3
+py -3    # Windows launcher
+```
+
+Use whichever command successfully runs Python 3. For example:
 
 ```bash
 python <skill-root>/runtime/codebase_memory.py --repo <project-root> index
 ```
 
-If the environment uses `python3`, use that name instead.
+### Python unavailable
 
-If Python is unavailable, do not install extra software automatically. Fall back to normal source search and direct reads.
+If none of the Python commands is available or usable:
+
+1. Tell the user that the embedded Codebase Memory runtime requires Python 3 and that they can install or enable Python to use the graph.
+2. Update the project `.practical-coding.yaml` so `codebase_memory.enabled` becomes `false`. Preserve unrelated configuration in the file.
+3. If the configuration file did not yet exist because the user had just opted in, create the minimal file with `enabled: false` so the failed capability choice is persisted.
+4. Continue the current coding task with normal source search and direct reads. The missing Python environment must not block ordinary coding work.
+5. While `enabled: false`, do not keep retrying Python or repeatedly asking the user about Codebase Memory.
+
+The persisted fallback is intentionally simple:
+
+```yaml
+version: 1
+codebase_memory:
+  enabled: false
+```
+
+When the user later confirms Python is available and wants Codebase Memory again, change the setting back to `true` and create or refresh the index on demand.
+
+Do not automatically install Python. Environment installation remains a user-controlled system change.
 
 ## Activation Gate
 
@@ -80,8 +106,8 @@ The file lives at `.practical-coding.yaml` in the project root.
 
 Behavior:
 
-- `enabled: false` — do not index or query the embedded graph for this project.
-- `enabled: true` — the embedded graph may be used when the current task benefits from it.
+- `enabled: false` — do not index or query the embedded graph for this project and do not repeatedly probe Python availability.
+- `enabled: true` — the embedded graph may be used when the current task benefits from it; resolve Python before the first graph invocation.
 - missing config — skip silently for cheap/local work; if a graph would materially help, ask once whether to enable it and persist the answer only when a durable project setting is wanted.
 
 Do not add more graph configuration until a real project need requires it.

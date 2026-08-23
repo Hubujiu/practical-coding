@@ -4,7 +4,7 @@ description: Use when implementing, modifying, or refactoring code, fixing a bug
 license: MIT
 metadata:
   author: Hubujiu
-  version: "1.2"
+  version: "1.3"
 ---
 
 # Practical Coding
@@ -72,7 +72,18 @@ If no project configuration exists:
 - for a small project or a local edit that targeted search can handle cheaply, skip codebase memory without asking;
 - when the repository or task would materially benefit from a graph, ask once whether the user wants codebase memory enabled for this project, then persist that choice only if the user wants a durable project setting.
 
-Enabling codebase memory means the bundled runtime may be used when useful, not that every task must query it. Index on demand and refresh incrementally before structural claims when source may have changed. If Python is unavailable, fall back to normal source search rather than blocking the coding task.
+When codebase memory is enabled, resolve a usable Python command before invoking the runtime. Prefer `python`, then `python3`, then Windows `py -3` when available.
+
+If no usable Python 3 environment is available:
+
+- tell the user that embedded Codebase Memory requires Python 3 and that they can install or enable it to use the graph;
+- set `codebase_memory.enabled: false` in the project `.practical-coding.yaml`, preserving unrelated project configuration;
+- continue the current task with normal source search and direct reads instead of blocking;
+- do not repeatedly retry or re-prompt on later tasks while the setting remains `false`.
+
+When the user later confirms Python is available and wants the graph again, set `enabled: true` and index on demand.
+
+Enabling codebase memory means the bundled runtime may be used when useful, not that every task must query it. Index on demand and refresh incrementally before structural claims when source may have changed.
 
 ## Routing Examples
 
@@ -93,8 +104,14 @@ Fix a reported production bug
 → Verification only if the risk or fix warrants the full module
 
 Trace a request across a large monorepo with codebase memory enabled
+→ resolve Python
 → Codebase Memory for discovery
 → Implementation only if code changes are requested
+
+Codebase Memory enabled but Python unavailable
+→ explain Python requirement
+→ persist enabled: false
+→ continue with normal source search
 
 Review an architecture proposal without changing code
 → Decision only
