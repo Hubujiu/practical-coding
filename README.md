@@ -3,9 +3,9 @@
 > **一个 Skill，按需加载。**  
 > **One skill, load only what the task needs.**
 
-Practical Coding 是一个面向 Coding Agent 的轻量通用编码 Skill。它不把 Brainstorming、Planning、TDD、Debugging、Review 和 Git Workflow 串成固定流水线，而是让 `SKILL.md` 作为轻量 Router，只加载当前任务真正需要的能力。
+Practical Coding 是一个面向 Coding Agent 的轻量通用编码 Skill。它不把 Brainstorming、Planning、TDD、Debugging、Review 和 Git Workflow 串成固定流水线，而是让 `SKILL.md` 作为轻量 Router，只加载当前任务真正需要的工程能力。
 
-目标：**减少多余代码、测试、文档、防御性编程、重复源码扫描和流程成本，同时保持或提高代码质量。**
+目标：**用最小、完整、可维护的修改解决真实问题，同时减少多余代码、测试、文档、防御性编程、重复源码扫描和流程成本。**
 
 [中文](#中文) · [English](#english)
 
@@ -13,68 +13,89 @@ Practical Coding 是一个面向 Coding Agent 的轻量通用编码 Skill。它�
 
 ## 中文
 
+### 它解决什么问题
+
+很多 Coding Agent 工作流默认把“先规划 → 再实现 → 强制测试 → Review → Git 流程”全部串起来。对于大型改造，这些步骤可能有价值；但对于改一个按钮、修一处样式、定位一个明确 bug，它们会制造额外上下文、文件、测试和流程。
+
+Practical Coding 的做法相反：
+
+- 一个轻量 Router 常驻；
+- 工程能力彼此独立；
+- 只有触发条件出现时才加载对应规则；
+- 任务简单时保持简单，任务复杂时再升级。
+
 ### 架构：四个工程模块 + 一个内置代码图谱模块
 
-```text
-                         SKILL.md
-                      lightweight router
-                             │
-       ┌──────────────┬──────┼──────┬──────────────┐
-       ↓              ↓      ↓      ↓              ↓
-   Decision    Implementation Debugging Verification Codebase Memory
-                                                      optional use
-                                                      embedded runtime
+```mermaid
+flowchart TB
+    T["用户任务 / Coding task"] --> R["SKILL.md<br/>Lightweight Router"]
+
+    R -->|"存在实质技术选择"| D["Decision<br/>技术决策"]
+    R -->|"需要修改代码或项目文件"| I["Implementation<br/>实现"]
+    R -->|"已观察到失败或错误行为"| G["Debugging<br/>调试"]
+    R -->|"验证策略本身具有风险/不确定性"| V["Verification<br/>验证"]
+    R -->|"大型/复杂仓库需要结构化导航"| M["Codebase Memory<br/>代码图谱"]
+
+    D -. "工作中才发现需要" .-> I
+    I -. "出现真实失败" .-> G
+    I -. "风险升高" .-> V
+    M -. "定位关键源码后" .-> I
+
+    classDef router fill:#f6f8fa,stroke:#57606a,stroke-width:2px;
+    classDef module fill:#ffffff,stroke:#8c959f,stroke-width:1px;
+    class R router;
+    class D,I,G,V,M module;
 ```
 
-它们不是五阶段流水线。模块独立、没有固定顺序：
+> **这不是五阶段流水线。** 模块没有固定顺序，也不要求每次全部加载。
 
 | 模块 | 何时加载 |
 |---|---|
-| `references/decision.md` | 架构、依赖、API、数据模型、兼容性或多个实质方案需要选择 |
+| `references/decision.md` | 架构、依赖、API、数据模型、兼容性、新能力或多个实质方案需要选择 |
 | `references/implementation.md` | 修改代码或项目文件 |
 | `references/debugging.md` | 已观察到 bug、回归、错误行为或失败检查 |
 | `references/verification.md` | 风险/不确定性使验证策略本身成为工程问题 |
 | `references/codebase-memory.md` | 大型/多模块仓库、调用链、影响分析、架构发现、跨模块导航 |
 
-简单任务仍然可以只加载 Implementation：
+### 同一个 Skill，不同任务走不同路径
 
-```text
-“把按钮文字改成保存”
-→ Implementation
-→ diff / render
+```mermaid
+flowchart LR
+    A["把按钮文字改成保存"] --> A1["Implementation"] --> A2["Diff / Render"]
 
-“这个大型 monorepo 里谁调用 ProcessOrder？”
-→ Codebase Memory
-→ 必要时直接读取关键源码确认
+    B["新增认证提供商"] --> B1["Decision"] --> B2["Implementation"] --> B3["Verification"]
+
+    C["生产环境出现已知错误"] --> C1["Debugging"] --> C2["Implementation"] --> C3["按风险决定是否加载 Verification"]
+
+    D["大型 monorepo 中谁调用 ProcessOrder?"] --> D1["Codebase Memory"] --> D2["定位调用链"] --> D3["回到关键源码确认"]
 ```
+
+这意味着：改文案时不会被迫做架构决策；修 bug 时不会预加载一整套规划流程；大型仓库需要跨模块导航时，又可以直接启用结构化代码图谱。
 
 ### 核心原则
 
 - **Reuse before invention**：现有代码 → 标准库 → 框架原生能力 → 已安装依赖 → 调研成熟方案 → 新依赖 → 最小自研。
-- **Smallest coherent change**：最小完整修改，而不是最少字符。
+- **Smallest coherent change**：追求最小完整修改，而不是最少字符。
 - **No defensive bloat**：retry、fallback、wrapper、validation、feature flag 都需要真实边界或风险支撑。
 - **Evidence-driven debugging**：证据 → 最早错误状态 → 单一假设 → 根因 → 最小修复。
 - **Risk-proportional verification**：测试是证据，不是默认产物。
-- **Document reasons, not reconstructable facts**：记录“为什么”，不重复代码/图谱/Git 已能廉价恢复的事实。
-- **Git is evidence, not ceremony**：不强制 branch、worktree、checkpoint、PLAN.md。
+- **Document reasons, not reconstructable facts**：记录“为什么”，不重复代码、图谱或 Git 已能廉价恢复的事实。
+- **Git is evidence, not ceremony**：不强制 branch、worktree、checkpoint、`PLAN.md`。
 - **Progressive disclosure**：只有触发条件出现时才加载对应 reference。
 
 ## 内置 Codebase Memory
 
-现在安装 **Practical Coding 本身就已经包含代码图谱能力**。
+安装 **Practical Coding 本身就已经包含代码图谱能力**。
 
-不需要再安装：
+不需要额外安装：
 
-```text
-codebase-memory-mcp
-MCP Server
-WebUI
-daemon
-watcher
-semantic model
-额外数据库
-pip package
-```
+- `codebase-memory-mcp`
+- MCP Server
+- WebUI
+- daemon / watcher
+- semantic model
+- 额外数据库服务
+- pip package
 
 内置 runtime：
 
@@ -84,24 +105,36 @@ runtime/codebase_memory.py
 
 只使用 Python 标准库，核心数据存储为本地 SQLite。
 
-```text
-Source files
-    │
-    ↓
-Embedded parser
-    │
-    ├── Files
-    ├── Symbols
-    ├── Imports
-    └── Calls
-         │
-         ↓
-   SQLite graph
-         │
-   ┌─────┼───────────────┐
-   ↓     ↓               ↓
- Search Trace      Impact / Architecture
+### Codebase Memory 如何工作
+
+```mermaid
+flowchart TB
+    S["Source Files"] --> P["Embedded Parser"]
+
+    P --> F["Files"]
+    P --> SY["Symbols"]
+    P --> IM["Imports"]
+    P --> C["Calls"]
+
+    F --> DB[("SQLite Graph")]
+    SY --> DB
+    IM --> DB
+    C --> DB
+
+    DB --> SE["Search"]
+    DB --> TR["Trace"]
+    DB --> IA["Impact Analysis"]
+    DB --> AR["Architecture"]
+
+    SE --> SRC["Read decisive source code"]
+    TR --> SRC
+    IA --> SRC
+    AR --> SRC
+
+    SRC --> E["Exact / final conclusion"]
 ```
+
+核心纪律是：**Graph 用于 Discovery，源码用于 Verification。** 代码图谱帮助 Agent 更快找到“应该读哪里”，但精确、负面或穷尽式结论仍要回到源码确认。
 
 ### 为什么没有直接塞入整个 `codebase-memory-mcp`
 
@@ -113,7 +146,7 @@ Practical Coding 的代码图谱设计参考 [DeusData/codebase-memory-mcp](http
 - 增量刷新；
 - 图谱负责 Discovery、源码负责最终 Verification。
 
-但 upstream 的生产二进制把 MCP、daemon、watcher、semantic、UI、CLI 和大规模 Tree-sitter/LSP 解析体系一起链接。直接搬入会让一个轻量 Skill 变成大型运行时 fork。
+但 upstream 的生产实现把 MCP、daemon、watcher、semantic、UI、CLI 和大规模 Tree-sitter/LSP 解析体系一起链接。直接搬入会让一个轻量 Skill 变成大型运行时 fork。
 
 因此 Practical Coding 内置的是独立维护的轻量 graph runtime，而不是要求用户额外安装 upstream，也不是把整个 upstream 工程复制进来。
 
@@ -155,25 +188,43 @@ Python 使用标准库 AST。
 
 内置轻量解析同时识别：
 
-```text
-JavaScript / TypeScript / JSX / TSX
-Java / Kotlin
-Go
-Rust
-C / C++
-C#
-PHP
-Ruby
-Vue / Svelte
-Scala
-Swift
-```
+- JavaScript / TypeScript / JSX / TSX
+- Java / Kotlin
+- Go
+- Rust
+- C / C++
+- C#
+- PHP
+- Ruby
+- Vue / Svelte
+- Scala
+- Swift
 
 这些非 Python 语言目前使用轻量语法抽取，不等同于 upstream 的完整 Tree-sitter + LSP 精度。因此图谱用于加速 Discovery，精确/负面/穷尽结论仍需要回源确认。
 
-### 是否启用
+### Codebase Memory 什么时候启用
 
 Codebase Memory 是**能力内置，但项目级使用可选**。
+
+```mermaid
+flowchart TD
+    T["收到任务"] --> Q{"结构化代码图谱是否能明显减少重复源码扫描?"}
+
+    Q -->|"否：小 Demo / 文案 / CSS / rename / 已知局部修改"| S["直接使用普通源码搜索<br/>不询问、不索引"]
+
+    Q -->|"是：大型仓库 / 调用链 / 影响分析 / 架构发现"| C{"项目是否已有 .practical-coding.yaml?"}
+
+    C -->|"没有"| A["询问一次是否为该项目启用"]
+    A -->|"否"| S
+    A -->|"是"| EN["写入 enabled: true"]
+
+    C -->|"enabled: false"| S
+    C -->|"enabled: true"| PY{"可用 Python 3?"}
+    EN --> PY
+
+    PY -->|"是"| G["按需 index / incremental refresh"] --> U["使用图谱做 Discovery"] --> V["读取关键源码做 Verification"]
+    PY -->|"否"| OFF["说明 Python 3 要求<br/>写入 enabled: false"] --> S
+```
 
 项目需要长期保存选择时才创建：
 
@@ -228,6 +279,8 @@ git clone https://github.com/Hubujiu/practical-coding.git ~/.claude/skills/pract
 
 ### 项目结构
 
+> 目录树是文件结构，不是流程图，因此保留文本形式更便于复制和定位。
+
 ```text
 practical-coding/
 ├── SKILL.md
@@ -267,21 +320,51 @@ practical-coding/
 
 ## English
 
-Practical Coding is a compact general-purpose coding skill that routes each task only to the engineering capabilities it actually needs.
+Practical Coding is a compact general-purpose coding skill for coding agents. Instead of forcing every task through one fixed engineering pipeline, `SKILL.md` acts as a lightweight router and loads only the capabilities that materially help the current task.
 
-### Modules
+**Goal:** produce the smallest durable change with enough fresh evidence to justify confidence, while minimizing unnecessary code, tests, documentation, dependencies, defensive handling, process, and context usage.
 
-- **Decision** — architecture, dependency, API, data, compatibility, or material solution choices.
-- **Implementation** — code/project changes.
-- **Debugging** — observed failures and regressions.
-- **Verification** — non-trivial evidence strategy.
-- **Codebase Memory** — large-repository navigation, call chains, impact analysis, and architecture discovery.
+### Architecture
 
-These are independent capabilities, not mandatory stages.
+```mermaid
+flowchart TB
+    T["Coding task"] --> R["SKILL.md<br/>Lightweight Router"]
+
+    R -->|"material technical choice"| D["Decision"]
+    R -->|"modify code or project files"| I["Implementation"]
+    R -->|"observed failure or regression"| G["Debugging"]
+    R -->|"verification strategy is non-trivial"| V["Verification"]
+    R -->|"large / structurally complex repository"| M["Codebase Memory"]
+
+    D -. "only when discovered" .-> I
+    I -. "real failure appears" .-> G
+    I -. "risk increases" .-> V
+    M -. "after discovery" .-> I
+```
+
+These are independent capabilities, **not mandatory stages**.
+
+| Module | Load when |
+|---|---|
+| **Decision** | Architecture, dependency, API, data, compatibility, new capability, or another material solution choice is required |
+| **Implementation** | Code or project files must change |
+| **Debugging** | A failure, regression, incorrect behavior, or failed check has actually been observed |
+| **Verification** | Risk or uncertainty makes the evidence strategy itself a meaningful engineering decision |
+| **Codebase Memory** | Large-repository navigation, call chains, impact analysis, architecture discovery, or repeated cross-module exploration would materially reduce source scanning |
+
+### Routing examples
+
+```mermaid
+flowchart LR
+    A["Change button copy"] --> A1["Implementation"] --> A2["Diff / Render"]
+    B["Add an auth provider"] --> B1["Decision"] --> B2["Implementation"] --> B3["Verification"]
+    C["Fix a reported production bug"] --> C1["Debugging"] --> C2["Implementation"]
+    D["Trace ProcessOrder in a monorepo"] --> D1["Codebase Memory"] --> D2["Source verification"]
+```
 
 ### Embedded codebase graph
 
-Installing Practical Coding now installs the graph capability itself:
+Installing Practical Coding also installs the graph capability itself:
 
 ```text
 runtime/codebase_memory.py
@@ -289,7 +372,30 @@ runtime/codebase_memory.py
 
 There is no separate `codebase-memory-mcp` installation, MCP registration, WebUI, daemon, network request, API key, or pip dependency.
 
-The embedded runtime uses the Python standard library and persistent SQLite storage. It supports:
+The embedded runtime uses the Python standard library and persistent SQLite storage.
+
+```mermaid
+flowchart TB
+    S["Source files"] --> P["Embedded parser"]
+    P --> F["Files"]
+    P --> SY["Symbols"]
+    P --> IM["Imports"]
+    P --> C["Calls"]
+    F --> DB[("SQLite graph")]
+    SY --> DB
+    IM --> DB
+    C --> DB
+    DB --> SE["Search"]
+    DB --> TR["Trace"]
+    DB --> IA["Impact"]
+    DB --> AR["Architecture"]
+    SE --> V["Verify decisive source"]
+    TR --> V
+    IA --> V
+    AR --> V
+```
+
+It supports:
 
 - incremental indexing;
 - files, symbols, imports, and call relationships;
@@ -305,7 +411,7 @@ Python parsing uses the standard-library AST. Other supported languages use ligh
 
 ### Project opt-in
 
-Capability is bundled; usage remains optional:
+Capability is bundled; project-level usage remains optional:
 
 ```yaml
 version: 1
@@ -315,7 +421,7 @@ codebase_memory:
 
 Small/local tasks skip the graph. Large or structurally complex tasks may use it when the navigation savings justify indexing.
 
-When enabled, resolve a Python 3 command (`python`, `python3`, or Windows `py -3`) before using the runtime. If Python is unavailable, explain the requirement, persist `codebase_memory.enabled: false`, and continue with normal source search. Do not auto-install Python or repeatedly retry while the project remains disabled. Re-enable the setting after the user makes Python available and wants the graph again.
+When enabled, resolve a Python 3 command (`python`, `python3`, or Windows `py -3`) before using the runtime. If Python is unavailable, explain the requirement, persist `codebase_memory.enabled: false`, and continue with normal source search. Do not auto-install Python or repeatedly retry while the project remains disabled. Re-enable the setting after Python becomes available and the user wants the graph again.
 
 ### Installation
 
