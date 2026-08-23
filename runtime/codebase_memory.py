@@ -29,6 +29,9 @@ from typing import Sequence
 
 SCHEMA_VERSION = 1
 MAX_FILE_BYTES = 2 * 1024 * 1024
+MAX_QUERY_ROWS = 1000
+MAX_QUERY_BUDGET_MS = 5000
+DEFAULT_QUERY_BUDGET_MS = 1000
 IGNORED_DIRS = {
     ".git", ".hg", ".svn", ".idea", ".vscode", ".next", ".nuxt",
     ".svelte-kit", ".gradle", ".mvn", ".cache", ".venv", "venv",
@@ -435,7 +438,19 @@ def parse_file(path: Path, repo: Path) -> ParsedFile:
     return parse_generic(text, lang, rel)
 
 
-def replace_file_graph(con: sqlite3.Connection, repo: Path, path: Path, sha1: str) -> tuple[int, int, int]:
+def file_symbol_names(con: sqlite3.Connection, rel: str) -> set[str]:
+    return {
+        r["name"]
+        for r in con.execute(
+            "SELECT s.name FROM symbols s JOIN files f ON f.id=s.file_id WHERE f.path=?",
+            (rel,),
+        )
+    }
+
+
+def replace_file_graph(
+    con: sqlite3.Connection, repo: Path, path: Path, sha1: str
+) -> tuple[int, int, int, set[str]]:
     rel = path.relative_to(repo).as_posix()
     st = path.stat()
     lang = EXT_LANG[path.suffix.lower()]
@@ -472,7 +487,35 @@ def replace_file_graph(con: sqlite3.Connection, repo: Path, path: Path, sha1: st
             "INSERT INTO calls(file_id,caller_symbol_id,callee_name,line) VALUES(?,?,?,?)",
             (file_id, caller_id, callee, line),
         )
-    return len(parsed.symbols), len(parsed.imports), len(parsed.calls)
+    return (
+        len(parsed.symbols),
+        len(parsed.imports),
+        len(parsed.calls),
+        {s.name for s in parsed.symbols},
+    )
+
+
+def _resolve_call_rows(con: sqlite3.Connection, rows: Sequence[sqlite3.Row]) -> int:
+    inserted = 0
+    for r in rows:
+        targets = con.execute(
+            "SELECT id FROM symbols WHERE name=? AND file_id=?",
+            (r["callee_name"], r["file_id"]),
+        ).fetchall()
+        if not targets:
+            targets = con.execute(
+                "SELECT id FROM symbols WHERE name=? LIMIT 32", (r["callee_name"],)
+            ).fetchall()
+        for t in targets:
+            if t["id"] == r["caller_symbol_id"]:
+                continue
+            before = con.total_changes
+            con.execute(
+                "INSERT OR IGNORE INTO call_edges(caller_symbol_id,callee_symbol_id,call_id) VALUES(?,?,?)",
+                (r["caller_symbol_id"], t["id"], r["call_id"]),
+            )
+            inserted += con.total_changes - before
+    return inserted
 
 
 def rebuild_call_edges(con: sqlite3.Connection) -> int:
@@ -484,23 +527,55 @@ def rebuild_call_edges(con: sqlite3.Connection) -> int:
         WHERE c.caller_symbol_id IS NOT NULL
         """
     ).fetchall()
-    inserted = 0
-    for r in rows:
-        targets = con.execute(
-            "SELECT id FROM symbols WHERE name=? AND file_id=?",
-            (r["callee_name"], r["file_id"]),
-        ).fetchall()
-        if not targets:
-            targets = con.execute("SELECT id FROM symbols WHERE name=? LIMIT 32", (r["callee_name"],)).fetchall()
-        for t in targets:
-            if t["id"] == r["caller_symbol_id"]:
-                continue
-            con.execute(
-                "INSERT OR IGNORE INTO call_edges(caller_symbol_id,callee_symbol_id,call_id) VALUES(?,?,?)",
-                (r["caller_symbol_id"], t["id"], r["call_id"]),
+    return _resolve_call_rows(con, rows)
+
+
+def refresh_call_edges(
+    con: sqlite3.Connection,
+    changed_paths: set[str],
+    dirty_names: set[str],
+) -> tuple[int, int]:
+    """Re-resolve only calls whose caller file or target-name set may have changed."""
+    affected_call_ids: set[int] = set()
+
+    if changed_paths:
+        placeholders = ",".join("?" for _ in changed_paths)
+        affected_call_ids.update(
+            r["id"]
+            for r in con.execute(
+                f"SELECT c.id FROM calls c JOIN files f ON f.id=c.file_id "
+                f"WHERE f.path IN ({placeholders}) AND c.caller_symbol_id IS NOT NULL",
+                tuple(sorted(changed_paths)),
             )
-            inserted += 1
-    return inserted
+        )
+
+    if dirty_names:
+        placeholders = ",".join("?" for _ in dirty_names)
+        affected_call_ids.update(
+            r["id"]
+            for r in con.execute(
+                f"SELECT id FROM calls WHERE caller_symbol_id IS NOT NULL "
+                f"AND callee_name IN ({placeholders})",
+                tuple(sorted(dirty_names)),
+            )
+        )
+
+    if not affected_call_ids:
+        return 0, 0
+
+    ids = sorted(affected_call_ids)
+    placeholders = ",".join("?" for _ in ids)
+    con.execute(f"DELETE FROM call_edges WHERE call_id IN ({placeholders})", ids)
+    rows = con.execute(
+        f"""
+        SELECT c.id AS call_id, c.file_id, c.caller_symbol_id, c.callee_name
+        FROM calls c
+        WHERE c.id IN ({placeholders}) AND c.caller_symbol_id IS NOT NULL
+        ORDER BY c.id
+        """,
+        ids,
+    ).fetchall()
+    return len(rows), _resolve_call_rows(con, rows)
 
 
 def cmd_index(args: argparse.Namespace) -> int:
@@ -508,29 +583,71 @@ def cmd_index(args: argparse.Namespace) -> int:
     db = Path(args.db).resolve() if args.db else default_db(repo)
     con = connect(db)
     init_schema(con)
+
+    if args.full_rebuild:
+        # Files own every graph row through cascading foreign keys. Clearing
+        # this table gives us a simple correctness oracle without changing the
+        # schema or deleting user-selected database paths.
+        con.execute("DELETE FROM files")
+
     current = {p.relative_to(repo).as_posix(): p for p in candidate_files(repo)}
-    existing = {r["path"]: r for r in con.execute("SELECT path,sha1 FROM files").fetchall()}
+    existing = {
+        r["path"]: r
+        for r in con.execute("SELECT path,mtime_ns,size,sha1 FROM files").fetchall()
+    }
 
     removed = sorted(set(existing) - set(current))
+    dirty_names: set[str] = set()
+    changed_paths: set[str] = set()
     for rel in removed:
+        dirty_names.update(file_symbol_names(con, rel))
         con.execute("DELETE FROM files WHERE path=?", (rel,))
 
     changed = 0
     unchanged = 0
+    metadata_fast_path = 0
+    hashed_files = 0
     symbols = imports = calls = 0
     for rel, path in current.items():
-        sha1 = file_sha1(path)
         old = existing.get(rel)
+        st = path.stat()
+        if (
+            old
+            and not args.verify_hashes
+            and old["mtime_ns"] == st.st_mtime_ns
+            and old["size"] == st.st_size
+        ):
+            unchanged += 1
+            metadata_fast_path += 1
+            continue
+
+        sha1 = file_sha1(path)
+        hashed_files += 1
         if old and old["sha1"] == sha1:
+            con.execute(
+                "UPDATE files SET mtime_ns=?,size=? WHERE path=?",
+                (st.st_mtime_ns, st.st_size, rel),
+            )
             unchanged += 1
             continue
-        s, i, c = replace_file_graph(con, repo, path, sha1)
+
+        if old:
+            dirty_names.update(file_symbol_names(con, rel))
+        s, i, c, new_names = replace_file_graph(con, repo, path, sha1)
+        dirty_names.update(new_names)
+        changed_paths.add(rel)
         symbols += s
         imports += i
         calls += c
         changed += 1
 
-    edge_count = rebuild_call_edges(con)
+    if args.full_rebuild:
+        edge_calls, edge_count = 0, rebuild_call_edges(con)
+        edge_mode = "full"
+    else:
+        edge_calls, edge_count = refresh_call_edges(con, changed_paths, dirty_names)
+        edge_mode = "incremental"
+
     now = str(int(time.time()))
     con.execute("INSERT OR REPLACE INTO meta(key,value) VALUES('repo',?)", (str(repo),))
     con.execute("INSERT OR REPLACE INTO meta(key,value) VALUES('indexed_at',?)", (now,))
@@ -550,9 +667,19 @@ def cmd_index(args: argparse.Namespace) -> int:
         "changed_files": changed,
         "unchanged_files": unchanged,
         "removed_files": len(removed),
+        "metadata_fast_path_files": metadata_fast_path,
+        "hashed_files": hashed_files,
         "parsed_this_run": {"symbols": symbols, "imports": imports, "calls": calls},
-        "totals": dict(totals),
+        "edge_resolution": {
+            "mode": edge_mode,
+            "calls_rechecked": edge_calls,
+            "edges_inserted": edge_count,
+        },
+        # Preserve the old output key for callers that only need a count from
+        # this run. On incremental refresh it is the number of inserted edges,
+        # not the total graph edge count; totals.call_edges is authoritative.
         "resolved_call_edges": edge_count,
+        "totals": dict(totals),
     })
     return 0
 
@@ -563,6 +690,7 @@ def open_existing(repo: Path, db_arg: str | None) -> tuple[sqlite3.Connection, P
         raise SystemExit(f"codebase graph not indexed: {db}\nRun: python runtime/codebase_memory.py index --repo {repo}")
     con = sqlite3.connect(f"file:{db}?mode=ro", uri=True)
     con.row_factory = sqlite3.Row
+    con.execute("PRAGMA query_only=ON")
     if stored_schema_version(con) != str(SCHEMA_VERSION):
         raise SystemExit(
             f"codebase graph schema is outdated: {db}\n"
@@ -829,8 +957,24 @@ def cmd_query(args: argparse.Namespace) -> int:
     sql = args.sql.strip()
     if not re.match(r"^(SELECT|WITH)\b", sql, re.I):
         raise SystemExit("query is read-only: SQL must start with SELECT or WITH")
-    rows = [dict(r) for r in con.execute(sql).fetchmany(args.limit)]
-    _json({"rows": rows})
+
+    limit = max(1, min(args.limit, MAX_QUERY_ROWS))
+    budget_ms = max(1, min(args.budget_ms, MAX_QUERY_BUDGET_MS))
+    deadline = time.monotonic() + budget_ms / 1000.0
+
+    def query_budget_exceeded() -> int:
+        return 1 if time.monotonic() >= deadline else 0
+
+    con.set_progress_handler(query_budget_exceeded, 1000)
+    try:
+        rows = [dict(r) for r in con.execute(sql).fetchmany(limit)]
+    except sqlite3.OperationalError as exc:
+        if "interrupted" in str(exc).lower():
+            raise SystemExit(f"query exceeded {budget_ms} ms execution budget") from None
+        raise
+    finally:
+        con.set_progress_handler(None, 0)
+    _json({"rows": rows, "limit": limit, "budget_ms": budget_ms})
     return 0
 
 
@@ -841,6 +985,16 @@ def build_parser() -> argparse.ArgumentParser:
     sub = p.add_subparsers(dest="command", required=True)
 
     x = sub.add_parser("index", help="create or incrementally refresh the graph")
+    x.add_argument(
+        "--verify-hashes",
+        action="store_true",
+        help="hash every candidate file instead of trusting unchanged mtime/size metadata",
+    )
+    x.add_argument(
+        "--full-rebuild",
+        action="store_true",
+        help="discard graph rows and rebuild from source as a correctness oracle",
+    )
     x.set_defaults(func=cmd_index)
 
     x = sub.add_parser("status", help="show graph status and counts")
@@ -869,9 +1023,15 @@ def build_parser() -> argparse.ArgumentParser:
     x.add_argument("--limit", type=int, default=200)
     x.set_defaults(func=cmd_impact)
 
-    x = sub.add_parser("query", help="run read-only SQLite SELECT/WITH against the graph")
+    x = sub.add_parser("query", help="run bounded read-only SQLite SELECT/WITH against the graph")
     x.add_argument("sql")
     x.add_argument("--limit", type=int, default=200)
+    x.add_argument(
+        "--budget-ms",
+        type=int,
+        default=DEFAULT_QUERY_BUDGET_MS,
+        help=f"wall-clock execution budget, clamped to {MAX_QUERY_BUDGET_MS} ms",
+    )
     x.set_defaults(func=cmd_query)
     return p
 
