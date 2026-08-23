@@ -106,7 +106,10 @@ class Symbol:
 class ParsedFile:
     symbols: list[Symbol]
     imports: list[tuple[str, int]]
-    calls: list[tuple[str | None, str, int]]
+    # (index into symbols of the enclosing definition, or None for module
+    # level, callee name, line). Binding callers by index instead of by name
+    # keeps attribution exact even when a file has same-named definitions.
+    calls: list[tuple[int | None, str, int]]
 
 
 def _json(obj: object) -> None:
@@ -145,7 +148,29 @@ def connect(db: Path) -> sqlite3.Connection:
     return con
 
 
+def stored_schema_version(con: sqlite3.Connection) -> str | None:
+    try:
+        row = con.execute("SELECT value FROM meta WHERE key='schema_version'").fetchone()
+    except sqlite3.DatabaseError:
+        return None
+    return row["value"] if row else None
+
+
 def init_schema(con: sqlite3.Connection) -> None:
+    has_meta = con.execute(
+        "SELECT name FROM sqlite_master WHERE type='table' AND name='meta'"
+    ).fetchone()
+    if has_meta and stored_schema_version(con) != str(SCHEMA_VERSION):
+        con.executescript(
+            """
+            DROP TABLE IF EXISTS call_edges;
+            DROP TABLE IF EXISTS calls;
+            DROP TABLE IF EXISTS imports;
+            DROP TABLE IF EXISTS symbols;
+            DROP TABLE IF EXISTS files;
+            DROP TABLE IF EXISTS meta;
+            """
+        )
     con.executescript(
         """
         CREATE TABLE IF NOT EXISTS meta(
@@ -246,8 +271,9 @@ class PythonParser(ast.NodeVisitor):
         self.rel_path = rel_path
         self.symbols: list[Symbol] = []
         self.imports: list[tuple[str, int]] = []
-        self.calls: list[tuple[str | None, str, int]] = []
+        self.calls: list[tuple[int | None, str, int]] = []
         self.stack: list[str] = []
+        self.scope_indices: list[int] = []
 
     def _qualified(self, name: str) -> str:
         return ".".join([self.rel_path.replace("/", "."), *self.stack, name])
@@ -262,19 +288,20 @@ class PythonParser(ast.NodeVisitor):
         self.imports.append((target, node.lineno))
         self.generic_visit(node)
 
-    def visit_ClassDef(self, node: ast.ClassDef) -> None:
-        q = self._qualified(node.name)
-        self.symbols.append(Symbol(node.name, q, "class", node.lineno, getattr(node, "end_lineno", None)))
-        self.stack.append(node.name)
+    def _visit_scope(self, node: ast.AST, name: str, kind: str) -> None:
+        q = self._qualified(name)
+        self.symbols.append(Symbol(name, q, kind, node.lineno, getattr(node, "end_lineno", None)))
+        self.stack.append(name)
+        self.scope_indices.append(len(self.symbols) - 1)
         self.generic_visit(node)
+        self.scope_indices.pop()
         self.stack.pop()
 
+    def visit_ClassDef(self, node: ast.ClassDef) -> None:
+        self._visit_scope(node, node.name, "class")
+
     def _visit_func(self, node: ast.AST, name: str) -> None:
-        q = self._qualified(name)
-        self.symbols.append(Symbol(name, q, "function", node.lineno, getattr(node, "end_lineno", None)))
-        self.stack.append(name)
-        self.generic_visit(node)
-        self.stack.pop()
+        self._visit_scope(node, name, "function")
 
     def visit_FunctionDef(self, node: ast.FunctionDef) -> None:
         self._visit_func(node, node.name)
@@ -285,7 +312,7 @@ class PythonParser(ast.NodeVisitor):
     def visit_Call(self, node: ast.Call) -> None:
         name = call_name(node.func)
         if name:
-            caller = self.stack[-1] if self.stack else None
+            caller = self.scope_indices[-1] if self.scope_indices else None
             self.calls.append((caller, name, getattr(node, "lineno", 0)))
         self.generic_visit(node)
 
@@ -311,9 +338,23 @@ def parse_python(text: str, rel_path: str) -> ParsedFile:
 def parse_generic(text: str, lang: str, rel_path: str) -> ParsedFile:
     symbols: list[Symbol] = []
     imports: list[tuple[str, int]] = []
-    calls: list[tuple[str | None, str, int]] = []
-    current_symbol: str | None = None
+    calls: list[tuple[int | None, str, int]] = []
+    module = rel_path.replace("/", ".")
     patterns = GENERIC_FUNC_PATTERNS.get(lang, [])
+    # Brace scopes are bound to the actual "{" that opens each definition, so
+    # single-line bodies close on the same line and Allman-style braces on the
+    # following line still open the right scope. Braces inside strings or
+    # comments are not understood; this stays a heuristic parser. Ruby uses
+    # def/end blocks and keeps the flat "latest definition" behavior.
+    track_braces = lang != "ruby"
+    # Open blocks: (index into symbols, depth its opening brace created).
+    scope: list[tuple[int, int]] = []
+    # Definition seen but its "{" not yet: (index into symbols, depth at the
+    # definition). The next "{" opens its scope; a ";" at the same depth or a
+    # block ending below it cancels it (forward declarations, braceless
+    # arrow-function bodies).
+    pending: tuple[int, int] | None = None
+    depth = 0
     for lineno, line in enumerate(text.splitlines(), 1):
         for pat in IMPORT_PATTERNS:
             m = pat.search(line)
@@ -321,30 +362,64 @@ def parse_generic(text: str, lang: str, rel_path: str) -> ParsedFile:
                 imports.append((m.group(1).strip(), lineno))
                 break
 
-        found = False
+        defined: str | None = None
+        kind = "function"
         for pat in patterns:
             m = pat.search(line)
             if m:
-                name = m.group(1)
-                symbols.append(Symbol(name, f"{rel_path.replace('/', '.')}.{name}", "function", lineno))
-                current_symbol = name
-                found = True
+                defined = m.group(1)
                 break
-        if not found:
+        if defined is None:
             for pat in CLASS_PATTERNS:
                 m = pat.search(line)
                 if m:
-                    name = m.group(1)
-                    symbols.append(Symbol(name, f"{rel_path.replace('/', '.')}.{name}", "type", lineno))
+                    defined = m.group(1)
+                    kind = "type"
                     break
+        if defined is not None:
+            prefix = [symbols[i].name for i, _ in scope] if track_braces else []
+            symbols.append(Symbol(defined, ".".join([module, *prefix, defined]), kind, lineno))
+            if track_braces:
+                pending = (len(symbols) - 1, depth)
+            elif kind == "function":
+                scope[:] = [(len(symbols) - 1, 0)]
 
-        for m in CALL_RE.finditer(line):
-            name = m.group(1)
-            if name in CALL_STOPWORDS:
-                continue
-            if found and any(s.name == name and s.line == lineno for s in symbols[-1:]):
-                continue
-            calls.append((current_symbol, name, lineno))
+        events: list[tuple[int, str, str | None]] = [
+            (m.start(), "call", m.group(1)) for m in CALL_RE.finditer(line)
+        ]
+        if track_braces:
+            events.extend((i, ch, None) for i, ch in enumerate(line) if ch in "{};")
+            events.sort(key=lambda e: e[0])
+
+        def_token_skipped = defined is None
+        for _, event, payload in events:
+            if event == "call":
+                name = payload
+                if name in CALL_STOPWORDS:
+                    continue
+                if not def_token_skipped and name == defined:
+                    def_token_skipped = True
+                    continue
+                if pending is not None:
+                    caller = pending[0]
+                elif scope:
+                    caller = scope[-1][0]
+                else:
+                    caller = None
+                calls.append((caller, name, lineno))
+            elif event == "{":
+                depth += 1
+                if pending is not None:
+                    scope.append((pending[0], depth))
+                    pending = None
+            elif event == "}":
+                depth -= 1
+                while scope and depth < scope[-1][1]:
+                    scope.pop()
+                if pending is not None and depth < pending[1]:
+                    pending = None
+            elif pending is not None and depth <= pending[1]:  # ";"
+                pending = None
     return ParsedFile(symbols, imports, calls)
 
 
@@ -382,19 +457,17 @@ def replace_file_graph(con: sqlite3.Connection, repo: Path, path: Path, sha1: st
         file_id = cur.lastrowid
 
     parsed = parse_file(path, repo)
-    symbol_ids_by_name: dict[str, list[int]] = {}
+    symbol_rowids: list[int] = []
     for s in parsed.symbols:
         cur = con.execute(
             "INSERT INTO symbols(file_id,name,qualified_name,kind,line,end_line) VALUES(?,?,?,?,?,?)",
             (file_id, s.name, s.qualified, s.kind, s.line, s.end_line),
         )
-        symbol_ids_by_name.setdefault(s.name, []).append(cur.lastrowid)
+        symbol_rowids.append(cur.lastrowid)
     for target, line in parsed.imports:
         con.execute("INSERT INTO imports(file_id,target,line) VALUES(?,?,?)", (file_id, target, line))
-    for caller_name, callee, line in parsed.calls:
-        caller_id = None
-        if caller_name and caller_name in symbol_ids_by_name:
-            caller_id = symbol_ids_by_name[caller_name][-1]
+    for caller_idx, callee, line in parsed.calls:
+        caller_id = symbol_rowids[caller_idx] if caller_idx is not None else None
         con.execute(
             "INSERT INTO calls(file_id,caller_symbol_id,callee_name,line) VALUES(?,?,?,?)",
             (file_id, caller_id, callee, line),
@@ -470,6 +543,7 @@ def cmd_index(args: argparse.Namespace) -> int:
         "(SELECT count(*) FROM calls) calls,"
         "(SELECT count(*) FROM call_edges) call_edges"
     ).fetchone()
+    con.close()
     _json({
         "status": "indexed",
         "database": str(db),
@@ -489,6 +563,11 @@ def open_existing(repo: Path, db_arg: str | None) -> tuple[sqlite3.Connection, P
         raise SystemExit(f"codebase graph not indexed: {db}\nRun: python runtime/codebase_memory.py index --repo {repo}")
     con = sqlite3.connect(f"file:{db}?mode=ro", uri=True)
     con.row_factory = sqlite3.Row
+    if stored_schema_version(con) != str(SCHEMA_VERSION):
+        raise SystemExit(
+            f"codebase graph schema is outdated: {db}\n"
+            f"Run: python runtime/codebase_memory.py index --repo {repo}"
+        )
     return con, db
 
 
@@ -652,12 +731,31 @@ def git_changed_files(repo: Path) -> list[str]:
         if not entry:
             continue
         text = entry.decode("utf-8", "replace")
-        path = text[3:]
+        # Porcelain v1 -z renames/copies emit "XY new-path\0orig-path\0".
+        # Keep both: the new path exists in the refreshed graph, the original
+        # path still matters for stale imports of the old module name.
+        paths = [text[3:]]
         if text[:2].strip()[:1] in {"R", "C"} and i < len(parts) and parts[i]:
-            path = parts[i].decode("utf-8", "replace")
+            paths.append(parts[i].decode("utf-8", "replace"))
             i += 1
-        out.append(path.replace("\\", "/"))
+        out.extend(p.replace("\\", "/") for p in paths)
     return sorted(set(out))
+
+
+def _like_escape(value: str) -> str:
+    return value.replace("\\", "\\\\").replace("%", r"\%").replace("_", r"\_")
+
+
+def _module_import_filter(module: str) -> tuple[str, list[str]]:
+    """Match import targets on module boundaries ('.', '/') instead of substrings."""
+    esc = _like_escape(module)
+    patterns = [
+        f"{esc}.%", f"{esc}/%",
+        f"%.{esc}", f"%/{esc}",
+        f"%.{esc}.%", f"%/{esc}/%", f"%/{esc}.%",
+    ]
+    clause = " OR ".join(["i.target = ?"] + ["i.target LIKE ? ESCAPE '\\'"] * len(patterns))
+    return f"({clause})", [module, *patterns]
 
 
 def cmd_impact(args: argparse.Namespace) -> int:
@@ -698,14 +796,15 @@ def cmd_impact(args: argparse.Namespace) -> int:
     modules = {Path(p).stem for p in changed}
     modules |= {Path(p).with_suffix("").as_posix().replace("/", ".") for p in changed}
     import_hits = []
-    for m in modules:
+    for m in sorted(modules):
+        clause, params = _module_import_filter(m)
         import_hits.extend(dict(r) for r in con.execute(
-            """
+            f"""
             SELECT DISTINCT f.path,i.line,i.target,'import' reason
             FROM imports i JOIN files f ON f.id=i.file_id
-            WHERE i.target LIKE ?
+            WHERE {clause}
             LIMIT ?
-            """, (f"%{m}%", args.limit)
+            """, (*params, args.limit)
         ))
     combined = affected + import_hits
     seen = set()
