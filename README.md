@@ -3,63 +3,92 @@
 > **一个 Skill，按需加载。**  
 > **One skill, load only what the task needs.**
 
-Practical Coding 是一个面向 Coding Agent 的轻量工程方法。目标不是让 Agent 少思考，而是让它减少无收益的工程工作：**更少代码、更少测试、更少文档、更少防御性编程、更少流程，同时用与风险匹配的证据提高交付质量。**
+Practical Coding 是一个面向 Coding Agent 的轻量通用编码 Skill。它不把 Brainstorming、Planning、TDD、Debugging、Review 和 Git Workflow 串成固定流水线，而是让主 `SKILL.md` 作为轻量 Router，只在任务真正需要时读取对应模块。
 
-它不把 Brainstorming、Planning、TDD、Debugging、Review、Git Workflow 强制串成固定流水线。主 `SKILL.md` 只负责最小规则和路由，真正的规则按任务需要从 `references/` 加载。
+目标很直接：**减少多余代码、测试、文档、防御性编程和流程成本，同时保持或提高代码质量。**
 
 [中文](#中文) · [English](#english)
 
+---
+
 ## 中文
 
-### 核心思想
+### 它是什么
+
+Practical Coding 不是“少做工程”，而是：
 
 ```text
-理解当前需求
-→ 只加载当前任务需要的模块
-→ 用最小上下文完成最小且持久的修改
-→ 用最低成本的充分证据验证结果
+理解当前任务
+→ 判断真正需要哪些工程能力
+→ 只加载对应模块
+→ 用最小相关上下文完成最小且持久的修改
+→ 用最低成本的充分证据确认结果
 ```
 
-Practical Coding 默认反对以下无明确收益的工作：
+它默认反对没有明确收益的工程工作：
 
-- 为假想未来需求增加抽象、配置和扩展点；
+- 为假想未来需求增加抽象、配置、扩展点和兼容层；
 - 为简单能力重复造轮子；
-- 为每次修改机械新增测试；
-- 把能从代码或 Git 重建的事实重复写成文档；
-- 为未观察到的失败增加大量 fallback、retry、guard 和重复校验；
-- 因为“标准流程如此”就强制写计划、开分支、提交 checkpoint 或多轮 Review。
+- 每改一个功能就机械新增测试；
+- 把代码或 Git 能廉价重建的事实重复写成文档；
+- 为从未观察到的失败增加大量 retry、fallback、guard、宽泛 catch 和重复校验；
+- 仅因为“标准流程如此”就强制写计划、建分支、提交 checkpoint 或多轮 Review。
 
-必要的安全、权限、数据完整性、兼容性和项目门禁不属于“多余工作”，不能以精简为理由移除。
+但必要的安全、权限、数据完整性、兼容性、项目门禁和真实外部边界不属于“多余工作”，不能以精简为理由移除。
 
-### 按需模块
+### 架构：一个入口，四个独立模块
 
-| 模块 | 什么时候加载 | 什么时候不加载 |
+```text
+                       SKILL.md
+                    lightweight router
+                           │
+          ┌────────────────┼────────────────┐
+          │                │                │
+          ↓                ↓                ↓
+      Decision       Implementation      Debugging
+          │                │                │
+          └────────────────┼────────────────┘
+                           │
+                     Verification
+                    only when needed
+```
+
+这不是四阶段流水线。模块之间**不强制耦合，也没有固定顺序**：一个任务可以只加载一个模块，也可以在执行过程中因为出现新的条件再加载另一个。
+
+| 模块 | 加载条件 | 通常不需要加载的情况 |
 |---|---|---|
-| `decision.md` | 新能力、架构、依赖、API、数据模型、兼容性或存在多个实质方案 | 改文案、移动按钮、简单 CSS、rename、机械修改 |
-| `implementation.md` | 需要修改代码或项目文件 | 纯讨论或只读架构分析 |
-| `debugging.md` | 已观察到 bug、回归、错误行为或验证失败 | 正常实现，不主动找 bug |
-| `verification.md` | 风险或不确定性使“怎么验证”本身成为一个问题 | trivial 修改直接 diff/render/compile 即可 |
+| `references/decision.md` | 新能力、架构、依赖、API、数据模型、兼容性，或存在多个会实质影响结果的方案 | 改文案、移动按钮、简单 CSS、rename、机械修改 |
+| `references/implementation.md` | 需要修改代码或项目文件 | 纯讨论、只读分析 |
+| `references/debugging.md` | 已观察到 bug、回归、错误行为或验证失败 | 正常实现；不会主动扩大成 bug hunting |
+| `references/verification.md` | 风险或不确定性使“如何验证”本身成为工程问题 | trivial 修改可以直接通过 diff、render、compile 等确认 |
 
-这些模块**不是四个阶段**，也没有固定顺序。任务可以只加载一个，也可以在执行过程中发现新的触发条件后再加载另一个。
-
-例如：
+### 典型任务
 
 ```text
 “把按钮文字改成保存”
-→ implementation
+→ Implementation
 → 看 diff / 页面
 
-“把登录系统接入新的 OAuth Provider”
-→ decision + implementation + verification
+“把这个按钮移动到右侧”
+→ Implementation
+→ 页面检查
+
+“给 Spring 项目接入新的 OAuth Provider”
+→ Decision
+→ Implementation
+→ Verification
 
 “这个接口线上返回 500”
-→ debugging + implementation
-→ 只有风险需要时才加载 verification
+→ Debugging
+→ 找到根因后加载 Implementation
+→ 风险较高时再加载 Verification
 ```
 
-### 决策：先复用，再发明
+简单任务不会因为安装了 Practical Coding 就承担复杂任务的流程成本。
 
-需要技术决策时采用以下优先级：
+### Decision：先复用，再发明
+
+只有出现真实技术决策时才加载 Decision。默认方案优先级：
 
 ```text
 现有代码
@@ -71,111 +100,282 @@ Practical Coding 默认反对以下无明确收益的工作：
 → 最小自研
 ```
 
-增加依赖或实现非简单能力前先查官方资料、成熟库、维护中的实现和可信工程讨论；简单本地修改不为了流程去做无意义调研。
+增加依赖或实现非简单能力前，优先查看官方资料、成熟实现、维护中的项目和可信工程讨论，而不是复制第一个搜索结果，也不是无依据自研。
 
-### 实现：减少代码，也减少防御性代码
+同时避免：
 
-Practical Coding 追求最小 coherent diff，而不是最少字符。真实外部边界、安全规则、权限、数据完整性和已观察到的失败必须正确处理；但不会因为“也许未来会失败”就默认增加 retry、fallback、重复校验、兼容层、宽泛 catch、null guard 或多层包装。
+- speculative abstraction；
+- 没有当前需求支撑的 future-proofing；
+- 临时架构以后再“重写”的承诺；
+- 为了代码看起来更“高级”而增加层级和间接性。
 
-### Debug：证据 → 根因 → 最小修复
+### Implementation：最小 coherent change
 
-只有出现实际故障才加载 Debugging：先复现或收集证据，沿真实执行路径找到最早错误状态，一次验证一个假设，修复根因并确认原症状消失。Debug 不自动触发新增测试，也不会扩大成全仓库 bug hunting。
+Practical Coding 追求的不是最少字符，而是**最小完整修改**：
+
+- 从最小相关上下文开始，只在证据不足时扩大读取范围；
+- 优先修改现有代码，不创建平行实现；
+- 不顺手重构无关区域；
+- 不增加当前需求不需要的配置、wrapper、adapter 或扩展点；
+- 保持项目已有 API、数据格式和明确兼容约束，除非当前任务要求改变它们。
+
+#### 减少防御性编程
+
+真实边界和不变量必须正确处理，但不会因为“也许会出问题”就默认加入：
+
+```text
+retry
+fallback
+重复 validation
+宽泛 catch
+null guard everywhere
+兼容层
+多层 wrapper
+额外 feature flag
+```
+
+防御代码需要对应真实风险、真实边界、已有失败或明确契约，而不是想象中的可能性。
+
+### Debugging：证据 → 根因 → 最小修复
+
+Debugging 只在真实故障出现时加载：
+
+```text
+复现或收集证据
+→ 沿真实执行路径向前/向后追踪
+→ 找到最早错误状态
+→ 一次验证一个假设
+→ 修复根因
+→ 确认原始症状消失
+→ 移除临时诊断代码
+```
+
+不会因为进入 Debug 就自动生成测试，也不会把一个已知问题扩展成全仓库主动找 bug。
 
 ### Verification：测试是证据，不是默认产物
 
-低风险修改通常只需要 diff、页面渲染、编译、类型检查或已有定向测试。支付、权限、并发、数据迁移、公共 API、跨服务集成等高风险修改才需要更强证据，并可能值得增加最小且有长期价值的自动化测试。
-
-核心规则是：
+核心规则：
 
 > **Risk → cheapest sufficient evidence.**
 
-不因为“完成前必须测试”就机械运行完整测试套件，也不因为“不默认写测试”就跳过必要验证。
+不同修改需要不同证据：
+
+| 修改 | 可能足够的证据 |
+|---|---|
+| 文案、CSS、小型 UI 调整 | diff / render / visual inspection |
+| 小型类型或配置修改 | compile / type check / targeted command |
+| 普通业务逻辑 | targeted behavior check / existing tests |
+| 权限、支付、并发、迁移、公共 API、跨服务集成 | 更强的定向验证，必要时增加最小且长期有价值的自动化测试 |
+
+Practical Coding 不默认新增测试，也不机械执行全部测试；但没有与风险匹配的新证据时，也不会宣称任务已经完成。
 
 ### Git 和文档
 
-Git 是证据源，不是前置条件。存在 Git 时可以用 diff、log、blame 理解修改与历史；没有 Git 仍然可以完成普通编码任务。除非用户或项目要求，否则 Practical Coding 不强制创建仓库、分支、commit、execution document 或 checkpoint。
+#### Git 是证据源，不是门槛
 
-文档同理：只记录代码本身无法廉价重建、未来又很可能被重新讨论的重要技术决策。文件位置、调用关系、改了哪些文件、任务进度等事实不重复写文档。
+有 Git 时，`diff`、`log`、`blame` 和历史决策可以帮助理解项目；没有 Git 时仍然可以执行普通编码任务。
 
-### Structured Codebase Memory
+除非用户或项目明确要求，否则不强制：
 
-结构化代码图谱是计划中的**可选扩展**，本版本不包含 Codebase Memory，也不会自动安装或初始化代码图谱。
+```text
+初始化 Git
+创建 branch
+创建 worktree
+固定 checkpoint commit
+execution document
+PR / review 流程
+```
 
-后续接入时仍遵循同一个原则：小型 Demo 默认不承担索引和上下文成本；大型生产项目、多模块项目或频繁做影响分析的代码库可以开启，以结构化查询减少反复扫描源码的 Token 成本。Codebase Memory 会作为可选能力接入，而不是让所有任务强制依赖它。
+#### 文档记录“原因”，不是重复事实
 
-### 为什么不采用 Superpowers 式固定流程
+不要记录可以廉价重建的信息：
 
-Superpowers 的优势是流程完整和强约束，但它会把 brainstorming、planning、TDD、review 等流程技能按规则串联。Practical Coding 选择另一条路线：保留这些工程问题背后的必要原则，但把它们拆成条件模块，只在当前任务真正需要时加载。
+```text
+某个类在哪里
+谁调用某个方法
+这次改了哪些文件
+当前任务完成了几步
+```
 
-这种结构也符合 Agent Skills 的 progressive disclosure：主 Skill 保持短小，条件性规则放入独立 reference，并由明确触发条件决定是否读取。
+这些信息通常可以从代码、AST、搜索或 Git 获得。
+
+真正值得持久记录的是代码本身表达不了、以后很可能再次影响决策的信息，例如：
+
+```text
+为什么这里不能改成 async
+为什么选择 Redis 而不是数据库锁
+为什么一个看似多余的 workaround 不能删除
+为什么某个兼容约束必须继续保留
+```
+
+### Structured Codebase Memory：未来的可选能力
+
+当前版本**没有合并 Codebase Memory，也不会自动安装、索引或创建代码图谱**。
+
+这是有意的：
+
+```text
+小型 Demo / 一次性脚本
+→ 直接搜索代码通常更便宜
+
+大型生产项目 / 多模块 / 微服务 / 多 Agent 协作
+→ 结构化代码图谱可能减少重复扫描源码和上下文 Token
+```
+
+未来接入时，Codebase Memory 会继续遵循按需原则：
+
+- 项目级可选，而不是安装 Skill 后全局强制开启；
+- 首次初始化时由用户决定是否启用；
+- 启用只代表“可以使用”，不代表每个任务都查询；
+- 小修改仍然可以完全绕过代码图谱；
+- 大型改动、调用链分析、影响分析和跨模块理解时才优先使用。
+
+在真正接入 provider/indexer 之前，项目不会提前加入没有实际行为的配置项。
+
+### 为什么不是 Superpowers 式固定流程
+
+Practical Coding 会参考 Brainstorming、Planning、Debugging、Testing、Review 等成熟工程方法，但不会因为这些能力有价值就让所有任务依次执行全部流程。
+
+区别在于：
+
+```text
+固定流程：任务 → A → B → C → D → E
+
+Practical Coding：任务 → Router → 当前真正需要的能力
+```
+
+这也是 Agent Skills progressive disclosure 的核心思路：主 Skill 保持短小，条件性知识放入独立 reference，并明确什么时候才读取。
 
 ### 安装
 
-Codex：
+#### Codex
 
 ```powershell
 git clone https://github.com/Hubujiu/practical-coding.git "$env:USERPROFILE\.codex\skills\practical-coding"
 ```
 
-Cursor：
+#### Cursor
 
 ```powershell
 git clone https://github.com/Hubujiu/practical-coding.git "$env:USERPROFILE\.agents\skills\practical-coding"
 ```
 
-Claude Code：
+#### Claude Code
 
 ```powershell
 git clone https://github.com/Hubujiu/practical-coding.git "$env:USERPROFILE\.claude\skills\practical-coding"
 ```
 
-支持 Agent Skills 标准的其他工具可以直接使用仓库中的 `SKILL.md`。
+其他支持 Agent Skills 的工具可以直接使用仓库中的 `SKILL.md`。
 
 ### 与其他 Skills 共存
 
-不需要为了安装 Practical Coding 删除领域 Skill，例如前端设计、Playwright、PDF、文档、图像、数据库或平台专用 Skill。
+Practical Coding 不替代领域能力。前端设计、Playwright、数据库、平台文档、图像、PDF、部署、安全专项检查等 Skill 可以继续保留。
 
-需要避免的是**同一个任务同时自动运行多套通用编码流程**。如果已有 Skill 强制所有任务执行 brainstorming、完整计划、TDD、多轮 review 或固定 Git 流程，应将其中冲突的自动流程关闭或改为手动调用。
+真正需要避免的是：**同一个编码任务自动套入多套相互重叠的通用流程。**
+
+如果已有 Skill 强制所有任务执行 Brainstorming、完整 Planning、TDD、多轮 Review 或固定 Git 流程，建议关闭其中冲突的自动触发，或保留为显式手动调用。
+
+### 项目结构
+
+```text
+practical-coding/
+├── SKILL.md
+├── README.md
+├── CONTRIBUTING.md
+├── LICENSE
+├── agents/
+│   └── openai.yaml
+└── references/
+    ├── decision.md
+    ├── implementation.md
+    ├── debugging.md
+    └── verification.md
+```
 
 ### 思想来源
 
 - [Ponytail](https://github.com/DietrichGebert/ponytail)：YAGNI、reuse-first、stdlib/native-first 和极小实现。
-- [Matt Pocock / skills](https://github.com/mattpocock/skills)：面向 Agent 写作与 progressive disclosure 的结构原则。
-- [Superpowers](https://github.com/obra/superpowers)：完整工程工作流的参考，以及 Practical Coding 有意避免的强制流程耦合。
-- [Agent Skills specification](https://agentskills.io/specification)：Skill 目录结构与 progressive disclosure。
+- [Matt Pocock / skills](https://github.com/mattpocock/skills)：面向 Agent 写作和 progressive disclosure。
+- [Superpowers](https://github.com/obra/superpowers)：完整 Coding Workflow 的参考，以及 Practical Coding 有意避免的强制流程耦合。
+- [Agent Skills specification](https://agentskills.io/specification)：Skill 结构与 progressive disclosure。
 
 ---
 
 ## English
 
-Practical Coding is one compact coding skill with independently loadable modules. It aims for **less code, fewer low-value tests, less redundant documentation, less defensive bloat, and less process while preserving enough evidence to justify confidence.**
+Practical Coding is a compact general-purpose coding skill for coding agents. Instead of forcing every task through Brainstorming, Planning, TDD, Debugging, Review, and Git workflow stages, `SKILL.md` acts as a lightweight router and reads only the modules whose triggers match the task.
+
+Its goal is simple: **less unnecessary code, testing, documentation, defensive programming, and process while preserving or improving software quality.**
 
 ### Architecture
 
-`SKILL.md` is a lightweight router. It loads only the reference modules whose triggers match the current task:
+```text
+                       SKILL.md
+                    lightweight router
+                           │
+          ┌────────────────┼────────────────┐
+          │                │                │
+          ↓                ↓                ↓
+      Decision       Implementation      Debugging
+          │                │                │
+          └────────────────┼────────────────┘
+                           │
+                     Verification
+                    only when needed
+```
+
+These are independent capabilities, not mandatory stages.
 
 | Module | Load when |
 |---|---|
-| `decision.md` | A material architecture, dependency, API, data, compatibility, or implementation choice exists. |
-| `implementation.md` | Code or project files need to change. |
-| `debugging.md` | An observed failure, regression, incorrect behavior, or failed verification needs diagnosis. |
-| `verification.md` | Risk or uncertainty makes verification strategy non-trivial. |
+| `references/decision.md` | A material architecture, dependency, API, data, compatibility, or solution choice exists. |
+| `references/implementation.md` | Code or project files need to change. |
+| `references/debugging.md` | An observed failure, regression, incorrect behavior, or failed verification needs diagnosis. |
+| `references/verification.md` | Risk or uncertainty makes verification strategy non-trivial. |
 
-The modules are not mandatory stages and do not form a fixed chain. A copy change may need only Implementation and a direct visual check. A new authentication provider may need Decision, Implementation, and Verification. A production failure may start with Debugging and load other modules only when their triggers appear.
+A text or button-position change may need only Implementation plus a direct visual check. A new authentication provider may need Decision, Implementation, and Verification. A production failure may start with Debugging and load other modules only when their triggers appear.
 
 ### Principles
 
-- **Reuse before invention:** existing code → stdlib → native platform → installed dependency → research proven solutions → new dependency → minimal custom implementation.
-- **Smallest coherent change:** avoid speculative abstractions, configuration, wrappers, unrelated cleanup, and future-proofing without a present need.
-- **No defensive bloat:** handle real boundaries and invariants, not imagined failures; never remove necessary security or integrity checks.
-- **Evidence-driven debugging:** observed evidence → earliest incorrect state → one hypothesis at a time → root cause → minimal fix.
+- **Reuse before invention:** existing code → standard library → native platform/framework → installed dependency → research proven solutions → new dependency → minimal custom implementation.
+- **Smallest coherent change:** avoid speculative abstractions, unrelated cleanup, unnecessary configuration, wrappers, and future-proofing.
+- **No defensive bloat:** handle real boundaries, contracts, and observed risks rather than imagined failure modes.
+- **Evidence-driven debugging:** evidence → earliest incorrect state → one hypothesis at a time → root cause → minimal fix.
 - **Risk-proportional verification:** tests are evidence, not a default deliverable; use the cheapest sufficient fresh evidence.
-- **Document decisions, not reconstructable facts:** do not duplicate information already recoverable from code or Git.
+- **Document decisions, not reconstructable facts:** avoid duplicating information already recoverable from code, search, ASTs, or Git.
 - **Git is evidence, not ceremony:** repositories, branches, commits, plans, and checkpoints are not universal prerequisites.
+- **Progressive disclosure:** keep default context small and load specialized guidance only when its trigger appears.
 
 ### Optional structured codebase memory
 
-Codebase Memory is intentionally not bundled in this version. A future integration will remain optional and should only be enabled when the savings from structured navigation and impact analysis justify indexing and context cost, especially for large production codebases.
+Codebase Memory is intentionally **not bundled yet**. A future integration will remain project-level and optional.
+
+Small demos and one-off scripts should not pay indexing or context cost. Large production codebases, multi-module systems, microservices, and multi-agent workflows may benefit from structured navigation, call graphs, and impact analysis when those savings justify the extra machinery.
+
+Enabling codebase memory will mean “available when useful,” not “query it on every task.”
+
+### Installation
+
+#### Codex
+
+```powershell
+git clone https://github.com/Hubujiu/practical-coding.git "$env:USERPROFILE\.codex\skills\practical-coding"
+```
+
+#### Cursor
+
+```powershell
+git clone https://github.com/Hubujiu/practical-coding.git "$env:USERPROFILE\.agents\skills\practical-coding"
+```
+
+#### Claude Code
+
+```powershell
+git clone https://github.com/Hubujiu/practical-coding.git "$env:USERPROFILE\.claude\skills\practical-coding"
+```
+
+Other Agent Skills-compatible tools can use `SKILL.md` directly.
 
 ### Sources
 
