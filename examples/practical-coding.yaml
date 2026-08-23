@@ -1,0 +1,7 @@
+# Copy this file to the target project's root as `.practical-coding.yaml`
+# only when you want a durable project-level choice.
+version: 1
+
+codebase_memory:
+  enabled: true
+  provider: codebase-memory-mcp
