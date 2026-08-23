@@ -33,7 +33,7 @@ Stop at the first option that fully satisfies the requirement:
 
 - Choose the simplest implementation that fully satisfies the current requirement.
 - Prefer one end-to-end working path over speculative extensibility.
-- Avoid abstractions with no current second use, configuration nobody needs, wrappers that only delegate, and layers that do not enforce a real boundary.
+- Every abstraction earns its place with a current use, every configuration option with a real user, every wrapper with behavior beyond delegation, and every layer with a real boundary it enforces.
 - Preserve intentional APIs, data formats, architecture, and compatibility contracts unless the requirement authorizes changing them.
 - Before reversing an intentional architecture decision, inspect available decision records, documentation, and relevant history.
 - Prefer durable choices over knowingly temporary architecture that creates a second migration without a concrete need.

@@ -47,3 +47,12 @@ When adding a test:
 ## Completion
 
 Claim only what fresh evidence supports. If an appropriate check cannot run because of environment, credentials, unavailable services, or another blocker, state the limitation and the remaining uncertainty.
+
+Red flags before claiming completion:
+
+| Rationalization | Reality |
+|---|---|
+| "Too simple to verify" | Simple changes still get one direct check: read the diff or render the result. |
+| "It compiled / worked before this last edit" | Stale evidence. Re-check the final state with the cheapest sufficient check. |
+| "The tests probably still pass" | A guess is not evidence. Run the targeted check or report that you could not. |
+| "Verification here would be over-engineering" | This skill trims speculative work, never the evidence for work actually done. |
