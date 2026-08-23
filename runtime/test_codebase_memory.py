@@ -164,9 +164,14 @@ class EmbeddedGraphRuntimeTest(unittest.TestCase):
         (self.repo / "Allman.cs").write_text(
             "class A\n"
             "{\n"
-            "    void Run()\n"
+            "    int Run()\n"
             "    {\n"
-            "        Helper();\n"
+            "        return Helper();\n"
+            "    }\n"
+            "\n"
+            "    int Helper()\n"
+            "    {\n"
+            "        return 1;\n"
             "    }\n"
             "}\n"
             "\n"
@@ -179,8 +184,57 @@ class EmbeddedGraphRuntimeTest(unittest.TestCase):
         rows = self.run_cli("query", "SELECT qualified_name FROM symbols ORDER BY qualified_name")
         qualified = {r["qualified_name"] for r in rows["rows"]}
         self.assertIn("Allman.cs.A", qualified)
+        self.assertIn("Allman.cs.A.Run", qualified)
+        self.assertIn("Allman.cs.A.Helper", qualified)
         self.assertIn("Allman.cs.B", qualified)
         self.assertNotIn("Allman.cs.A.B", qualified)
+        self.assertNotIn("Allman.cs.A.Run.Helper", qualified)
+
+        trace = self.run_cli("trace", "Allman.cs.A.Helper", "--direction", "in")
+        self.assertEqual([e["from"] for e in trace["edges"]], ["Allman.cs.A.Run"])
+
+    def test_generic_parser_allman_methods_java_and_cpp(self):
+        (self.repo / "Allman.java").write_text(
+            "class A\n"
+            "{\n"
+            "    int run()\n"
+            "    {\n"
+            "        return helper();\n"
+            "    }\n"
+            "\n"
+            "    int helper()\n"
+            "    {\n"
+            "        return 1;\n"
+            "    }\n"
+            "}\n",
+            encoding="utf-8",
+        )
+        (self.repo / "allman.cpp").write_text(
+            "int helper()\n"
+            "{\n"
+            "    return 1;\n"
+            "}\n"
+            "\n"
+            "int run()\n"
+            "{\n"
+            "    return helper();\n"
+            "}\n",
+            encoding="utf-8",
+        )
+        self.run_cli("index")
+        rows = self.run_cli("query", "SELECT qualified_name FROM symbols ORDER BY qualified_name")
+        qualified = {r["qualified_name"] for r in rows["rows"]}
+        self.assertIn("Allman.java.A.run", qualified)
+        self.assertIn("Allman.java.A.helper", qualified)
+        self.assertNotIn("Allman.java.A.run.helper", qualified)
+        self.assertIn("allman.cpp.run", qualified)
+        self.assertIn("allman.cpp.helper", qualified)
+        self.assertNotIn("allman.cpp.run.helper", qualified)
+
+        java_trace = self.run_cli("trace", "Allman.java.A.helper", "--direction", "in")
+        self.assertEqual([e["from"] for e in java_trace["edges"]], ["Allman.java.A.run"])
+        cpp_trace = self.run_cli("trace", "allman.cpp.helper", "--direction", "in")
+        self.assertEqual([e["from"] for e in cpp_trace["edges"]], ["allman.cpp.run"])
 
     def test_impact_covers_git_renames(self):
         (self.repo / "old.py").write_text("def helper():\n    return 1\n", encoding="utf-8")
