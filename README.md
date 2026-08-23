@@ -62,15 +62,10 @@ flowchart TB
 ```mermaid
 flowchart LR
     A["把按钮文字改成保存"] --> A1["Implementation"] --> A2["Diff / Render"]
-
     B["新增认证提供商"] --> B1["Decision"] --> B2["Implementation"] --> B3["Verification"]
-
     C["生产环境出现已知错误"] --> C1["Debugging"] --> C2["Implementation"] --> C3["按风险决定是否加载 Verification"]
-
     D["大型 monorepo 中谁调用 ProcessOrder?"] --> D1["Codebase Memory"] --> D2["定位调用链"] --> D3["回到关键源码确认"]
 ```
-
-这意味着：改文案时不会被迫做架构决策；修 bug 时不会预加载一整套规划流程；大型仓库需要跨模块导航时，又可以直接启用结构化代码图谱。
 
 ### 核心原则
 
@@ -97,58 +92,76 @@ flowchart LR
 - 额外数据库服务
 - pip package
 
-内置 runtime：
+### Runtime 到底是什么？
+
+这里的 `runtime` 只是 **Skill 附带的辅助程序**，不是另一套 Agent Runtime。
 
 ```text
+Agent
+  ↓ 加载
+SKILL.md + references/*.md
+  ↓ 只有任务需要图谱时才调用
 runtime/codebase_memory.py
+  ↓
+runtime/_codebase_memory_impl.py
+  ↓
+SQLite graph
 ```
 
-只使用 Python 标准库，核心数据存储为本地 SQLite。
+真正决定“要不要使用 Codebase Memory”的是 Agent 已加载的 Skill 指令和项目配置；Python 文件只是执行索引、查询、trace、impact 等具体操作。
+
+因此 `.practical-coding.yaml` 是 **Skill 的项目级路由偏好**。Agent 在调用辅助程序之前读取它；辅助程序本身不需要再实现第二套配置判断。用户如果手工直接执行 `runtime/codebase_memory.py`，等于主动绕过 Skill 路由，这是合理的边界。
 
 ### Codebase Memory 如何工作
 
 ```mermaid
 flowchart TB
     S["Source Files"] --> P["Embedded Parser"]
-
     P --> F["Files"]
     P --> SY["Symbols"]
     P --> IM["Imports"]
     P --> C["Calls"]
-
     F --> DB[("SQLite Graph")]
     SY --> DB
     IM --> DB
     C --> DB
-
     DB --> SE["Search"]
     DB --> TR["Trace"]
     DB --> IA["Impact Analysis"]
     DB --> AR["Architecture"]
-
     SE --> SRC["Read decisive source code"]
     TR --> SRC
     IA --> SRC
     AR --> SRC
-
     SRC --> E["Exact / final conclusion"]
 ```
 
-核心纪律是：**Graph 用于 Discovery，源码用于 Verification。** 代码图谱帮助 Agent 更快找到“应该读哪里”，但精确、负面或穷尽式结论仍要回到源码确认。
+核心纪律是：**Graph 用于 Discovery，源码用于 Verification。**
 
-### 为什么没有直接塞入整个 `codebase-memory-mcp`
+### 与成熟 `codebase-memory-mcp` 的关系
 
-Practical Coding 的代码图谱设计参考 [DeusData/codebase-memory-mcp](https://github.com/DeusData/codebase-memory-mcp)（MIT），尤其是：
+Practical Coding 参考 MIT 许可的 [DeusData/codebase-memory-mcp](https://github.com/DeusData/codebase-memory-mcp)。当前 upstream 已经是明显更成熟的生产级实现：它使用大规模 Tree-sitter grammar、Hybrid LSP 语义解析、协调 daemon、watcher、项目级 mutation lock 等完整体系。
 
-- 持久结构化索引；
-- 调用链；
-- 影响分析；
+因此这里不再走“自己不断补正则，追求和 upstream 一样的多语言精度”的路线。能独立、轻量复用的成熟机制直接吸收；依赖整套大型运行时的能力则明确保持边界。
+
+当前从 upstream 思路中吸收并内置的部分：
+
+- 持久 SQLite 图谱；
+- graph → source 的证据纪律；
 - 增量刷新；
-- 图谱负责 Discovery、源码负责最终 Verification。
+- **统一 always-skip 目录过滤**：无论候选文件来自 `git ls-files` 还是普通目录扫描，都再次过滤依赖、构建产物、缓存等目录；
+- **每项目图谱写锁**：多个 Agent 同时索引同一个项目时，只有一个 writer 修改图谱，避免 SQLite writer race。
 
-但 upstream 的生产实现把 MCP、daemon、watcher、semantic、UI、CLI 和大规模 Tree-sitter/LSP 解析体系一起链接。直接搬入会让一个轻量 Skill 变成大型运行时 fork。
+仍然不搬入：
 
-因此 Practical Coding 内置的是独立维护的轻量 graph runtime，而不是要求用户额外安装 upstream，也不是把整个 upstream 工程复制进来。
+- MCP transport；
+- WebUI；
+- daemon / watcher；
+- semantic embeddings；
+- 自动客户端安装；
+- upstream 的完整 Tree-sitter / Hybrid LSP parser bundle。
+
+第三方来源和 MIT notice 见 [`THIRD_PARTY_NOTICES.md`](THIRD_PARTY_NOTICES.md)。
 
 ### 当前内置能力
 
@@ -182,11 +195,13 @@ python <skill-root>/runtime/codebase_memory.py --repo <project-root> impact --gi
 | macOS | `~/Library/Caches/practical-coding/codebase-memory/` |
 | Windows | `%LOCALAPPDATA%\practical-coding\cache\codebase-memory\` |
 
+每个图谱数据库旁边还会保留一个很小的 advisory lock 文件，用于串行化 `index` writer；只读查询不需要这个锁。
+
 ### 解析范围
 
-Python 使用标准库 AST。
+Python 使用标准库 AST，是内置 helper 中最可靠的解析路径。
 
-内置轻量解析同时识别：
+helper 还会识别：
 
 - JavaScript / TypeScript / JSX / TSX
 - Java / Kotlin
@@ -200,33 +215,28 @@ Python 使用标准库 AST。
 - Scala
 - Swift
 
-这些非 Python 语言目前使用轻量语法抽取，不等同于 upstream 的完整 Tree-sitter + LSP 精度。因此图谱用于加速 Discovery，精确/负面/穷尽结论仍需要回源确认。
+这些非 Python 语言目前使用轻量语法抽取，只应视为 **best-effort discovery**。它们不等同于 upstream 的 Tree-sitter + Hybrid LSP 精度，也不再以“继续堆 regex”作为追赶 upstream 的目标。
 
 ### Codebase Memory 什么时候启用
 
-Codebase Memory 是**能力内置，但项目级使用可选**。
+Codebase Memory 是**能力内置，但项目级使用可选，而且配置持久化**。
 
 ```mermaid
 flowchart TD
     T["收到任务"] --> Q{"结构化代码图谱是否能明显减少重复源码扫描?"}
-
-    Q -->|"否：小 Demo / 文案 / CSS / rename / 已知局部修改"| S["直接使用普通源码搜索<br/>不询问、不索引"]
-
+    Q -->|"否：小 Demo / 文案 / CSS / rename / 已知局部修改"| S["直接普通源码搜索<br/>不询问、不索引"]
     Q -->|"是：大型仓库 / 调用链 / 影响分析 / 架构发现"| C{"项目是否已有 .practical-coding.yaml?"}
-
-    C -->|"没有"| A["询问一次是否为该项目启用"]
-    A -->|"否"| S
-    A -->|"是"| EN["写入 enabled: true"]
-
+    C -->|"没有"| A["询问一次项目级偏好"]
+    A -->|"否"| DIS["持久化 enabled: false"] --> S
+    A -->|"是"| EN["持久化 enabled: true"]
     C -->|"enabled: false"| S
-    C -->|"enabled: true"| PY{"可用 Python 3?"}
+    C -->|"enabled: true"| PY{"当前环境有可用 Python 3?"}
     EN --> PY
-
-    PY -->|"是"| G["按需 index / incremental refresh"] --> U["使用图谱做 Discovery"] --> V["读取关键源码做 Verification"]
-    PY -->|"否"| OFF["说明 Python 3 要求<br/>写入 enabled: false"] --> S
+    PY -->|"是"| G["按需 index / incremental refresh"] --> U["Graph 做 Discovery"] --> V["源码做 Verification"]
+    PY -->|"否"| FB["保持 enabled: true 不变<br/>本次 fallback 普通检索<br/>报告未使用 Codebase Memory"] --> S
 ```
 
-项目需要长期保存选择时才创建：
+模板：
 
 ```yaml
 version: 1
@@ -234,18 +244,18 @@ codebase_memory:
   enabled: true
 ```
 
-模板见 [`examples/practical-coding.yaml`](examples/practical-coding.yaml)。
+见 [`examples/practical-coding.yaml`](examples/practical-coding.yaml)。
 
 规则：
 
 - 小 Demo、文案、CSS、rename、已知局部修改：直接跳过，不询问；
-- 大型仓库、调用链、影响分析等明显受益时：询问一次是否为该项目启用；
-- `enabled: true` 只表示需要时可以用，不代表每次任务都索引/查询；
-- runtime 增量刷新，只重解析内容发生变化的文件；
-- 已启用但找不到可用 Python 3 时：提示用户安装/启用 Python，把 `.practical-coding.yaml` 的 `codebase_memory.enabled` 改为 `false`，本次继续普通源码搜索；
-- `enabled: false` 时不重复检测/提示；用户之后准备好 Python 并希望重新启用时，再改回 `true`。
-
-不会自动安装 Python，也不会因为代码图谱不可用而阻塞普通编码任务。
+- 大型仓库、调用链、影响分析等明显受益时，如果没有配置，只询问一次；
+- **用户回答“是”和“否”都持久化**，这样跨 session 才真的不会重复询问；
+- `enabled: true` 只表示项目允许按需使用图谱，不代表每个任务都索引；
+- `enabled: false` 表示这个项目不使用 Codebase Memory；
+- **Python 不可用不会把 `enabled: true` 改成 false**；这是环境能力缺失，不是项目偏好改变；
+- 当前环境没有 Python 3 时，本次任务 fallback 为普通源码检索，并在结果中明确说明 **Codebase Memory 未使用**；
+- 不自动安装 Python，也不因为图谱不可用而阻塞普通编码任务。
 
 ## 安装
 
@@ -255,7 +265,7 @@ codebase_memory:
 npx skills@latest add Hubujiu/practical-coding
 ```
 
-安装 Skill 后，`runtime/codebase_memory.py` 同时存在，因此无需第二次安装 Codebase Memory。
+安装 Skill 后，图谱 helper 同时存在，因此无需第二次安装 Codebase Memory。
 
 ### 手动安装
 
@@ -279,8 +289,6 @@ git clone https://github.com/Hubujiu/practical-coding.git ~/.claude/skills/pract
 
 ### 项目结构
 
-> 目录树是文件结构，不是流程图，因此保留文本形式更便于复制和定位。
-
 ```text
 practical-coding/
 ├── SKILL.md
@@ -288,6 +296,7 @@ practical-coding/
 ├── README.md
 ├── CONTRIBUTING.md
 ├── LICENSE
+├── THIRD_PARTY_NOTICES.md
 ├── agents/
 │   └── openai.yaml
 ├── examples/
@@ -302,7 +311,10 @@ practical-coding/
 ├── runtime/
 │   ├── README.md
 │   ├── codebase_memory.py
-│   └── test_codebase_memory.py
+│   ├── _codebase_memory_impl.py
+│   ├── test_codebase_memory.py
+│   ├── test_codebase_memory_incremental.py
+│   └── test_codebase_memory_guard.py
 └── .github/
     └── workflows/
         └── validate.yml
@@ -313,7 +325,7 @@ practical-coding/
 - [Ponytail](https://github.com/DietrichGebert/ponytail)：YAGNI、reuse-first、stdlib/native-first、极小实现。
 - [Matt Pocock / skills](https://github.com/mattpocock/skills)：Agent Skills 与 progressive disclosure。
 - [Superpowers](https://github.com/obra/superpowers)：完整工程流程的参考，以及 Practical Coding 有意避免的流程强耦合。
-- [Codebase Memory](https://github.com/DeusData/codebase-memory-mcp)：持久结构图谱、调用链、影响分析、增量索引和 graph → source evidence discipline。
+- [Codebase Memory](https://github.com/DeusData/codebase-memory-mcp)：持久结构图谱、调用链、影响分析、增量索引、过滤策略、项目级 mutation locking 和 graph → source evidence discipline。
 - [Agent Skills specification](https://agentskills.io/specification)：Skill 结构与 progressive disclosure。
 
 ---
@@ -329,13 +341,11 @@ Practical Coding is a compact general-purpose coding skill for coding agents. In
 ```mermaid
 flowchart TB
     T["Coding task"] --> R["SKILL.md<br/>Lightweight Router"]
-
     R -->|"material technical choice"| D["Decision"]
     R -->|"modify code or project files"| I["Implementation"]
     R -->|"observed failure or regression"| G["Debugging"]
     R -->|"verification strategy is non-trivial"| V["Verification"]
     R -->|"large / structurally complex repository"| M["Codebase Memory"]
-
     D -. "only when discovered" .-> I
     I -. "real failure appears" .-> G
     I -. "risk increases" .-> V
@@ -344,74 +354,43 @@ flowchart TB
 
 These are independent capabilities, **not mandatory stages**.
 
-| Module | Load when |
-|---|---|
-| **Decision** | Architecture, dependency, API, data, compatibility, new capability, or another material solution choice is required |
-| **Implementation** | Code or project files must change |
-| **Debugging** | A failure, regression, incorrect behavior, or failed check has actually been observed |
-| **Verification** | Risk or uncertainty makes the evidence strategy itself a meaningful engineering decision |
-| **Codebase Memory** | Large-repository navigation, call chains, impact analysis, architecture discovery, or repeated cross-module exploration would materially reduce source scanning |
-
-### Routing examples
-
-```mermaid
-flowchart LR
-    A["Change button copy"] --> A1["Implementation"] --> A2["Diff / Render"]
-    B["Add an auth provider"] --> B1["Decision"] --> B2["Implementation"] --> B3["Verification"]
-    C["Fix a reported production bug"] --> C1["Debugging"] --> C2["Implementation"]
-    D["Trace ProcessOrder in a monorepo"] --> D1["Codebase Memory"] --> D2["Source verification"]
-```
-
 ### Embedded codebase graph
 
-Installing Practical Coding also installs the graph capability itself:
+Installing Practical Coding also installs the graph capability itself. Here, “runtime” means only the bundled helper program, not another agent runtime:
 
 ```text
+Agent loads SKILL.md + references
+        ↓ only when graph navigation is useful
 runtime/codebase_memory.py
+        ↓
+runtime/_codebase_memory_impl.py
+        ↓
+SQLite graph
 ```
 
-There is no separate `codebase-memory-mcp` installation, MCP registration, WebUI, daemon, network request, API key, or pip dependency.
+The Skill reads `.practical-coding.yaml` before deciding whether to invoke the helper. The helper does not duplicate that routing policy; direct manual invocation intentionally bypasses the Skill gate.
 
-The embedded runtime uses the Python standard library and persistent SQLite storage.
+There is no required separate `codebase-memory-mcp` installation, MCP registration, WebUI, daemon, network request, API key, or pip dependency.
 
-```mermaid
-flowchart TB
-    S["Source files"] --> P["Embedded parser"]
-    P --> F["Files"]
-    P --> SY["Symbols"]
-    P --> IM["Imports"]
-    P --> C["Calls"]
-    F --> DB[("SQLite graph")]
-    SY --> DB
-    IM --> DB
-    C --> DB
-    DB --> SE["Search"]
-    DB --> TR["Trace"]
-    DB --> IA["Impact"]
-    DB --> AR["Architecture"]
-    SE --> V["Verify decisive source"]
-    TR --> V
-    IA --> V
-    AR --> V
-```
+### Upstream relationship
 
-It supports:
+The design is based on MIT-licensed [DeusData/codebase-memory-mcp](https://github.com/DeusData/codebase-memory-mcp). Upstream is materially stronger as a production code-intelligence engine because it ships a large Tree-sitter grammar set, Hybrid LSP semantic resolution, daemon/watcher coordination, and per-project mutation locking.
 
-- incremental indexing;
-- files, symbols, imports, and call relationships;
-- architecture summaries;
-- symbol search;
-- caller/callee tracing;
-- changed-file impact analysis;
-- read-only SQL graph queries.
+Practical Coding does not try to reproduce that parser quality by endlessly expanding regex heuristics. Instead it adopts lightweight mechanisms that fit the bundled helper:
 
-The design is inspired by MIT-licensed [DeusData/codebase-memory-mcp](https://github.com/DeusData/codebase-memory-mcp), but Practical Coding does not vendor the upstream runtime. It keeps the graph-navigation model while deliberately omitting MCP, UI, daemon, watcher, semantic embeddings, client installers, and the large Tree-sitter/LSP bundle.
+- persistent SQLite graph navigation;
+- incremental refresh;
+- graph-to-source evidence discipline;
+- always-skip directory filtering applied after either Git or filesystem discovery;
+- per-project serialization of graph-mutating index writers.
 
-Python parsing uses the standard-library AST. Other supported languages use lightweight syntax extraction, so the graph accelerates discovery but never replaces decisive source verification.
+It still omits the upstream MCP server, UI, daemon/watcher, semantic embeddings, client installers, and Tree-sitter/LSP parser bundle. Attribution is recorded in [`THIRD_PARTY_NOTICES.md`](THIRD_PARTY_NOTICES.md).
 
-### Project opt-in
+Python parsing uses the standard-library AST. Other recognized languages use lightweight syntax extraction and are best-effort discovery only.
 
-Capability is bundled; project-level usage remains optional:
+### Persistent project opt-in
+
+Capability is bundled; project-level usage remains optional and persistent:
 
 ```yaml
 version: 1
@@ -419,9 +398,13 @@ codebase_memory:
   enabled: true
 ```
 
-Small/local tasks skip the graph. Large or structurally complex tasks may use it when the navigation savings justify indexing.
+When configuration is missing, cheap/local tasks skip the graph silently. If a graph would materially help, ask once and persist either `enabled: true` or `enabled: false` so later sessions do not repeat the project-level question.
 
-When enabled, resolve a Python 3 command (`python`, `python3`, or Windows `py -3`) before using the runtime. If Python is unavailable, explain the requirement, persist `codebase_memory.enabled: false`, and continue with normal source search. Do not auto-install Python or repeatedly retry while the project remains disabled. Re-enable the setting after Python becomes available and the user wants the graph again.
+When enabled, resolve a Python 3 command (`python`, `python3`, or Windows `py -3`) before using the helper. If Python is unavailable, **keep the persisted preference unchanged**, fall back to normal source search for the current task, and explicitly report that Codebase Memory was not used because no usable Python 3 environment was available. Do not auto-install Python or repeatedly retry in the same task/session.
+
+### Concurrent indexing and filtering
+
+The helper keeps graph databases in the user cache. A small advisory lock beside each database serializes `index` writers for that project; read-only graph operations remain unlocked. Candidate files are also re-filtered against always-skip directories after Git discovery so tracked dependency/build/cache trees do not leak into the graph.
 
 ### Installation
 
@@ -429,8 +412,8 @@ When enabled, resolve a Python 3 command (`python`, `python3`, or Windows `py -3
 npx skills@latest add Hubujiu/practical-coding
 ```
 
-That single installation includes both the Skill rules and the embedded graph runtime.
+That single installation includes both the Skill rules and the embedded graph helper.
 
 ### License
 
-See [LICENSE](LICENSE). The embedded runtime is part of Practical Coding. Codebase Memory is credited as an MIT-licensed design/source of inspiration; its runtime is not bundled.
+See [LICENSE](LICENSE) for Practical Coding and [THIRD_PARTY_NOTICES.md](THIRD_PARTY_NOTICES.md) for upstream Codebase Memory attribution.

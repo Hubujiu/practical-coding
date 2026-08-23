@@ -4,7 +4,7 @@ description: Use when implementing, modifying, or refactoring code, fixing a bug
 license: MIT
 metadata:
   author: Hubujiu
-  version: "1.3"
+  version: "1.4"
 ---
 
 # Practical Coding
@@ -57,9 +57,9 @@ Read `references/verification.md` when risk, uncertainty, project gates, public 
 
 Read `references/codebase-memory.md` only when structured code navigation would materially reduce repeated source scanning: large or multi-module repositories, call-chain analysis, impact analysis, cross-service relationships, architecture discovery, or repeated multi-agent exploration.
 
-The graph runtime is bundled with this skill at `runtime/codebase_memory.py`. Do not require or install `codebase-memory-mcp`; MCP, WebUI, daemon, watcher, semantic model, and upstream installation machinery are not required.
+The graph helper is bundled with this skill at `runtime/codebase_memory.py`. It is not a second agent runtime: the Skill is the instructions the agent loads, while this Python helper is only invoked by the agent when those instructions route a task to Codebase Memory. Do not require or install `codebase-memory-mcp`; MCP, WebUI, daemon, watcher, semantic model, and upstream installation machinery are not required.
 
-Project opt-in lives in `.practical-coding.yaml`:
+Project preference lives in `.practical-coding.yaml` and is persistent:
 
 ```yaml
 version: 1
@@ -70,20 +70,23 @@ codebase_memory:
 If no project configuration exists:
 
 - for a small project or a local edit that targeted search can handle cheaply, skip codebase memory without asking;
-- when the repository or task would materially benefit from a graph, ask once whether the user wants codebase memory enabled for this project, then persist that choice only if the user wants a durable project setting.
+- when the repository or task would materially benefit from a graph, ask once whether the user wants codebase memory enabled for this project;
+- persist the user's answer as `enabled: true` or `enabled: false`, preserving unrelated project configuration, so later sessions do not ask the same project-level preference again.
 
-When codebase memory is enabled, resolve a usable Python command before invoking the runtime. Prefer `python`, then `python3`, then Windows `py -3` when available.
+`.practical-coding.yaml` is a Skill routing preference, not a safety gate inside the helper program. Read it before deciding whether to invoke the graph. A user manually running `runtime/codebase_memory.py` directly is outside this routing gate by design.
+
+When codebase memory is enabled, resolve a usable Python 3 command before invoking the helper. Prefer `python`, then `python3`, then Windows `py -3` when available.
 
 If no usable Python 3 environment is available:
 
-- tell the user that embedded Codebase Memory requires Python 3 and that they can install or enable it to use the graph;
-- set `codebase_memory.enabled: false` in the project `.practical-coding.yaml`, preserving unrelated project configuration;
+- do not change the persisted `codebase_memory.enabled` preference;
 - continue the current task with normal source search and direct reads instead of blocking;
-- do not repeatedly retry or re-prompt on later tasks while the setting remains `false`.
+- explicitly report that Codebase Memory was not used because no usable Python 3 environment was available;
+- do not automatically install Python or repeatedly retry within the same task/session.
 
-When the user later confirms Python is available and wants the graph again, set `enabled: true` and index on demand.
+A later task or another machine may try again when the persistent project preference remains `enabled: true`.
 
-Enabling codebase memory means the bundled runtime may be used when useful, not that every task must query it. Index on demand and refresh incrementally before structural claims when source may have changed.
+Enabling codebase memory means the bundled helper may be used when useful, not that every task must query it. Index on demand and refresh incrementally before structural claims when source may have changed.
 
 ## Routing Examples
 
@@ -109,9 +112,9 @@ Trace a request across a large monorepo with codebase memory enabled
 → Implementation only if code changes are requested
 
 Codebase Memory enabled but Python unavailable
-→ explain Python requirement
-→ persist enabled: false
-→ continue with normal source search
+→ keep the persistent preference unchanged
+→ use normal source search for this task
+→ report that Codebase Memory was not used
 
 Review an architecture proposal without changing code
 → Decision only

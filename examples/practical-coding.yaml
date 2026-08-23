@@ -1,6 +1,7 @@
 version: 1
 
-# Optional project-level preference.
-# The graph runtime itself is bundled with Practical Coding.
+# Persistent project-level preference read by the Practical Coding Skill.
+# Store either true or false after the user makes the project-level choice.
+# Python availability is environment state and must not rewrite this preference.
 codebase_memory:
   enabled: true
