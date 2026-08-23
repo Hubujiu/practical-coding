@@ -2,16 +2,20 @@
 
 ## DeusData/codebase-memory-mcp
 
-Practical Coding's embedded Codebase Memory helper is inspired by and adapts selected lightweight behaviour from:
+Practical Coding uses `DeusData/codebase-memory-mcp` as the optional Codebase Memory backend.
 
 - Project: `DeusData/codebase-memory-mcp`
 - Source: https://github.com/DeusData/codebase-memory-mcp
 - License: MIT
-- Upstream revision reviewed for the current filtering/concurrency design: `010569fa6ce1bc5d6430f858129243ea1a2e3fd5`
+- Upstream revision reviewed when the direct-backend policy was established: `010569fa6ce1bc5d6430f858129243ea1a2e3fd5`
 
-Adapted areas include the always-skip discovery policy and the design principle that graph mutations are serialized per project. Practical Coding does **not** vendor the upstream native parser bundle, Hybrid LSP pipeline, daemon, watcher, MCP server, UI, semantic model, or release binaries.
+Practical Coding does not vendor the upstream source tree or release binaries. When Codebase Memory is enabled, the Skill invokes an existing upstream executable or an official package launcher such as `npx --yes codebase-memory-mcp@latest` in CLI mode.
 
-The upstream MIT license is reproduced below.
+This choice is intentional: parser accuracy, Tree-sitter grammars, Hybrid LSP resolution, semantic search, indexing, coverage reporting, concurrency, and graph queries stay owned and maintained upstream instead of being copied into a divergent Practical Coding implementation.
+
+If Practical Coding later vendors upstream code or carries a source patch, retain the upstream copyright and MIT license terms with the copied/substantial portions.
+
+The upstream MIT license is reproduced below for attribution.
 
 ```text
 MIT License

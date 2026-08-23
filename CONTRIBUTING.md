@@ -8,17 +8,31 @@ Contributions should preserve Practical Coding as one compact skill with indepen
 - Prefer strengthening an existing module over adding a new module.
 - Add a new module only when it represents a distinct, reusable decision surface that would otherwise pollute unrelated tasks.
 - Do not introduce mandatory plans, execution documents, Git workflows, tests, reviews, documentation, or tool-specific ceremony as universal gates.
-- Preserve the solution priority of reuse before invention, risk-proportional verification, evidence-driven debugging, and resistance to speculative code and defensive bloat.
-- Keep optional heavy capabilities such as structured codebase memory outside the default context and default runtime cost.
+- Preserve reuse-before-invention, mature-implementation-first, risk-proportional verification, evidence-driven debugging, and resistance to speculative code and defensive bloat.
+- Keep optional heavy capabilities outside the default Agent context; optional package size or disk use is acceptable when the capability materially reduces token use, repeated work, or correctness risk.
 - Avoid scripts, dependencies, configuration, and generated project files unless they solve a demonstrated need.
 
-## Codebase Memory changes
+## Mature implementation first
 
-Before extending the embedded graph helper, inspect the mature upstream [`DeusData/codebase-memory-mcp`](https://github.com/DeusData/codebase-memory-mcp) implementation for the same problem.
+For any non-trivial capability with credible prior art:
 
-- If upstream already has a proven mechanism that can be adapted without importing its large runtime stack, prefer adapting that mechanism over inventing a parallel design here.
-- Keep attribution and license notices when upstream code or substantial implementation material is reused; see `THIRD_PARTY_NOTICES.md`.
-- Do not chase upstream parser parity by continually adding regex heuristics. Upstream's multi-language quality depends on its Tree-sitter and Hybrid LSP stack. If a requirement truly needs that level of accuracy, reconsider the backend boundary rather than pretending a lightweight parser is equivalent.
-- Preserve the embedded helper's role as a zero-third-party-dependency discovery accelerator. Exact, negative, and exhaustive conclusions still return to decisive source code.
+1. Inspect maintained mature implementations first.
+2. Prefer the mature project's supported public integration surface — API, CLI, protocol, package, library, or binary — over copying internals or rebuilding the same subsystem.
+3. Verify fit, maintenance state, known issues, release activity, operational constraints, and license.
+4. Add local code only for concrete gaps or confirmed upstream defects.
+5. Keep local patches narrow, attributable, and removable when upstream fixes the issue.
 
-A change is moving in the wrong direction if a trivial local edit must load or execute more process after the change than before it.
+A local implementation should not exist merely because it is smaller, simpler to own, or avoids an optional dependency. Correctness, token efficiency, reliability, and maintenance can justify a larger optional dependency.
+
+## Codebase Memory
+
+Structured Codebase Memory is backed directly by [`DeusData/codebase-memory-mcp`](https://github.com/DeusData/codebase-memory-mcp).
+
+- Do not reintroduce a Practical Coding parser, graph database, call resolver, language grammar set, incremental indexer, project lock, semantic engine, or other parallel code-intelligence implementation when upstream already provides it.
+- Prefer upstream CLI mode for Practical Coding because it exposes the mature engine on demand without automatically installing a second persistent MCP/Skill integration into the agent.
+- Before adding any Codebase Memory compatibility code, check the latest stable upstream release and existing upstream issues/fixes.
+- If upstream has a blocking defect without a released fix, add only the narrowest compatibility shim needed and record the affected version/issue.
+- Remove the shim after upstream fixes the defect.
+- Keep attribution and license notices when upstream code or substantial implementation material is ever vendored or copied; see `THIRD_PARTY_NOTICES.md`.
+
+A change is moving in the wrong direction if a trivial local edit must load or execute more process after the change than before it, or if Practical Coding starts maintaining a weaker duplicate of a mature subsystem.

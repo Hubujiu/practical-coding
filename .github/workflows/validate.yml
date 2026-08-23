@@ -22,5 +22,8 @@ jobs:
         run: skills-ref validate ./practical-coding
       - name: Check Codex default_prompt references the skill as $skill-name
         run: grep -qF '$practical-coding' practical-coding/agents/openai.yaml
-      - name: Test embedded Codebase Memory runtime
-        run: python -m unittest discover -s practical-coding/runtime -p 'test_codebase_memory*.py' -v
+      - name: Ensure legacy local graph runtime is not reintroduced
+        run: |
+          test ! -e practical-coding/runtime/codebase_memory.py
+          test ! -e practical-coding/runtime/_codebase_memory_impl.py
+          ! grep -R "runtime/codebase_memory.py" practical-coding/SKILL.md practical-coding/AGENTS.md practical-coding/README.md practical-coding/references

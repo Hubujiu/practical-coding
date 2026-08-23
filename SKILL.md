@@ -4,7 +4,7 @@ description: Use when implementing, modifying, or refactoring code, fixing a bug
 license: MIT
 metadata:
   author: Hubujiu
-  version: "1.4"
+  version: "1.5"
 ---
 
 # Practical Coding
@@ -20,9 +20,10 @@ Produce the smallest durable change with enough evidence to justify confidence w
 - Understand the requested outcome and inspect the smallest relevant code or project context before changing anything.
 - Expand context only when current evidence is insufficient.
 - Every capability, abstraction, dependency, validation, fallback, retry, configuration item, document, or test you add must trace to a concrete requirement, an actual boundary, project policy, or observed risk.
+- For non-trivial capabilities, prefer integrating a mature, maintained implementation over building a parallel implementation. Add custom code only for requirements, integration gaps, or confirmed defects the mature implementation does not cover.
 - Preserve required security, permissions, data integrity, accessibility, compatibility, and explicit project constraints.
 - Keep unrelated code and user changes untouched.
-- Treat existing code, project instructions, documentation, the embedded code graph, and Git history as evidence when useful, not as mandatory ceremony.
+- Treat existing code, project instructions, documentation, structured code intelligence, and Git history as evidence when useful, not as mandatory ceremony.
 - Obtain the cheapest fresh evidence sufficient for the change before claiming completion.
 
 ## Module Router
@@ -55,9 +56,9 @@ Read `references/verification.md` when risk, uncertainty, project gates, public 
 
 ### Structured Codebase Memory
 
-Read `references/codebase-memory.md` only when structured code navigation would materially reduce repeated source scanning: large or multi-module repositories, call-chain analysis, impact analysis, cross-service relationships, architecture discovery, or repeated multi-agent exploration.
+Read `references/codebase-memory.md` only when structured code navigation would materially reduce repeated source scanning: large or multi-module repositories, call-chain analysis, impact analysis, cross-service relationships, architecture discovery, exact coverage questions, or repeated multi-agent exploration.
 
-The graph helper is bundled with this skill at `runtime/codebase_memory.py`. It is not a second agent runtime: the Skill is the instructions the agent loads, while this Python helper is only invoked by the agent when those instructions route a task to Codebase Memory. Do not require or install `codebase-memory-mcp`; MCP, WebUI, daemon, watcher, semantic model, and upstream installation machinery are not required.
+Codebase Memory uses the mature MIT-licensed `DeusData/codebase-memory-mcp` implementation as its only graph backend. Do not maintain or fall back to a lower-accuracy Practical Coding parser.
 
 Project preference lives in `.practical-coding.yaml` and is persistent:
 
@@ -69,24 +70,17 @@ codebase_memory:
 
 If no project configuration exists:
 
-- for a small project or a local edit that targeted search can handle cheaply, skip codebase memory without asking;
-- when the repository or task would materially benefit from a graph, ask once whether the user wants codebase memory enabled for this project;
-- persist the user's answer as `enabled: true` or `enabled: false`, preserving unrelated project configuration, so later sessions do not ask the same project-level preference again.
+- for a small project or a local edit that targeted search can handle cheaply, skip Codebase Memory without asking;
+- when the repository or task would materially benefit from structured code intelligence, ask once whether the user wants Codebase Memory enabled for this project;
+- persist the answer as `enabled: true` or `enabled: false`, preserving unrelated project configuration, so later sessions do not repeat the project-level question.
 
-`.practical-coding.yaml` is a Skill routing preference, not a safety gate inside the helper program. Read it before deciding whether to invoke the graph. A user manually running `runtime/codebase_memory.py` directly is outside this routing gate by design.
+When enabled, prefer an existing `codebase-memory-mcp` executable. If none is available and `npx` is usable, invoke the official npm wrapper lazily with `npx --yes codebase-memory-mcp@latest ...`; this downloads/caches the upstream native runtime without installing its MCP/Skill integration into the agent.
 
-When codebase memory is enabled, resolve a usable Python 3 command before invoking the helper. Prefer `python`, then `python3`, then Windows `py -3` when available.
+Do not automatically run `codebase-memory-mcp install`, because that mutates agent/editor configuration and can add a second Codebase Memory Skill/MCP surface. Practical Coding normally uses upstream CLI mode only.
 
-If no usable Python 3 environment is available:
+If neither the upstream executable nor an official lazy launcher can be used, do not change the persisted preference. Continue with ordinary source search and explicitly report that Codebase Memory was not used for this task.
 
-- do not change the persisted `codebase_memory.enabled` preference;
-- continue the current task with normal source search and direct reads instead of blocking;
-- explicitly report that Codebase Memory was not used because no usable Python 3 environment was available;
-- do not automatically install Python or repeatedly retry within the same task/session.
-
-A later task or another machine may try again when the persistent project preference remains `enabled: true`.
-
-Enabling codebase memory means the bundled helper may be used when useful, not that every task must query it. Index on demand and refresh incrementally before structural claims when source may have changed.
+Enabling Codebase Memory means the upstream engine may be used when useful, not that every task must query it. Use upstream indexing, coverage, search, trace, architecture, impact, semantic, and source-snippet capabilities rather than recreating them locally.
 
 ## Routing Examples
 
@@ -95,10 +89,6 @@ Change button copy
 → Implementation
 → direct visual/diff evidence
 
-Move a button with an obvious CSS change
-→ Implementation
-→ direct render evidence
-
 Add a new authentication provider
 → Decision + Implementation + Verification
 
@@ -106,13 +96,14 @@ Fix a reported production bug
 → Debugging + Implementation
 → Verification only if the risk or fix warrants the full module
 
-Trace a request across a large monorepo with codebase memory enabled
-→ resolve Python
-→ Codebase Memory for discovery
-→ Implementation only if code changes are requested
+Trace a request across a large monorepo with Codebase Memory enabled
+→ resolve upstream CLI
+→ index/refresh with upstream engine
+→ structured discovery + coverage checks
+→ decisive source verification
 
-Codebase Memory enabled but Python unavailable
-→ keep the persistent preference unchanged
+Codebase Memory enabled but upstream CLI cannot be launched
+→ keep persistent preference unchanged
 → use normal source search for this task
 → report that Codebase Memory was not used
 
@@ -125,4 +116,4 @@ Review an architecture proposal without changing code
 - A module may load another module only when work reveals that module's trigger.
 - Create plans, execution documents, test suites, review stages, commits, branches, or other process artifacts only when the user, the project, or the task itself requires them; a generic workflow habit is not a requirement.
 - If the project or user explicitly requires one of those artifacts or gates, follow that requirement with the smallest sufficient implementation.
-- Record a durable technical decision only when the reason cannot be cheaply reconstructed from code, existing documentation, the code graph, or history and is likely to matter later.
+- Record a durable technical decision only when the reason cannot be cheaply reconstructed from code, existing documentation, structured code intelligence, or history and is likely to matter later.
