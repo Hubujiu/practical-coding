@@ -5,7 +5,7 @@ param(
     [string]$Profile = "standard",
     [int]$Runs = 0,
     [int]$Workers = 3,
-    [ValidateSet("docker", "daytona", "modal", "apple-container", "agentcore")]
+    [ValidateSet("docker", "daytona", "modal")]
     [string]$Sandbox = "docker",
     [string]$Model = "gpt-5.6-luna",
     [string]$Reasoning = "medium",
