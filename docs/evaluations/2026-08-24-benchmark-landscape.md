@@ -44,7 +44,7 @@ The adapter:
 
 - pins execution to the immutable `skillsbench@1.1` dataset through BenchFlow;
 - keeps a `v1.1` SkillsBench metadata checkout only for category/roster selection;
-- pins BenchFlow to `0.6.2`, inside the dataset's declared compatibility range;
+- pins BenchFlow to `0.6.5`, a tested 0.6.x release whose CLI supports versioned datasets, `bench eval run`, custom `--skills-dir`, repeated `--include`, and reasoning effort;
 - runs the benchmark oracle before model calls by default;
 - compares `codex-acp` + `gpt-5.6-luna` + medium reasoning under `no-skill` and `with-skill` treatments;
 - mounts only the current Practical Coding bundle in the treatment arm rather than each task's curated SkillsBench Skill;
