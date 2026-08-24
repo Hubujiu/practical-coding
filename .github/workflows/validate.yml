@@ -20,6 +20,9 @@ jobs:
         run: pip install "git+https://github.com/agentskills/agentskills.git#subdirectory=skills-ref"
       - name: Validate SKILL.md
         run: skills-ref validate ./practical-coding
+      - name: Run benchmark harness tests
+        working-directory: practical-coding
+        run: python -m unittest benchmarks.test_benchmarks benchmarks.test_stability
       - name: Check Codex default_prompt references the skill as $skill-name
         run: grep -qF '$practical-coding' practical-coding/agents/openai.yaml
       - name: Ensure legacy local graph runtime is not reintroduced

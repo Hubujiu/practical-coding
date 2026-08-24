@@ -15,6 +15,21 @@ pwsh -File benchmarks/run.ps1 -Profile smoke -Suite router -Case direct-artifact
 pwsh -File benchmarks/run.ps1 -Rescore D:\path\to\benchmark-results\20260824-203839
 ```
 
+For a result that will be presented as a stable ranking, opt into the evidence gate:
+
+```powershell
+pwsh -File benchmarks/run.ps1 -Profile standard -Runs 3 -Workers 3 -RequireStableRanking
+pwsh -File benchmarks/run.ps1 -Profile full -Suite delivery -Runs 3 -BaselineSkill docs\evaluations\snapshots\practical-v1.10 -RequireStableRanking
+```
+
+`-RequireStableRanking` refuses an effective run count below three, keeps production builds enabled for Delivery, writes to an explicit output directory when needed, and validates the completed result with `benchmarks/check_stability.py`. Existing artifacts can be checked directly:
+
+```powershell
+python benchmarks/check_stability.py benchmark-results\v111-delivery-n1-core-reverted --suite delivery
+```
+
+That command intentionally reports the published v1.11 Delivery `n=1` artifact as `PROVISIONAL`; it must not be used for a stable ranking until the same cells are rerun with at least three distinct repetitions.
+
 Profiles:
 
 - `smoke`: one run by default; quick harness and model sanity check.
@@ -28,17 +43,18 @@ Useful options:
 - `-Suite`, `-Case`, and `-Arm` select repeatable subsets for diagnosis or focused regression gates.
 - `-SourcesRoot <directory>` reuses pinned competitor checkouts. Without it, sources are cached under the user-local application data directory and cloned as needed.
 - `-IncludeBaseline` adds a no-skill delivery arm.
-- `-NoBuilds` skips runner-owned frontend production builds.
+- `-NoBuilds` skips runner-owned frontend production builds. It is rejected for a stable Delivery ranking.
 - `-SelfTest` runs the local harness regression tests and validates fixtures, upstream scorers, source pins, and reporting without model calls.
-- `-Rescore <run-directory>` reapplies the current mechanical graders to saved workspaces/transcripts without another model call; the manifest records the new runner hash and rescore time.
 - `-FailOnCellFailure` makes any behavioral cell failure return exit code 2. By default only harness/infrastructure failures are non-zero, because a valid comparison may intentionally expose competitor or candidate failures.
+- `-RequireStableRanking` requires at least three distinct repetitions per selected suite/case/arm and rejects incomplete or infrastructure-failed runs before they are called stable.
+- `-Rescore <run-directory>` reapplies the current mechanical graders to saved workspaces/transcripts without another model call; the manifest records the new runner hash and rescore time.
 
 By default, run artifacts are written under `benchmark-results/` and ignored by Git, so transcripts and generated workspaces remain inspectable across commands without entering commits. Use `-Output` for an explicit location.
 
 The fast harness regression suite is also runnable without sources or model access:
 
 ```powershell
-python -m unittest benchmarks.test_benchmarks
+python -m unittest benchmarks.test_benchmarks benchmarks.test_stability
 ```
 
 The output directory contains:
@@ -66,3 +82,5 @@ cells/                 prompt, raw JSONL, stderr, answer, and code workspace per
 ## Acceptance
 
 Use repeated paired results. A candidate is not accepted merely because its prose matches a Skill contract. Require no correctness/build regression, then compare delivered code and behavior. Treat LOC, tokens, and time as secondary within equally correct artifacts. `n=1` is a smoke result, not a stable ranking.
+
+A published stable ranking must pass `benchmarks/check_stability.py` with the default minimum `n=3`. The gate checks distinct repetition IDs, complete-run metadata, and infrastructure errors. Behavioral or build failures remain valid benchmark observations and therefore do not invalidate the sample by themselves.
