@@ -12,9 +12,11 @@ The chain deliberately separates three evidence types:
 | Router | Practical-owned exact classification corpus covering Direct, Decision, Debugging, Implementation, Exploration, and Verification | Current and previous Practical | Project regression benchmark |
 | Decision | Practical-owned two-turn scenarios and mechanical contract grader | Practical and Matt Pocock `grilling`, plus optional previous Practical | Comparative benchmark; `grilling` has no declared upstream behavior benchmark |
 | Debug | Ponytail `trace-transfer`/`trace-amount` plus Practical-owned shared-boundary cases; deterministic invariant and sibling-caller grading | Practical and Superpowers, plus optional previous Practical | Mixed upstream/custom comparative benchmark |
-| Harness tests | Six Python tests for question/recommendation counting, delta direction, fixed Luna configuration, route coverage, and Decision-module injection | Runner only | Local benchmark-infrastructure regression tests |
+| Harness tests | Python unit tests for runner mechanics, stability gating, catalog breadth, duplicate detection, scorer seed rejection, and oracle acceptance | Runner only | Local benchmark-infrastructure regression tests |
 
 The Decision and Debug comparisons must not be described as official Matt Pocock or Superpowers benchmark results. They are controlled Codex/Luna comparisons against those Skills' relevant behavior. Tests, TDD phases, planning prose, and workflow completeness receive no quality points; only the delivered behavior, safety invariant, build, and artifact metrics are scored.
+
+The public Router/Decision/Debug catalog is a regression corpus. Cases that have influenced Skill wording remain useful for preventing regressions but are no longer independent evidence of generalization. See [`../docs/evaluations/2026-08-24-benchmark-landscape.md`](../docs/evaluations/2026-08-24-benchmark-landscape.md) for the external and held-out evidence plan.
 
 ## Pinned upstream sources
 
@@ -55,7 +57,7 @@ Set-Location practical-coding
 pwsh -NoProfile -File benchmarks/run.ps1 -SelfTest
 ```
 
-`-SelfTest` makes no model calls. It runs the six harness regression tests, verifies every profile case ID, then proves that the Ponytail and custom scorers accept their good fixtures and reject their bad fixtures.
+`-SelfTest` makes no model calls. It runs the harness/stability/catalog unit tests, verifies every profile case ID, proves the pinned Ponytail scorers reject their bad references, proves every Practical-owned Debug seed fails, and proves each expanded Debug oracle passes its deterministic scorer.
 
 ## 2. Run the standard comparison
 
@@ -66,18 +68,27 @@ pwsh -NoProfile -File benchmarks/run.ps1 `
   -Workers 3
 ```
 
-This runs 150 isolated cells when no previous-version or no-Skill arm is requested:
+The current public `standard` profile runs 222 isolated cells when no previous-version or no-Skill arm is requested:
 
-- 9 Delivery cases × 2 arms × 3 runs;
-- 16 Router cases × 1 arm × 3 runs;
-- 4 Decision cases × 2 arms × 3 runs;
-- 4 Debug cases × 2 arms × 3 runs.
+- 9 Delivery cases × 2 arms × 3 runs = 54;
+- 28 Router cases × 1 arm × 3 runs = 84;
+- 6 Decision cases × 2 arms × 3 runs = 36;
+- 8 Debug cases × 2 arms × 3 runs = 48.
 
-For the expanded 18-case Ponytail delivery matrix:
+For the complete public matrix:
 
 ```powershell
 pwsh -NoProfile -File benchmarks/run.ps1 -Profile full -Runs 3 -Workers 3
 ```
+
+`full` runs 324 cells without a previous-version or no-Skill arm:
+
+- 18 Delivery cases × 2 arms × 3 runs = 108;
+- 28 Router cases × 1 arm × 3 runs = 84;
+- 10 Decision cases × 2 arms × 3 runs = 60;
+- 12 Debug cases × 2 arms × 3 runs = 72.
+
+The `smoke` profile intentionally remains small and defaults to one repetition. It is for harness/model sanity only.
 
 ## 3. Run a before/after candidate gate
 
@@ -102,6 +113,8 @@ pwsh -NoProfile -File benchmarks/run.ps1 `
 
 The materialized baseline Skill is copied into the run directory. Both entrypoint and complete Skill-bundle hashes are recorded in `manifest.json`, preventing an ambiguous "previous version" comparison.
 
+For a comparison that will be published as a stable ranking, add `-RequireStableRanking`. It rejects effective `n<3`, incomplete runs, infrastructure failures, and Delivery rankings without production-build evidence.
+
 ## 4. Run a focused regression
 
 Selectors are repeatable:
@@ -114,9 +127,9 @@ pwsh -NoProfile -File benchmarks/run.ps1 `
   -BaselineRef HEAD
 
 pwsh -NoProfile -File benchmarks/run.ps1 `
-  -Profile smoke `
-  -Suite decision `
-  -Case service-boundary `
+  -Profile full `
+  -Suite debug `
+  -Case trace-cache-tenant `
   -Runs 3
 ```
 
@@ -148,18 +161,20 @@ The rescore timestamp and current runner hash are written to the manifest. Raw r
 
 ## Published v1.11 calibration
 
-The following results were produced on Windows 11 with Python 3.13.14, Codex CLI 0.145.0, `gpt-5.6-luna`, reasoning `medium`, and three parallel workers. They are calibration results, not claims about every repository or model.
+The following table is a **historical calibration produced before the public catalog expansion in this document**. It remains the evidence for the v1.11 iteration and must not be relabeled as results on the new 28/10/12 matrix.
 
-| Matrix | Practical v1.11 | Frozen v1.10 | Comparator | Main difference |
+The run used Windows 11 with Python 3.13.14, Codex CLI 0.145.0, `gpt-5.6-luna`, reasoning `medium`, and three parallel workers.
+
+| Historical matrix | Practical v1.11 | Frozen v1.10 | Comparator | Main difference |
 |---|---:|---:|---:|---|
-| Router, 16 cases × n=3 | 48/48 | 48/48 | — | Both arms reached the current harness ceiling; the new negative rules caused no regression but did not prove a gain |
+| Router, 16 cases × n=3 | 48/48 | 48/48 | — | Both arms reached that harness ceiling; the new negative rules caused no regression but did not prove a gain |
 | Debug, 4 cases × n=3 | 12/12 | 12/12 | Superpowers 10/12 | Superpowers twice repaired only the named caller and missed the sibling/shared invariant |
 | Decision, 4 cases × n=3 | 12/12 | 12/12 | grilling 10/12 | Both Practical versions converged after the scripted reply; grilling reopened `api-migration` twice |
 | Delivery, 6 differentiating cases × n=1 | 5/6 | 5/6 | Ponytail 5/6 | All arms scored 6/6 correct/safe; production builds separated the pass rate and remain unstable at `n=1` |
 
-For Debug, suite median time was 39.1 seconds for v1.11, 44.5 seconds for v1.10, and 78.8 seconds for Superpowers; median total tokens were 80,940, 88,053, and 245,966 respectively. These secondary efficiency metrics matter only after correctness and safety. Delivery total LOC at `n=1` was 376 for v1.11, 363 for v1.10, and 343 for Ponytail, so the current data does **not** support a claim that v1.11 matches Ponytail's compactness.
+For historical Debug, suite median time was 39.1 seconds for v1.11, 44.5 seconds for v1.10, and 78.8 seconds for Superpowers; median total tokens were 80,940, 88,053, and 245,966 respectively. These secondary efficiency metrics matter only after correctness and safety. Historical Delivery total LOC at `n=1` was 376 for v1.11, 363 for v1.10, and 343 for Ponytail, so those data do **not** support a claim that v1.11 matches Ponytail's compactness.
 
-The published comparison used `-BaselineSkill docs/evaluations/snapshots/practical-v1.10`, not commit `75d5013`. See [`../docs/evaluations/2026-08-24-practical-v111-iteration.md`](../docs/evaluations/2026-08-24-practical-v111-iteration.md) for the complete per-case tables and acceptance decisions.
+The published comparison used `-BaselineSkill docs/evaluations/snapshots/practical-v1.10`, not commit `75d5013`. See [`../docs/evaluations/2026-08-24-practical-v111-iteration.md`](../docs/evaluations/2026-08-24-practical-v111-iteration.md) for the complete historical per-case tables and acceptance decisions.
 
 ## Reproducibility limits
 
@@ -168,4 +183,5 @@ The published comparison used `-BaselineSkill docs/evaluations/snapshots/practic
 - `input_tokens` already includes cached input. Compare `uncached_input_tokens`, `output_tokens`, and reasoning tokens separately when discussing cost.
 - A successful Ponytail-derived Delivery score proves the reused deterministic contract, not equivalence with Ponytail's original Claude runtime.
 - The runner disables normal user Skills, plugins, apps, memories, and multi-agent behavior, then embeds exactly one selected Skill arm. This isolates the comparison but differs from a user's fully configured interactive session.
-- Do not generalize the focused v1.11 calibration rows into a whole-Skill ranking. Run the standard or full matrix after each material prompt change.
+- The public Practical-owned cases are visible regression tests. Do not use their saturation as proof of unseen-task generalization.
+- Do not generalize the focused v1.11 historical calibration rows into a whole-Skill ranking. Run the current standard/full matrix and an independent external or held-out suite after material prompt changes.

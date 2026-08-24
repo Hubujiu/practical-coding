@@ -27,7 +27,7 @@ $repoRoot = Split-Path -Parent $scriptDir
 if ($SelfTest) {
     Push-Location $repoRoot
     try {
-        & python -m unittest benchmarks.test_benchmarks benchmarks.test_stability
+        & python -m unittest benchmarks.test_benchmarks benchmarks.test_stability benchmarks.test_catalog
         if ($LASTEXITCODE -ne 0) { exit $LASTEXITCODE }
     }
     finally {
@@ -63,7 +63,7 @@ if ($RequireStableRanking -and -not $Output) {
 }
 
 $arguments = @(
-    (Join-Path $scriptDir "run_benchmarks.py"),
+    (Join-Path $scriptDir "run_catalog.py"),
     "--profile", $Profile,
     "--workers", $Workers
 )
