@@ -1,11 +1,11 @@
 # Implementation
 
-Load only for `change.context-heavy`. Produce a small change map, then implement; do not narrate a workflow.
+Load this module only when a change must coordinate multiple files, contracts, or invariants and the change surface is still unclear. Produce a small change map, then implement; do not narrate a workflow.
 
 ## Work Locally
 
 - Identify the authoritative contract or invariant and the minimum producers, consumers, adapters, data, and checks that must move together.
-- Read only those paths and their material callers/dependencies; ignore nearby cleanup and decoys.
+- Read only those paths and their material callers/dependencies; leave nearby cleanup opportunities and unrelated code alone.
 - Preserve public compatibility unless the requirement authorizes a break. When migration is required, choose one authoritative internal representation and keep compatibility at the narrowest boundary.
 - Match project conventions and make the smallest coherent end-to-end diff.
 

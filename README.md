@@ -3,7 +3,7 @@
 > **一个 Skill，按需加载。**  
 > **One skill, load only what the task needs.**
 
-Practical Coding 是一个面向 Coding Agent 的轻量通用编码 Skill。它不把 Brainstorming、Planning、TDD、Debugging、Review 和 Git Workflow 串成固定流水线，而是让 `SKILL.md` 作为常驻 Router：简单任务直接执行；未决事件出现时才加载对应工程模块；只有被避免的上下文明显超过启动和交接成本时，才把模块隔离到子代理。
+Practical Coding 是一个面向 Coding Agent 的轻量通用编码 Skill。它不把 Brainstorming、Planning、TDD、Debugging、Review 和 Git Workflow 串成固定流水线，而是让 `SKILL.md` 作为常驻核心规则加轻量 Router：几条 always-on 工程底线（最小修改、成熟实现优先、保护安全与兼容、完成前取新鲜证据）在所有路径生效；简单任务直接执行；未决事件出现时才加载对应工程模块；只有被避免的上下文明显超过启动和交接成本时，才把模块隔离到子代理。
 
 目标：**用最小、完整、可维护的修改解决真实问题，同时减少多余代码、测试、文档、防御性编程、重复源码扫描和流程成本。**
 
@@ -51,7 +51,7 @@ flowchart TB
 | 模块 | 何时加载 |
 |---|---|
 | `references/decision.md` | 聚焦检查后仍存在会改变实现的实质方案选择 |
-| `references/implementation.md` | 影响图之后仍有未解决的契约/不变量协调；明确的跨层修改仍走 Direct Path |
+| `references/implementation.md` | 修改需要协调多个文件、契约或不变量，且修改面尚不清晰 |
 | `references/debugging.md` | 已观察到失败，且聚焦检查后原因仍不明确 |
 | `references/verification.md` | 项目 gate 和聚焦检查后，关键结论仍缺少充分证据 |
 | `references/exploration.md` | 必须广泛扫描时的默认源码导航，返回紧凑影响图 |
@@ -291,7 +291,7 @@ practical-coding/
 
 ## English
 
-Practical Coding is a compact general-purpose coding skill for coding agents. `SKILL.md` stays as a lightweight router: direct local work loads no extra module, while unresolved decision, exploration, diagnosis, implementation, or verification events load only their focused reference. A module moves to an isolated subagent only when avoided context or parallel critical-path value clearly exceeds startup and handoff cost.
+Practical Coding is a compact general-purpose coding skill for coding agents. `SKILL.md` carries a small always-on core (smallest coherent change, mature implementations first, preserved safety and compatibility, fresh evidence before completion) plus a lightweight router: direct local work loads no extra module, while unresolved decision, exploration, diagnosis, implementation, or verification events load only their focused reference. A module moves to an isolated subagent only when avoided context or parallel critical-path value clearly exceeds startup and handoff cost.
 
 **Goal:** produce the smallest durable change with enough fresh evidence to justify confidence while minimizing unnecessary code, tests, documentation, defensive handling, process, and repeated source exploration.
 

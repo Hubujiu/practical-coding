@@ -1,6 +1,6 @@
 # Decision
 
-Load only for `choice.unresolved`. Its output is a choice that changes the next action, not a design essay.
+Load this module only when a material choice about architecture, dependencies, APIs, data models, compatibility, or multiple plausible implementations remains open. Its output is a choice that changes the next action, not a design essay.
 
 ## Resolve
 

@@ -13,28 +13,22 @@ Load this protocol only inside a worker selected by the Isolation Gate. Also rea
 - Record the starting HEAD and relevant dirty paths. Mark the result stale if the repository or assigned scope changes underneath the work.
 - Never commit, reset, checkout, clean, or overwrite pre-existing user changes unless the root explicitly authorizes that operation.
 
-## Compact return capsule
+## Compact return
 
-Return conclusions and evidence, not a transcript, raw graph dump, copied source, full logs, or full diff:
+Return conclusions and evidence, not a transcript, raw graph dump, copied source, full logs, or full diff. A useful return states:
 
-```yaml
-event: decision | exploration | codebase-memory | debugging | implementation | verification
-status: complete | provisional | blocked | stale | needs-root
-repo_state: { head: "<commit-or-null>", dirty_paths: [] }
-scope: { paths: [], symbols: [] }
-findings: []
-changes: []
-checks: []
-unresolved: []
-next_event: null
-```
+- which module's work was done and whether it is complete, provisional, blocked, or stale;
+- the repository state it evaluated: starting commit and relevant dirty paths;
+- the paths and symbols in scope;
+- findings, changes, and checks, each backed by an exact path, symbol, command result, or coverage limitation;
+- unresolved items, and any newly exposed event as a suggestion that only the root decides whether to route.
 
-Evidence pointers should identify an exact path, symbol, command result, or coverage limitation. `next_event` is a suggestion; only the root decides whether to route it. Do not persist the capsule in the repository unless the user requested an artifact.
+Do not persist the return in the repository unless the user requested an artifact.
 
 ## Module-specific result
 
 - Decision: material constraints, viable options, recommendation, and tradeoffs.
-- Exploration: exact paths/symbols, relevant edges, compatibility boundaries, likely change surface, decoys, and gaps.
+- Exploration: exact paths/symbols, relevant edges, compatibility boundaries, likely change surface, ruled-out candidates, and gaps.
 - Codebase Memory: project/generation, queries and pagination, symbols and paths, call edges, coverage and source fallbacks.
 - Debugging: reproduction, earliest incorrect state, supported root cause or current hypothesis, and remaining uncertainty.
 - Implementation: changed paths, implementation decisions that are not evident from the diff, and fresh focused checks.

@@ -1,6 +1,6 @@
 # Structured Codebase Memory
 
-Load this module only for `structure.large` when `.practical-coding.yaml` explicitly sets `codebase_memory.enabled: true`. It is an optional evidence source, not a mandatory workflow stage. When false or absent, load `exploration.md` instead and use ordinary source tools.
+Load this module only when broad navigation of a large or structurally complex codebase is necessary and `.practical-coding.yaml` explicitly sets `codebase_memory.enabled: true`. It is an optional evidence source, not a mandatory workflow stage. When false or absent, load `exploration.md` instead and use ordinary source tools.
 
 ## Backend Policy
 

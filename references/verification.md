@@ -1,6 +1,6 @@
 # Verification
 
-Load only for `evidence.uncertain`. Produce a bounded evidence plan, then execute it.
+Load this module only when risk or uncertainty makes the verification strategy itself a meaningful decision. Produce a bounded evidence plan, then execute it.
 
 ## Principle
 
@@ -17,3 +17,11 @@ Test externally meaningful behavior or a durable invariant, use existing infrast
 ## Completion
 
 Claim only what fresh evidence supports. Re-check after the final edit. If environment, credentials, or services block an appropriate check, report the limitation and remaining uncertainty.
+
+Reject these rationalizations before claiming completion:
+
+| Rationalization | Reality |
+|---|---|
+| "Too simple to verify" | Simple changes still get one direct check: read the diff or render the result. |
+| "It worked before this last edit" | Stale evidence. Re-check the final state with the cheapest sufficient check. |
+| "The tests probably still pass" | A guess is not evidence. Run the targeted check or report that you could not. |
