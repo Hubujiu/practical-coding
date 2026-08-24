@@ -15,7 +15,7 @@ pwsh -File benchmarks/run.ps1 -Profile smoke -Suite router -Case direct-artifact
 pwsh -File benchmarks/run.ps1 -Rescore D:\path\to\benchmark-results\20260824-203839
 ```
 
-`run.ps1` is the canonical entrypoint. It loads the core runner through `run_catalog.py`, which installs the extended public case catalog before execution. This keeps benchmark mechanics separate from the evolving task corpus.
+`run.ps1` is the canonical entrypoint. It loads the core runner through `run_catalog.py`, which installs the extended public case catalog before execution. This keeps benchmark mechanics separate from the evolving task corpus. `manifest.json` fingerprints the complete benchmark runtime bundle (core runner + case catalog + canonical wrapper), so task/scorer changes cannot masquerade as the same benchmark revision.
 
 For a result that will be presented as a stable ranking, opt into the evidence gate:
 
@@ -36,7 +36,7 @@ That command intentionally reports the published v1.11 Delivery `n=1` artifact a
 
 | Profile | Delivery | Router | Decision | Debug | Default runs | Cells without previous/no-Skill arm |
 |---|---:|---:|---:|---:|---:|---:|
-| `smoke` | 3 | 4 | 1 | 1 | 1 | 13 |
+| `smoke` | 3 | 4 | 1 | 1 | 1 | 14 |
 | `standard` | 9 | 28 | 6 | 8 | 3 | 222 |
 | `full` | 18 | 28 | 10 | 12 | 3 | 324 |
 
