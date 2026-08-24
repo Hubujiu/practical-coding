@@ -21,7 +21,7 @@ This note separates project regression tests from external benchmark evidence. P
 Use three layers instead of one leaderboard number:
 
 1. **Public regression layer** — Router, Decision, Debug and the Ponytail-derived Delivery tasks in this repository. These should stay deterministic and are allowed to encode previously observed failures. Their job is to prevent regression, not prove unseen-task generalization.
-2. **External benchmark layer** — run the Skill as an augmentation treatment on independent public suites. SkillsBench is the first target because it explicitly measures with-Skills versus without-Skills. FeatureBench and a standardized SWE-bench/Terminal-Bench harness provide broader coding-agent validity.
+2. **External benchmark layer** — run the Skill as an augmentation treatment on independent public suites. SkillsBench is executable through `benchmarks/run_external.ps1`: the same Codex/Luna configuration is paired as `no-skill` versus a custom Skill directory containing only Practical Coding. FeatureBench and a standardized SWE-bench/Terminal-Bench harness remain broader coding-agent validity targets.
 3. **Held-out layer** — keep a small private task set that is not read while editing `SKILL.md` or references. Rotate or refresh it from recent real PRs/bugs. Only this layer should be used for claims that a prompt iteration generalized beyond the public regression corpus.
 
 ## Task-authoring rules adopted here
@@ -36,6 +36,25 @@ The expanded public catalog follows these rules:
 - `standard` is a bounded release gate while `full` contains the complete public regression matrix;
 - stable rankings still require at least `n=3`; public 100% results are described as regression ceilings, not generalization proof.
 
+## SkillsBench adapter status
+
+Implemented in `benchmarks/external/skillsbench_adapter.py` with the canonical PowerShell entrypoint `benchmarks/run_external.ps1`.
+
+The adapter:
+
+- pins execution to the immutable `skillsbench@1.1` dataset through BenchFlow;
+- keeps a `v1.1` SkillsBench metadata checkout only for category/roster selection;
+- pins BenchFlow to `0.6.2`, inside the dataset's declared compatibility range;
+- runs the benchmark oracle before model calls by default;
+- compares `codex-acp` + `gpt-5.6-luna` + medium reasoning under `no-skill` and `with-skill` treatments;
+- mounts only the current Practical Coding bundle in the treatment arm rather than each task's curated SkillsBench Skill;
+- alternates arm execution order across repetitions;
+- requires three complete paired repetitions for stable evidence;
+- records raw BenchFlow jobs, the selected task roster, source/version pins, adapter hash, Skill bundle hash, and exact commands;
+- reports pass-rate lift, mean-reward lift, pass flips, normalized gain, per-task rates, and task-cluster-bootstrap 95% confidence intervals.
+
+This is intentionally described as a **Practical-owned ablation on SkillsBench**, not an official SkillsBench leaderboard row.
+
 ## Next external-validation milestone
 
-The highest-value next step is not another Core rule. It is an adapter that can run `practical-coding` as a treatment on an independent benchmark without rewriting that benchmark's tasks. Start with SkillsBench because its paired methodology matches the project's goal, then add a small FeatureBench fast-split experiment. Keep model, harness, reasoning effort, task version, and Skill bundle hash fixed for every paired comparison.
+After a stable SkillsBench software-engineering run is recorded, the next useful adapter is FeatureBench's fast/lite split for larger feature implementation and exploration behavior. That should preserve the same evidence discipline: fixed model/harness/reasoning, immutable dataset version or commit, paired no-Skill/Practical arms, oracle/gold validation, raw artifacts, and a stable repeated-run gate.
