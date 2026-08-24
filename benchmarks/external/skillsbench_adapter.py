@@ -23,7 +23,7 @@ DATASET_NAME = "skillsbench"
 DATASET_VERSION = "1.1"
 SKILLSBENCH_REPO = "https://github.com/benchflow-ai/skillsbench.git"
 SKILLSBENCH_REF = "v1.1"
-BENCHFLOW_VERSION = "0.6.2"
+BENCHFLOW_VERSION = "0.6.5"
 AGENT = "codex-acp"
 MODEL = "gpt-5.6-luna"
 REASONING = "medium"
@@ -36,7 +36,9 @@ SMOKE_TASKS = (
 AUTH_ENV_VARS = ("OPENAI_API_KEY", "CODEX_API_KEY", "CODEX_ACCESS_TOKEN")
 
 
-def run_command(command: list[str], cwd: Path | None = None, timeout: float | None = None) -> subprocess.CompletedProcess[str]:
+def run_command(
+    command: list[str], cwd: Path | None = None, timeout: float | None = None
+) -> subprocess.CompletedProcess[str]:
     return subprocess.run(
         command,
         cwd=str(cwd) if cwd else None,
@@ -75,23 +77,38 @@ def resolve_uvx() -> list[str]:
         return [uvx, "--from", f"benchflow=={BENCHFLOW_VERSION}", "bench"]
     uv = shutil.which("uv")
     if uv:
-        return [uv, "tool", "run", "--from", f"benchflow=={BENCHFLOW_VERSION}", "bench"]
-    raise FileNotFoundError("uv/uvx is required. Install uv, then rerun the external benchmark.")
+        return [
+            uv,
+            "tool",
+            "run",
+            "--from",
+            f"benchflow=={BENCHFLOW_VERSION}",
+            "bench",
+        ]
+    raise FileNotFoundError(
+        "uv/uvx is required. Install uv, then rerun the external benchmark."
+    )
 
 
 def check_prerequisites(sandbox: str) -> dict[str, str]:
-    if not shutil.which("git"):
-        raise FileNotFoundError("git is required")
+    git = shutil.which("git")
     codex = shutil.which("codex")
+    if not git:
+        raise FileNotFoundError("git is required")
     if not codex:
-        raise FileNotFoundError("Codex CLI is required for the codex-acp SkillsBench arm")
+        raise FileNotFoundError(
+            "Codex CLI is required for the codex-acp SkillsBench arm"
+        )
     uv_prefix = resolve_uvx()
     auth_json = Path.home() / ".codex" / "auth.json"
     if not any(os.environ.get(name) for name in AUTH_ENV_VARS) and not auth_json.is_file():
-        raise RuntimeError("Codex authentication was not found. Run `codex login` or provide a supported Codex/OpenAI credential.")
+        raise RuntimeError(
+            "Codex authentication was not found. Run `codex login` or provide a supported Codex/OpenAI credential."
+        )
+
     versions: dict[str, str] = {}
     for name, command in (
-        ("git", [shutil.which("git") or "git", "--version"]),
+        ("git", [git, "--version"]),
         ("codex", [codex, "--version"]),
         ("uv", [uv_prefix[0], "--version"]),
     ):
@@ -99,6 +116,7 @@ def check_prerequisites(sandbox: str) -> dict[str, str]:
         if result.returncode:
             raise RuntimeError(f"failed to inspect {name}: {result.stdout[-1000:]}")
         versions[name] = result.stdout.strip()
+
     if sandbox == "docker":
         docker = shutil.which("docker")
         if not docker:
@@ -114,23 +132,34 @@ def ensure_skillsbench_checkout(cache_root: Path) -> tuple[Path, str]:
     checkout = cache_root / f"skillsbench-{DATASET_VERSION}"
     checkout.parent.mkdir(parents=True, exist_ok=True)
     if not checkout.exists():
-        clone = run_command([
-            shutil.which("git") or "git",
-            "clone",
-            "--filter=blob:none",
-            "--depth",
-            "1",
-            "--branch",
-            SKILLSBENCH_REF,
-            SKILLSBENCH_REPO,
-            str(checkout),
-        ])
+        clone = run_command(
+            [
+                shutil.which("git") or "git",
+                "clone",
+                "--filter=blob:none",
+                "--depth",
+                "1",
+                "--branch",
+                SKILLSBENCH_REF,
+                SKILLSBENCH_REPO,
+                str(checkout),
+            ]
+        )
         if clone.returncode:
-            raise RuntimeError(f"failed to clone SkillsBench {SKILLSBENCH_REF}: {clone.stdout[-3000:]}")
-    head = run_command([shutil.which("git") or "git", "rev-parse", "HEAD"], checkout)
-    tag = run_command([shutil.which("git") or "git", "describe", "--tags", "--exact-match"], checkout)
+            raise RuntimeError(
+                f"failed to clone SkillsBench {SKILLSBENCH_REF}: {clone.stdout[-3000:]}"
+            )
+    head = run_command(
+        [shutil.which("git") or "git", "rev-parse", "HEAD"], checkout
+    )
+    tag = run_command(
+        [shutil.which("git") or "git", "describe", "--tags", "--exact-match"],
+        checkout,
+    )
     if head.returncode or tag.returncode or tag.stdout.strip() != SKILLSBENCH_REF:
-        raise RuntimeError(f"SkillsBench metadata checkout must be exactly {SKILLSBENCH_REF}")
+        raise RuntimeError(
+            f"SkillsBench metadata checkout must be exactly {SKILLSBENCH_REF}"
+        )
     return checkout, head.stdout.strip()
 
 
@@ -150,11 +179,15 @@ def task_category(task_md: Path) -> str | None:
     frontmatter = text.split("---", 2)
     if len(frontmatter) < 3:
         return None
-    match = re.search(r"(?m)^\s*category:\s*['\"]?([a-z0-9-]+)", frontmatter[1])
+    match = re.search(
+        r"(?m)^\s*category:\s*['\"]?([a-z0-9-]+)", frontmatter[1]
+    )
     return match.group(1) if match else None
 
 
-def discover_tasks(checkout: Path, profile: str, explicit: Iterable[str] = ()) -> list[str]:
+def discover_tasks(
+    checkout: Path, profile: str, explicit: Iterable[str] = ()
+) -> list[str]:
     roster = load_dataset_roster(checkout)
     roster_set = set(roster)
     explicit = [item for item in explicit if item]
@@ -163,10 +196,12 @@ def discover_tasks(checkout: Path, profile: str, explicit: Iterable[str] = ()) -
         if unknown:
             raise ValueError(f"tasks are not in {DATASET}: {unknown}")
         return list(dict.fromkeys(explicit))
+
     software = [
         name
         for name in roster
-        if task_category(checkout / "tasks" / name / "task.md") == "software-engineering"
+        if task_category(checkout / "tasks" / name / "task.md")
+        == "software-engineering"
     ]
     if profile == "smoke":
         preferred = [name for name in SMOKE_TASKS if name in software]
@@ -191,6 +226,13 @@ def stage_practical_skill(output: Path) -> Path:
     if references.is_dir():
         shutil.copytree(references, destination / "references")
     return skills_root
+
+
+def _selection_args(tasks: list[str]) -> list[str]:
+    args = ["--expected-tasks", str(len(tasks))]
+    for task in tasks:
+        args += ["--include", task]
+    return args
 
 
 def bench_command(
@@ -224,19 +266,19 @@ def bench_command(
         str(jobs_dir),
         "--skill-mode",
         skill_mode,
-        "--quiet",
+        *_selection_args(tasks),
     ]
     if skill_mode == "with-skill":
         if skills_root is None:
             raise ValueError("skills_root is required for with-skill")
         command += ["--skills-dir", str(skills_root)]
-    for task in tasks:
-        command += ["--include", task]
     return command
 
 
-def oracle_command(*, jobs_dir: Path, tasks: list[str], sandbox: str, workers: int) -> list[str]:
-    command = [
+def oracle_command(
+    *, jobs_dir: Path, tasks: list[str], sandbox: str, workers: int
+) -> list[str]:
+    return [
         *resolve_uvx(),
         "eval",
         "run",
@@ -252,11 +294,8 @@ def oracle_command(*, jobs_dir: Path, tasks: list[str], sandbox: str, workers: i
         str(jobs_dir),
         "--skill-mode",
         "no-skill",
-        "--quiet",
+        *_selection_args(tasks),
     ]
-    for task in tasks:
-        command += ["--include", task]
-    return command
 
 
 def _read_json(path: Path) -> dict[str, Any] | None:
@@ -330,16 +369,29 @@ def load_job_rewards(job_dir: Path) -> dict[str, dict[str, Any]]:
         else:
             by_task[task_id] = row
     if duplicates:
-        details = "; ".join(f"{task}: {sorted(set(paths))}" for task, paths in sorted(duplicates.items()))
-        raise RuntimeError(f"duplicate SkillsBench result.json files for a task: {details}")
+        details = "; ".join(
+            f"{task}: {sorted(set(paths))}"
+            for task, paths in sorted(duplicates.items())
+        )
+        raise RuntimeError(
+            f"duplicate SkillsBench result.json files for a task: {details}"
+        )
     return by_task
 
 
-def validate_oracle(job_dir: Path, tasks: list[str]) -> tuple[bool, dict[str, Any]]:
+def validate_oracle(
+    job_dir: Path, tasks: list[str]
+) -> tuple[bool, dict[str, Any]]:
     rows = load_job_rewards(job_dir)
     missing = sorted(set(tasks) - set(rows))
-    failed = sorted(task for task in tasks if task in rows and rows[task]["reward"] != 1.0)
-    unhealthy = sorted(task for task in tasks if task in rows and rows[task]["excluded_reason"] is not None)
+    failed = sorted(
+        task for task in tasks if task in rows and rows[task]["reward"] != 1.0
+    )
+    unhealthy = sorted(
+        task
+        for task in tasks
+        if task in rows and rows[task]["excluded_reason"] is not None
+    )
     return not missing and not failed and not unhealthy, {
         "expected": len(tasks),
         "observed": len(rows),
@@ -349,32 +401,50 @@ def validate_oracle(job_dir: Path, tasks: list[str]) -> tuple[bool, dict[str, An
     }
 
 
-def collect_pairs(output: Path, tasks: list[str], runs: int) -> tuple[list[dict[str, Any]], list[dict[str, Any]]]:
+def collect_pairs(
+    output: Path, tasks: list[str], runs: int
+) -> tuple[list[dict[str, Any]], list[dict[str, Any]]]:
     pairs: list[dict[str, Any]] = []
     gaps: list[dict[str, Any]] = []
     for repetition in range(1, runs + 1):
         rep = output / "runs" / f"r{repetition:03d}"
-        base = load_job_rewards(rep / "no-skill") if (rep / "no-skill").exists() else {}
-        practical = load_job_rewards(rep / "practical") if (rep / "practical").exists() else {}
+        base = (
+            load_job_rewards(rep / "no-skill")
+            if (rep / "no-skill").exists()
+            else {}
+        )
+        practical = (
+            load_job_rewards(rep / "practical")
+            if (rep / "practical").exists()
+            else {}
+        )
         for task in tasks:
-            left = base.get(task)
-            right = practical.get(task)
-            if not left or not right or left["excluded_reason"] or right["excluded_reason"]:
-                gaps.append({
+            left, right = base.get(task), practical.get(task)
+            if (
+                not left
+                or not right
+                or left["excluded_reason"]
+                or right["excluded_reason"]
+            ):
+                gaps.append(
+                    {
+                        "task": task,
+                        "repetition": repetition,
+                        "baseline": left,
+                        "practical": right,
+                    }
+                )
+                continue
+            pairs.append(
+                {
                     "task": task,
                     "repetition": repetition,
-                    "baseline": left,
-                    "practical": right,
-                })
-                continue
-            pairs.append({
-                "task": task,
-                "repetition": repetition,
-                "reward_base": left["reward"],
-                "reward_practical": right["reward"],
-                "passed_base": left["passed"],
-                "passed_practical": right["passed"],
-            })
+                    "reward_base": left["reward"],
+                    "reward_practical": right["reward"],
+                    "passed_base": left["passed"],
+                    "passed_practical": right["passed"],
+                }
+            )
     return pairs, gaps
 
 
@@ -391,13 +461,18 @@ def percentile(values: list[float], p: float) -> float | None:
     return values[lower] * (1 - fraction) + values[upper] * fraction
 
 
-def cluster_bootstrap(pairs: list[dict[str, Any]], samples: int = 5000, seed: int = 0) -> dict[str, list[float | None]]:
+def cluster_bootstrap(
+    pairs: list[dict[str, Any]], samples: int = 5000, seed: int = 0
+) -> dict[str, list[float | None]]:
     groups: dict[str, list[dict[str, Any]]] = defaultdict(list)
     for pair in pairs:
         groups[pair["task"]].append(pair)
     tasks = sorted(groups)
     if not tasks or samples <= 0:
-        return {"pass_rate_delta": [None, None], "mean_reward_delta": [None, None]}
+        return {
+            "pass_rate_delta": [None, None],
+            "mean_reward_delta": [None, None],
+        }
     rng = random.Random(seed)
     pass_deltas: list[float] = []
     reward_deltas: list[float] = []
@@ -406,43 +481,83 @@ def cluster_bootstrap(pairs: list[dict[str, Any]], samples: int = 5000, seed: in
         for task in (rng.choice(tasks) for _ in tasks):
             sample_pairs.extend(groups[task])
         pass_deltas.append(
-            statistics.mean(float(row["passed_practical"]) - float(row["passed_base"]) for row in sample_pairs)
+            statistics.mean(
+                float(row["passed_practical"]) - float(row["passed_base"])
+                for row in sample_pairs
+            )
         )
         reward_deltas.append(
-            statistics.mean(float(row["reward_practical"]) - float(row["reward_base"]) for row in sample_pairs)
+            statistics.mean(
+                float(row["reward_practical"]) - float(row["reward_base"])
+                for row in sample_pairs
+            )
         )
     return {
-        "pass_rate_delta": [percentile(pass_deltas, 0.025), percentile(pass_deltas, 0.975)],
-        "mean_reward_delta": [percentile(reward_deltas, 0.025), percentile(reward_deltas, 0.975)],
+        "pass_rate_delta": [
+            percentile(pass_deltas, 0.025),
+            percentile(pass_deltas, 0.975),
+        ],
+        "mean_reward_delta": [
+            percentile(reward_deltas, 0.025),
+            percentile(reward_deltas, 0.975),
+        ],
     }
 
 
-def summarize_pairs(pairs: list[dict[str, Any]], tasks: list[str], runs: int, gaps: list[dict[str, Any]], oracle_ok: bool) -> dict[str, Any]:
+def summarize_pairs(
+    pairs: list[dict[str, Any]],
+    tasks: list[str],
+    runs: int,
+    gaps: list[dict[str, Any]],
+    oracle_ok: bool,
+) -> dict[str, Any]:
     if pairs:
         pass_base = statistics.mean(float(row["passed_base"]) for row in pairs)
-        pass_practical = statistics.mean(float(row["passed_practical"]) for row in pairs)
+        pass_practical = statistics.mean(
+            float(row["passed_practical"]) for row in pairs
+        )
         reward_base = statistics.mean(float(row["reward_base"]) for row in pairs)
-        reward_practical = statistics.mean(float(row["reward_practical"]) for row in pairs)
+        reward_practical = statistics.mean(
+            float(row["reward_practical"]) for row in pairs
+        )
     else:
         pass_base = pass_practical = reward_base = reward_practical = 0.0
+
     delta = pass_practical - pass_base
-    normalized_gain = (delta / (1.0 - pass_base)) if delta > 0 and pass_base < 1.0 else delta
+    normalized_gain = delta / (1.0 - pass_base) if pass_base < 1.0 else 0.0
     by_task: list[dict[str, Any]] = []
     for task in tasks:
         rows = [row for row in pairs if row["task"] == task]
         if not rows:
             by_task.append({"task": task, "n": 0})
             continue
-        by_task.append({
-            "task": task,
-            "n": len(rows),
-            "pass_rate_base": statistics.mean(float(row["passed_base"]) for row in rows),
-            "pass_rate_practical": statistics.mean(float(row["passed_practical"]) for row in rows),
-            "mean_reward_base": statistics.mean(float(row["reward_base"]) for row in rows),
-            "mean_reward_practical": statistics.mean(float(row["reward_practical"]) for row in rows),
-        })
+        by_task.append(
+            {
+                "task": task,
+                "n": len(rows),
+                "pass_rate_base": statistics.mean(
+                    float(row["passed_base"]) for row in rows
+                ),
+                "pass_rate_practical": statistics.mean(
+                    float(row["passed_practical"]) for row in rows
+                ),
+                "mean_reward_base": statistics.mean(
+                    float(row["reward_base"]) for row in rows
+                ),
+                "mean_reward_practical": statistics.mean(
+                    float(row["reward_practical"]) for row in rows
+                ),
+            }
+        )
+
     expected_pairs = len(tasks) * runs
-    stable = runs >= 3 and oracle_ok and len(pairs) == expected_pairs and not gaps and all(row["n"] == runs for row in by_task)
+    stable = (
+        runs >= 3
+        and oracle_ok
+        and len(pairs) == expected_pairs
+        and not gaps
+        and all(row["n"] == runs for row in by_task)
+    )
     return {
         "stable": stable,
         "expected_pairs": expected_pairs,
@@ -455,9 +570,15 @@ def summarize_pairs(pairs: list[dict[str, Any]], tasks: list[str], runs: int, ga
         "mean_reward_base": reward_base,
         "mean_reward_practical": reward_practical,
         "mean_reward_delta": reward_practical - reward_base,
-        "wins": sum((not row["passed_base"]) and row["passed_practical"] for row in pairs),
-        "losses": sum(row["passed_base"] and (not row["passed_practical"]) for row in pairs),
-        "ties": sum(row["passed_base"] == row["passed_practical"] for row in pairs),
+        "wins": sum(
+            (not row["passed_base"]) and row["passed_practical"] for row in pairs
+        ),
+        "losses": sum(
+            row["passed_base"] and (not row["passed_practical"]) for row in pairs
+        ),
+        "ties": sum(
+            row["passed_base"] == row["passed_practical"] for row in pairs
+        ),
         "ci95": cluster_bootstrap(pairs),
         "by_task": by_task,
     }
@@ -471,16 +592,25 @@ def _fmt_signed_pp(value: float | None) -> str:
     return "—" if value is None else f"{100 * value:+.1f} pp"
 
 
-def render_report(manifest: dict[str, Any], summary: dict[str, Any], gaps: list[dict[str, Any]]) -> str:
-    ci = summary["ci95"]
-    pass_ci = ci["pass_rate_delta"]
-    reward_ci = ci["mean_reward_delta"]
+def render_report(
+    manifest: dict[str, Any],
+    summary: dict[str, Any],
+    gaps: list[dict[str, Any]],
+) -> str:
+    pass_ci = summary["ci95"]["pass_rate_delta"]
+    reward_ci = summary["ci95"]["mean_reward_delta"]
+    reward_ci_text = (
+        f"{reward_ci[0]:+.3f} … {reward_ci[1]:+.3f}"
+        if reward_ci[0] is not None and reward_ci[1] is not None
+        else "—"
+    )
     lines = [
         "# Practical Coding × SkillsBench external lift",
         "",
         f"- Dataset: `{manifest['dataset']}`",
         f"- Profile: `{manifest['profile']}` ({len(manifest['tasks'])} tasks)",
         f"- Agent/model: `{manifest['agent']}` / `{manifest['model']}` ({manifest['reasoning']})",
+        f"- BenchFlow: `{manifest['benchflow_version']}`",
         f"- Runs per task/arm: `{manifest['runs']}`",
         f"- Evidence: **{'STABLE' if summary['stable'] else 'PROVISIONAL'}**",
         "- Treatment: baseline is `no-skill`; trained arm mounts only `practical-coding` as the custom Skill directory.",
@@ -491,7 +621,7 @@ def render_report(manifest: dict[str, Any], summary: dict[str, Any], gaps: list[
         "| Metric | No Skill | + Practical | Delta | 95% cluster-bootstrap CI |",
         "|---|---:|---:|---:|---|",
         f"| Pass rate | {_fmt_pct(summary['pass_rate_base'])} | {_fmt_pct(summary['pass_rate_practical'])} | {_fmt_signed_pp(summary['pass_rate_delta'])} | {_fmt_signed_pp(pass_ci[0])} … {_fmt_signed_pp(pass_ci[1])} |",
-        f"| Mean reward | {summary['mean_reward_base']:.3f} | {summary['mean_reward_practical']:.3f} | {summary['mean_reward_delta']:+.3f} | {(f'{reward_ci[0]:+.3f}' if reward_ci[0] is not None else '—')} … {(f'{reward_ci[1]:+.3f}' if reward_ci[1] is not None else '—')} |",
+        f"| Mean reward | {summary['mean_reward_base']:.3f} | {summary['mean_reward_practical']:.3f} | {summary['mean_reward_delta']:+.3f} | {reward_ci_text} |",
         "",
         f"Paired rollouts: **{summary['paired_rollouts']}/{summary['expected_pairs']}**. Pass flips: **{summary['wins']} wins / {summary['losses']} losses / {summary['ties']} ties**. Normalized gain: **{100 * summary['normalized_gain']:+.1f}%**.",
         "",
@@ -523,11 +653,15 @@ def render_report(manifest: dict[str, Any], summary: dict[str, Any], gaps: list[
 
 def parse_args() -> argparse.Namespace:
     parser = argparse.ArgumentParser(description=__doc__)
-    parser.add_argument("--profile", choices=("smoke", "standard", "full"), default="standard")
+    parser.add_argument(
+        "--profile", choices=("smoke", "standard", "full"), default="standard"
+    )
     parser.add_argument("--task", action="append", default=[])
     parser.add_argument("--runs", type=int, default=0)
     parser.add_argument("--workers", type=int, default=3)
-    parser.add_argument("--sandbox", choices=("docker", "daytona", "modal", "apple-container", "agentcore"), default="docker")
+    parser.add_argument(
+        "--sandbox", choices=("docker", "daytona", "modal"), default="docker"
+    )
     parser.add_argument("--model", default=MODEL)
     parser.add_argument("--reasoning", default=REASONING)
     parser.add_argument("--output", type=Path)
@@ -546,11 +680,28 @@ def self_test() -> None:
             for arm, reward in (("base", base), ("trained", trained)):
                 path = jobs / arm / task
                 path.mkdir(parents=True, exist_ok=True)
-                (path / "result.json").write_text(json.dumps({"task_name": task, "rewards": {"reward": reward}}), encoding="utf-8")
+                (path / "result.json").write_text(
+                    json.dumps({"task_name": task, "rewards": {"reward": reward}}),
+                    encoding="utf-8",
+                )
         assert load_job_rewards(jobs / "base")["a"]["reward"] == 0.0
         pairs = [
-            {"task": "a", "repetition": 1, "reward_base": 0.0, "reward_practical": 1.0, "passed_base": False, "passed_practical": True},
-            {"task": "b", "repetition": 1, "reward_base": 1.0, "reward_practical": 1.0, "passed_base": True, "passed_practical": True},
+            {
+                "task": "a",
+                "repetition": 1,
+                "reward_base": 0.0,
+                "reward_practical": 1.0,
+                "passed_base": False,
+                "passed_practical": True,
+            },
+            {
+                "task": "b",
+                "repetition": 1,
+                "reward_base": 1.0,
+                "reward_practical": 1.0,
+                "passed_base": True,
+                "passed_practical": True,
+            },
         ]
         summary = summarize_pairs(pairs, ["a", "b"], 1, [], True)
         assert summary["pass_rate_delta"] == 0.5
@@ -558,7 +709,16 @@ def self_test() -> None:
         stable_pairs = []
         for repetition in (1, 2, 3):
             for task in ("a", "b"):
-                stable_pairs.append({"task": task, "repetition": repetition, "reward_base": 1.0, "reward_practical": 1.0, "passed_base": True, "passed_practical": True})
+                stable_pairs.append(
+                    {
+                        "task": task,
+                        "repetition": repetition,
+                        "reward_base": 1.0,
+                        "reward_practical": 1.0,
+                        "passed_base": True,
+                        "passed_practical": True,
+                    }
+                )
         assert summarize_pairs(stable_pairs, ["a", "b"], 3, [], True)["stable"]
     print("SkillsBench adapter self-test: PASS")
 
@@ -568,23 +728,36 @@ def main() -> int:
     if args.self_test:
         self_test()
         return 0
+
     runs = args.runs or (1 if args.profile == "smoke" else 3)
     if runs < 1 or args.workers < 1:
         raise SystemExit("runs and workers must be positive")
     if args.require_stable_ranking and runs < 3:
         raise SystemExit("stable external ranking requires at least 3 runs")
+
     versions = check_prerequisites(args.sandbox)
-    cache_root = (args.cache_root or Path(os.environ.get("LOCALAPPDATA") or tempfile.gettempdir()) / "practical-coding-benchmarks" / "external").resolve()
+    cache_root = (
+        args.cache_root
+        or Path(os.environ.get("LOCALAPPDATA") or tempfile.gettempdir())
+        / "practical-coding-benchmarks"
+        / "external"
+    ).resolve()
     checkout, source_commit = ensure_skillsbench_checkout(cache_root)
     tasks = discover_tasks(checkout, args.profile, args.task)
+    if not tasks:
+        raise RuntimeError("task selection is empty")
+
     stamp = dt.datetime.now().strftime("%Y%m%d-%H%M%S")
-    output = (args.output or ROOT / "benchmark-results" / "external" / f"skillsbench-{stamp}").resolve()
+    output = (
+        args.output
+        or ROOT / "benchmark-results" / "external" / f"skillsbench-{stamp}"
+    ).resolve()
     output.mkdir(parents=True, exist_ok=False)
     staged_skills = stage_practical_skill(output)
-    started = dt.datetime.now(dt.timezone.utc)
+
     manifest: dict[str, Any] = {
         "schema_version": 1,
-        "started_at": started.isoformat(),
+        "started_at": dt.datetime.now(dt.timezone.utc).isoformat(),
         "dataset": DATASET,
         "skillsbench_metadata_ref": SKILLSBENCH_REF,
         "skillsbench_metadata_commit": source_commit,
@@ -602,25 +775,40 @@ def main() -> int:
         "environment": versions,
         "commands": [],
     }
-    (output / "manifest.json").write_text(json.dumps(manifest, indent=2) + "\n", encoding="utf-8")
+    (output / "manifest.json").write_text(
+        json.dumps(manifest, indent=2) + "\n", encoding="utf-8"
+    )
 
     oracle_ok = True
     oracle_summary: dict[str, Any] = {"skipped": True}
     if not args.skip_oracle:
         oracle_dir = output / "oracle"
-        command = oracle_command(jobs_dir=oracle_dir, tasks=tasks, sandbox=args.sandbox, workers=args.workers)
+        command = oracle_command(
+            jobs_dir=oracle_dir,
+            tasks=tasks,
+            sandbox=args.sandbox,
+            workers=args.workers,
+        )
         manifest["commands"].append({"kind": "oracle", "command": command})
         result = run_command(command, ROOT)
         (output / "oracle.log").write_text(result.stdout, encoding="utf-8")
         if result.returncode:
-            raise RuntimeError(f"SkillsBench oracle command failed: {result.stdout[-4000:]}")
+            raise RuntimeError(
+                f"SkillsBench oracle command failed: {result.stdout[-4000:]}"
+            )
         oracle_ok, oracle_summary = validate_oracle(oracle_dir, tasks)
         if not oracle_ok:
-            raise RuntimeError(f"SkillsBench oracle did not pass the selected task set: {oracle_summary}")
+            raise RuntimeError(
+                f"SkillsBench oracle did not pass the selected task set: {oracle_summary}"
+            )
 
     for repetition in range(1, runs + 1):
         rep = output / "runs" / f"r{repetition:03d}"
-        order = ("no-skill", "practical") if repetition % 2 else ("practical", "no-skill")
+        order = (
+            ("no-skill", "practical")
+            if repetition % 2
+            else ("practical", "no-skill")
+        )
         for arm in order:
             jobs_dir = rep / arm
             mode = "no-skill" if arm == "no-skill" else "with-skill"
@@ -634,29 +822,53 @@ def main() -> int:
                 skill_mode=mode,
                 skills_root=staged_skills if arm == "practical" else None,
             )
-            manifest["commands"].append({"kind": arm, "repetition": repetition, "command": command})
+            manifest["commands"].append(
+                {"kind": arm, "repetition": repetition, "command": command}
+            )
             result = run_command(command, ROOT)
             rep.mkdir(parents=True, exist_ok=True)
             (rep / f"{arm}.log").write_text(result.stdout, encoding="utf-8")
             if result.returncode:
-                manifest.setdefault("infrastructure_failures", []).append({"arm": arm, "repetition": repetition, "returncode": result.returncode})
-                (output / "manifest.json").write_text(json.dumps(manifest, indent=2) + "\n", encoding="utf-8")
-                raise RuntimeError(f"SkillsBench {arm} r{repetition} failed: {result.stdout[-4000:]}")
+                manifest.setdefault("infrastructure_failures", []).append(
+                    {
+                        "arm": arm,
+                        "repetition": repetition,
+                        "returncode": result.returncode,
+                    }
+                )
+                (output / "manifest.json").write_text(
+                    json.dumps(manifest, indent=2) + "\n", encoding="utf-8"
+                )
+                raise RuntimeError(
+                    f"SkillsBench {arm} r{repetition} failed: {result.stdout[-4000:]}"
+                )
 
     pairs, gaps = collect_pairs(output, tasks, runs)
     summary = summarize_pairs(pairs, tasks, runs, gaps, oracle_ok)
-    manifest.update({
-        "completed_at": dt.datetime.now(dt.timezone.utc).isoformat(),
-        "oracle": oracle_summary,
-        "paired_rollouts": len(pairs),
-        "stable": summary["stable"],
-    })
-    (output / "manifest.json").write_text(json.dumps(manifest, indent=2) + "\n", encoding="utf-8")
-    (output / "pairs.json").write_text(json.dumps(pairs, indent=2) + "\n", encoding="utf-8")
-    (output / "summary.json").write_text(json.dumps(summary, indent=2) + "\n", encoding="utf-8")
-    (output / "report.md").write_text(render_report(manifest, summary, gaps), encoding="utf-8")
+    manifest.update(
+        {
+            "completed_at": dt.datetime.now(dt.timezone.utc).isoformat(),
+            "oracle": oracle_summary,
+            "paired_rollouts": len(pairs),
+            "stable": summary["stable"],
+        }
+    )
+    (output / "manifest.json").write_text(
+        json.dumps(manifest, indent=2) + "\n", encoding="utf-8"
+    )
+    (output / "pairs.json").write_text(
+        json.dumps(pairs, indent=2) + "\n", encoding="utf-8"
+    )
+    (output / "summary.json").write_text(
+        json.dumps(summary, indent=2) + "\n", encoding="utf-8"
+    )
+    (output / "report.md").write_text(
+        render_report(manifest, summary, gaps), encoding="utf-8"
+    )
     print(f"wrote {output}")
-    print(f"SkillsBench pass lift: {_fmt_signed_pp(summary['pass_rate_delta'])} ({'STABLE' if summary['stable'] else 'PROVISIONAL'})")
+    print(
+        f"SkillsBench pass lift: {_fmt_signed_pp(summary['pass_rate_delta'])} ({'STABLE' if summary['stable'] else 'PROVISIONAL'})"
+    )
     if args.require_stable_ranking and not summary["stable"]:
         return 2
     return 0
