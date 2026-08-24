@@ -22,7 +22,7 @@ jobs:
         run: skills-ref validate ./practical-coding
       - name: Run benchmark harness tests
         working-directory: practical-coding
-        run: python -m unittest benchmarks.test_benchmarks benchmarks.test_stability
+        run: python -m unittest benchmarks.test_benchmarks benchmarks.test_stability benchmarks.test_catalog
       - name: Check Codex default_prompt references the skill as $skill-name
         run: grep -qF '$practical-coding' practical-coding/agents/openai.yaml
       - name: Ensure legacy local graph runtime is not reintroduced
