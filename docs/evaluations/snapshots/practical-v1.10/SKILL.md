@@ -4,7 +4,7 @@ description: "Use for general coding work: implementing, modifying, or refactori
 license: MIT
 metadata:
   author: Hubujiu
-  version: "1.11"
+  version: "1.10"
 ---
 
 # Practical Coding
@@ -30,7 +30,7 @@ These rules apply on every path, including work that loads no module:
 
 ## Direct Path
 
-Direct Path is the default. When no unresolved event below blocks the next action, read no reference and dispatch no worker; apply the core and proceed. Ordinary narrow source lookup, a reversible repository/platform default, and a known coherent multi-file edit remain Direct Path. Creating a named artifact beside existing primitives, without changing their contracts or adding callers, is Direct Path, not Implementation. Following an already-established repository or platform default is Direct Path, not Decision.
+Direct Path is the default. When no unresolved event below blocks the next action, read no reference and dispatch no worker; apply the core and proceed. Ordinary narrow source lookup, a reversible repository/platform default, and a known coherent multi-file edit remain Direct Path.
 
 A reported symptom or named failing function is not a diagnosed cause. When a failure's earliest incorrect state is not already established by evidence, Direct Path does not apply: load `references/debugging.md` before editing.
 

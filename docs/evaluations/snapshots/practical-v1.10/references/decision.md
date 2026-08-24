@@ -21,7 +21,7 @@ Recommendation: <one position and why>
 Trade-off: <the strongest cost or viable alternative>
 ```
 
-End the round with the smallest answer format, then wait. If the task is already sufficiently specified, ask nothing. If uncertainty is cheap and reversible, choose the repository or platform default and proceed. Each reply reshapes the decision tree: record settled choices, recompute the frontier, and reopen a dependent choice if new evidence contradicts an earlier assumption. If the user named implementation options, ask the independent user-owned prerequisites that would choose among them as separate numbered questions in the same round, not as one premature option question. When the user's answers resolve the current frontier and no newly unlocked independent user-owned choice remains, state the selected option and stop; do not open a new interview round or ask confirmation of a now-determined choice.
+End the round with the smallest answer format, then wait. If the task is already sufficiently specified, ask nothing. If uncertainty is cheap and reversible, choose the repository or platform default and proceed. Each reply reshapes the decision tree: record settled choices, recompute the frontier, and reopen a dependent choice if new evidence contradicts an earlier assumption.
 
 ## Resolve
 

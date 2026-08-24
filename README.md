@@ -3,7 +3,7 @@
 <p align="center">
   <a href="https://github.com/Hubujiu/practical-coding/blob/main/LICENSE"><img src="https://img.shields.io/badge/License-MIT-yellow.svg" alt="License: MIT"></a>
   <a href="https://agentskills.io"><img src="https://img.shields.io/badge/Agent_Skills-Compliant-success.svg" alt="Agent Skills Compliant"></a>
-  <img src="https://img.shields.io/badge/Version-1.7-blue.svg" alt="Version 1.7">
+  <img src="https://img.shields.io/badge/Version-1.11-blue.svg" alt="Version 1.11">
   <img src="https://img.shields.io/badge/Supports-Claude_Code_|_Cursor_|_Copilot_|_Gemini_|_Antigravity_|_Codex_|_Goose-purple.svg" alt="Compatible Agents">
   <a href="https://github.com/Hubujiu/practical-coding/pulls"><img src="https://img.shields.io/badge/PRs-welcome-brightgreen.svg" alt="PRs Welcome"></a>
 </p>
@@ -31,6 +31,7 @@
 - [Quick Start & Installation](#-quick-start--installation)
 - [Configuration](#-configuration)
 - [Repository Structure](#-repository-structure)
+- [Luna Benchmarks](#-luna-benchmarks)
 - [Contributing & License](#-contributing--license)
 
 ---
@@ -276,6 +277,11 @@ practical-coding/
 ├── THIRD_PARTY_NOTICES.md   # Attribution for upstream Codebase Memory MCP
 ├── agents/
 │   └── openai.yaml          # Agent configuration profile
+├── benchmarks/
+│   ├── run.ps1              # PowerShell entry point
+│   ├── run_benchmarks.py    # Luna isolation, grading, and aggregation
+│   ├── test_benchmarks.py   # Harness regression tests
+│   └── REPRODUCING.md       # Exact reproduction protocol and evidence boundaries
 ├── examples/
 │   ├── README.md            # Example configuration instructions
 │   └── practical-coding.yaml# Sample project-level configuration
@@ -291,6 +297,12 @@ practical-coding/
     └── workflows/
         └── validate.yml     # Skill validation workflow
 ```
+
+---
+
+## 🧪 Luna Benchmarks
+
+`benchmarks/run.ps1` invokes the fixed `gpt-5.6-luna` model in isolated sessions for Ponytail delivery tasks, event routing, multi-round grilling decisions, and Superpowers debugging comparisons. Standard and full profiles default to three runs per cell, while `-BaselineRef HEAD` adds the pre-change Git version to the same paired run. See [`benchmarks/README.md`](benchmarks/README.md) and [`benchmarks/REPRODUCING.md`](benchmarks/REPRODUCING.md) for evidence boundaries, artifacts, graders, and exact commands.
 
 ---
 

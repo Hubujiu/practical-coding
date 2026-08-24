@@ -3,7 +3,7 @@
 <p align="center">
   <a href="https://github.com/Hubujiu/practical-coding/blob/main/LICENSE"><img src="https://img.shields.io/badge/License-MIT-yellow.svg" alt="License: MIT"></a>
   <a href="https://agentskills.io"><img src="https://img.shields.io/badge/Agent_Skills-Compliant-success.svg" alt="Agent Skills 规范兼容"></a>
-  <img src="https://img.shields.io/badge/Version-1.7-blue.svg" alt="Version 1.7">
+  <img src="https://img.shields.io/badge/Version-1.11-blue.svg" alt="Version 1.11">
   <img src="https://img.shields.io/badge/Supports-Claude_Code_|_Cursor_|_Copilot_|_Gemini_|_Antigravity_|_Codex_|_Goose-purple.svg" alt="支持的 Agent 平台">
   <a href="https://github.com/Hubujiu/practical-coding/pulls"><img src="https://img.shields.io/badge/PRs-welcome-brightgreen.svg" alt="欢迎 PR"></a>
 </p>
@@ -31,6 +31,7 @@
 - [快速上手与安装](#-快速上手与安装)
 - [项目级配置](#-项目级配置)
 - [项目结构](#-项目结构)
+- [Luna 效果测试](#-luna-效果测试)
 - [参与贡献与开源协议](#-参与贡献与开源协议)
 
 ---
@@ -276,6 +277,11 @@ practical-coding/
 ├── THIRD_PARTY_NOTICES.md   # 上游 Codebase Memory MCP 归属与许可说明
 ├── agents/
 │   └── openai.yaml          # Agent 配置文件
+├── benchmarks/
+│   ├── run.ps1              # PowerShell 统一运行入口
+│   ├── run_benchmarks.py    # Luna 隔离运行、评分与聚合器
+│   ├── test_benchmarks.py   # benchmark 基础设施回归测试
+│   └── REPRODUCING.md       # 完整复现说明与证据边界
 ├── examples/
 │   ├── README.md            # 配置示例说明
 │   └── practical-coding.yaml# 项目级示例配置文件
@@ -291,6 +297,14 @@ practical-coding/
     └── workflows/
         └── validate.yml     # Skill 自动化校验流水线
 ```
+
+---
+
+## 🧪 Luna 效果测试
+
+`benchmarks/run.ps1` 直接调用固定的 `gpt-5.6-luna`，以隔离会话运行 Ponytail 交付任务、事件路由、grilling 多轮决策和 Superpowers debug 对照。`standard` 与 `full` 默认每格重复 3 次；`-BaselineRef HEAD` 或 `-BaselineSkill` 可以把修改前版本加入同轮对比。
+
+测试链同时包含上游复用内容和项目自建用例：Delivery 复用 Ponytail 公布的 agentic 任务与确定性 scorer；Router 是 Practical 自有回归集；Decision 因 grilling 没有声明行为 benchmark，使用自建两轮协议；Debug 混合 Ponytail trace 任务与自建共享边界任务。完整命令、固定 commit、输出解释和不可泛化边界见 [`benchmarks/README.md`](benchmarks/README.md) 与 [`benchmarks/REPRODUCING.md`](benchmarks/REPRODUCING.md)。
 
 ---
 

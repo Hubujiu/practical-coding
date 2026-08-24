@@ -1,6 +1,6 @@
 interface:
   display_name: "Practical Coding"
-  short_description: "General coding router with isolated expert modules"
+  short_description: "Direct coding with event-routed modules and scoped subagents"
   default_prompt: "Use $practical-coding. Keep simple work direct; isolate only the modules whose events are actually triggered."
 policy:
   allow_implicit_invocation: true

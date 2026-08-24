@@ -1,0 +1,68 @@
+# Practical Coding benchmark chain
+
+This chain runs isolated Codex sessions directly against `gpt-5.6-luna`, preserves every prompt/transcript/workspace, applies mechanical graders, and writes JSON plus Markdown summaries. It follows the mature evaluation shape used by Agent Skills and Ponytail: realistic cases, fixed sources, clean sessions, repeated paired arms, deterministic assertions where possible, tokens/time, and raw evidence.
+
+For prerequisites, pinned revisions, exact reproduction commands, evidence boundaries, and the published v1.11 calibration results, see [`REPRODUCING.md`](REPRODUCING.md).
+
+## Run
+
+```powershell
+pwsh -File benchmarks/run.ps1 -Profile smoke
+pwsh -File benchmarks/run.ps1 -Profile standard -Runs 3 -Workers 3
+pwsh -File benchmarks/run.ps1 -Profile full -Runs 3 -BaselineSkill D:\snapshots\practical-v1.9
+pwsh -File benchmarks/run.ps1 -Profile standard -Runs 3 -BaselineRef HEAD
+pwsh -File benchmarks/run.ps1 -Profile smoke -Suite router -Case direct-artifact -Arm practical-current
+pwsh -File benchmarks/run.ps1 -Rescore D:\path\to\benchmark-results\20260824-203839
+```
+
+Profiles:
+
+- `smoke`: one run by default; quick harness and model sanity check.
+- `standard`: three runs by default; balanced release comparison.
+- `full`: three runs by default; expanded Ponytail delivery, router, multi-round Decision, and debugging matrix.
+
+Useful options:
+
+- `-BaselineSkill <directory>` adds a previous Practical snapshot to every suite. The directory must contain `SKILL.md` and its `references` directory.
+- `-BaselineRef <git-revision>` materializes `SKILL.md` plus `references/` from a commit into the run artifact and adds it as `practical-previous`. This is the simplest before/after gate for dirty candidate edits.
+- `-Suite`, `-Case`, and `-Arm` select repeatable subsets for diagnosis or focused regression gates.
+- `-SourcesRoot <directory>` reuses pinned competitor checkouts. Without it, sources are cached under the user-local application data directory and cloned as needed.
+- `-IncludeBaseline` adds a no-skill delivery arm.
+- `-NoBuilds` skips runner-owned frontend production builds.
+- `-SelfTest` runs the local harness regression tests and validates fixtures, upstream scorers, source pins, and reporting without model calls.
+- `-Rescore <run-directory>` reapplies the current mechanical graders to saved workspaces/transcripts without another model call; the manifest records the new runner hash and rescore time.
+- `-FailOnCellFailure` makes any behavioral cell failure return exit code 2. By default only harness/infrastructure failures are non-zero, because a valid comparison may intentionally expose competitor or candidate failures.
+
+By default, run artifacts are written under `benchmark-results/` and ignored by Git, so transcripts and generated workspaces remain inspectable across commands without entering commits. Use `-Output` for an explicit location.
+
+The fast harness regression suite is also runnable without sources or model access:
+
+```powershell
+python -m unittest benchmarks.test_benchmarks
+```
+
+The output directory contains:
+
+```text
+manifest.json          fixed model, commits, profile, cases, and skill hashes
+results.json           one record per cell
+summary.json           grouped rates, medians, means, and standard deviations
+comparisons.json       Practical-minus-comparator behavioral and efficiency deltas
+rollups.json           suite/arm totals across cases
+rollup-comparisons.json suite-level Practical-minus-comparator deltas
+report.md              human-readable comparison and Practical deltas
+cells/                 prompt, raw JSONL, stderr, answer, and code workspace per cell
+```
+
+## Suites and scoring
+
+- `delivery`: Ponytail's published agentic tasks and deterministic scorer. Reports correctness, safety, production LOC, test LOC, files, tokens, time, tool calls, and optional frontend build result.
+- `router`: exact classification across Direct, Decision, Debugging, Implementation, Exploration, and Verification, including overlap and negative-boundary cases.
+- `decision`: Practical versus Matt Pocock `grilling`. Uses a real resumed second turn and gates on frontier questions, one recommendation per question, no premature implementation, and convergence after scripted user decisions. Trade-off language is reported diagnostically but is not a declared grilling contract gate.
+- `debug`: shared-root-cause tasks scored on the repaired invariant and sibling callers. Tests/TDD process receives no bonus.
+
+`total_tokens` includes cached input because that is how Codex reports turn input. The report therefore also separates cached input, uncached input, output, and reasoning tokens. `duration_seconds` is per-cell process duration; suite elapsed time is recorded separately and is not obtained by summing concurrent cell durations.
+
+## Acceptance
+
+Use repeated paired results. A candidate is not accepted merely because its prose matches a Skill contract. Require no correctness/build regression, then compare delivered code and behavior. Treat LOC, tokens, and time as secondary within equally correct artifacts. `n=1` is a smoke result, not a stable ranking.
