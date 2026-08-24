@@ -17,9 +17,9 @@ This deliberately does **not** use each SkillsBench task's curated Skill. The re
 - Git
 - `uv`/`uvx`
 - Codex CLI authenticated with `codex login` or a supported Codex/OpenAI credential
-- Docker for the default `docker` sandbox; Daytona, Modal, Apple Container, and AgentCore can be selected explicitly when configured
+- Docker for the default `docker` sandbox; Daytona or Modal can be selected explicitly when configured
 
-BenchFlow itself is launched on demand through `uvx` and pinned to `benchflow==0.6.2`, which is inside the compatibility range declared by SkillsBench v1.1. The adapter also keeps a metadata checkout at the exact `v1.1` tag for category selection. Actual benchmark execution uses `-d skillsbench@1.1`, so BenchFlow resolves the versioned dataset and validates its task digests.
+BenchFlow itself is launched on demand through `uvx` and pinned to `benchflow==0.6.5`, a tested 0.6.x release compatible with SkillsBench v1.1 and its `bench eval run` / versioned-dataset / custom-Skill CLI contract. The adapter also keeps a metadata checkout at the exact `v1.1` tag for category selection. Actual benchmark execution uses `-d skillsbench@1.1`, so BenchFlow resolves the versioned dataset and validates its task digests.
 
 ### Fast instrument check
 
