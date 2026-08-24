@@ -1,331 +1,256 @@
 # Practical Coding
 
-> **一个 Skill，按需加载。**  
-> **One skill, load only what the task needs.**
+<p align="center">
+  <a href="https://github.com/Hubujiu/practical-coding/blob/main/LICENSE"><img src="https://img.shields.io/badge/License-MIT-yellow.svg" alt="License: MIT"></a>
+  <a href="https://agentskills.io"><img src="https://img.shields.io/badge/Agent_Skills-Compliant-success.svg" alt="Agent Skills Compliant"></a>
+  <img src="https://img.shields.io/badge/Version-1.7-blue.svg" alt="Version 1.7">
+  <img src="https://img.shields.io/badge/Supports-Claude_Code_|_Cursor_|_Copilot_|_Gemini_|_Antigravity_|_Codex_|_Goose-purple.svg" alt="Compatible Agents">
+  <a href="https://github.com/Hubujiu/practical-coding/pulls"><img src="https://img.shields.io/badge/PRs-welcome-brightgreen.svg" alt="PRs Welcome"></a>
+</p>
 
-Practical Coding 是一个面向 Coding Agent 的轻量通用编码 Skill。它不把 Brainstorming、Planning、TDD、Debugging、Review 和 Git Workflow 串成固定流水线，而是让 `SKILL.md` 作为常驻核心规则加轻量 Router：几条 always-on 工程底线（最小修改、成熟实现优先、保护安全与兼容、完成前取新鲜证据）在所有路径生效；简单任务直接执行；未决事件出现时才加载对应工程模块；只有被避免的上下文明显超过启动和交接成本时，才把模块隔离到子代理。
-
-目标：**用最小、完整、可维护的修改解决真实问题，同时减少多余代码、测试、文档、防御性编程、重复源码扫描和流程成本。**
-
-[中文](#中文) · [English](#english)
+<p align="center">
+  🌐 <b>English</b> | <a href="README_zh.md">简体中文</a>
+</p>
 
 ---
 
-## 中文
+> **One coding skill, load only what the task needs.**  
+> Practical Coding is a lean, event-driven coding skill for AI agents. It eliminates LLM over-engineering, skips bureaucratic process ceremony, and delivers surgical, production-ready code with fresh evidence.
 
-### 它解决什么问题
+---
 
-很多 Coding Agent 工作流默认把“先规划 → 再实现 → 强制测试 → Review → Git 流程”全部串起来。大型改造可能需要这些步骤，但对于改一个按钮、修一处样式、定位一个明确 bug，它们会制造额外上下文、文件、测试和流程。
+## 📑 Table of Contents
 
-Practical Coding 的做法相反：
+- [The Problems We Solve](#-the-problems-we-solve)
+- [Inspirations & Lineage (The Synthesis of Giants)](#-inspirations--lineage-the-synthesis-of-giants)
+- [Architecture & How It Works](#-architecture--how-it-works)
+- [The Always-On Core](#-the-always-on-core)
+- [The 6 Modular Pillars](#-the-6-modular-pillars)
+- [Subagent Delegation & Isolation Gate](#-subagent-delegation--isolation-gate)
+- [Optional Codebase Memory (AST & LSP Intelligence)](#-optional-codebase-memory-ast--lsp-intelligence)
+- [Quick Start & Installation](#-quick-start--installation)
+- [Configuration](#-configuration)
+- [Repository Structure](#-repository-structure)
+- [Contributing & License](#-contributing--license)
 
-- 一个轻量 Router 常驻，通用编码定位不变；
-- 工程能力彼此独立；
-- 简单任务不加载 reference，也不启动子代理；
-- 只有触发事件出现且隔离收益大于交接成本时，才让子代理加载对应规则；
-- 任务简单时保持简单，任务复杂时再升级；
-- 非平凡能力优先复用成熟实现，不维护已经有成熟方案的缩水平行版本。
+---
 
-### 架构：事件路由 + 隔离模块
+## ⚡ The Problems We Solve
+
+AI coding assistants are prone to two major failure modes:
+1. **The AI Bloat Trap (Over-Engineering)**: Writing speculative abstractions, nested wrappers, unrequested fallback/retry logic, defensive catch-alls, and bloated boilerplate tests for simple 2-line edits.
+2. **The "Process Ceremony" Tax**: Heavy multi-stage agent frameworks force *every* task (even fixing a typo or CSS color) through rigid 5-stage sequential pipelines (*Brainstorm → Plan → TDD → Review → Git Ceremony*), burning massive token budgets and causing developer fatigue.
+
+Conversely, unconstrained single-prompt agents fail when facing complex multi-file refactors or tricky bug diagnoses due to lack of engineering discipline.
+
+### How Practical Coding Compares
+
+| Dimension / Task | Rigid Agent Frameworks | Naive / Unconstrained LLMs | 🚀 Practical Coding |
+|---|---|---|---|
+| **Simple / Local Edits** *(e.g. fix CSS, rename var)* | Heavy multi-step ceremony; burns tokens on unneeded plans & tests | Fast, but risks touching unrelated code | **Direct Path**: Zero references loaded, zero subagent overhead, executes immediately |
+| **Complex Features** | Rigid pipeline overhead across every single step | Hallucinates architecture, creates defensive bloat | **Event-Driven Router**: Loads targeted modules (`decision.md`, `implementation.md`) on demand |
+| **Bug Diagnosis** | Often writes boilerplate test suites before finding the bug | Patches downstream symptoms with `try/catch` & fallback hacks | **Evidence-First**: Reproduce → Earliest broken state → Single hypothesis → Root cause fix |
+| **Subagent Workers** | Arbitrary subagent proliferation & pipeline chains | Single-context overload | **Economic Isolation Gate**: Dispatches workers only when avoided context clearly exceeds handoff cost |
+| **Reusing Solutions** | Reinvents wheels or creates complex custom wrappers | Generates subpar custom code for solved problems | **Mature Implementation First**: Prefers stdlib → native platform → installed deps → mature upstream |
+| **Code Intelligence** | Dumps full repo scans into context | Repeated slow grep/find across huge repos | **Non-Intrusive CLI Mode**: Direct AST/LSP graph via `codebase-memory-mcp` with zero permanent context pollution |
+
+---
+
+## 💡 Inspirations & Lineage (The Synthesis of Giants)
+
+Practical Coding merges the best design paradigms from leading open-source agent methodologies:
+
+```text
+               ┌─────────────────────────────────────────────────────────┐
+               │              DietrichGebert/ponytail                    │
+               │   "Laziest Senior Dev" Pragmatism, YAGNI, Stdlib-First  │
+               └────────────────────────────┬────────────────────────────┘
+                                            │ (Pragmatic Philosophy)
+                                            ▼
+┌───────────────────────────┐      ┌─────────────────┐      ┌─────────────────────────────┐
+│      obra/superpowers     │      │                 │      │      Agent Skills Spec      │
+│  Engineering Rigor, TDD,  │─────►│ PRACTICAL CODING│◄─────│    (mattpocock / Anthropic) │
+│  Delegation & Verification│      │                 │      │    Progressive Disclosure   │
+└───────────────────────────┘      └────────┬────────┘      └─────────────────────────────┘
+  (Decoupled from rigid pipeline)           │ (Structured Graph)
+                                            ▼
+               ┌─────────────────────────────────────────────────────────┐
+               │             DeusData/codebase-memory-mcp                │
+               │    Tree-sitter AST, Hybrid LSP, CLI-mode Intelligence   │
+               └─────────────────────────────────────────────────────────┘
+```
+
+### 1. 🦄 [DietrichGebert/ponytail](https://github.com/DietrichGebert/ponytail) — *The Pragmatic Senior Dev Mindset*
+- **What we adopted**: The ruthless **YAGNI** (You Aren't Gonna Need It) principle, the **Decision Ladder** (stdlib → platform native → installed dependency → mature external library → custom code as last resort), zero defensive bloat, and the discipline of writing the **smallest coherent diff**.
+
+### 2. ⚡ [obra/superpowers](https://github.com/obra/superpowers) — *Disciplined Engineering Capabilities*
+- **What we adopted**: Systematic root-cause debugging, verification gates, and isolated subagent task contracts.
+- **How we evolved it**: We **unchained** these powerful tools from mandatory linear pipelines. You no longer suffer through mandatory brainstorming or TDD ceremony for trivial changes; capabilities are triggered **only when an unresolved event occurs**.
+
+### 3. 📦 [mattpocock/skills](https://github.com/mattpocock/skills) & [Agent Skills Spec](https://agentskills.io) — *Progressive Disclosure*
+- **What we adopted**: Ultra-lean entry footprint. [`SKILL.md`](SKILL.md) is under 50 lines, allowing it to remain permanently resident in the agent's context without wasting token budget. Deep reference modules are read only when routed.
+
+### 4. 🧠 [DeusData/codebase-memory-mcp](https://github.com/DeusData/codebase-memory-mcp) — *Zero-Bloat Code Intelligence*
+- **What we adopted**: Industrial-grade Tree-sitter AST parsing, Hybrid LSP semantic resolution, and persistent code graphs.
+- **How we evolved it**: Instead of permanently injecting a heavy MCP server and tool definitions into the agent's system prompt, Practical Coding invokes upstream in **one-shot CLI mode** only when navigation value justifies it.
+
+---
+
+## 🏗️ Architecture & How It Works
+
+Practical Coding is an **Event-Driven Router** backed by an **Always-On Core**:
 
 ```mermaid
 flowchart TB
-    T["用户任务 / Coding task"] --> R["SKILL.md<br/>Lightweight Router"]
+    Task["🎯 User Task / Coding Request"] --> Core["⚡ SKILL.md<br/>Always-on Core & Event Router"]
 
-    R -->|"局部且明确"| X["Direct Path<br/>主代理直接完成"]
-    R -->|"存在实质技术选择"| D["Decision module<br/>技术决策"]
-    R -->|"协调仍未解决"| I["Implementation module<br/>有界实现"]
-    R -->|"失败原因仍不明确"| G["Debugging module<br/>调试"]
-    R -->|"证据仍不充分"| V["Verification module<br/>验证"]
-    R -->|"需要广泛导航"| E["Exploration module<br/>普通源码导航"]
-    E -->|"项目显式启用"| M["Codebase Memory<br/>代码智能"]
+    Core -->|"Local & Well-Understood"| Direct["🚀 Direct Path<br/>Root agent executes immediately<br/>(No modules, no subagents)"]
+    
+    Core -->|"Unresolved Material Choice"| D["🧭 Decision Module<br/>(references/decision.md)"]
+    Core -->|"Multi-file Coordination Unclear"| I["🏗️ Implementation Module<br/>(references/implementation.md)"]
+    Core -->|"Observed Bug / Cause Unknown"| G["🔍 Debugging Module<br/>(references/debugging.md)"]
+    Core -->|"Meaningful Verification Risk"| V["🛡️ Verification Module<br/>(references/verification.md)"]
+    Core -->|"Broad Codebase Navigation"| E["🗺️ Exploration Module<br/>(references/exploration.md)"]
+    E -->|"codebase_memory.enabled: true"| M["🧠 Codebase Memory (CLI Mode)<br/>(references/codebase-memory.md)"]
 
-    D -. "工作中才发现需要" .-> I
-    I -. "出现真实失败" .-> G
-    I -. "风险升高" .-> V
-    M -. "定位关键源码后" .-> I
+    subgraph IsolationGate["⚖️ Economic Isolation Gate"]
+        IG{"Avoided Context & Parallelism<br/>>> Startup + Handoff Cost?"}
+        IG -->|"Yes"| Worker["🤖 Isolated Worker Subagent<br/>(Reads references/delegation.md + 1 module)"]
+        IG -->|"No"| RootExec["👤 Root Agent Loads Module Locally"]
+    end
+
+    D -.-> IG
+    I -.-> IG
+    G -.-> IG
+    V -.-> IG
+    E -.-> IG
+    M -.-> IG
+
+    Worker -->|"Returns compact evidence capsule"| Done["✅ Fresh Evidence Check & Completion"]
+    RootExec --> Done
+    Direct --> Done
 ```
 
-> **这不是阶段流水线。** Router 根据运行中尚未解决的事件按需加载模块。只有通过经济门槛时才委派子代理；子代理只读命中的模块并返回简短 capsule。主代理始终负责范围、授权、仓库状态、集成和最终结论。
+---
 
-| 模块 | 何时加载 |
-|---|---|
-| `references/decision.md` | 聚焦检查后仍存在会改变实现的实质方案选择 |
-| `references/implementation.md` | 修改需要协调多个文件、契约或不变量，且修改面尚不清晰 |
-| `references/debugging.md` | 已观察到失败，且聚焦检查后原因仍不明确 |
-| `references/verification.md` | 项目 gate 和聚焦检查后，关键结论仍缺少充分证据 |
-| `references/exploration.md` | 必须广泛扫描时的默认源码导航，返回紧凑影响图 |
-| `references/codebase-memory.md` | 同一广泛导航事件，且项目已显式设置 `codebase_memory.enabled: true` |
+## 🛡️ The Always-On Core
 
-### 核心原则
+These non-negotiable engineering principles apply to **every path**, including direct edits:
 
-- **Mature implementation first**：成熟、维护中的实现优先于自己重写；自定义代码只补成熟实现缺失的边界或已确认缺陷。
-- **Reuse before invention**：现有代码 → 标准库/平台原生 → 已安装依赖 → 成熟实现 → 必要的最小补充 → 最后才是完整自研。
-- **Smallest coherent change**：追求最小完整修改，而不是最少字符。
-- **No defensive bloat**：retry、fallback、wrapper、validation、feature flag 都需要真实边界或风险支撑。
-- **Evidence-driven debugging**：证据 → 最早错误状态 → 单一假设 → 根因 → 最小修复。
-- **Risk-proportional verification**：测试是证据，不是默认产物。
-- **Document reasons, not reconstructable facts**：记录“为什么”，不重复代码、图谱或 Git 已能廉价恢复的事实。
-- **Git is evidence, not ceremony**：不强制 branch、worktree、checkpoint、`PLAN.md`。
-- **Progressive disclosure**：只有触发条件出现时才加载对应 reference。
-- **Context isolation**：只有预计能避免大量上下文或缩短并行关键路径时，才在无历史继承的子代理中运行模块并返回证据 capsule；普通小中型仓库留在主代理。
+1. **Understand & Inspect Narrowly**: Inspect the smallest relevant context before modifying code.
+2. **Traceable Value**: Everything added — abstractions, dependencies, validations, retries, configs, tests, or documentation — must trace to a concrete requirement, boundary, or observed risk.
+3. **Mature Implementation First**: For non-trivial capabilities, integrate a mature, maintained package rather than building a parallel custom implementation.
+4. **Preserve System Invariants**: Protect security, permissions, data integrity, accessibility, compatibility, and explicit project constraints.
+5. **Untouched Scope**: Keep unrelated code and existing user modifications untouched.
+6. **Fresh Evidence**: Obtain the cheapest fresh evidence sufficient to justify the change before claiming completion.
 
-## Codebase Memory：直接使用成熟 upstream
+---
 
-Practical Coding **不再维护自己的 Python 代码图谱实现**。
+## 🧩 The 6 Modular Pillars
 
-当 Codebase Memory 被启用并且当前任务确实受益时，直接使用 MIT 许可的成熟项目 [`DeusData/codebase-memory-mcp`](https://github.com/DeusData/codebase-memory-mcp) 作为唯一图谱后端。
+When a task encounters an unresolved engineering event, only the matching module is loaded:
 
-原因很简单：这里的目标是**减少 Agent 重复扫描源码的 token 消耗、提高结构化检索效率和准确率**，不是单纯压缩磁盘占用。Codebase Memory 本身是可选模块，较大的 native runtime 不会进入默认 Skill 上下文，因此没有必要为了“小”而维护一个准确率更低的平行解析器。
+| Module | Loaded When | Core Deliverable |
+|---|---|---|
+| 🧭 [`references/decision.md`](references/decision.md) | A material choice about architecture, dependencies, APIs, or data models remains open | Evaluates $\le 3$ viable options (stdlib/native first); chooses the smallest fitting solution. |
+| 🏗️ [`references/implementation.md`](references/implementation.md) | A change coordinates multiple files/contracts and the change surface is unclear | Bounded change map; authoritative boundary validation; no defensive bloat. |
+| 🔍 [`references/debugging.md`](references/debugging.md) | An observed failure, regression, or failed verification lacks a diagnosed cause | Evidence-first: symptom → earliest broken state → single hypothesis → root cause fix. |
+| 🛡️ [`references/verification.md`](references/verification.md) | Risk or uncertainty makes the verification strategy itself a meaningful decision | Cheapest falsification ladder; rejects rationalizations like *"too simple to test"*. |
+| 🗺️ [`references/exploration.md`](references/exploration.md) | Broad navigation of a large codebase is necessary with standard text/symbol tools | Bounded impact map (exact paths, symbols, edges) without full file dumps. |
+| 🧠 [`references/codebase-memory.md`](references/codebase-memory.md) | Broad structural navigation in a project with `codebase_memory.enabled: true` | AST/LSP graph intelligence via upstream CLI across Scout, Verify, and Auditor tiers. |
 
-上游当前提供的核心能力包括：
+---
 
-- Tree-sitter 多语言 AST 解析；
-- major language family 的 Hybrid LSP 语义/类型解析；
-- 持久代码知识图谱；
-- 增量索引；
-- symbol / call path / architecture / impact / code snippet / graph query；
-- semantic search 与文本代码搜索；
-- `check_index_coverage` 覆盖检查；
-- 项目级图谱 mutation coordination；
-- macOS / Linux / Windows 原生发行。
+## 🤖 Subagent Delegation & Isolation Gate
 
-Practical Coding 不复制这些能力，不维护第二套 parser、SQLite graph、call resolver、project lock 或 semantic engine。未来 upstream 已经成熟解决的问题，也优先直接使用 upstream。
+Practical Coding prevents runaway subagent proliferation through a strict **Economic Isolation Gate**:
 
-### 为什么使用 CLI Mode
+> **The Isolation Rule:**  
+> Spawn an isolated worker **only** when the context it avoids, or the parallel work it unblocks, **clearly exceeds** the startup and handoff overhead. Otherwise, keep the task in the root agent.
 
-上游的每个 MCP tool 都可以通过一次性 CLI 调用：
+### Worker Protocol ([`references/delegation.md`](references/delegation.md))
+- **Focused Scope**: Worker reads `delegation.md` + exactly **one** assigned module.
+- **Read-Only by Default**: Decision, Exploration, Codebase Memory, and Debugging workers cannot modify code.
+- **Sole Writer**: An Implementation worker writes only within its assigned directory/files and is the sole writer.
+- **Compact Evidence Capsule**: Workers return structured summaries (paths, symbols, diff summaries, test outputs), never raw transcripts or full file contents.
+
+---
+
+## 🧠 Optional Codebase Memory (AST & LSP Intelligence)
+
+Practical Coding integrates directly with [`DeusData/codebase-memory-mcp`](https://github.com/DeusData/codebase-memory-mcp) as its structured code intelligence backend.
+
+### Why One-Shot CLI Mode?
+Instead of permanently loading upstream MCP server tools into the agent's system prompt (which wastes 1,000+ tokens on every conversation turn), Practical Coding executes upstream via one-shot CLI commands:
 
 ```bash
-codebase-memory-mcp cli index_repository '{"repo_path":"/path/to/repo"}'
+# Search symbols & call graphs
 codebase-memory-mcp cli search_graph '{"name_pattern":".*Handler.*","label":"Function"}'
 codebase-memory-mcp cli trace_call_path '{"function_name":"main","direction":"both"}'
+
+# Check architecture & index coverage
 codebase-memory-mcp cli get_architecture '{}'
+codebase-memory-mcp cli check_index_coverage '{"paths":["src/core.ts"]}'
 ```
 
-Practical Coding 默认使用 **CLI Mode**，而不是自动运行 upstream 的 `install`。
+### CLI Resolution Order
+1. Existing `codebase-memory-mcp` binary on `PATH`.
+2. Official lazy npm launcher (if `npx` is available):
+   ```bash
+   npx --yes codebase-memory-mcp@latest cli <tool> '<json-arguments>'
+   ```
+3. **Graceful Fallback**: If upstream cannot be launched, the agent falls back to standard text exploration and reports that Codebase Memory was not used.
 
-这样：
+### Evidence Tiers
+- 🔭 **Scout**: Rapid positive discovery. Small limits, shallow traces, marked provisional.
+- 🎯 **Verify (Default)**: Normal development. Exact snippets + `check_index_coverage` validation.
+- 🔬 **Auditor**: Bounded exhaustive audits. Scope coverage, pagination completion, and fallback source checking for any reported coverage gaps.
 
-```text
-Practical Coding Skill
-        ↓ 只有触发 Codebase Memory 时加载 reference
-.practical-coding.yaml
-        ↓ enabled: true
-upstream CLI
-        ↓
-Tree-sitter + Hybrid LSP + mature graph engine
-        ↓
-structured evidence
-        ↓
-source verification when required
-```
+---
 
-不会因为启用了代码图谱，就自动把另一套 MCP tool 定义、Skill、hooks 或 agent config 长期塞进 Agent 上下文。
+## 🚀 Quick Start & Installation
 
-如果用户明确希望全局安装 upstream MCP/daemon/agent integration，那是独立的安装请求，再使用 upstream 官方 `install` 流程。
+### One-Command Install (Recommended)
 
-### 如何解析 upstream CLI
-
-优先使用系统中已经存在的：
-
-```bash
-codebase-memory-mcp
-```
-
-如果没有，但环境有 `npx`，可以按需使用官方 npm wrapper：
-
-```bash
-npx --yes codebase-memory-mcp@latest cli <tool> '<json-arguments>'
-```
-
-npm wrapper 会获取、校验并缓存当前平台对应的官方 native runtime。第一次使用可能需要网络；后续仍由 upstream 负责 runtime 维护。
-
-如果当前环境既不能直接执行 upstream binary，也不能使用官方 lazy launcher：
-
-- 不修改项目的 `enabled: true`；
-- 本次任务 fallback 到普通源码检索；
-- 明确报告 **本次未使用 Codebase Memory**。
-
-不会回退到一个低精度的 Practical Coding 自研图谱。
-
-### Codebase Memory 配置持久化
-
-Codebase Memory 是**项目级可选能力**：
-
-```yaml
-version: 1
-codebase_memory:
-  enabled: true
-```
-
-配置文件：
-
-```text
-.practical-coding.yaml
-```
-
-```mermaid
-flowchart TD
-    T["收到任务"] --> Q{"结构化代码智能是否明显减少源码扫描?"}
-    Q -->|"否"| S["普通源码检索"]
-    Q -->|"是"| C{"项目已有配置?"}
-    C -->|"没有"| S
-    C -->|"enabled: false"| S
-    C -->|"enabled: true"| R["解析 upstream CLI"]
-    R -->|"可用"| U["upstream index/search/trace/coverage"] --> V["必要时源码验证"]
-    R -->|"不可用"| FB["保持配置不变<br/>普通检索<br/>报告未使用 Codebase Memory"] --> S
-```
-
-规则：
-
-- 未配置或 `enabled: false`：默认关闭，使用普通 Exploration，不主动询问；
-- 只有用户或项目显式选择后才持久化 `enabled: true`；
-- `enabled: true` 表示项目允许在有价值时调用 upstream，不代表每个任务都要跑图谱；
-- 环境缺少 binary、Node/npm 或网络不会改变项目偏好；
-- upstream 不可用时普通源码检索仍是合法 fallback。
-
-### 图谱证据等级
-
-Practical Coding 采用 upstream 已经形成的 Scout / Verify / Auditor 思路，而不是把任意图谱结果都当作完整事实。
-
-**Scout**：用于快速正向发现。少量窄查询、浅 trace、结论标记为 provisional，不做“全部/没有/完整影响范围/死代码”一类结论。
-
-**Verify（默认）**：用于正常编码任务。结构化定位后读取关键 snippet，并对实际使用到的 evidence paths 调用 `check_index_coverage`；coverage 有 gap 时回到源码补查。
-
-**Auditor**：只用于有明确边界的穷尽审查。先限定 scope，完成相关分页，检查 scope coverage，对所有 gap 回源验证，并明确剩余限制。
-
-对于这些结论：
-
-- “没有其他调用者”；
-- “只有这些文件受影响”；
-- “这是完整执行路径”；
-- “这是死代码”；
-
-不能只看一页 graph query。应先检查 index coverage，再对 gap 做源码 fallback。
-
-### upstream 出现 bug 怎么办
-
-原则不是“upstream 一定正确”，而是“**成熟实现优先，补丁最后才写**”。
-
-顺序：
-
-1. 查最新稳定版；
-2. 查 upstream issue / 已合并修复；
-3. 有已维护修复就升级或采用；
-4. 确实没有时，才在 Practical Coding 加最窄的兼容 shim；
-5. 记录 upstream 版本/issue；
-6. upstream 修复后删除本地 shim。
-
-不要因为发现一个 upstream bug，就重新维护整套代码图谱。
-
-## 安装
-
-### 一键安装 Skill
+Using the standard [`skills`](https://github.com/mattpocock/skills) CLI:
 
 ```bash
 npx skills@latest add Hubujiu/practical-coding
 ```
 
-Codebase Memory backend 仍然是**按需解析/按需获取**的 upstream 组件，不会因为安装 Practical Coding 就自动修改 MCP、hooks 或其他 Agent 配置。
+---
 
-### 手动安装 Skill
+### Manual Installation by Agent Platform
 
-**Codex / Cursor / Copilot CLI / Gemini CLI**
-
-```bash
-git clone https://github.com/Hubujiu/practical-coding.git ~/.agents/skills/practical-coding
-```
-
-Windows PowerShell：
-
-```powershell
-git clone https://github.com/Hubujiu/practical-coding.git "$env:USERPROFILE\.agents\skills\practical-coding"
-```
-
-**Claude Code**
-
+#### 🟣 Claude Code
 ```bash
 git clone https://github.com/Hubujiu/practical-coding.git ~/.claude/skills/practical-coding
 ```
 
-### 项目结构
+#### 🔵 Cursor / Codex / Copilot CLI / Gemini CLI / Antigravity / Goose
 
-```text
-practical-coding/
-├── SKILL.md
-├── AGENTS.md
-├── README.md
-├── CONTRIBUTING.md
-├── LICENSE
-├── THIRD_PARTY_NOTICES.md
-├── agents/
-│   └── openai.yaml
-├── examples/
-│   ├── README.md
-│   └── practical-coding.yaml
-├── references/
-│   ├── decision.md
-│   ├── implementation.md
-│   ├── debugging.md
-│   ├── verification.md
-│   ├── delegation.md
-│   ├── exploration.md
-│   └── codebase-memory.md
-└── .github/
-    └── workflows/
-        └── validate.yml
+**macOS & Linux:**
+```bash
+git clone https://github.com/Hubujiu/practical-coding.git ~/.agents/skills/practical-coding
 ```
 
-### 思想与实现来源
+**Windows (PowerShell 7):**
+```powershell
+git clone https://github.com/Hubujiu/practical-coding.git "$env:USERPROFILE\.agents\skills\practical-coding"
+```
 
-- [Ponytail](https://github.com/DietrichGebert/ponytail)：YAGNI、reuse-first、stdlib/native-first、极小实现。
-- [Matt Pocock / skills](https://github.com/mattpocock/skills)：Agent Skills 与 progressive disclosure。
-- [Superpowers](https://github.com/obra/superpowers)：完整工程流程的参考，以及 Practical Coding 有意避免的流程强耦合。
-- [Codebase Memory](https://github.com/DeusData/codebase-memory-mcp)：Practical Coding 的可选结构化代码智能后端。
-- [Agent Skills specification](https://agentskills.io/specification)：Skill 结构与 progressive disclosure。
-
-第三方说明见 [`THIRD_PARTY_NOTICES.md`](THIRD_PARTY_NOTICES.md)。
+#### 📁 Project-Level Installation
+To install Practical Coding for a specific workspace/repository:
+```bash
+# For Agent Skills compatible tools
+git clone https://github.com/Hubujiu/practical-coding.git .github/skills/practical-coding
+```
 
 ---
 
-## English
+## ⚙️ Configuration
 
-Practical Coding is a compact general-purpose coding skill for coding agents. `SKILL.md` carries a small always-on core (smallest coherent change, mature implementations first, preserved safety and compatibility, fresh evidence before completion) plus a lightweight router: direct local work loads no extra module, while unresolved decision, exploration, diagnosis, implementation, or verification events load only their focused reference. A module moves to an isolated subagent only when avoided context or parallel critical-path value clearly exceeds startup and handoff cost.
-
-**Goal:** produce the smallest durable change with enough fresh evidence to justify confidence while minimizing unnecessary code, tests, documentation, defensive handling, process, and repeated source exploration.
-
-### Principles
-
-- **Mature implementation first** — prefer a maintained production implementation over rebuilding the same subsystem; custom code closes only concrete gaps or confirmed defects.
-- **Smallest coherent change** — optimize for the smallest complete change, not the fewest characters.
-- **Evidence-driven debugging** and **risk-proportional verification**.
-- **Progressive disclosure** — conditional modules stay out of context until triggered.
-
-### Optional Codebase Memory
-
-Practical Coding no longer ships or maintains a parallel graph parser. When structured code intelligence is enabled and useful, it directly uses MIT-licensed [`DeusData/codebase-memory-mcp`](https://github.com/DeusData/codebase-memory-mcp) as the only Codebase Memory backend.
-
-The larger upstream native runtime is acceptable because this capability is optional and is invoked only when it reduces source scanning, token usage, or structural uncertainty. It does not occupy the default Skill context.
-
-Practical Coding normally uses upstream **CLI mode** rather than automatically installing its MCP/Skill integration:
-
-```bash
-codebase-memory-mcp cli index_repository '{"repo_path":"/path/to/repo"}'
-codebase-memory-mcp cli search_graph '{"name_pattern":".*Handler.*","label":"Function"}'
-codebase-memory-mcp cli trace_call_path '{"function_name":"main","direction":"both"}'
-codebase-memory-mcp cli get_architecture '{}'
-```
-
-If the executable is not already installed and `npx` is available, an official lazy launcher may be used:
-
-```bash
-npx --yes codebase-memory-mcp@latest cli <tool> '<json-arguments>'
-```
-
-Do not automatically run `codebase-memory-mcp install`; that command intentionally mutates agent/editor integration config and may install another persistent Skill/MCP surface.
-
-### Persistent project preference
+Enable optional Codebase Memory by adding `.practical-coding.yaml` to your project root:
 
 ```yaml
 version: 1
@@ -333,18 +258,45 @@ codebase_memory:
   enabled: true
 ```
 
-Missing configuration means disabled: use ordinary Exploration without prompting. Persist `enabled: true` only after an explicit user or project choice. Missing runtime/network/package-manager capability does not change an existing preference. If upstream cannot be launched for the current task, use normal source search and explicitly report that Codebase Memory was not used; never fall back to a lower-accuracy local graph implementation.
+- `enabled: false` (or missing file): Codebase Memory is disabled; standard exploration is used without prompting.
+- `enabled: true`: Upstream AST/LSP graph intelligence is enabled for large-scale navigation.
 
-For exact negative or exhaustive structural claims, use upstream `check_index_coverage` and source fallback for reported coverage gaps. The default evidence tier is Verify; Scout is provisional discovery and Auditor is bounded exhaustive analysis.
+---
 
-### Installation
+## 📂 Repository Structure
 
-```bash
-npx skills@latest add Hubujiu/practical-coding
+```text
+practical-coding/
+├── SKILL.md                 # Lean entry point: Always-on Core & Event Router
+├── AGENTS.md                # Agent instructions & module routing index
+├── README.md                # English documentation (this file)
+├── README_zh.md             # Simplified Chinese documentation
+├── CONTRIBUTING.md          # Contribution guidelines
+├── LICENSE                  # MIT License
+├── THIRD_PARTY_NOTICES.md   # Attribution for upstream Codebase Memory MCP
+├── agents/
+│   └── openai.yaml          # Agent configuration profile
+├── examples/
+│   ├── README.md            # Example configuration instructions
+│   └── practical-coding.yaml# Sample project-level configuration
+├── references/              # On-demand engineering modules
+│   ├── decision.md          # Architecture & dependency decisions
+│   ├── implementation.md    # Multi-file change maps & bounded implementation
+│   ├── debugging.md         # Evidence-first root-cause diagnosis
+│   ├── verification.md      # Falsification ladder & verification gates
+│   ├── delegation.md        # Worker subagent protocol & capsule return
+│   ├── exploration.md       # Standard source navigation & impact maps
+│   └── codebase-memory.md   # Upstream AST/LSP graph intelligence & coverage
+└── .github/
+    └── workflows/
+        └── validate.yml     # Skill validation workflow
 ```
 
-See [`references/codebase-memory.md`](references/codebase-memory.md) for the full routing, CLI, coverage, and upstream-fallback rules.
+---
 
-### License
+## 🤝 Contributing & License
 
-See [LICENSE](LICENSE) for Practical Coding and [THIRD_PARTY_NOTICES.md](THIRD_PARTY_NOTICES.md) for upstream Codebase Memory attribution.
+Contributions are welcome! Please review our [Contributing Guidelines](CONTRIBUTING.md) before submitting pull requests.
+
+- **License**: [MIT License](LICENSE) © 2026 Hubujiu
+- **Third-Party Attribution**: See [THIRD_PARTY_NOTICES.md](THIRD_PARTY_NOTICES.md) for details on [`DeusData/codebase-memory-mcp`](https://github.com/DeusData/codebase-memory-mcp).
