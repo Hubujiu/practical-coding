@@ -2,9 +2,9 @@
 
 This chain runs isolated Codex sessions directly against `gpt-5.6-luna`, preserves every prompt/transcript/workspace, applies mechanical graders, and writes JSON plus Markdown summaries. It follows the mature evaluation shape used by Agent Skills and Ponytail: realistic cases, fixed sources, clean sessions, repeated paired arms, deterministic assertions where possible, tokens/time, and raw evidence.
 
-For prerequisites, pinned revisions, exact reproduction commands, evidence boundaries, and the published v1.11 calibration results, see [`REPRODUCING.md`](REPRODUCING.md). For the external benchmark landscape and the public-regression/external/held-out evidence model, see [`../docs/evaluations/2026-08-24-benchmark-landscape.md`](../docs/evaluations/2026-08-24-benchmark-landscape.md).
+For prerequisites, pinned revisions, exact reproduction commands, evidence boundaries, and the published v1.11 calibration results, see [`REPRODUCING.md`](REPRODUCING.md). For the external benchmark landscape and the public-regression/external/held-out evidence model, see [`../docs/evaluations/2026-08-24-benchmark-landscape.md`](../docs/evaluations/2026-08-24-benchmark-landscape.md). The executable external SkillsBench workflow is documented in [`external/README.md`](external/README.md).
 
-## Run
+## Run the project-owned benchmark
 
 ```powershell
 pwsh -File benchmarks/run.ps1 -Profile smoke
@@ -15,9 +15,9 @@ pwsh -File benchmarks/run.ps1 -Profile smoke -Suite router -Case direct-artifact
 pwsh -File benchmarks/run.ps1 -Rescore D:\path\to\benchmark-results\20260824-203839
 ```
 
-`run.ps1` is the canonical entrypoint. It loads the core runner through `run_catalog.py`, which installs the extended public case catalog before execution. This keeps benchmark mechanics separate from the evolving task corpus. `manifest.json` fingerprints the complete benchmark runtime bundle (core runner + case catalog + canonical wrapper), so task/scorer changes cannot masquerade as the same benchmark revision.
+`run.ps1` is the canonical internal entrypoint. It loads the core runner through `run_catalog.py`, which installs the extended public case catalog before execution. This keeps benchmark mechanics separate from the evolving task corpus. `manifest.json` fingerprints the complete benchmark runtime bundle (core runner + case catalog + canonical wrapper), so task/scorer changes cannot masquerade as the same benchmark revision.
 
-For a result that will be presented as a stable ranking, opt into the evidence gate:
+For an internal result that will be presented as a stable ranking, opt into the evidence gate:
 
 ```powershell
 pwsh -File benchmarks/run.ps1 -Profile standard -Runs 3 -Workers 3 -RequireStableRanking
@@ -32,7 +32,29 @@ python benchmarks/check_stability.py benchmark-results\v111-delivery-n1-core-rev
 
 That command intentionally reports the published v1.11 Delivery `n=1` artifact as `PROVISIONAL`; it must not be used for a stable ranking until the same cells are rerun with at least three distinct repetitions.
 
-## Profiles
+## Run the external SkillsBench lift
+
+The external adapter uses BenchFlow's immutable `skillsbench@1.1` dataset and compares the same Codex/Luna configuration with no Skill against a custom Skill directory containing only Practical Coding.
+
+```powershell
+# Instrument-only self-test; no model calls.
+pwsh -File benchmarks/run_external.ps1 -Benchmark skillsbench -SelfTest
+
+# Fast three-task plumbing check; n=1 and provisional.
+pwsh -File benchmarks/run_external.ps1 -Benchmark skillsbench -Profile smoke
+
+# Stable external software-engineering lift.
+pwsh -File benchmarks/run_external.ps1 `
+  -Benchmark skillsbench `
+  -Profile standard `
+  -Runs 3 `
+  -Workers 3 `
+  -RequireStableRanking
+```
+
+`standard` dynamically selects every `software-engineering` task in the SkillsBench v1.1 registry roster. `full` runs the complete versioned roster and is intended mainly as a cross-domain interference check. The adapter pins BenchFlow, runs the SkillsBench oracle before model calls, alternates arm order across repetitions, preserves raw BenchFlow jobs, and reports pass/reward lift with task-cluster bootstrap confidence intervals. It is a Practical-owned custom-Skill ablation on SkillsBench, not an official SkillsBench leaderboard submission using the benchmark's per-task curated Skills.
+
+## Internal profiles
 
 | Profile | Delivery | Router | Decision | Debug | Default runs | Cells without previous/no-Skill arm |
 |---|---:|---:|---:|---:|---:|---:|
@@ -42,7 +64,7 @@ That command intentionally reports the published v1.11 Delivery `n=1` artifact a
 
 `standard` is the normal release gate. `full` carries the complete public regression matrix. The extra Router cases span all six routes; the expanded Debug set covers twelve cases across parsing, normalization, tenant isolation, pagination, units, row handling, state invariants, TTL semantics, URL handling, and the upstream transfer/amount tasks. Decision grows from four to ten two-turn decisions in `full`.
 
-Useful options:
+Useful internal options:
 
 - `-BaselineSkill <directory>` adds a previous Practical snapshot to every suite. The directory must contain `SKILL.md` and its `references` directory.
 - `-BaselineRef <git-revision>` materializes `SKILL.md` plus `references/` from a commit into the run artifact and adds it as `practical-previous`. This is the simplest before/after gate for dirty candidate edits.
@@ -60,10 +82,11 @@ By default, run artifacts are written under `benchmark-results/` and ignored by 
 The fast harness regression suite is also runnable without model calls:
 
 ```powershell
-python -m unittest benchmarks.test_benchmarks benchmarks.test_stability benchmarks.test_catalog
+python -m unittest benchmarks.test_benchmarks benchmarks.test_stability benchmarks.test_catalog benchmarks.test_external_skillsbench
+python benchmarks/external/skillsbench_adapter.py --self-test
 ```
 
-The output directory contains:
+The internal output directory contains:
 
 ```text
 manifest.json           fixed model, commits, profile, cases, and skill hashes
@@ -73,7 +96,7 @@ comparisons.json        Practical-minus-comparator behavioral and efficiency del
 rollups.json            suite/arm totals across cases
 rollup-comparisons.json suite-level Practical-minus-comparator deltas
 report.md               human-readable comparison and Practical deltas
-cells/                  prompt, raw JSONL, stderr, answer, and code workspace per cell
+cells/                  prompt, raw JSONL, stderr, answers, workspaces per cell
 ```
 
 ## Suites and scoring
@@ -89,6 +112,8 @@ cells/                  prompt, raw JSONL, stderr, answer, and code workspace pe
 
 Use repeated paired results. A candidate is not accepted merely because its prose matches a Skill contract. Require no correctness/build regression, then compare delivered code and behavior. Treat LOC, tokens, and time as secondary within equally correct artifacts. `n=1` is a smoke result, not a stable ranking.
 
-A published stable ranking must pass `benchmarks/check_stability.py` with the default minimum `n=3`. The gate checks distinct repetition IDs, complete-run metadata, and infrastructure errors. Behavioral or build failures remain valid benchmark observations and therefore do not invalidate the sample by themselves.
+A published internal stable ranking must pass `benchmarks/check_stability.py` with the default minimum `n=3`. The gate checks distinct repetition IDs, complete-run metadata, and infrastructure errors. Behavioral or build failures remain valid benchmark observations and therefore do not invalidate the sample by themselves.
 
-The public catalog is a **regression suite**, not a hidden generalization test. Once a case has influenced Skill wording, its future 100% score should be treated as a ceiling check. External benchmarks and a private held-out set are required for stronger claims.
+A published SkillsBench external lift must pass the adapter's independent stable gate: oracle success, at least three runs, and one healthy result from each arm for every selected task/repetition pair.
+
+The public catalog is a **regression suite**, not a hidden generalization test. Once a case has influenced Skill wording, its future 100% score should be treated as a ceiling check. SkillsBench provides external public evidence; a private held-out set is still required for the strongest generalization claims.
