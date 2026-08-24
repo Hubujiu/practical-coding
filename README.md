@@ -3,7 +3,7 @@
 > **一个 Skill，按需加载。**  
 > **One skill, load only what the task needs.**
 
-Practical Coding 是一个面向 Coding Agent 的轻量通用编码 Skill。它不把 Brainstorming、Planning、TDD、Debugging、Review 和 Git Workflow 串成固定流水线，而是让 `SKILL.md` 作为轻量 Router，只加载当前任务真正需要的工程能力。
+Practical Coding 是一个面向 Coding Agent 的轻量通用编码 Skill。它不把 Brainstorming、Planning、TDD、Debugging、Review 和 Git Workflow 串成固定流水线，而是让 `SKILL.md` 作为常驻 Router：简单任务直接执行；未决事件出现时才加载对应工程模块；只有被避免的上下文明显超过启动和交接成本时，才把模块隔离到子代理。
 
 目标：**用最小、完整、可维护的修改解决真实问题，同时减少多余代码、测试、文档、防御性编程、重复源码扫描和流程成本。**
 
@@ -19,23 +19,26 @@ Practical Coding 是一个面向 Coding Agent 的轻量通用编码 Skill。它�
 
 Practical Coding 的做法相反：
 
-- 一个轻量 Router 常驻；
+- 一个轻量 Router 常驻，通用编码定位不变；
 - 工程能力彼此独立；
-- 只有触发条件出现时才加载对应规则；
+- 简单任务不加载 reference，也不启动子代理；
+- 只有触发事件出现且隔离收益大于交接成本时，才让子代理加载对应规则；
 - 任务简单时保持简单，任务复杂时再升级；
 - 非平凡能力优先复用成熟实现，不维护已经有成熟方案的缩水平行版本。
 
-### 架构：四个工程模块 + 一个可选代码智能模块
+### 架构：事件路由 + 隔离模块
 
 ```mermaid
 flowchart TB
     T["用户任务 / Coding task"] --> R["SKILL.md<br/>Lightweight Router"]
 
-    R -->|"存在实质技术选择"| D["Decision<br/>技术决策"]
-    R -->|"需要修改代码或项目文件"| I["Implementation<br/>实现"]
-    R -->|"已观察到失败或错误行为"| G["Debugging<br/>调试"]
-    R -->|"验证策略本身具有风险/不确定性"| V["Verification<br/>验证"]
-    R -->|"大型/复杂仓库需要结构化导航"| M["Codebase Memory<br/>代码智能"]
+    R -->|"局部且明确"| X["Direct Path<br/>主代理直接完成"]
+    R -->|"存在实质技术选择"| D["Decision module<br/>技术决策"]
+    R -->|"协调仍未解决"| I["Implementation module<br/>有界实现"]
+    R -->|"失败原因仍不明确"| G["Debugging module<br/>调试"]
+    R -->|"证据仍不充分"| V["Verification module<br/>验证"]
+    R -->|"需要广泛导航"| E["Exploration module<br/>普通源码导航"]
+    E -->|"项目显式启用"| M["Codebase Memory<br/>代码智能"]
 
     D -. "工作中才发现需要" .-> I
     I -. "出现真实失败" .-> G
@@ -43,15 +46,16 @@ flowchart TB
     M -. "定位关键源码后" .-> I
 ```
 
-> **这不是五阶段流水线。** 模块没有固定顺序，也不要求每次全部加载。
+> **这不是阶段流水线。** Router 根据运行中尚未解决的事件按需加载模块。只有通过经济门槛时才委派子代理；子代理只读命中的模块并返回简短 capsule。主代理始终负责范围、授权、仓库状态、集成和最终结论。
 
 | 模块 | 何时加载 |
 |---|---|
-| `references/decision.md` | 架构、依赖、API、数据模型、兼容性、新能力或多个实质方案需要选择 |
-| `references/implementation.md` | 修改代码或项目文件 |
-| `references/debugging.md` | 已观察到 bug、回归、错误行为或失败检查 |
-| `references/verification.md` | 风险/不确定性使验证策略本身成为工程问题 |
-| `references/codebase-memory.md` | 大型/多模块仓库、调用链、影响分析、架构发现、语义检索、精确覆盖问题 |
+| `references/decision.md` | 聚焦检查后仍存在会改变实现的实质方案选择 |
+| `references/implementation.md` | 影响图之后仍有未解决的契约/不变量协调；明确的跨层修改仍走 Direct Path |
+| `references/debugging.md` | 已观察到失败，且聚焦检查后原因仍不明确 |
+| `references/verification.md` | 项目 gate 和聚焦检查后，关键结论仍缺少充分证据 |
+| `references/exploration.md` | 必须广泛扫描时的默认源码导航，返回紧凑影响图 |
+| `references/codebase-memory.md` | 同一广泛导航事件，且项目已显式设置 `codebase_memory.enabled: true` |
 
 ### 核心原则
 
@@ -64,6 +68,7 @@ flowchart TB
 - **Document reasons, not reconstructable facts**：记录“为什么”，不重复代码、图谱或 Git 已能廉价恢复的事实。
 - **Git is evidence, not ceremony**：不强制 branch、worktree、checkpoint、`PLAN.md`。
 - **Progressive disclosure**：只有触发条件出现时才加载对应 reference。
+- **Context isolation**：只有预计能避免大量上下文或缩短并行关键路径时，才在无历史继承的子代理中运行模块并返回证据 capsule；普通小中型仓库留在主代理。
 
 ## Codebase Memory：直接使用成熟 upstream
 
@@ -165,21 +170,17 @@ flowchart TD
     T["收到任务"] --> Q{"结构化代码智能是否明显减少源码扫描?"}
     Q -->|"否"| S["普通源码检索"]
     Q -->|"是"| C{"项目已有配置?"}
-    C -->|"没有"| A["询问一次项目偏好"]
-    A -->|"否"| DIS["持久化 enabled: false"] --> S
-    A -->|"是"| EN["持久化 enabled: true"]
+    C -->|"没有"| S
     C -->|"enabled: false"| S
     C -->|"enabled: true"| R["解析 upstream CLI"]
-    EN --> R
     R -->|"可用"| U["upstream index/search/trace/coverage"] --> V["必要时源码验证"]
     R -->|"不可用"| FB["保持配置不变<br/>普通检索<br/>报告未使用 Codebase Memory"] --> S
 ```
 
 规则：
 
-- 小 Demo、文案、CSS、rename、已知局部修改：直接跳过，不询问；
-- 大型仓库、调用链、影响分析、架构发现、语义检索等明显受益时，如果没有配置，只询问一次；
-- 用户回答“是”和“否”都持久化；
+- 未配置或 `enabled: false`：默认关闭，使用普通 Exploration，不主动询问；
+- 只有用户或项目显式选择后才持久化 `enabled: true`；
 - `enabled: true` 表示项目允许在有价值时调用 upstream，不代表每个任务都要跑图谱；
 - 环境缺少 binary、Node/npm 或网络不会改变项目偏好；
 - upstream 不可用时普通源码检索仍是合法 fallback。
@@ -268,6 +269,8 @@ practical-coding/
 │   ├── implementation.md
 │   ├── debugging.md
 │   ├── verification.md
+│   ├── delegation.md
+│   ├── exploration.md
 │   └── codebase-memory.md
 └── .github/
     └── workflows/
@@ -288,7 +291,7 @@ practical-coding/
 
 ## English
 
-Practical Coding is a compact general-purpose coding skill for coding agents. `SKILL.md` acts as a lightweight router and loads only the engineering capabilities that materially help the current task.
+Practical Coding is a compact general-purpose coding skill for coding agents. `SKILL.md` stays as a lightweight router: direct local work loads no extra module, while unresolved decision, exploration, diagnosis, implementation, or verification events load only their focused reference. A module moves to an isolated subagent only when avoided context or parallel critical-path value clearly exceeds startup and handoff cost.
 
 **Goal:** produce the smallest durable change with enough fresh evidence to justify confidence while minimizing unnecessary code, tests, documentation, defensive handling, process, and repeated source exploration.
 
@@ -330,7 +333,7 @@ codebase_memory:
   enabled: true
 ```
 
-Persist both positive and negative answers. Missing runtime/network/package-manager capability does not change the project preference. If upstream cannot be launched for the current task, use normal source search and explicitly report that Codebase Memory was not used; never fall back to a lower-accuracy local graph implementation.
+Missing configuration means disabled: use ordinary Exploration without prompting. Persist `enabled: true` only after an explicit user or project choice. Missing runtime/network/package-manager capability does not change an existing preference. If upstream cannot be launched for the current task, use normal source search and explicitly report that Codebase Memory was not used; never fall back to a lower-accuracy local graph implementation.
 
 For exact negative or exhaustive structural claims, use upstream `check_index_coverage` and source fallback for reported coverage gaps. The default evidence tier is Verify; Scout is provisional discovery and Auditor is bounded exhaustive analysis.
 

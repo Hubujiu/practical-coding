@@ -1,6 +1,6 @@
 interface:
   display_name: "Practical Coding"
-  short_description: "Lean coding rules with optional upstream code intelligence"
-  default_prompt: "Use $practical-coding and load only the modules this task needs."
+  short_description: "General coding router with isolated expert modules"
+  default_prompt: "Use $practical-coding. Keep simple work direct; isolate only the modules whose events are actually triggered."
 policy:
   allow_implicit_invocation: true

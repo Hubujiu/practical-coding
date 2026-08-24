@@ -1,6 +1,6 @@
 # Structured Codebase Memory
 
-Load this module only when structured navigation is worth its indexing and context cost. It is an optional evidence source, not a mandatory workflow stage.
+Load this module only for `structure.large` when `.practical-coding.yaml` explicitly sets `codebase_memory.enabled: true`. It is an optional evidence source, not a mandatory workflow stage. When false or absent, load `exploration.md` instead and use ordinary source tools.
 
 ## Backend Policy
 
@@ -48,10 +48,9 @@ Behavior:
 
 - `enabled: false` — do not invoke Codebase Memory for this project.
 - `enabled: true` — upstream Codebase Memory may be used when the current task materially benefits from structured code intelligence.
-- missing config + cheap/local task — skip silently; do not ask merely because the capability exists.
-- missing config + graph materially useful — ask the user once whether to enable Codebase Memory for this project, then persist the answer as `enabled: true` or `enabled: false`, preserving unrelated configuration.
+- missing config — disabled by default; use ordinary exploration and do not ask merely because a repository is large.
 
-Persist both answers. “Ask once” is project-level behavior, so a negative answer must survive future sessions.
+Enable it only through an explicit user/project choice and preserve unrelated configuration when recording that choice.
 
 Do not change `enabled` because one machine lacks the upstream executable, Node.js, network access, or another launcher. Those are environment facts, not project preferences.
 
