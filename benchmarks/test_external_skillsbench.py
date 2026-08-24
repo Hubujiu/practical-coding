@@ -38,7 +38,7 @@ class SkillsBenchAdapterTests(unittest.TestCase):
                 adapter.discover_tasks(root, "standard", ["missing"])
 
     def test_bench_commands_pin_dataset_and_mount_only_custom_skill(self):
-        with patch.object(adapter, "resolve_uvx", return_value=["uvx", "--from", "benchflow==0.6.2", "bench"]):
+        with patch.object(adapter, "resolve_uvx", return_value=["uvx", "--from", "benchflow==0.6.5", "bench"]):
             baseline = adapter.bench_command(
                 jobs_dir=Path("base"),
                 tasks=["a", "b"],
@@ -58,10 +58,12 @@ class SkillsBenchAdapterTests(unittest.TestCase):
                 skill_mode="with-skill",
                 skills_root=Path("skills"),
             )
+        self.assertIn("benchflow==0.6.5", baseline)
         self.assertIn("skillsbench@1.1", baseline)
         self.assertIn("codex-acp", baseline)
         self.assertEqual(baseline.count("--include"), 2)
         self.assertNotIn("--skills-dir", baseline)
+        self.assertNotIn("--quiet", baseline)
         self.assertIn("--skills-dir", trained)
         self.assertIn("skills", trained)
         self.assertIn("with-skill", trained)
