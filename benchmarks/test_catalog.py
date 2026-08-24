@@ -3,6 +3,7 @@ import unittest
 from pathlib import Path
 
 from benchmarks import run_benchmarks as bench
+from benchmarks import run_catalog
 from benchmarks.case_catalog import (
     EXTRA_DEBUG_CASES,
     EXTRA_DECISION_CASES,
@@ -62,6 +63,16 @@ class ExpandedCatalogTests(unittest.TestCase):
                 self.assertTrue(spec["prompt"].strip())
                 self.assertIn("Resolve the decision now", spec["reply"])
                 self.assertTrue(spec["expected"])
+
+    def test_canonical_runner_fingerprint_includes_catalog(self):
+        raw_core = bench.sha256(Path(bench.__file__))
+        bundled = run_catalog.runner_bundle_sha256()
+        self.assertEqual(len(bundled), 64)
+        self.assertNotEqual(bundled, raw_core)
+        self.assertEqual(
+            run_catalog.catalog_aware_sha256(Path(run_catalog.bench.__file__)),
+            bundled,
+        )
 
 
 if __name__ == "__main__":
