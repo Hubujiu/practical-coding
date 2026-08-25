@@ -3,7 +3,7 @@
 <p align="center">
   <a href="https://github.com/Hubujiu/practical-coding/blob/main/LICENSE"><img src="https://img.shields.io/badge/License-MIT-yellow.svg" alt="License: MIT"></a>
   <a href="https://agentskills.io"><img src="https://img.shields.io/badge/Agent_Skills-Compliant-success.svg" alt="Agent Skills 规范兼容"></a>
-  <img src="https://img.shields.io/badge/Version-1.11-blue.svg" alt="Version 1.11">
+  <img src="https://img.shields.io/badge/Version-1.12-blue.svg" alt="Version 1.12">
   <img src="https://img.shields.io/badge/Supports-Claude_Code_|_Cursor_|_Copilot_|_Gemini_|_Antigravity_|_Codex_|_Goose-purple.svg" alt="支持的 Agent 平台">
   <a href="https://github.com/Hubujiu/practical-coding/pulls"><img src="https://img.shields.io/badge/PRs-welcome-brightgreen.svg" alt="欢迎 PR"></a>
 </p>
@@ -141,7 +141,7 @@ flowchart TB
 1. **精准审视**：在改动任何代码前，明确理解预期目标并仅审视最小相关上下文。
 2. **因果可溯**：添加的每一项内容——无论是抽象、依赖、校验、重试、配置、测试还是文档——都必须追溯至具体需求、系统边界、项目规范或已确认的风险。
 3. **成熟实现优先**：对于非平凡能力，优先集成维护良好的成熟实现，而不是自己造一套粗糙的平行版本。
-4. **捍卫系统契约**：严格保护既有的安全性、权限模型、数据完整性、无障碍访问、向后兼容性与项目约束。
+4. **最小完备改动**：只交付被点名的行为；可逆且未指定的细节跟仓库或平台默认。不要把验收集里没有的安全、无障碍或测试义务当成常驻要求。
 5. **范围纯净**：坚决不触碰无关代码，完整保留用户的既有修改。
 6. **新鲜证据交付**：在声称完成任务前，必须以最低成本获取足以支撑结论的新鲜证据。
 
@@ -155,7 +155,7 @@ flowchart TB
 |---|---|---|
 | 🧭 [`references/decision.md`](references/decision.md) | 聚焦检查后，仍存在会影响实现的实质方案、架构或依赖选择 | 评估不超过 3 个可行方案（原生优先）；选择满足当前需求的最小方案。 |
 | 🏗️ [`references/implementation.md`](references/implementation.md) | 修改需要协调多个文件或契约，且修改影响面尚不清晰 | 绘制紧凑修改图；在最窄权威边界做校验；拒绝防御性膨胀。 |
-| 🔍 [`references/debugging.md`](references/debugging.md) | 已观察到失败或测试未通过，且聚焦检查后根因仍不明确 | 证据第一：复现表象 → 定位最早错误状态 → 单一假设 → 根因修复。 |
+| 🔍 [`references/debugging.md`](references/debugging.md) | 已观察到失败或测试未通过，且聚焦检查后根因仍不明确 | 证据第一：复现表象 → 定位最早错误状态 → 单一假设 → 根因修复。仅当被违反的安全/完整性/无障碍约束就是根因时，才在共享边界上恢复它。 |
 | 🛡️ [`references/verification.md`](references/verification.md) | 风险或不确定性使得验证策略本身成为一项实质决策 | 最低成本伪证阶梯；驳斥“改动太简单不用测”、“最后改动前测过”等借口。 |
 | 🗺️ [`references/exploration.md`](references/exploration.md) | 必须广泛扫描大型代码库且未启用代码图谱时的默认导航 | 产出有界影响图（精确路径、符号、调用边），不复制全文和海量日志。 |
 | 🧠 [`references/codebase-memory.md`](references/codebase-memory.md) | 同上事件，且项目显式配置了 `codebase_memory.enabled: true` | 通过上游 CLI 调度 AST/LSP 图谱，执行 Scout、Verify、Auditor 级结构化检索与覆盖检查。 |

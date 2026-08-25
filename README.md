@@ -3,7 +3,7 @@
 <p align="center">
   <a href="https://github.com/Hubujiu/practical-coding/blob/main/LICENSE"><img src="https://img.shields.io/badge/License-MIT-yellow.svg" alt="License: MIT"></a>
   <a href="https://agentskills.io"><img src="https://img.shields.io/badge/Agent_Skills-Compliant-success.svg" alt="Agent Skills Compliant"></a>
-  <img src="https://img.shields.io/badge/Version-1.11-blue.svg" alt="Version 1.11">
+  <img src="https://img.shields.io/badge/Version-1.12-blue.svg" alt="Version 1.12">
   <img src="https://img.shields.io/badge/Supports-Claude_Code_|_Cursor_|_Copilot_|_Gemini_|_Antigravity_|_Codex_|_Goose-purple.svg" alt="Compatible Agents">
   <a href="https://github.com/Hubujiu/practical-coding/pulls"><img src="https://img.shields.io/badge/PRs-welcome-brightgreen.svg" alt="PRs Welcome"></a>
 </p>
@@ -141,7 +141,7 @@ These non-negotiable engineering principles apply to **every path**, including d
 1. **Understand & Inspect Narrowly**: Inspect the smallest relevant context before modifying code.
 2. **Traceable Value**: Everything added — abstractions, dependencies, validations, retries, configs, tests, or documentation — must trace to a concrete requirement, boundary, or observed risk.
 3. **Mature Implementation First**: For non-trivial capabilities, integrate a mature, maintained package rather than building a parallel custom implementation.
-4. **Preserve System Invariants**: Protect security, permissions, data integrity, accessibility, compatibility, and explicit project constraints.
+4. **Smallest Complete Change**: Deliver only named behavior; follow repository or platform defaults for reversible unspecified details. Do not preserve hypothetical security, accessibility, or test obligations that are not in the current acceptance set.
 5. **Untouched Scope**: Keep unrelated code and existing user modifications untouched.
 6. **Fresh Evidence**: Obtain the cheapest fresh evidence sufficient to justify the change before claiming completion.
 
@@ -155,7 +155,7 @@ When a task encounters an unresolved engineering event, only the matching module
 |---|---|---|
 | 🧭 [`references/decision.md`](references/decision.md) | A material choice about architecture, dependencies, APIs, or data models remains open | Evaluates $\le 3$ viable options (stdlib/native first); chooses the smallest fitting solution. |
 | 🏗️ [`references/implementation.md`](references/implementation.md) | A change coordinates multiple files/contracts and the change surface is unclear | Bounded change map; authoritative boundary validation; no defensive bloat. |
-| 🔍 [`references/debugging.md`](references/debugging.md) | An observed failure, regression, or failed verification lacks a diagnosed cause | Evidence-first: symptom → earliest broken state → single hypothesis → root cause fix. |
+| 🔍 [`references/debugging.md`](references/debugging.md) | An observed failure, regression, or failed verification lacks a diagnosed cause | Evidence-first: symptom → earliest broken state → single hypothesis → root cause fix. Restore a violated security/integrity/accessibility constraint only when it is the diagnosed cause. |
 | 🛡️ [`references/verification.md`](references/verification.md) | Risk or uncertainty makes the verification strategy itself a meaningful decision | Cheapest falsification ladder; rejects rationalizations like *"too simple to test"*. |
 | 🗺️ [`references/exploration.md`](references/exploration.md) | Broad navigation of a large codebase is necessary with standard text/symbol tools | Bounded impact map (exact paths, symbols, edges) without full file dumps. |
 | 🧠 [`references/codebase-memory.md`](references/codebase-memory.md) | Broad structural navigation in a project with `codebase_memory.enabled: true` | AST/LSP graph intelligence via upstream CLI across Scout, Verify, and Auditor tiers. |

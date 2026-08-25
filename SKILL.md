@@ -4,7 +4,7 @@ description: "Use for general coding work: implementing, modifying, or refactori
 license: MIT
 metadata:
   author: Hubujiu
-  version: "1.11"
+  version: "1.12"
 ---
 
 # Practical Coding
@@ -22,9 +22,7 @@ These rules apply on every path, including work that loads no module:
 - Build only behavior a current requirement or caller needs. Do not add optional modes, generic configuration, extensibility, aliases, wrappers, or scaffolding for hypothetical reuse.
 - Include the minimum wiring that makes the requested behavior reachable. Treat a request to add or create a named component, helper, or library artifact as an artifact request: do not add a demo, mount, registration, or new caller unless requested or required by an existing repository contract. A user-facing feature, endpoint, command, or integration is incomplete until the existing application can reach it. When a reversible, low-risk detail is unspecified, follow the repository's existing or platform default instead of expanding the API or blocking delivery.
 - Everything else you add — validation, fallback, retry, documentation, or a test — must trace to an actual boundary, project policy, observed risk, or the cheapest evidence needed for this change.
-- Non-trivial new logic — a branch, loop, parser, state transition, or money/security path — ships with exactly one smallest runnable check unless an existing focused test already covers it or the user forbids tests. Trivial native wiring needs none.
 - For non-trivial capabilities, prefer integrating a mature maintained implementation over building a parallel one.
-- Preserve required security, permissions, data integrity, accessibility, compatibility, and explicit project constraints.
 - Keep unrelated code and existing user changes untouched.
 - Before claiming completion, obtain the cheapest fresh evidence sufficient for the change. Prefer one existing focused check and do not grow a redundant test suite.
 

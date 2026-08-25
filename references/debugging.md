@@ -21,14 +21,15 @@ Judge a fix by the delivered code, not by whether it followed a named debugging 
 
 - removes the earliest incorrect state that explains the symptom;
 - preserves the intended behavior of the reported path and other callers of the repaired boundary;
-- changes no unrelated behavior and introduces no speculative fallback or refactor;
+- restores a violated security, permission, integrity, accessibility, compatibility, or explicit project constraint when that constraint is the diagnosed cause, at the shared boundary every affected caller passes through;
+- changes no unrelated behavior and introduces no speculative fallback, extra validation, accessibility chrome, or refactor;
 - is no larger than the diagnosed cause requires.
 
 ## Stay in Scope
 
 - Scope the fix by the violated contract or invariant, not merely by the function named in the report. If the requirement is universal across a resource or state (for example, it must never enter an invalid state), inspect every current mutation path through the nearest shared boundary; a sibling caller that can violate the same invariant is part of the reported defect.
 - Do not expand beyond that contract into a repo-wide search for unrelated defects.
-- Do not write tests merely because debugging occurred. Use the cheapest reproduction or focused check that can falsify the fix; add a durable targeted test only when `verification.md`, regression risk, or project requirements justify its lasting value.
+- Do not write tests merely because debugging occurred or because the repaired logic is non-trivial. Use the cheapest reproduction or focused check that can falsify the fix; add a durable targeted test only when `verification.md`, regression risk, or project requirements justify its lasting value.
 - If diagnosis reveals a material design or dependency decision, load `decision.md` before making that choice.
 
 ## Exit
