@@ -289,7 +289,7 @@ practical-coding/
 
 ## 🧪 Luna 效果测试
 
-`benchmarks/run.ps1` 使用固定 `gpt-5.6-luna` 隔离运行 Ponytail Delivery、事件 Router、grilling 多轮 Decision 和 Superpowers Debug 对照。`standard` / `full` 默认每格重复 3 次；完整命令、固定 commit、评分器和证据边界见 [`benchmarks/README.md`](benchmarks/README.md) 与 [`benchmarks/REPRODUCING.md`](benchmarks/REPRODUCING.md)。
+`benchmarks/run.ps1` 使用固定 `gpt-5.6-luna` 隔离运行 Ponytail Delivery、事件 Router、grilling 多轮 Decision 和 Superpowers Debug 对照。`standard` / `full` 默认每格重复 3 次；完整命令、固定 commit、评分器和证据边界见 [`benchmarks/README.md`](benchmarks/README.md) 与 [`benchmarks/REPRODUCING.md`](benchmarks/REPRODUCING.md)。v2.0 完整矩阵 `n=3` 稳定排名见 [`docs/evaluations/2026-08-25-practical-v20-full-stable.md`](docs/evaluations/2026-08-25-practical-v20-full-stable.md)。
 
 ---
 

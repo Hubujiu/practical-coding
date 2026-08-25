@@ -298,7 +298,7 @@ practical-coding/
 
 ## 🧪 Luna Benchmarks
 
-`benchmarks/run.ps1` invokes the fixed `gpt-5.6-luna` model in isolated sessions for Ponytail delivery tasks, event routing, multi-round grilling decisions, and Superpowers debugging comparisons. Standard and full profiles default to three runs per cell, while `-BaselineRef HEAD` adds the pre-change Git version to the same paired run. See [`benchmarks/README.md`](benchmarks/README.md) and [`benchmarks/REPRODUCING.md`](benchmarks/REPRODUCING.md) for evidence boundaries, artifacts, graders, and exact commands.
+`benchmarks/run.ps1` invokes the fixed `gpt-5.6-luna` model in isolated sessions for Ponytail delivery tasks, event routing, multi-round grilling decisions, and Superpowers debugging comparisons. Standard and full profiles default to three runs per cell, while `-BaselineRef HEAD` adds the pre-change Git version to the same paired run. See [`benchmarks/README.md`](benchmarks/README.md) and [`benchmarks/REPRODUCING.md`](benchmarks/REPRODUCING.md) for evidence boundaries, artifacts, graders, and exact commands. The published v2.0 full `n=3` stable ranking is summarized in [`docs/evaluations/2026-08-25-practical-v20-full-stable.md`](docs/evaluations/2026-08-25-practical-v20-full-stable.md).
 
 ---
 
