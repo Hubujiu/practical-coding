@@ -2,6 +2,8 @@
 
 Practical Coding keeps external evidence separate from its project-owned regression suites. The first executable adapter targets the immutable `skillsbench@1.1` dataset through BenchFlow.
 
+Before a release-quality external run, follow [`../NEXT_VALIDATION.md`](../NEXT_VALIDATION.md). That document freezes the run order, no-post-hoc-change rule, confidence-interval interpretation, artifact-retention requirements, and the claim boundary for external versus held-out evidence. The current unchanged v2.0 Skill's mandatory next evidence milestone is the stable SkillsBench software-engineering run described below.
+
 ## SkillsBench
 
 The adapter compares the same Codex/model configuration under two treatments:
@@ -61,6 +63,8 @@ Before any model calls, the adapter runs the SkillsBench oracle across the selec
 
 Behavioral failures remain valid data. Infrastructure failures or missing rewards make the evidence provisional or abort the run.
 
+For interpretation, use the task-cluster-bootstrap 95% confidence interval in the adapter output. If the interval crosses zero, report the numerical lift but do not call the improvement resolved. If it is entirely below zero, treat that as an external regression. Do not remove unfavorable tasks after inspecting results; instrument defects invalidate and require rerunning the affected complete matrix rather than selective exclusion.
+
 ### Full cross-domain interference run
 
 `full` uses the complete `skillsbench@1.1` registry roster. This is intentionally expensive and is mainly useful for measuring whether a general coding Skill causes irrelevant-domain interference:
@@ -109,4 +113,4 @@ Codex/Luna no Skill
 Codex/Luna + Practical Coding
 ```
 
-A positive delta is external evidence that Practical Coding improves resolution on the selected public SkillsBench tasks. Because SkillsBench is public, this remains external public evidence rather than a private holdout. Do not fold these scores into the project-owned Router/Decision/Debug regression rollups.
+A positive numerical delta is external evidence on the selected public SkillsBench tasks, but statistical wording follows [`../NEXT_VALIDATION.md`](../NEXT_VALIDATION.md): distinguish a resolved positive interval from a delta whose 95% interval crosses zero. Because SkillsBench is public, this remains external public evidence rather than a private holdout. Do not fold these scores into the project-owned Router/Decision/Debug regression rollups, and do not describe this custom-Skill ablation as an official SkillsBench curated-Skill leaderboard row.
