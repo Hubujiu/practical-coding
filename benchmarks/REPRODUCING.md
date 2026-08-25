@@ -2,6 +2,8 @@
 
 This document reproduces Practical Coding's Codex benchmark chain. The runner invokes `gpt-5.6-luna` directly through `codex exec`; it does not use a child agent, a hidden judge model, or the user's normal Skill installation.
 
+For the next release-quality validation cycle, read [`NEXT_VALIDATION.md`](NEXT_VALIDATION.md) **before** running model calls. It freezes the accepted baseline, run order, no-post-hoc-change rule, external confidence-interval interpretation, held-out requirements, ablation/interference work, artifact retention, and the strongest claims each evidence layer permits. Reproduction tells you how to run the instruments; `NEXT_VALIDATION.md` defines when the resulting evidence is sufficient for a release claim.
+
 ## What is official and what is adapted
 
 The chain deliberately separates three evidence types:
@@ -113,7 +115,7 @@ pwsh -NoProfile -File benchmarks/run.ps1 `
 
 The materialized baseline Skill is copied into the run directory. Both entrypoint and complete Skill-bundle hashes are recorded in `manifest.json`, preventing an ambiguous "previous version" comparison.
 
-For a comparison that will be published as a stable ranking, add `-RequireStableRanking`. It rejects effective `n<3`, incomplete runs, infrastructure failures, and Delivery rankings without production-build evidence.
+For a comparison that will be published as a stable ranking, add `-RequireStableRanking`. It rejects effective `n<3`, incomplete runs, infrastructure failures, and Delivery rankings without production-build evidence. For release claims, also follow the stricter current/previous/no-Skill and claim-boundary requirements in [`NEXT_VALIDATION.md`](NEXT_VALIDATION.md).
 
 ## 4. Run a focused regression
 
