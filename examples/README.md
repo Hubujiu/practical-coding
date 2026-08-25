@@ -19,7 +19,7 @@ Each example shows two outcomes of the same request: a typical over-engineered r
 + src/utils/dateFormat.ts         (timezone helpers "for later")
 ```
 
-**With the skill** (Decision module: platform-native beats a new dependency):
+**With the skill** (Direct Path / Core ladder: native platform feature beats a new dependency):
 
 ```html
 <input type="date" name="birthdate" required>
@@ -50,7 +50,7 @@ function getApiBaseUrl(): string {
 
 Retries for a local file read, a fallback chain nobody asked for, and a broad catch that hides a malformed config instead of reporting it.
 
-**With the skill** (Implementation module: every failure path corresponds to a real boundary):
+**With the skill** (Core: every failure path corresponds to a real boundary):
 
 ```ts
 function getApiBaseUrl(): string {
@@ -78,7 +78,7 @@ A missing or malformed config file is a startup error the operator must see, not
 6. Two review passes, checkpoint commit, execution log updated
 ```
 
-**With the skill** (router: Implementation only, evidence = the diff):
+**With the skill** (Direct Path: evidence = the diff):
 
 ```diff
 - <button>Submit</button>

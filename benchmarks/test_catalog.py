@@ -31,7 +31,7 @@ class ExpandedCatalogTests(unittest.TestCase):
         extra_routes = {expected for expected, _ in EXTRA_ROUTER_CASES.values()}
         self.assertEqual(
             extra_routes,
-            {"DIRECT", "DECISION", "DEBUGGING", "IMPLEMENTATION", "EXPLORATION", "VERIFICATION"},
+            {"DIRECT", "DECISION", "DEBUGGING", "IMPLEMENTATION", "EXPLORATION"},
         )
         self.assertEqual(len({case["score"] for case in EXTRA_DEBUG_CASES.values()}), len(EXTRA_DEBUG_CASES))
         self.assertGreaterEqual(len(EXTRA_DECISION_CASES), 6)

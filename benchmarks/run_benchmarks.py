@@ -53,7 +53,7 @@ ROUTER_CASES = {
     "implementation-not-files": ("DIRECT", "Update three already-known callers to the already-decided function signature."),
     "exploration-broad": ("EXPLORATION", "In this monorepo, map every service calling the billing client and where responses are transformed."),
     "exploration-cbm-off": ("EXPLORATION", "Map the complete call chain in this large repository; Codebase Memory is not enabled."),
-    "verification-risk": ("VERIFICATION", "The change is complete; choose the cheapest sufficient evidence for a risky zero-downtime migration."),
+    "verification-risk": ("IMPLEMENTATION", "The change is complete; choose the cheapest sufficient evidence for a risky zero-downtime migration."),
     "verification-known": ("DIRECT", "The local change is complete and its existing focused unit test is the sufficient check; run it."),
 }
 
@@ -425,7 +425,7 @@ def run_cell(spec: tuple[str, str, str, int], args: argparse.Namespace, sources:
 
     loaded = skill_text(arm, sources, previous, suite=suite)
     if suite == "router":
-        prompt = "Classify the unresolved event. Return exactly one token: DIRECT, DECISION, DEBUGGING, IMPLEMENTATION, EXPLORATION, or VERIFICATION. Do not use tools or solve it.\n\nRequest: " + request + "\n\n" + loaded
+        prompt = "Classify the unresolved event. Return exactly one token: DIRECT, DECISION, DEBUGGING, IMPLEMENTATION, or EXPLORATION. Do not use tools or solve it.\n\nRequest: " + request + "\n\n" + loaded
     elif suite == "decision":
         prompt = request + "\n\nReturn only the first decision round, then wait. Do not use tools or implement.\n" + loaded
     else:

@@ -35,7 +35,7 @@ class BenchmarkHarnessTests(unittest.TestCase):
     def test_router_matrix_covers_every_route(self):
         self.assertEqual(
             {expected for expected, _ in bench.ROUTER_CASES.values()},
-            {"DIRECT", "DECISION", "DEBUGGING", "IMPLEMENTATION", "EXPLORATION", "VERIFICATION"},
+            {"DIRECT", "DECISION", "DEBUGGING", "IMPLEMENTATION", "EXPLORATION"},
         )
 
     def test_decision_suite_inlines_decision_module(self):

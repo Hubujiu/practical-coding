@@ -3,7 +3,7 @@
 <p align="center">
   <a href="https://github.com/Hubujiu/practical-coding/blob/main/LICENSE"><img src="https://img.shields.io/badge/License-MIT-yellow.svg" alt="License: MIT"></a>
   <a href="https://agentskills.io"><img src="https://img.shields.io/badge/Agent_Skills-Compliant-success.svg" alt="Agent Skills Compliant"></a>
-  <img src="https://img.shields.io/badge/Version-1.12-blue.svg" alt="Version 1.12">
+  <img src="https://img.shields.io/badge/Version-2.0-blue.svg" alt="Version 2.0">
   <img src="https://img.shields.io/badge/Supports-Claude_Code_|_Cursor_|_Copilot_|_Gemini_|_Antigravity_|_Codex_|_Goose-purple.svg" alt="Compatible Agents">
   <a href="https://github.com/Hubujiu/practical-coding/pulls"><img src="https://img.shields.io/badge/PRs-welcome-brightgreen.svg" alt="PRs Welcome"></a>
 </p>
@@ -25,7 +25,8 @@
 - [Inspirations & Lineage (The Synthesis of Giants)](#-inspirations--lineage-the-synthesis-of-giants)
 - [Architecture & How It Works](#-architecture--how-it-works)
 - [The Always-On Core](#-the-always-on-core)
-- [The 6 Modular Pillars](#-the-6-modular-pillars)
+- [Modes: low / smart / high](#-modes-low--smart--high)
+- [The 5 Modular Pillars](#-the-5-modular-pillars)
 - [Subagent Delegation & Isolation Gate](#-subagent-delegation--isolation-gate)
 - [Optional Codebase Memory (AST & LSP Intelligence)](#-optional-codebase-memory-ast--lsp-intelligence)
 - [Quick Start & Installation](#-quick-start--installation)
@@ -82,14 +83,15 @@ Practical Coding merges the best design paradigms from leading open-source agent
 ```
 
 ### 1. 🦄 [DietrichGebert/ponytail](https://github.com/DietrichGebert/ponytail) — *The Pragmatic Senior Dev Mindset*
-- **What we adopted**: The ruthless **YAGNI** (You Aren't Gonna Need It) principle, the **Decision Ladder** (stdlib → platform native → installed dependency → mature external library → custom code as last resort), zero defensive bloat, and the discipline of writing the **smallest coherent diff**.
+- **What we adopted**: The ruthless **YAGNI** principle, the **ladder** (does this need to exist → already in this codebase → stdlib → native platform feature → installed dependency → one line → minimum custom code), deletion over addition, shortest working diff, at most three lines of unrequested prose, and the *shape* of intensity levels.
+- **What we did not copy**: Always-on accessibility chrome, a mandatory runnable check for every branch, or Ponytail's lite/full/ultra as code intensity. Practical's `low`/`smart`/`high` change **routing eagerness** only; the Core never relaxes. Root-cause debugging lives in `debugging.md`, not as a Core essay.
 
 ### 2. ⚡ [obra/superpowers](https://github.com/obra/superpowers) — *Disciplined Engineering Capabilities*
 - **What we adopted**: Systematic root-cause debugging, verification gates, and isolated subagent task contracts.
 - **How we evolved it**: We **unchained** these powerful tools from mandatory linear pipelines. You no longer suffer through mandatory brainstorming or TDD ceremony for trivial changes; capabilities are triggered **only when an unresolved event occurs**.
 
 ### 3. 📦 [mattpocock/skills](https://github.com/mattpocock/skills) & [Agent Skills Spec](https://agentskills.io) — *Progressive Disclosure*
-- **What we adopted**: Ultra-lean entry footprint. [`SKILL.md`](SKILL.md) is under 50 lines, allowing it to remain permanently resident in the agent's context without wasting token budget. Deep reference modules are read only when routed.
+- **What we adopted**: Ultra-lean entry footprint. [`SKILL.md`](SKILL.md) stays under 70 lines, allowing it to remain permanently resident in the agent's context without wasting token budget. Deep reference modules are read only when routed.
 
 ### 4. 🧠 [DeusData/codebase-memory-mcp](https://github.com/DeusData/codebase-memory-mcp) — *Zero-Bloat Code Intelligence*
 - **What we adopted**: Industrial-grade Tree-sitter AST parsing, Hybrid LSP semantic resolution, and persistent code graphs.
@@ -108,9 +110,8 @@ flowchart TB
     Core -->|"Local & Well-Understood"| Direct["🚀 Direct Path<br/>Root agent executes immediately<br/>(No modules, no subagents)"]
     
     Core -->|"Unresolved Material Choice"| D["🧭 Decision Module<br/>(references/decision.md)"]
-    Core -->|"Multi-file Coordination Unclear"| I["🏗️ Implementation Module<br/>(references/implementation.md)"]
+    Core -->|"Coordination or Evidence Plan Unclear"| I["🏗️ Implementation Module<br/>(references/implementation.md)"]
     Core -->|"Observed Bug / Cause Unknown"| G["🔍 Debugging Module<br/>(references/debugging.md)"]
-    Core -->|"Meaningful Verification Risk"| V["🛡️ Verification Module<br/>(references/verification.md)"]
     Core -->|"Broad Codebase Navigation"| E["🗺️ Exploration Module<br/>(references/exploration.md)"]
     E -->|"codebase_memory.enabled: true"| M["🧠 Codebase Memory (CLI Mode)<br/>(references/codebase-memory.md)"]
 
@@ -123,7 +124,6 @@ flowchart TB
     D -.-> IG
     I -.-> IG
     G -.-> IG
-    V -.-> IG
     E -.-> IG
     M -.-> IG
 
@@ -136,27 +136,38 @@ flowchart TB
 
 ## 🛡️ The Always-On Core
 
-These non-negotiable engineering principles apply to **every path**, including direct edits:
+These non-negotiable engineering principles apply to **every path and every mode**, including direct edits:
 
-1. **Understand & Inspect Narrowly**: Inspect the smallest relevant context before modifying code.
-2. **Traceable Value**: Everything added — abstractions, dependencies, validations, retries, configs, tests, or documentation — must trace to a concrete requirement, boundary, or observed risk.
-3. **Mature Implementation First**: For non-trivial capabilities, integrate a mature, maintained package rather than building a parallel custom implementation.
-4. **Smallest Complete Change**: Deliver only named behavior; follow repository or platform defaults for reversible unspecified details. Do not preserve hypothetical security, accessibility, or test obligations that are not in the current acceptance set.
-5. **Untouched Scope**: Keep unrelated code and existing user modifications untouched.
-6. **Fresh Evidence**: Obtain the cheapest fresh evidence sufficient to justify the change before claiming completion.
+1. **Read First, Then Be Lazy**: Understand the requested outcome and the code it actually touches; a familiar feature name implies only its named behavior, never every conventional extra.
+2. **The Ladder**: Stop at the first rung that holds — doesn't need to exist → already in this codebase → stdlib → native platform feature → installed dependency → one line → minimum custom code.
+3. **Traceable Value**: Every validation, fallback, retry, config, test, or doc must trace to an actual trust boundary, project policy, observed risk, or the cheapest evidence this change needs. Never simplify away trust-boundary validation or anything explicitly requested.
+4. **Smallest Complete Change**: Deletion over addition, boring over clever, fewest files, shortest working diff that is still correct on edge cases. Follow repository or platform defaults for reversible unspecified details.
+5. **Untouched Scope**: Keep unrelated code and existing user modifications untouched; mark a deliberate corner cut with a one-line comment naming the ceiling.
+6. **Fresh Evidence, Lean Output**: Obtain the cheapest fresh evidence before claiming completion, then deliver the change with at most three short lines of unrequested prose: what was skipped and when to add it.
 
 ---
 
-## 🧩 The 6 Modular Pillars
+## 🎚️ Modes: low / smart / high
 
-When a task encounters an unresolved engineering event, only the matching module is loaded:
+Like Ponytail's intensity levels, Practical Coding v2.0 supports three routing intensities. The default is **smart**; switch by naming a mode in your request or setting `mode:` in `.practical-coding.yaml`. These are **not** Ponytail lite/full/ultra: they change routing eagerness and delegation appetite only — the Always-On Core never relaxes.
+
+| Mode | Behavior |
+|---|---|
+| **low** | Maximum laziness. Stays on Direct Path unless proceeding blind risks a wrong or irreversible result: undiagnosed failures still load Debugging, material user-owned choices still load Decision, and an unmapped large codebase still loads Exploration (or Codebase Memory when enabled). Implementation is not loaded. Never dispatches workers. |
+| **smart** *(default)* | The event router as written: load exactly the one module for the unresolved event that blocks the next safe action. Workers pass the economic Isolation Gate. |
+| **high** | Maximum rigor. Loads the matching module for every triggered event, maps the change surface before multi-file edits, states an explicit evidence plan before completion, and prefers isolated workers for separable scopes. |
+
+---
+
+## 🧩 The 5 Modular Pillars
+
+When a task encounters an unresolved engineering event, only the matching module is loaded. **Verification is not a sixth module**: choosing sufficient evidence for a risky change is part of Implementation. Implementation itself stays, because an unmapped multi-file contract is not Direct Path work.
 
 | Module | Loaded When | Core Deliverable |
 |---|---|---|
 | 🧭 [`references/decision.md`](references/decision.md) | A material choice about architecture, dependencies, APIs, or data models remains open | Evaluates $\le 3$ viable options (stdlib/native first); chooses the smallest fitting solution. |
-| 🏗️ [`references/implementation.md`](references/implementation.md) | A change coordinates multiple files/contracts and the change surface is unclear | Bounded change map; authoritative boundary validation; no defensive bloat. |
+| 🏗️ [`references/implementation.md`](references/implementation.md) | A change coordinates multiple files/contracts and the change surface is unclear, or risk makes the evidence plan itself a meaningful decision | Bounded change map; authoritative boundary validation; cheapest falsification ladder; rejects rationalizations like *"too simple to test"*. |
 | 🔍 [`references/debugging.md`](references/debugging.md) | An observed failure, regression, or failed verification lacks a diagnosed cause | Evidence-first: symptom → earliest broken state → single hypothesis → root cause fix. Restore a violated security/integrity/accessibility constraint only when it is the diagnosed cause. |
-| 🛡️ [`references/verification.md`](references/verification.md) | Risk or uncertainty makes the verification strategy itself a meaningful decision | Cheapest falsification ladder; rejects rationalizations like *"too simple to test"*. |
 | 🗺️ [`references/exploration.md`](references/exploration.md) | Broad navigation of a large codebase is necessary with standard text/symbol tools | Bounded impact map (exact paths, symbols, edges) without full file dumps. |
 | 🧠 [`references/codebase-memory.md`](references/codebase-memory.md) | Broad structural navigation in a project with `codebase_memory.enabled: true` | AST/LSP graph intelligence via upstream CLI across Scout, Verify, and Auditor tiers. |
 
@@ -251,14 +262,16 @@ git clone https://github.com/Hubujiu/practical-coding.git .github/skills/practic
 
 ## ⚙️ Configuration
 
-Enable optional Codebase Memory by adding `.practical-coding.yaml` to your project root:
+Set the routing mode and enable optional Codebase Memory by adding `.practical-coding.yaml` to your project root:
 
 ```yaml
 version: 1
+mode: smart          # low | smart | high (default: smart)
 codebase_memory:
   enabled: true
 ```
 
+- `mode`: routing intensity as described above; an explicit user request in the conversation overrides it.
 - `enabled: false` (or missing file): Codebase Memory is disabled; standard exploration is used without prompting.
 - `enabled: true`: Upstream AST/LSP graph intelligence is enabled for large-scale navigation.
 
@@ -268,7 +281,7 @@ codebase_memory:
 
 ```text
 practical-coding/
-├── SKILL.md                 # Lean entry point: Always-on Core & Event Router
+├── SKILL.md                 # Lean entry point: Always-on Core, modes, Event Router
 ├── AGENTS.md                # Agent instructions & module routing index
 ├── README.md                # English documentation (this file)
 ├── README_zh.md             # Simplified Chinese documentation
@@ -287,9 +300,8 @@ practical-coding/
 │   └── practical-coding.yaml# Sample project-level configuration
 ├── references/              # On-demand engineering modules
 │   ├── decision.md          # Architecture & dependency decisions
-│   ├── implementation.md    # Multi-file change maps & bounded implementation
+│   ├── implementation.md    # Multi-file change maps, bounded implementation & falsification ladder
 │   ├── debugging.md         # Evidence-first root-cause diagnosis
-│   ├── verification.md      # Falsification ladder & verification gates
 │   ├── delegation.md        # Worker subagent protocol & capsule return
 │   ├── exploration.md       # Standard source navigation & impact maps
 │   └── codebase-memory.md   # Upstream AST/LSP graph intelligence & coverage

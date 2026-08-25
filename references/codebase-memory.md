@@ -220,7 +220,7 @@ Codebase Memory remains independent:
 - architecture discovery can use Codebase Memory without loading Decision;
 - a local edit can use Implementation without Codebase Memory;
 - Debugging can use graph traces as evidence without making the graph mandatory;
-- Verification may use impact and coverage information, but risk determines verification depth;
+- Implementation may use impact and coverage information when the evidence plan is still unresolved; risk determines verification depth;
 - Decision may use architecture/semantic evidence but should still prefer mature implementations over new parallel subsystems.
 
 Do not record reconstructable graph facts as durable decision documentation. Persist only reasons and constraints that cannot be cheaply reconstructed from source, graph, or Git history.

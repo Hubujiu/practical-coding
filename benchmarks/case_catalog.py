@@ -54,11 +54,11 @@ EXTRA_ROUTER_CASES = {
         "Find which payment adapter implementations can be loaded at runtime and where their registration and dispatch happen across this large repository.",
     ),
     "verification-payment-retry": (
-        "VERIFICATION",
+        "IMPLEMENTATION",
         "The retry-policy patch is complete. Decide what evidence is sufficient to support the claim that it cannot create duplicate charges.",
     ),
     "verification-performance-claim": (
-        "VERIFICATION",
+        "IMPLEMENTATION",
         "The optimization is implemented. Decide whether unit timings, a benchmark, or a load test is sufficient evidence for the performance claim.",
     ),
 }

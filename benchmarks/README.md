@@ -62,7 +62,7 @@ pwsh -File benchmarks/run_external.ps1 `
 | `standard` | 9 | 28 | 6 | 8 | 3 | 222 |
 | `full` | 18 | 28 | 10 | 12 | 3 | 324 |
 
-`standard` is the normal release gate. `full` carries the complete public regression matrix. The extra Router cases span all six routes; the expanded Debug set covers twelve cases across parsing, normalization, tenant isolation, pagination, units, row handling, state invariants, TTL semantics, URL handling, and the upstream transfer/amount tasks. Decision grows from four to ten two-turn decisions in `full`.
+`standard` is the normal release gate. `full` carries the complete public regression matrix. The extra Router cases span all five routes; the expanded Debug set covers twelve cases across parsing, normalization, tenant isolation, pagination, units, row handling, state invariants, TTL semantics, URL handling, and the upstream transfer/amount tasks. Decision grows from four to ten two-turn decisions in `full`.
 
 Useful internal options:
 
@@ -102,7 +102,7 @@ cells/                  prompt, raw JSONL, stderr, answers, workspaces per cell
 ## Suites and scoring
 
 - `delivery`: Ponytail's published agentic tasks and deterministic scorer. Reports correctness, safety, production LOC, test LOC, files, tokens, time, tool calls, and optional frontend build result.
-- `router`: exact classification across Direct, Decision, Debugging, Implementation, Exploration, and Verification, including overlap and negative-boundary cases.
+- `router`: exact classification across Direct, Decision, Debugging, Implementation, and Exploration, including overlap and negative-boundary cases. Since v2.0, the former Verification route is folded into Implementation; the `verification-*` case ids keep their names but expect `IMPLEMENTATION`, so router accuracy on those cells is not comparable with pre-2.0 runs.
 - `decision`: Practical versus Matt Pocock `grilling`. Uses a real resumed second turn and gates on frontier questions, one recommendation per question, no premature implementation, and convergence after scripted user decisions. Trade-off language is reported diagnostically but is not a declared grilling contract gate.
 - `debug`: shared-root-cause tasks scored on the repaired invariant and sibling callers. Tests/TDD process receives no bonus. Each Practical-owned Debug seed is required to fail its deterministic scorer, and a separate oracle fixture must pass it before the case is accepted into the catalog.
 
