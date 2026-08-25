@@ -2,13 +2,14 @@
 
 Contributions should preserve Practical Coding as one compact skill with independently loadable modules.
 
-- Keep `SKILL.md` as a small router plus rules that genuinely apply to almost every coding task.
+- Keep `SKILL.md` as a small router plus rules that genuinely apply to almost every coding task. Modes (`low` / `smart` / `high`) may change routing eagerness and worker appetite only; they must not add or remove Always-on Core duties.
+- Do not retune Core or module wording from a failed benchmark cell, and do not add case-specific bans named after Delivery or Debug tasks.
 - Put conditional behavior in focused files under `references/` and state an exact trigger for loading each file.
 - Keep modules independent; do not create a mandatory chain where loading one module automatically requires the others.
 - Preserve the Direct Path: simple, well-specified work must not require a reference or subagent.
 - Preserve event-driven isolation: a module worker reads only its assigned reference, receives bounded context, and returns a compact capsule. Subagents are an optimization for substantial context, not a mandatory stage.
 - Keep shared-workspace workers read-only by default and require one explicit writer per bounded implementation scope.
-- Prefer strengthening an existing module over adding a new module.
+- Prefer strengthening an existing module over adding a new module. Verification is not a separate module: choosing sufficient evidence for a risky change is Implementation. Do not restore `verification.md` as a sixth route.
 - Add a new module only when it represents a distinct, reusable decision surface that would otherwise pollute unrelated tasks.
 - Do not introduce mandatory plans, execution documents, Git workflows, tests, reviews, documentation, or tool-specific ceremony as universal gates.
 - Preserve reuse-before-invention, mature-implementation-first, risk-proportional verification, evidence-driven debugging, and resistance to speculative code and defensive bloat.

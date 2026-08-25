@@ -2,14 +2,13 @@
 
 This repository is an Agent Skill. If you are a coding agent reading this file from a checkout, apply the skill as follows.
 
-Read [`SKILL.md`](SKILL.md) for the always-on core and event router. Local, well-specified tasks use its Direct Path with no reference and no worker. For a substantial triggered event, prefer an isolated no-history worker when its context savings exceed handoff cost; use multiple workers only for genuinely independent, non-overlapping scopes when parallelism clearly wins; otherwise load only that reference in the root agent:
+Read [`SKILL.md`](SKILL.md) for the always-on core, modes, and event router. The default mode is smart; an explicit user request or `.practical-coding.yaml` `mode:` selects low (lazier routing — Debugging, Decision, and Exploration/Codebase Memory only when proceeding blind is risky; no workers) or high (eager routing, prefer workers) as defined in `SKILL.md`. Local, well-specified tasks use the Direct Path with no reference and no worker. For a substantial triggered event, prefer an isolated no-history worker when its context savings exceed handoff cost; use multiple workers only for genuinely independent, non-overlapping scopes when parallelism clearly wins; otherwise load only that reference in the root agent:
 
 | Trigger | Module |
 |---|---|
 | A material choice about architecture, dependencies, APIs, data models, compatibility, or multiple plausible implementations | [`references/decision.md`](references/decision.md) |
-| A change must coordinate multiple files, contracts, or invariants and the change surface is unclear | [`references/implementation.md`](references/implementation.md) |
+| A change must coordinate multiple files, contracts, or invariants and the change surface is unclear, or the sufficient evidence for a risky change is itself unresolved | [`references/implementation.md`](references/implementation.md) |
 | An observed failure, regression, incorrect behavior, or failed verification needs diagnosis | [`references/debugging.md`](references/debugging.md) |
-| Risk or uncertainty makes the verification strategy itself a meaningful decision | [`references/verification.md`](references/verification.md) |
 | Broad navigation of a large or structurally complex codebase with ordinary source search (the default) | [`references/exploration.md`](references/exploration.md) |
 | The same structural event when `.practical-coding.yaml` explicitly enables Codebase Memory | [`references/codebase-memory.md`](references/codebase-memory.md) |
 

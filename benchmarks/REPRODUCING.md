@@ -9,7 +9,7 @@ The chain deliberately separates three evidence types:
 | Suite | Tasks and grader | Compared arms | Evidence status |
 |---|---|---|---|
 | Delivery | Ponytail's published agentic tasks, fixtures, good/bad references, and deterministic scorer | Practical, Ponytail, optional no-Skill and previous Practical | Upstream benchmark content with a Codex/Luna execution adapter |
-| Router | Practical-owned exact classification corpus covering Direct, Decision, Debugging, Implementation, Exploration, and Verification | Current and previous Practical | Project regression benchmark |
+| Router | Practical-owned exact classification corpus covering Direct, Decision, Debugging, Implementation, and Exploration | Current and previous Practical | Project regression benchmark |
 | Decision | Practical-owned two-turn scenarios and mechanical contract grader | Practical and Matt Pocock `grilling`, plus optional previous Practical | Comparative benchmark; `grilling` has no declared upstream behavior benchmark |
 | Debug | Ponytail `trace-transfer`/`trace-amount` plus Practical-owned shared-boundary cases; deterministic invariant and sibling-caller grading | Practical and Superpowers, plus optional previous Practical | Mixed upstream/custom comparative benchmark |
 | Harness tests | Python unit tests for runner mechanics, stability gating, catalog breadth, duplicate detection, scorer seed rejection, and oracle acceptance | Runner only | Local benchmark-infrastructure regression tests |
