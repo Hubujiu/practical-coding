@@ -25,7 +25,6 @@
 - [Inspirations & Lineage (The Synthesis of Giants)](#-inspirations--lineage-the-synthesis-of-giants)
 - [Architecture & How It Works](#-architecture--how-it-works)
 - [The Always-On Core](#-the-always-on-core)
-- [Modes: low / smart / high](#-modes-low--smart--high)
 - [The 5 Modular Pillars](#-the-5-modular-pillars)
 - [Subagent Delegation & Isolation Gate](#-subagent-delegation--isolation-gate)
 - [Optional Codebase Memory (AST & LSP Intelligence)](#-optional-codebase-memory-ast--lsp-intelligence)
@@ -50,7 +49,7 @@ Conversely, unconstrained single-prompt agents fail when facing complex multi-fi
 | Dimension / Task | Rigid Agent Frameworks | Naive / Unconstrained LLMs | 🚀 Practical Coding |
 |---|---|---|---|
 | **Simple / Local Edits** *(e.g. fix CSS, rename var)* | Heavy multi-step ceremony; burns tokens on unneeded plans & tests | Fast, but risks touching unrelated code | **Direct Path**: Zero references loaded, zero subagent overhead, executes immediately |
-| **Complex Features** | Rigid pipeline overhead across every single step | Hallucinates architecture, creates defensive bloat | **Event-Driven Router**: Loads targeted modules (`decision.md`, `implementation.md`) on demand |
+| **Complex / Risky Features** | Rigid pipeline overhead across every single step | Hallucinates architecture or misses critical boundaries | **Event-Driven Router**: Loads `decision.md` or `implementation.md` only when an unresolved choice, contract, or material risk requires it |
 | **Bug Diagnosis** | Often writes boilerplate test suites before finding the bug | Patches downstream symptoms with `try/catch` & fallback hacks | **Evidence-First**: Reproduce → Earliest broken state → Single hypothesis → Root cause fix |
 | **Subagent Workers** | Arbitrary subagent proliferation & pipeline chains | Single-context overload | **Economic Isolation Gate**: Dispatches workers only when avoided context clearly exceeds handoff cost |
 | **Reusing Solutions** | Reinvents wheels or creates complex custom wrappers | Generates subpar custom code for solved problems | **Mature Implementation First**: Prefers stdlib → native platform → installed deps → mature upstream |
@@ -83,15 +82,15 @@ Practical Coding merges the best design paradigms from leading open-source agent
 ```
 
 ### 1. 🦄 [DietrichGebert/ponytail](https://github.com/DietrichGebert/ponytail) — *The Pragmatic Senior Dev Mindset*
-- **What we adopted**: The ruthless **YAGNI** principle, the **ladder** (does this need to exist → already in this codebase → stdlib → native platform feature → installed dependency → one line → minimum custom code), deletion over addition, shortest working diff, at most three lines of unrequested prose, and the *shape* of intensity levels.
-- **What we did not copy**: Always-on accessibility chrome, a mandatory runnable check for every branch, or Ponytail's lite/full/ultra as code intensity. Practical's `low`/`smart`/`high` change **routing eagerness** only; the Core never relaxes. Root-cause debugging lives in `debugging.md`, not as a Core essay.
+- **What we adopted**: The ruthless **YAGNI** principle, the **ladder** (does this need to exist → already in this codebase → stdlib → native platform feature → installed dependency → one line → minimum custom code), deletion over addition, shortest working diff, and terse unrequested delivery prose.
+- **How Practical differs**: Ponytail's runtime supports explicit intensity modes through host-specific plugins/hooks. Practical Coding stays a portable Agent Skill: it does not ask the model to infer a mode and does not duplicate host runtimes. Task events alone decide whether Direct Path or an engineering module is needed.
 
 ### 2. ⚡ [obra/superpowers](https://github.com/obra/superpowers) — *Disciplined Engineering Capabilities*
 - **What we adopted**: Systematic root-cause debugging, verification gates, and isolated subagent task contracts.
 - **How we evolved it**: We **unchained** these powerful tools from mandatory linear pipelines. You no longer suffer through mandatory brainstorming or TDD ceremony for trivial changes; capabilities are triggered **only when an unresolved event occurs**.
 
 ### 3. 📦 [mattpocock/skills](https://github.com/mattpocock/skills) & [Agent Skills Spec](https://agentskills.io) — *Progressive Disclosure*
-- **What we adopted**: Ultra-lean entry footprint. [`SKILL.md`](SKILL.md) stays under 70 lines, allowing it to remain permanently resident in the agent's context without wasting token budget. Deep reference modules are read only when routed.
+- **What we adopted**: Ultra-lean entry footprint. [`SKILL.md`](SKILL.md) remains a compact resident router; deep reference modules are read only when routed.
 
 ### 4. 🧠 [DeusData/codebase-memory-mcp](https://github.com/DeusData/codebase-memory-mcp) — *Zero-Bloat Code Intelligence*
 - **What we adopted**: Industrial-grade Tree-sitter AST parsing, Hybrid LSP semantic resolution, and persistent code graphs.
@@ -101,16 +100,15 @@ Practical Coding merges the best design paradigms from leading open-source agent
 
 ## 🏗️ Architecture & How It Works
 
-Practical Coding is an **Event-Driven Router** backed by an **Always-On Core**:
+Practical Coding is an **Event-Driven Router** backed by an **Always-On Core**. There is no routing-intensity mode: simple work is naturally Direct Path, while unresolved complexity or risk naturally escalates.
 
 ```mermaid
 flowchart TB
-    Task["🎯 User Task / Coding Request"] --> Core["⚡ SKILL.md<br/>Always-on Core & Event Router"]
+    Task["🎯 User Task / Coding Request"] --> Core["⚡ SKILL.md<br/>Shortest-path Core & Event Router"]
 
     Core -->|"Local & Well-Understood"| Direct["🚀 Direct Path<br/>Root agent executes immediately<br/>(No modules, no subagents)"]
-    
     Core -->|"Unresolved Material Choice"| D["🧭 Decision Module<br/>(references/decision.md)"]
-    Core -->|"Coordination or Evidence Plan Unclear"| I["🏗️ Implementation Module<br/>(references/implementation.md)"]
+    Core -->|"Unmapped Contract or Material Risk"| I["🏗️ Implementation Module<br/>(references/implementation.md)"]
     Core -->|"Observed Bug / Cause Unknown"| G["🔍 Debugging Module<br/>(references/debugging.md)"]
     Core -->|"Broad Codebase Navigation"| E["🗺️ Exploration Module<br/>(references/exploration.md)"]
     E -->|"codebase_memory.enabled: true"| M["🧠 Codebase Memory (CLI Mode)<br/>(references/codebase-memory.md)"]
@@ -136,38 +134,26 @@ flowchart TB
 
 ## 🛡️ The Always-On Core
 
-These non-negotiable engineering principles apply to **every path and every mode**, including direct edits:
+The Core is deliberately the shortest useful path for ordinary coding work, not a compressed checklist of every engineering concern:
 
 1. **Read First, Then Be Lazy**: Understand the requested outcome and the code it actually touches; a familiar feature name implies only its named behavior, never every conventional extra.
 2. **The Ladder**: Stop at the first rung that holds — doesn't need to exist → already in this codebase → stdlib → native platform feature → installed dependency → one line → minimum custom code.
-3. **Traceable Value**: Every validation, fallback, retry, config, test, or doc must trace to an actual trust boundary, project policy, observed risk, or the cheapest evidence this change needs. Never simplify away trust-boundary validation or anything explicitly requested.
-4. **Smallest Complete Change**: Deletion over addition, boring over clever, fewest files, shortest working diff that is still correct on edge cases. Follow repository or platform defaults for reversible unspecified details.
+3. **Traceable Value**: Validation, fallback, retry, config, tests, or docs must trace to a current requirement, concrete boundary, observed risk, project policy, or the cheapest evidence needed. Material risk routes to Implementation instead of bloating Core.
+4. **Smallest Complete Change**: Deletion over addition, boring over clever, fewest files, shortest working diff once the problem is understood. Follow repository or platform defaults for reversible unspecified details.
 5. **Untouched Scope**: Keep unrelated code and existing user modifications untouched; mark a deliberate corner cut with a one-line comment naming the ceiling.
-6. **Fresh Evidence, Lean Output**: Obtain the cheapest fresh evidence before claiming completion, then deliver the change with at most three short lines of unrequested prose: what was skipped and when to add it.
-
----
-
-## 🎚️ Modes: low / smart / high
-
-Like Ponytail's intensity levels, Practical Coding v2.0 supports three routing intensities. The default is **smart**; switch by naming a mode in your request or setting `mode:` in `.practical-coding.yaml`. These are **not** Ponytail lite/full/ultra: they change routing eagerness and delegation appetite only — the Always-On Core never relaxes.
-
-| Mode | Behavior |
-|---|---|
-| **low** | Maximum laziness. Stays on Direct Path unless proceeding blind risks a wrong or irreversible result: undiagnosed failures still load Debugging, material user-owned choices still load Decision, and an unmapped large codebase still loads Exploration (or Codebase Memory when enabled). Implementation is not loaded. Never dispatches workers. |
-| **smart** *(default)* | The event router as written: load exactly the one module for the unresolved event that blocks the next safe action. Workers pass the economic Isolation Gate. |
-| **high** | Maximum rigor. Loads the matching module for every triggered event, maps the change surface before multi-file edits, states an explicit evidence plan before completion, and prefers isolated workers for separable scopes. |
+6. **Fresh Evidence, Lean Output**: Obtain the cheapest fresh evidence before claiming completion and keep unrequested delivery prose terse.
 
 ---
 
 ## 🧩 The 5 Modular Pillars
 
-When a task encounters an unresolved engineering event, only the matching module is loaded. **Verification is not a sixth module**: choosing sufficient evidence for a risky change is part of Implementation. Implementation itself stays, because an unmapped multi-file contract is not Direct Path work.
+When a task encounters an unresolved engineering event, only the matching module is loaded. **Verification is not a sixth module**: choosing sufficient evidence for a risky change is part of Implementation. Implementation is an escalation for unresolved coordination or material risk, not a mandatory stage for writing code.
 
 | Module | Loaded When | Core Deliverable |
 |---|---|---|
 | 🧭 [`references/decision.md`](references/decision.md) | A material choice about architecture, dependencies, APIs, or data models remains open | Evaluates $\le 3$ viable options (stdlib/native first); chooses the smallest fitting solution. |
-| 🏗️ [`references/implementation.md`](references/implementation.md) | A change coordinates multiple files/contracts and the change surface is unclear, or risk makes the evidence plan itself a meaningful decision | Bounded change map; authoritative boundary validation; cheapest falsification ladder; rejects rationalizations like *"too simple to test"*. |
-| 🔍 [`references/debugging.md`](references/debugging.md) | An observed failure, regression, or failed verification lacks a diagnosed cause | Evidence-first: symptom → earliest broken state → single hypothesis → root cause fix. Restore a violated security/integrity/accessibility constraint only when it is the diagnosed cause. |
+| 🏗️ [`references/implementation.md`](references/implementation.md) | An unmapped contract/invariant, a material risk boundary (security/permissions, irreversible side effects, persistence/migration, concurrency/transactions, compatibility), or the evidence plan for a risky change remains unresolved | Bounded change map; authoritative boundary handling; cheapest falsification ladder. |
+| 🔍 [`references/debugging.md`](references/debugging.md) | An observed failure, regression, or failed verification lacks a diagnosed cause | Evidence-first: symptom → earliest broken state → single hypothesis → root cause fix. |
 | 🗺️ [`references/exploration.md`](references/exploration.md) | Broad navigation of a large codebase is necessary with standard text/symbol tools | Bounded impact map (exact paths, symbols, edges) without full file dumps. |
 | 🧠 [`references/codebase-memory.md`](references/codebase-memory.md) | Broad structural navigation in a project with `codebase_memory.enabled: true` | AST/LSP graph intelligence via upstream CLI across Scout, Verify, and Auditor tiers. |
 
@@ -182,8 +168,8 @@ Practical Coding prevents runaway subagent proliferation through a strict **Econ
 
 ### Worker Protocol ([`references/delegation.md`](references/delegation.md))
 - **Focused Scope**: Worker reads `delegation.md` + exactly **one** assigned module.
-- **Read-Only by Default**: Decision, Exploration, Codebase Memory, and Debugging workers cannot modify code.
-- **Sole Writer**: An Implementation worker writes only within its assigned directory/files and is the sole writer.
+- **Read-Only by Default**: Decision, Exploration, Codebase Memory, Debugging, and mapping/evidence-only Implementation workers cannot modify code.
+- **Sole Writer When Authorized**: An Implementation worker may write only when explicitly assigned implementation, only within its assigned directory/files, and must be the sole writer there.
 - **Compact Evidence Capsule**: Workers return structured summaries (paths, symbols, diff summaries, test outputs), never raw transcripts or full file contents.
 
 ---
@@ -262,16 +248,14 @@ git clone https://github.com/Hubujiu/practical-coding.git .github/skills/practic
 
 ## ⚙️ Configuration
 
-Set the routing mode and enable optional Codebase Memory by adding `.practical-coding.yaml` to your project root:
+Enable optional Codebase Memory by adding `.practical-coding.yaml` to your project root:
 
 ```yaml
 version: 1
-mode: smart          # low | smart | high (default: smart)
 codebase_memory:
   enabled: true
 ```
 
-- `mode`: routing intensity as described above; an explicit user request in the conversation overrides it.
 - `enabled: false` (or missing file): Codebase Memory is disabled; standard exploration is used without prompting.
 - `enabled: true`: Upstream AST/LSP graph intelligence is enabled for large-scale navigation.
 
@@ -281,7 +265,7 @@ codebase_memory:
 
 ```text
 practical-coding/
-├── SKILL.md                 # Lean entry point: Always-on Core, modes, Event Router
+├── SKILL.md                 # Lean entry point: shortest-path Core & Event Router
 ├── AGENTS.md                # Agent instructions & module routing index
 ├── README.md                # English documentation (this file)
 ├── README_zh.md             # Simplified Chinese documentation
@@ -300,7 +284,7 @@ practical-coding/
 │   └── practical-coding.yaml# Sample project-level configuration
 ├── references/              # On-demand engineering modules
 │   ├── decision.md          # Architecture & dependency decisions
-│   ├── implementation.md    # Multi-file change maps, bounded implementation & falsification ladder
+│   ├── implementation.md    # Risk boundaries, change maps & falsification ladder
 │   ├── debugging.md         # Evidence-first root-cause diagnosis
 │   ├── delegation.md        # Worker subagent protocol & capsule return
 │   ├── exploration.md       # Standard source navigation & impact maps

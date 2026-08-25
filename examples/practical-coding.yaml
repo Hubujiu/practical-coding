@@ -1,11 +1,6 @@
 version: 1
 
-# Persistent project-level preferences read by the Practical Coding Skill.
-
-# Routing intensity: low (lazy: modules only when proceeding blind is risky, no workers),
-# smart (default: the event router as written), high (eager: load modules for every
-# triggered event and prefer isolated workers). An explicit user request overrides this.
-mode: smart
+# Persistent project-level preference read by the Practical Coding Skill.
 
 # Store either true or false after the user makes the project-level choice.
 # Local launcher/runtime availability is environment state and must not rewrite this preference.

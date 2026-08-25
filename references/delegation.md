@@ -8,7 +8,7 @@ Load this protocol only inside a worker selected by the Isolation Gate. Also rea
 - The root must not inspect or modify the delegated scope while this worker runs. If that happens, stop and return `stale`; do not spend more calls reconstructing a moving target.
 - Do only the assigned module's work. Report a newly exposed event to the root instead of loading another Practical Coding module or spawning another worker.
 - Decision, Exploration, Codebase Memory, and Debugging workers are read-only.
-- An Implementation worker writes only within its assigned file or subsystem scope, is the sole writer there, and may run the checks its evidence plan requires.
+- An Implementation worker is read-only when assigned only mapping or evidence work. When explicitly assigned implementation, it writes only within its assigned file or subsystem scope, is the sole writer there, and may run the checks its evidence plan requires.
 - Record the starting HEAD and relevant dirty paths. Mark the result stale if the repository or assigned scope changes underneath the work.
 - Never commit, reset, checkout, clean, or overwrite pre-existing user changes unless the root explicitly authorizes that operation.
 
@@ -30,4 +30,4 @@ Do not persist the return in the repository unless the user requested an artifac
 - Exploration: exact paths/symbols, relevant edges, compatibility boundaries, likely change surface, ruled-out candidates, and gaps.
 - Codebase Memory: project/generation, queries and pagination, symbols and paths, call edges, coverage and source fallbacks.
 - Debugging: reproduction, earliest incorrect state, supported root cause or current hypothesis, and remaining uncertainty.
-- Implementation: changed paths, implementation decisions that are not evident from the diff, fresh focused checks with results and freshness, and unverified risks.
+- Implementation: mapped boundaries, changed paths when writes were authorized, implementation decisions not evident from the diff, fresh focused checks with results and freshness, and unverified risks.

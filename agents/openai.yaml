@@ -1,6 +1,6 @@
 interface:
   display_name: "Practical Coding"
   short_description: "Direct coding with event-routed modules and scoped subagents"
-  default_prompt: "Use $practical-coding. Keep simple work on the Direct Path; switch low/smart/high only when asked or configured. Isolate only the modules whose events are actually triggered."
+  default_prompt: "Use $practical-coding. Keep simple work on the Direct Path and isolate only the modules whose unresolved events are actually triggered."
 policy:
   allow_implicit_invocation: true
