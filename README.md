@@ -3,7 +3,7 @@
 <p align="center">
   <a href="https://github.com/Hubujiu/practical-coding/blob/main/LICENSE"><img src="https://img.shields.io/badge/License-MIT-yellow.svg" alt="License: MIT"></a>
   <a href="https://agentskills.io"><img src="https://img.shields.io/badge/Agent_Skills-Compliant-success.svg" alt="Agent Skills Compliant"></a>
-  <img src="https://img.shields.io/badge/Version-2.1-blue.svg" alt="Version 2.1">
+  <img src="https://img.shields.io/badge/Version-1.0.0-blue.svg" alt="Version 1.0.0">
   <img src="https://img.shields.io/badge/Supports-Claude_Code_|_Cursor_|_Copilot_|_Gemini_|_Antigravity_|_Codex_|_Goose-purple.svg" alt="Compatible Agents">
   <a href="https://github.com/Hubujiu/practical-coding/pulls"><img src="https://img.shields.io/badge/PRs-welcome-brightgreen.svg" alt="PRs Welcome"></a>
 </p>
@@ -20,7 +20,7 @@
 
 ---
 
-### 📊 Benchmark Highlights & Comparative Results (v2.1)
+### 📊 Benchmark Highlights & Comparative Results (v2.1 Evaluation Suite)
 
 In reproducible evaluations on `gpt-5.6-luna`, capabilities are tested against top specialist skills in each category rather than a manufactured universal leaderboard:
 
@@ -40,16 +40,17 @@ In reproducible evaluations on `gpt-5.6-luna`, capabilities are tested against t
 
 - [The Problems We Solve](#-the-problems-we-solve)
 - [Core Philosophy: Think Like a Pragmatic Senior Dev](#-core-philosophy-think-like-a-pragmatic-senior-dev)
-- [How It Works](#-how-it-works)
+- [Inspirations & Lineage (The Synthesis of Giants)](#-inspirations--lineage-the-synthesis-of-giants)
+- [Architecture & How It Works](#-architecture--how-it-works)
   - [The Always-On Core](#1-the-always-on-core)
   - [The Direct Path](#2-the-direct-path)
   - [The 4 On-Demand Modules](#3-the-4-on-demand-modules)
   - [Economic Subagent Isolation Gate](#4-economic-subagent-isolation-gate)
   - [Optional Codebase Memory (AST & LSP Intelligence)](#5-optional-codebase-memory-ast--lsp-intelligence)
-- [Inspirations & Lineage (The Synthesis of Giants)](#-inspirations--lineage-the-synthesis-of-giants)
 - [Quick Start & Installation](#-quick-start--installation)
 - [Project Configuration](#-project-configuration)
 - [Repository Structure](#-repository-structure)
+- [Luna Benchmarks Methodology](#-luna-benchmarks-methodology)
 - [Contributing & License](#-contributing--license)
 
 ---
@@ -89,7 +90,7 @@ Whenever solving a problem, stop at the highest rung that holds:
 1. **Does not need to exist** (YAGNI — is this truly necessary?)
 2. **Already exists in this codebase** (reuse it directly)
 3. **Provided by the language Standard Library** (prefer standard solutions)
-4. **Native platform / runtime capability** (browser or OS native APIs)
+4. **Native platform / runtime capability** (browser or OS native APIs, CSS features, DB constraints)
 5. **Already installed third-party dependencies**
 6. **A clean single line of code**
 7. **Write the absolute minimum custom code**
@@ -102,7 +103,48 @@ Whenever solving a problem, stop at the highest rung that holds:
 
 ---
 
-## 🏗️ How It Works
+## 💡 Inspirations & Lineage (The Synthesis of Giants)
+
+Practical Coding synthesizes the best paradigms from top open-source agent methodologies:
+
+```text
+               ┌─────────────────────────────────────────────────────────┐
+               │              DietrichGebert/ponytail                    │
+               │   "Laziest Senior Dev" Pragmatism, YAGNI, Stdlib-First  │
+               └────────────────────────────┬────────────────────────────┘
+                                            │ (Pragmatic Philosophy)
+                                            ▼
+┌───────────────────────────┐      ┌─────────────────┐      ┌─────────────────────────────┐
+│      obra/superpowers     │      │                 │      │      Agent Skills Spec      │
+│  Engineering Rigor, TDD,  │─────►│ PRACTICAL CODING│◄─────│    (mattpocock / Anthropic) │
+│  Delegation & Verification│      │                 │      │    Progressive Disclosure   │
+└───────────────────────────┘      └────────┬────────┘      └─────────────────────────────┘
+  (Decoupled from rigid pipeline)           │ (Structured Graph)
+                                            ▼
+               ┌─────────────────────────────────────────────────────────┐
+               │             DeusData/codebase-memory-mcp                │
+               │    Tree-sitter AST, Hybrid LSP, CLI-mode Intelligence   │
+               └─────────────────────────────────────────────────────────┘
+```
+
+### 1. 🦄 [DietrichGebert/ponytail](https://github.com/DietrichGebert/ponytail) — *The Pragmatic Senior Dev Mindset*
+- **What we adopted**: The ruthless **YAGNI** principle, the **Ladder**, deletion over addition, shortest working diffs, and terse delivery prose.
+- **How Practical differs**: Ponytail relies on host-specific hooks/plugins to store runtime intensity state. Practical Coding remains an ultra-portable Agent Skill: task events alone decide whether to stay Direct or load an engineering module.
+
+### 2. ⚡ [obra/superpowers](https://github.com/obra/superpowers) — *Disciplined Engineering Capabilities*
+- **What we adopted**: Systematic root-cause debugging, risk verification gates, and isolated subagent task contracts.
+- **How we evolved it**: We **unchained** these capabilities from mandatory linear pipelines. Trivial tasks no longer suffer through mandatory brainstorming/TDD ceremony; capabilities are loaded **only when an unresolved event occurs**.
+
+### 3. 📦 [mattpocock/skills](https://github.com/mattpocock/skills) & [Agent Skills Spec](https://agentskills.io) — *Progressive Disclosure*
+- **What we adopted**: Ultra-lean entry footprint. [`SKILL.md`](SKILL.md) remains a ~50-line resident router; deep reference modules are read only when routed.
+
+### 4. 🧠 [DeusData/codebase-memory-mcp](https://github.com/DeusData/codebase-memory-mcp) — *Zero-Bloat Code Intelligence*
+- **What we adopted**: Industrial-grade Tree-sitter AST parsing, Hybrid LSP semantic resolution, and persistent code graphs.
+- **How we evolved it**: Instead of permanently injecting heavy MCP server tools into the agent's system prompt (wasting 1,000+ tokens per turn), Practical Coding invokes upstream via **one-shot CLI mode** only when navigation value justifies it.
+
+---
+
+## 🏗️ Architecture & How It Works
 
 Practical Coding is an **Event-Driven Router** backed by an **Always-On Core**:
 
@@ -132,10 +174,16 @@ flowchart TB
 ```
 
 ### 1. The Always-On Core
-Defined in [`SKILL.md`](SKILL.md) in just a few dozen lines. It stays resident in the agent context as a lightweight guardrail, ensuring 90%+ of standard tasks complete immediately at lowest cost.
+Defined in [`SKILL.md`](SKILL.md) in ~50 lines. It serves as the minimum fixed cost for coding tasks:
+1. **Define Success First**: Understand the requested outcome and real code touched before editing.
+2. **Follow the Ladder**: Stop at the first rung that works.
+3. **Thinnest Adapters**: Reuse existing APIs; do not invent speculative domain models.
+4. **Traceable Value**: Validation, fallback, retry, config, tests, or comments must trace to a real requirement or observed risk.
+5. **Smallest Complete Change**: Deletion over addition, boring over clever, fewest files, shortest working diff.
+6. **Fresh Evidence Delivery**: Run the cheapest targeted check once before claiming completion.
 
 ### 2. The Direct Path
-For clear, local edits (fixing a typo, styling tweaks, adding a simple parameter, following established repo patterns), the agent **writes the code immediately without loading extra reference docs and without subagents**.
+For clear, local edits (fixing CSS, adding a simple parameter, following established repo patterns), the agent **writes the code immediately without loading extra reference docs and without subagents**.
 
 ### 3. The 4 On-Demand Modules
 When an unresolved engineering obstacle arises, the agent loads exactly **one** matching reference module:
@@ -148,43 +196,45 @@ When an unresolved engineering obstacle arises, the agent loads exactly **one** 
 | 🗺️ **Navigation** [`navigation.md`](references/navigation.md) | Navigating structurally complex or massive repositories | Selects search or AST code graphs to build an impact map. |
 
 ### 4. Economic Subagent Isolation Gate
-No subagent proliferation! A worker subagent is spawned **only** when the context it saves (e.g., massive test logs or deep search noise) or parallel unblocking **clearly exceeds** the startup/handoff overhead. Workers return a **compact evidence capsule** rather than polluting the root conversation.
+
+> **The Isolation Rule:**  
+> Spawn an isolated worker **only** when the context it avoids (such as noisy search dumps or test logs), or the parallel work it unblocks, **clearly exceeds** startup and handoff overhead. Otherwise, execute locally in the root agent.
+
+#### Worker Protocol ([`references/delegation.md`](references/delegation.md))
+- **Focused Scope**: Worker reads `delegation.md` + exactly **one** assigned module.
+- **Read-Only by Default**: Decision, Navigation, Debugging, and mapping-only Implementation workers cannot modify code.
+- **Sole Writer When Authorized**: An Implementation worker writes only when explicitly assigned implementation, strictly within its assigned directory/files, and must be the sole writer there.
+- **Compact Evidence Capsule**: Workers return structured summaries (paths, symbols, diff summaries, test outputs), never raw transcripts or full file contents.
 
 ### 5. Optional Codebase Memory (AST & LSP Intelligence)
-For large-scale repositories requiring semantic AST / LSP analysis, Practical Coding integrates seamlessly with [`codebase-memory-mcp`](https://github.com/DeusData/codebase-memory-mcp).
-- **Zero Prompt Pollution**: Executed via one-shot CLI queries (`npx codebase-memory-mcp cli ...`) rather than permanent background tool definitions.
-- **Graceful Fallback**: Automatically falls back to standard file search if unavailable.
 
----
+Practical Coding integrates directly with [`DeusData/codebase-memory-mcp`](https://github.com/DeusData/codebase-memory-mcp) as its structured code intelligence backend.
 
-## 💡 Inspirations & Lineage (The Synthesis of Giants)
+#### Why One-Shot CLI Mode?
+Instead of permanently loading upstream MCP server tools into the agent's system prompt (which wastes 1,000+ tokens on every conversation turn), Practical Coding executes upstream via one-shot CLI commands:
 
-Practical Coding synthesizes the best ideas from top open-source agent methodologies:
+```bash
+# Search symbols & call graphs
+codebase-memory-mcp cli search_graph '{"name_pattern":".*Handler.*","label":"Function"}'
+codebase-memory-mcp cli trace_call_path '{"function_name":"main","direction":"both"}'
 
-```text
-               ┌─────────────────────────────────────────────────────────┐
-               │              DietrichGebert/ponytail                    │
-               │   "Laziest Senior Dev" Pragmatism, YAGNI, Stdlib-First  │
-               └────────────────────────────┬────────────────────────────┘
-                                            │ (Pragmatic Philosophy)
-                                            ▼
-┌───────────────────────────┐      ┌─────────────────┐      ┌─────────────────────────────┐
-│      obra/superpowers     │      │                 │      │      Agent Skills Spec      │
-│  Engineering Rigor, TDD,  │─────►│ PRACTICAL CODING│◄─────│    (mattpocock / Anthropic) │
-│  Delegation & Verification│      │                 │      │    Progressive Disclosure   │
-└───────────────────────────┘      └────────┬────────┘      └─────────────────────────────┘
-  (Decoupled from rigid pipeline)           │ (Structured Graph)
-                                            ▼
-               ┌─────────────────────────────────────────────────────────┐
-               │             DeusData/codebase-memory-mcp                │
-               │    Tree-sitter AST, Hybrid LSP, CLI-mode Intelligence   │
-               └─────────────────────────────────────────────────────────┘
+# Check architecture & index coverage
+codebase-memory-mcp cli get_architecture '{}'
+codebase-memory-mcp cli check_index_coverage '{"paths":["src/core.ts"]}'
 ```
 
-1. **🦄 [DietrichGebert/ponytail](https://github.com/DietrichGebert/ponytail)**: Pragmatic "laziest senior dev" mindset — YAGNI, The Ladder, deletion over addition, shortest working diffs.
-2. **⚡ [obra/superpowers](https://github.com/obra/superpowers)**: Industrial-strength root-cause debugging and risk verification discipline — **decoupled** from mandatory linear pipelines into on-demand modules.
-3. **📦 [Agent Skills Spec](https://agentskills.io) & [mattpocock/skills](https://github.com/mattpocock/skills)**: Progressive disclosure architecture with an ultra-lean footprint.
-4. **🧠 [DeusData/codebase-memory-mcp](https://github.com/DeusData/codebase-memory-mcp)**: Deep AST/LSP semantic code graphs via non-intrusive CLI invocations.
+#### CLI Resolution Order
+1. Existing `codebase-memory-mcp` binary on `PATH`.
+2. Official lazy npm launcher (if `npx` is available):
+   ```bash
+   npx --yes codebase-memory-mcp@latest cli <tool> '<json-arguments>'
+   ```
+3. **Graceful Fallback**: If upstream cannot be launched, the agent falls back to standard text exploration and reports that Codebase Memory was not used.
+
+#### Evidence Tiers
+- 🔭 **Scout**: Rapid positive discovery. Small limits, shallow traces, marked provisional.
+- 🎯 **Verify (Default)**: Normal development. Exact snippets + `check_index_coverage` validation.
+- 🔬 **Auditor**: Bounded exhaustive audits. Scope coverage, pagination completion, and fallback source checking for any reported coverage gaps.
 
 ---
 
@@ -256,9 +306,10 @@ practical-coding/
 ├── agents/
 │   └── openai.yaml          # Agent configuration profile
 ├── benchmarks/              # Benchmark suites & reproduction scripts
-│   ├── run.ps1
-│   ├── run_benchmarks.py
-│   └── REPRODUCING.md
+│   ├── run.ps1              # PowerShell entry point
+│   ├── run_benchmarks.py    # Luna isolation, grading, and aggregation
+│   ├── test_benchmarks.py   # Harness regression tests
+│   └── REPRODUCING.md       # Exact reproduction protocol and evidence boundaries
 ├── examples/                # Example configurations
 └── references/              # 4 on-demand specialized engineering modules
     ├── decision.md          # Architecture & dependency decisions
@@ -267,6 +318,20 @@ practical-coding/
     ├── delegation.md        # Worker subagent protocol & capsule return
     └── navigation.md        # Source or graph-backed code navigation
 ```
+
+---
+
+## 🧪 Luna Benchmarks Methodology
+
+The v2.1 release matrix uses a fixed `gpt-5.6-luna` / `medium` setup, isolated workspaces, pinned comparator commits, deterministic graders, and three repetitions per cell. It measures different capabilities against the relevant specialist rather than manufacturing one universal leaderboard:
+
+- **Delivery**: Reuses Ponytail's published agentic tasks and scorer through a Codex adapter.
+- **Decision**: Uses real resumed turns against Matt Pocock's `grilling` Skill.
+- **Debug & Explicit Security**: Compares delivered invariants and safety boundaries against Superpowers.
+- **Router & Native Behavior**: Verifies Direct Path, route selection, Skill discovery, and on-demand reference loading.
+- **Navigation**: Ablates ordinary source search against the optional graph backend on two real repositories.
+
+**Correctness and safety gate cost**: A cheap failure cannot win. Qualified comparisons then report Pareto status and a weighted geometric efficiency index over uncached input, output, model time, and tool calls. Read the committed [`v2.1 data`](benchmarks/results/v2.1/README.md), follow the exact [`reproduction guide`](benchmarks/REPRODUCING.md), or inspect the [`release evaluation`](docs/evaluations/2026-08-26-practical-v21-release.md).
 
 ---
 
