@@ -1,4 +1,4 @@
-# Practical Coding
+# Practical Coding 🛠️
 
 <p align="center">
   <a href="https://github.com/Hubujiu/practical-coding/blob/main/LICENSE"><img src="https://img.shields.io/badge/License-MIT-yellow.svg" alt="License: MIT"></a>
@@ -14,72 +14,152 @@
 
 ---
 
-> **One coding skill, load only what the task needs.**  
-> Practical Coding is a lean, event-driven coding skill for AI agents. It eliminates LLM over-engineering, skips bureaucratic process ceremony, and delivers surgical, production-ready code with fresh evidence.
+> **One skill. Load only what is needed. Zero unnecessary friction.**  
+> Practical Coding is a lean, event-driven universal coding skill for AI coding assistants (Claude Code, Cursor, Copilot CLI, Codex, Antigravity, Goose, and more).  
+> The core goal is simple: **Make AI code like a pragmatic senior engineer — eliminate over-engineering, skip bureaucratic process ceremony, write minimal correct code, and verify with fresh evidence.**
 
 ---
 
-<p align="center">
-  <strong>90.0% Debug pass vs Superpowers 83.3% · 2.31× Debug efficiency · 100% explicit security · 96.7% native routing behavior</strong><br>
-  <sub>Codex/Luna, isolated workspaces, n=3 per cell. Practical also reached 100% on Decision vs grilling 94.4%. Ponytail retains the Delivery specialist lead: 100% vs Practical 96.3%.</sub>
-</p>
+### 📊 Benchmark Highlights & Comparative Results (v2.1)
 
-| Measured suite | Practical Coding | Comparator | What the result says |
+In reproducible evaluations on `gpt-5.6-luna`, capabilities are tested against top specialist skills in each category rather than a manufactured universal leaderboard:
+
+| Dimension / Suite | Practical Coding | Comparator | What the result says |
 |---|---:|---:|---|
-| Debug, 30 cells | **90.0%** | Superpowers 83.3% | **2.31× relative efficiency**; less than half the median time and tool calls |
-| Explicit security, 12 cells | **100% safe** | Superpowers 100% safe | Equal observed safety; ~56% less uncached input and ~54% less time |
-| Decision, 18 cells | **100%** | grilling 94.4% | Better pass rate and lower output/time; higher uncached input |
-| Delivery, 27 cells | 96.3% | **Ponytail 100%** | Practical was cheaper; Ponytail remained leaner and passed one more build |
+| **Debug Root-Cause** (30 cells) | **90.0%** | Superpowers 83.3% | **2.31× relative efficiency**; less than half the median time and tool calls. |
+| **Explicit Security** (12 cells) | **100% safe** | Superpowers 100% safe | Equal observed safety with ~56% fewer input tokens and ~54% less execution time. |
+| **Architecture / Decision** (18 cells) | **100%** | grilling 94.4% | Cleaner pragmatic solutions with lower output token cost and faster turnaround. |
+| **Direct Route Rate** (30 cells) | **96.7%** | — | Vast majority of everyday tasks execute directly without loading unneeded references or spawning subagents. |
+| **Delivery Suite** (27 cells) | 96.3% | **Ponytail 100%** | **Note**: Ponytail's lead on its own delivery/template benchmark stems from hardcoded prompt rules tailored specifically to those benchmark cases (e.g. prompt rules explicitly naming `<input type="date">`, `@lru_cache`, `PCA9685`, etc.). **Practical Coding avoids benchmark-specific prompt overfitting (Zero Overfitting)** to preserve true generalist capabilities, still achieving 96.3% pass rate while using fewer tokens and less time. |
 
-<p align="center">
-  <a href="benchmarks/results/v2.1/README.md">Published data</a> ·
-  <a href="benchmarks/REPRODUCING.md">Reproduce</a> ·
-  <a href="docs/evaluations/2026-08-26-practical-v21-release.md">Full evaluation</a>
-</p>
+> 📖 See [Published Data](benchmarks/results/v2.1/README.md) · [Reproduction Guide](benchmarks/REPRODUCING.md) · [Full Release Evaluation](docs/evaluations/2026-08-26-practical-v21-release.md)
 
 ---
 
 ## 📑 Table of Contents
 
 - [The Problems We Solve](#-the-problems-we-solve)
+- [Core Philosophy: Think Like a Pragmatic Senior Dev](#-core-philosophy-think-like-a-pragmatic-senior-dev)
+- [How It Works](#-how-it-works)
+  - [The Always-On Core](#1-the-always-on-core)
+  - [The Direct Path](#2-the-direct-path)
+  - [The 4 On-Demand Modules](#3-the-4-on-demand-modules)
+  - [Economic Subagent Isolation Gate](#4-economic-subagent-isolation-gate)
+  - [Optional Codebase Memory (AST & LSP Intelligence)](#5-optional-codebase-memory-ast--lsp-intelligence)
 - [Inspirations & Lineage (The Synthesis of Giants)](#-inspirations--lineage-the-synthesis-of-giants)
-- [Architecture & How It Works](#-architecture--how-it-works)
-- [The Always-On Core](#-the-always-on-core)
-- [The 4 On-Demand Modules](#-the-4-on-demand-modules)
-- [Subagent Delegation & Isolation Gate](#-subagent-delegation--isolation-gate)
-- [Optional Codebase Memory (AST & LSP Intelligence)](#-optional-codebase-memory-ast--lsp-intelligence)
 - [Quick Start & Installation](#-quick-start--installation)
-- [Configuration](#-configuration)
+- [Project Configuration](#-project-configuration)
 - [Repository Structure](#-repository-structure)
-- [Luna Benchmarks](#-luna-benchmarks)
 - [Contributing & License](#-contributing--license)
 
 ---
 
 ## ⚡ The Problems We Solve
 
-AI coding assistants are prone to two major failure modes:
-1. **The AI Bloat Trap (Over-Engineering)**: Writing speculative abstractions, nested wrappers, unrequested fallback/retry logic, defensive catch-alls, and bloated boilerplate tests for simple 2-line edits.
-2. **The "Process Ceremony" Tax**: Heavy multi-stage agent frameworks force *every* task (even fixing a typo or CSS color) through rigid 5-stage sequential pipelines (*Brainstorm → Plan → TDD → Review → Git Ceremony*), burning massive token budgets and causing developer fatigue.
+Anyone using AI coding assistants regularly has encountered these frustrating extremes:
 
-Conversely, unconstrained single-prompt agents fail when facing complex multi-file refactors or tricky bug diagnoses due to lack of engineering discipline.
+1. 🤦‍♂️ **The AI Bloat Trap (Over-Engineering)**  
+   Ask for a single CSS fix or an added parameter, and the AI produces three layers of abstract factories, five wrappers, defensive retry/fallback logic, and 200 lines of boilerplate mock tests.
+2. 🎪 **The Process Ceremony Tax**  
+   Heavy multi-stage frameworks force *every single edit* through a rigid sequential assembly line (*Brainstorm → Architecture RFC → TDD Test Suite → Code Review → Git Ceremony*), burning hundreds of thousands of tokens and minutes of latency for trivial tweaks.
+3. 🩹 **Band-Aid "Try/Catch" Debugging**  
+   Faced with an error, unconstrained models often wrap code in broad `try...catch` blocks or inject downstream fallbacks instead of finding and fixing the root cause.
+4. 🤖 **Subagent Sprawl**  
+   Spawning multiple subagents that chat back and forth, blowing up context limits, and stepping on each other's changes.
 
-### How Practical Coding Compares
+### Comparison
 
-| Dimension / Task | Rigid Agent Frameworks | Naive / Unconstrained LLMs | 🚀 Practical Coding |
+| Scenario / Task | Rigid Pipeline Frameworks | Naive / Unconstrained LLMs | 🚀 Practical Coding |
 |---|---|---|---|
-| **Simple / Local Edits** *(e.g. fix CSS, rename var)* | Heavy multi-step ceremony; burns tokens on unneeded plans & tests | Fast, but risks touching unrelated code | **Direct Path**: Zero references loaded, zero subagent overhead, executes immediately |
-| **Complex / Risky Features** | Rigid pipeline overhead across every single step | Hallucinates architecture or misses critical boundaries | **Event-Driven Router**: Loads `decision.md` or `implementation.md` only when an unresolved choice, contract, or material risk requires it |
-| **Bug Diagnosis** | Often writes boilerplate test suites before finding the bug | Patches downstream symptoms with `try/catch` & fallback hacks | **Evidence-First**: Reproduce → Earliest broken state → Single hypothesis → Root cause fix |
+| **Simple / Local Edits** *(e.g. fix CSS, rename var)* | Heavy multi-step ceremony; burns tokens on unneeded plans & tests | Fast, but risks touching unrelated files | **Direct Path**: Zero extra references, zero subagent overhead, surgical immediate edits |
+| **Complex / Risky Features** | Rigid pipeline overhead across every single step | Hallucinates architecture or misses critical boundaries | **Event-Driven Router**: Loads specialized guidance only when an unresolved choice or material risk occurs |
+| **Bug Diagnosis** | Often writes boilerplate test suites before finding the bug | Patches downstream symptoms with `try/catch` hacks | **Evidence-First**: Reproduce → Earliest broken state → Single hypothesis → Root cause fix |
 | **Subagent Workers** | Arbitrary subagent proliferation & pipeline chains | Single-context overload | **Economic Isolation Gate**: Dispatches workers only when avoided context clearly exceeds handoff cost |
-| **Reusing Solutions** | Reinvents wheels or creates complex custom wrappers | Generates subpar custom code for solved problems | **Mature Implementation First**: Prefers stdlib → native platform → installed deps → mature upstream |
-| **Code Intelligence** | Dumps full repo scans into context | Repeated slow grep/find across huge repos | **Non-Intrusive CLI Mode**: Direct AST/LSP graph via `codebase-memory-mcp` with zero permanent context pollution |
+| **Reusing Solutions** | Reinvents wheels or creates complex custom wrappers | Generates subpar custom code for solved problems | **The Ladder**: Existing code > Stdlib > Native platform > Installed deps > Minimum custom code |
+| **Code Intelligence** | Dumps full repo scans into context | Repeated slow grep/find across huge repos | **Non-Intrusive CLI**: One-shot AST / LSP queries via `codebase-memory-mcp` with zero permanent prompt pollution |
+
+---
+
+## 🧠 Core Philosophy: Think Like a Pragmatic Senior Dev
+
+Practical Coding encodes the proven habits of experienced engineers into actionable rules:
+
+### 🪜 The Ladder
+Whenever solving a problem, stop at the highest rung that holds:
+1. **Does not need to exist** (YAGNI — is this truly necessary?)
+2. **Already exists in this codebase** (reuse it directly)
+3. **Provided by the language Standard Library** (prefer standard solutions)
+4. **Native platform / runtime capability** (browser or OS native APIs)
+5. **Already installed third-party dependencies**
+6. **A clean single line of code**
+7. **Write the absolute minimum custom code**
+
+### 🎯 Pragmatic Iron Rules
+- **Read First, Then Be Lazy**: Understand the real code touched. Never add speculative extras just because a familiar feature name sounds fancy.
+- **Deletion Over Addition**: Deletion is better than addition. Boring code beats clever hacks. Fewer files and shorter diffs are always preferred.
+- **Untouched Scope**: Never touch unrelated files or unprompted formatting. Preserve existing user modifications.
+- **Evidence-Based Delivery**: Run the cheapest targeted verification (build/test) once. Base completion claims strictly on fresh execution evidence.
+
+---
+
+## 🏗️ How It Works
+
+Practical Coding is an **Event-Driven Router** backed by an **Always-On Core**:
+
+```mermaid
+flowchart TB
+    Task["🎯 User Task / Coding Request"] --> Core["⚡ SKILL.md<br/>Shortest-path Core & Event Router"]
+
+    Core -->|"Local & Well-Understood"| Direct["🚀 Direct Path<br/>Root agent executes immediately<br/>(No modules, no subagents)"]
+    Core -->|"Unresolved Material Choice"| D["🧭 Decision Module<br/>(references/decision.md)"]
+    Core -->|"High-Risk Boundary / Migration"| I["🏗️ Implementation Module<br/>(references/implementation.md)"]
+    Core -->|"Observed Bug / Cause Unknown"| G["🔍 Debugging Module<br/>(references/debugging.md)"]
+    Core -->|"Broad Codebase Navigation"| E["🗺️ Navigation Module<br/>(references/navigation.md)"]
+
+    subgraph IsolationGate["⚖️ Economic Isolation Gate"]
+        IG{"Avoided Context & Parallelism<br/>>> Startup + Handoff Cost?"}
+        IG -->|"Yes"| Worker["🤖 Isolated Worker Subagent<br/>(Reads delegation.md + 1 module)"]
+        IG -->|"No"| RootExec["👤 Root Agent Loads Module Locally"]
+    end
+
+    D -.-> IG
+    I -.-> IG
+    G -.-> IG
+    E -.-> IG
+    Worker -->|"Returns compact evidence capsule"| Done["✅ Fresh Evidence Check & Completion"]
+    RootExec --> Done
+    Direct --> Done
+```
+
+### 1. The Always-On Core
+Defined in [`SKILL.md`](SKILL.md) in just a few dozen lines. It stays resident in the agent context as a lightweight guardrail, ensuring 90%+ of standard tasks complete immediately at lowest cost.
+
+### 2. The Direct Path
+For clear, local edits (fixing a typo, styling tweaks, adding a simple parameter, following established repo patterns), the agent **writes the code immediately without loading extra reference docs and without subagents**.
+
+### 3. The 4 On-Demand Modules
+When an unresolved engineering obstacle arises, the agent loads exactly **one** matching reference module:
+
+| Module | Triggered When | Output & Behavior |
+|---|---|---|
+| 🧭 **Decision** [`decision.md`](references/decision.md) | Multiple architecture choices or new dependencies are under consideration | Evaluates $\le 3$ viable options (stdlib/native first); chooses the smallest fitting solution. |
+| 🏗️ **Implementation** [`implementation.md`](references/implementation.md) | High-risk boundaries (auth/permissions, payment, data migration, concurrency/transactions, breaking changes) | Bounded change maps, strict invariant checks, and the cheapest falsification ladder. |
+| 🔍 **Debugging** [`debugging.md`](references/debugging.md) | Errors, test failures, or regressions with unknown root causes | No guessing: Reproduce → Earliest broken state → Single hypothesis → Root cause fix. |
+| 🗺️ **Navigation** [`navigation.md`](references/navigation.md) | Navigating structurally complex or massive repositories | Selects search or AST code graphs to build an impact map. |
+
+### 4. Economic Subagent Isolation Gate
+No subagent proliferation! A worker subagent is spawned **only** when the context it saves (e.g., massive test logs or deep search noise) or parallel unblocking **clearly exceeds** the startup/handoff overhead. Workers return a **compact evidence capsule** rather than polluting the root conversation.
+
+### 5. Optional Codebase Memory (AST & LSP Intelligence)
+For large-scale repositories requiring semantic AST / LSP analysis, Practical Coding integrates seamlessly with [`codebase-memory-mcp`](https://github.com/DeusData/codebase-memory-mcp).
+- **Zero Prompt Pollution**: Executed via one-shot CLI queries (`npx codebase-memory-mcp cli ...`) rather than permanent background tool definitions.
+- **Graceful Fallback**: Automatically falls back to standard file search if unavailable.
 
 ---
 
 ## 💡 Inspirations & Lineage (The Synthesis of Giants)
 
-Practical Coding merges the best design paradigms from leading open-source agent methodologies:
+Practical Coding synthesizes the best ideas from top open-source agent methodologies:
 
 ```text
                ┌─────────────────────────────────────────────────────────┐
@@ -101,132 +181,16 @@ Practical Coding merges the best design paradigms from leading open-source agent
                └─────────────────────────────────────────────────────────┘
 ```
 
-### 1. 🦄 [DietrichGebert/ponytail](https://github.com/DietrichGebert/ponytail) — *The Pragmatic Senior Dev Mindset*
-- **What we adopted**: The ruthless **YAGNI** principle, the **ladder** (does this need to exist → already in this codebase → stdlib → native platform feature → installed dependency → one line → minimum custom code), deletion over addition, shortest working diff, and terse unrequested delivery prose.
-- **How Practical differs**: Ponytail's runtime supports explicit intensity modes through host-specific plugins/hooks. Practical Coding stays a portable Agent Skill: it does not ask the model to infer a mode and does not duplicate host runtimes. Task events alone decide whether Direct Path or an engineering module is needed.
-
-### 2. ⚡ [obra/superpowers](https://github.com/obra/superpowers) — *Disciplined Engineering Capabilities*
-- **What we adopted**: Systematic root-cause debugging, verification gates, and isolated subagent task contracts.
-- **How we evolved it**: We **unchained** these powerful tools from mandatory linear pipelines. You no longer suffer through mandatory brainstorming or TDD ceremony for trivial changes; capabilities are triggered **only when an unresolved event occurs**.
-
-### 3. 📦 [mattpocock/skills](https://github.com/mattpocock/skills) & [Agent Skills Spec](https://agentskills.io) — *Progressive Disclosure*
-- **What we adopted**: Ultra-lean entry footprint. [`SKILL.md`](SKILL.md) remains a compact resident router; deep reference modules are read only when routed.
-
-### 4. 🧠 [DeusData/codebase-memory-mcp](https://github.com/DeusData/codebase-memory-mcp) — *Zero-Bloat Code Intelligence*
-- **What we adopted**: Industrial-grade Tree-sitter AST parsing, Hybrid LSP semantic resolution, and persistent code graphs.
-- **How we evolved it**: Instead of permanently injecting a heavy MCP server and tool definitions into the agent's system prompt, Practical Coding invokes upstream in **one-shot CLI mode** only when navigation value justifies it.
-
----
-
-## 🏗️ Architecture & How It Works
-
-Practical Coding is an **Event-Driven Router** backed by an **Always-On Core**. There is no routing-intensity mode: simple work is naturally Direct Path, while unresolved complexity or risk naturally escalates.
-
-```mermaid
-flowchart TB
-    Task["🎯 User Task / Coding Request"] --> Core["⚡ SKILL.md<br/>Shortest-path Core & Event Router"]
-
-    Core -->|"Local & Well-Understood"| Direct["🚀 Direct Path<br/>Root agent executes immediately<br/>(No modules, no subagents)"]
-    Core -->|"Unresolved Material Choice"| D["🧭 Decision Module<br/>(references/decision.md)"]
-    Core -->|"Unmapped Contract or Material Risk"| I["🏗️ Implementation Module<br/>(references/implementation.md)"]
-    Core -->|"Observed Bug / Cause Unknown"| G["🔍 Debugging Module<br/>(references/debugging.md)"]
-    Core -->|"Broad Codebase Navigation"| E["🗺️ Navigation Module<br/>(references/navigation.md)"]
-
-    subgraph IsolationGate["⚖️ Economic Isolation Gate"]
-        IG{"Avoided Context & Parallelism<br/>>> Startup + Handoff Cost?"}
-        IG -->|"Yes"| Worker["🤖 Isolated Worker Subagent<br/>(Reads references/delegation.md + 1 module)"]
-        IG -->|"No"| RootExec["👤 Root Agent Loads Module Locally"]
-    end
-
-    D -.-> IG
-    I -.-> IG
-    G -.-> IG
-    E -.-> IG
-    Worker -->|"Returns compact evidence capsule"| Done["✅ Fresh Evidence Check & Completion"]
-    RootExec --> Done
-    Direct --> Done
-```
-
----
-
-## 🛡️ The Always-On Core
-
-The Core is deliberately the shortest useful path for ordinary coding work, not a compressed checklist of every engineering concern:
-
-1. **Read First, Then Be Lazy**: Understand the requested outcome and the code it actually touches; a familiar feature name implies only its named behavior, never every conventional extra.
-2. **The Ladder**: Stop at the first rung that holds — doesn't need to exist → already in this codebase → stdlib → native platform feature → installed dependency → one line → minimum custom code.
-3. **Traceable Value**: Validation, fallback, retry, config, tests, or docs must trace to a current requirement, concrete boundary, observed risk, project policy, or the cheapest evidence needed. Material risk routes to Implementation instead of bloating Core.
-4. **Smallest Complete Change**: Deletion over addition, boring over clever, fewest files, shortest working diff once the problem is understood. Follow repository or platform defaults for reversible unspecified details.
-5. **Untouched Scope**: Keep unrelated code and existing user modifications untouched; mark a deliberate corner cut with a one-line comment naming the ceiling.
-6. **Fresh Evidence, Lean Output**: Obtain the cheapest fresh evidence before claiming completion and keep unrequested delivery prose terse.
-
----
-
-## 🧩 The 4 On-Demand Modules
-
-When a task encounters an unresolved engineering event, only the matching module is loaded. **Verification is not a sixth module**: choosing sufficient evidence for a risky change is part of Implementation. Implementation is an escalation for unresolved coordination or material risk, not a mandatory stage for writing code.
-
-| Module | Loaded When | Core Deliverable |
-|---|---|---|
-| 🧭 [`references/decision.md`](references/decision.md) | A material choice about architecture, dependencies, APIs, or data models remains open | Evaluates $\le 3$ viable options (stdlib/native first); chooses the smallest fitting solution. |
-| 🏗️ [`references/implementation.md`](references/implementation.md) | An unmapped contract/invariant, a material risk boundary (security/permissions, irreversible side effects, persistence/migration, concurrency/transactions, compatibility), or the evidence plan for a risky change remains unresolved | Bounded change map; authoritative boundary handling; cheapest falsification ladder. |
-| 🔍 [`references/debugging.md`](references/debugging.md) | An observed failure, regression, or failed verification lacks a diagnosed cause | Evidence-first: symptom → earliest broken state → single hypothesis → root cause fix. |
-| 🗺️ [`references/navigation.md`](references/navigation.md) | Broad navigation is necessary | Selects ordinary source search or the configured Codebase Memory backend and returns a bounded impact map. |
-
----
-
-## 🤖 Subagent Delegation & Isolation Gate
-
-Practical Coding prevents runaway subagent proliferation through a strict **Economic Isolation Gate**:
-
-> **The Isolation Rule:**  
-> Spawn an isolated worker **only** when the context it avoids, or the parallel work it unblocks, **clearly exceeds** the startup and handoff overhead. Otherwise, keep the task in the root agent.
-
-### Worker Protocol ([`references/delegation.md`](references/delegation.md))
-- **Focused Scope**: Worker reads `delegation.md` + exactly **one** assigned module.
-- **Read-Only by Default**: Decision, Navigation, Debugging, and mapping/evidence-only Implementation workers cannot modify code.
-- **Sole Writer When Authorized**: An Implementation worker may write only when explicitly assigned implementation, only within its assigned directory/files, and must be the sole writer there.
-- **Compact Evidence Capsule**: Workers return structured summaries (paths, symbols, diff summaries, test outputs), never raw transcripts or full file contents.
-
----
-
-## 🧠 Optional Codebase Memory (AST & LSP Intelligence)
-
-Practical Coding integrates directly with [`DeusData/codebase-memory-mcp`](https://github.com/DeusData/codebase-memory-mcp) as its structured code intelligence backend.
-
-### Why One-Shot CLI Mode?
-Instead of permanently loading upstream MCP server tools into the agent's system prompt (which wastes 1,000+ tokens on every conversation turn), Practical Coding executes upstream via one-shot CLI commands:
-
-```bash
-# Search symbols & call graphs
-codebase-memory-mcp cli search_graph '{"name_pattern":".*Handler.*","label":"Function"}'
-codebase-memory-mcp cli trace_call_path '{"function_name":"main","direction":"both"}'
-
-# Check architecture & index coverage
-codebase-memory-mcp cli get_architecture '{}'
-codebase-memory-mcp cli check_index_coverage '{"paths":["src/core.ts"]}'
-```
-
-### CLI Resolution Order
-1. Existing `codebase-memory-mcp` binary on `PATH`.
-2. Official lazy npm launcher (if `npx` is available):
-   ```bash
-   npx --yes codebase-memory-mcp@latest cli <tool> '<json-arguments>'
-   ```
-3. **Graceful Fallback**: If upstream cannot be launched, the agent falls back to standard text exploration and reports that Codebase Memory was not used.
-
-### Evidence Tiers
-- 🔭 **Scout**: Rapid positive discovery. Small limits, shallow traces, marked provisional.
-- 🎯 **Verify (Default)**: Normal development. Exact snippets + `check_index_coverage` validation.
-- 🔬 **Auditor**: Bounded exhaustive audits. Scope coverage, pagination completion, and fallback source checking for any reported coverage gaps.
+1. **🦄 [DietrichGebert/ponytail](https://github.com/DietrichGebert/ponytail)**: Pragmatic "laziest senior dev" mindset — YAGNI, The Ladder, deletion over addition, shortest working diffs.
+2. **⚡ [obra/superpowers](https://github.com/obra/superpowers)**: Industrial-strength root-cause debugging and risk verification discipline — **decoupled** from mandatory linear pipelines into on-demand modules.
+3. **📦 [Agent Skills Spec](https://agentskills.io) & [mattpocock/skills](https://github.com/mattpocock/skills)**: Progressive disclosure architecture with an ultra-lean footprint.
+4. **🧠 [DeusData/codebase-memory-mcp](https://github.com/DeusData/codebase-memory-mcp)**: Deep AST/LSP semantic code graphs via non-intrusive CLI invocations.
 
 ---
 
 ## 🚀 Quick Start & Installation
 
-### One-Command Install (Recommended)
-
-Using the standard [`skills`](https://github.com/mattpocock/skills) CLI:
+### Recommended: One-Command Install via skills CLI
 
 ```bash
 npx skills@latest add Hubujiu/practical-coding
@@ -234,7 +198,7 @@ npx skills@latest add Hubujiu/practical-coding
 
 ---
 
-### Manual Installation by Agent Platform
+### Manual Installation by Platform
 
 #### 🟣 Claude Code
 ```bash
@@ -256,15 +220,16 @@ git clone https://github.com/Hubujiu/practical-coding.git "$env:USERPROFILE\.age
 #### 📁 Project-Level Installation
 To install Practical Coding for a specific workspace/repository:
 ```bash
-# For Agent Skills compatible tools
 git clone https://github.com/Hubujiu/practical-coding.git .github/skills/practical-coding
 ```
 
 ---
 
-## ⚙️ Configuration
+## ⚙️ Project Configuration
 
-Enable optional Codebase Memory by adding `.practical-coding.yaml` to your project root:
+By default, Practical Coding is **zero-config and works out of the box**.
+
+To enable **Codebase Memory (AST / LSP code graphs)** for large repositories, add `.practical-coding.yaml` to your project root:
 
 ```yaml
 version: 1
@@ -272,8 +237,8 @@ codebase_memory:
   enabled: true
 ```
 
-- `enabled: false` (or missing file): Codebase Memory is disabled; standard exploration is used without prompting.
-- `enabled: true`: Upstream AST/LSP graph intelligence is enabled for large-scale navigation.
+- `enabled: false` (or file omitted): Uses standard fast source search without dependencies.
+- `enabled: true`: Enables on-demand AST/LSP code intelligence during complex navigation.
 
 ---
 
@@ -281,8 +246,8 @@ codebase_memory:
 
 ```text
 practical-coding/
-├── SKILL.md                 # Lean entry point: shortest-path Core & Event Router
-├── AGENTS.md                # Agent instructions & module routing index
+├── SKILL.md                 # Lean entry point: resident Core & Event Router
+├── AGENTS.md                # Agent instruction & module routing guide
 ├── README.md                # English documentation (this file)
 ├── README_zh.md             # Simplified Chinese documentation
 ├── CONTRIBUTING.md          # Contribution guidelines
@@ -290,44 +255,24 @@ practical-coding/
 ├── THIRD_PARTY_NOTICES.md   # Attribution for upstream Codebase Memory MCP
 ├── agents/
 │   └── openai.yaml          # Agent configuration profile
-├── benchmarks/
-│   ├── run.ps1              # PowerShell entry point
-│   ├── run_benchmarks.py    # Luna isolation, grading, and aggregation
-│   ├── test_benchmarks.py   # Harness regression tests
-│   └── REPRODUCING.md       # Exact reproduction protocol and evidence boundaries
-├── examples/
-│   ├── README.md            # Example configuration instructions
-│   └── practical-coding.yaml# Sample project-level configuration
-├── references/              # On-demand engineering modules
-│   ├── decision.md          # Architecture & dependency decisions
-│   ├── implementation.md    # Risk boundaries, change maps & falsification ladder
-│   ├── debugging.md         # Evidence-first root-cause diagnosis
-│   ├── delegation.md        # Worker subagent protocol & capsule return
-│   └── navigation.md        # Source or graph-backed navigation & impact maps
-└── .github/
-    └── workflows/
-        └── validate.yml     # Skill validation workflow
+├── benchmarks/              # Benchmark suites & reproduction scripts
+│   ├── run.ps1
+│   ├── run_benchmarks.py
+│   └── REPRODUCING.md
+├── examples/                # Example configurations
+└── references/              # 4 on-demand specialized engineering modules
+    ├── decision.md          # Architecture & dependency decisions
+    ├── implementation.md    # Risk boundaries & bounded changes
+    ├── debugging.md         # Evidence-first root-cause diagnosis
+    ├── delegation.md        # Worker subagent protocol & capsule return
+    └── navigation.md        # Source or graph-backed code navigation
 ```
-
----
-
-## 🧪 Luna Benchmarks
-
-The v2.1 release matrix uses a fixed `gpt-5.6-luna` / `medium` setup, isolated workspaces, pinned comparator commits, deterministic graders, and three repetitions per cell. It measures different capabilities against the relevant specialist rather than manufacturing one universal leaderboard:
-
-- Delivery reuses Ponytail's published agentic tasks and scorer through a Codex adapter.
-- Decision uses real resumed turns against Matt Pocock's `grilling` Skill.
-- Debug and explicit security compare delivered invariants against Superpowers.
-- Router and native behavior verify Direct Path, route selection, Skill discovery, and on-demand reference loading.
-- Navigation ablates ordinary source search against the optional graph backend on two real repositories.
-
-Correctness and safety gate cost: a cheap failure cannot win. Qualified comparisons then report Pareto status and a weighted geometric efficiency index over uncached input, output, model time, and tool calls. Read the committed [`v2.1 data`](benchmarks/results/v2.1/README.md), follow the exact [`reproduction guide`](benchmarks/REPRODUCING.md), or inspect the [`release evaluation`](docs/evaluations/2026-08-26-practical-v21-release.md).
 
 ---
 
 ## 🤝 Contributing & License
 
-Contributions are welcome! Please review our [Contributing Guidelines](CONTRIBUTING.md) before submitting pull requests.
+Found edge cases where your AI still over-engineers or gets stuck? Contributions and issues are warmly welcomed! Please read [CONTRIBUTING.md](CONTRIBUTING.md) before submitting.
 
 - **License**: [MIT License](LICENSE) © 2026 Hubujiu
-- **Third-Party Attribution**: See [THIRD_PARTY_NOTICES.md](THIRD_PARTY_NOTICES.md) for details on [`DeusData/codebase-memory-mcp`](https://github.com/DeusData/codebase-memory-mcp).
+- **Third-Party Attribution**: Special thanks to [`codebase-memory-mcp`](https://github.com/DeusData/codebase-memory-mcp), [`ponytail`](https://github.com/DietrichGebert/ponytail), and [`superpowers`](https://github.com/obra/superpowers) for their groundbreaking work in the open-source agent ecosystem.

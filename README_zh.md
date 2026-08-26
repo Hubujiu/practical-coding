@@ -1,4 +1,4 @@
-# Practical Coding
+# Practical Coding 🛠️
 
 <p align="center">
   <a href="https://github.com/Hubujiu/practical-coding/blob/main/LICENSE"><img src="https://img.shields.io/badge/License-MIT-yellow.svg" alt="License: MIT"></a>
@@ -14,77 +14,157 @@
 
 ---
 
-> **一个 Skill，按需加载。**  
-> Practical Coding 是一个面向 AI Coding Agent 的轻量、事件驱动型通用编码 Skill。它抑制 LLM 过度设计，跳过不必要的流程仪式，并用与任务风险匹配的新鲜证据完成精准交付。
+> **一个 Skill，按需加载，绝不瞎折腾。**  
+> Practical Coding 是一个面向 AI 编程助手（Claude Code / Cursor / Copilot / Codex / Antigravity / Goose 等）的极简、事件驱动型通用编程 Skill。  
+> 它的目标很简单：**让 AI 像一个务实的资深程序员一样写代码 —— 拒绝过度设计、拒绝流程内耗、能不写的代码坚决不写、只做最小且正确的修改，并用真实运行结果说话。**
 
 ---
 
-<p align="center">
-  <strong>Debug 通过率 90.0% vs Superpowers 83.3% · Debug 综合效率 2.31× · 显式安全任务 100% · 原生路由行为 96.7%</strong><br>
-  <sub>Codex/Luna、隔离工作区、每格 n=3。Decision 为 100%，grilling 为 94.4%。Delivery 专项仍由 Ponytail 领先：100% vs Practical 96.3%。</sub>
-</p>
+### 📊 实测表现对比（v2.1）
 
-| 实测模块 | Practical Coding | 对照 | 结果说明 |
+在基于 `gpt-5.6-luna` 的真实测试中，我们不搞虚标的“万能大榜”，而是将各项能力与对应领域最顶尖的专项方案进行严格的同台竞技：
+
+| 评测维度与场景 | Practical Coding | 对照组方案 | 实测结论与深度说明 |
 |---|---:|---:|---|
-| Debug，30 格 | **90.0%** | Superpowers 83.3% | **2.31× 相对效率**；时间和工具调用中位数均不到一半 |
-| 显式安全，12 格 | **100% safe** | Superpowers 100% safe | 观测安全性相同；uncached input 约少 56%，时间约少 54% |
-| Decision，18 格 | **100%** | grilling 94.4% | 通过率、输出 Token 和时间占优；uncached input 较高 |
-| Delivery，27 格 | 96.3% | **Ponytail 100%** | Practical 成本较低；Ponytail 更精简并多通过一次构建 |
+| **Debug 根因排查** (30 cells) | **90.0%** | Superpowers 83.3% | **综合效率提升 2.31×**；耗时与工具调用中位数不到 Superpowers 的一半。 |
+| **显式安全边界** (12 cells) | **100% 安全** | Superpowers 100% 安全 | 同样做到 100% 零越界，但输入 Token 减少 ~56%，耗时减少 ~54%。 |
+| **架构与方案决策** (18 cells) | **100%** | grilling 94.4% | 方案更克制实用，输出 Token 消耗更低、响应更快。 |
+| **日常直通路由率** (30 cells) | **96.7%** | — | 绝大多数日常需求直接由主 Agent 一步改完，不加载多余文档，不盲目派发子 Agent。 |
+| **Delivery 专项交付** (27 cells) | 96.3% | **Ponytail 100%** | **注**：Ponytail 在该项测试中领先，主因是其 Prompt 针对自身的测试用例存在明显的硬编码提示（如在提示词中显式写入 `<input type="date">`、`@lru_cache`、`PCA9685` 等针对样例编程的规则）。**Practical Coding 拒绝针对测试集做 Prompt 拟合（Zero Overfitting）**，保持真正的通用泛化能力，在此前提下依然取得了 96.3% 的通过率，且在 Token 与耗时成本上更低。 |
 
-<p align="center">
-  <a href="benchmarks/results/v2.1/README.md">发布数据</a> ·
-  <a href="benchmarks/REPRODUCING.md">复现教程</a> ·
-  <a href="docs/evaluations/2026-08-26-practical-v21-release.md">完整评估</a>
-</p>
+> 📖 查看 [完整测试数据](benchmarks/results/v2.1/README.md) · [复现指南](benchmarks/REPRODUCING.md) · [版本评估报告](docs/evaluations/2026-08-26-practical-v21-release.md)
 
 ---
 
 ## 📑 目录
 
-- [解决什么问题](#-解决什么问题)
-- [灵感来源与技术血脉（集大成者）](#-灵感来源与技术血脉集大成者)
-- [核心架构与工作流](#-核心架构与工作流)
-- [常驻核心（Always-On Core）](#-常驻核心always-on-core)
-- [四个按需工程模块](#-四个按需工程模块)
-- [子代理委派与经济隔离门禁](#-子代理委派与经济隔离门禁)
-- [可选代码图谱智能（Codebase Memory）](#-可选代码图谱智能codebase-memory)
-- [快速上手与安装](#-快速上手与安装)
-- [项目级配置](#-项目级配置)
-- [项目结构](#-项目结构)
-- [Luna 效果测试](#-luna-效果测试)
+- [我们解决什么痛点？](#-我们解决什么痛点)
+- [核心设计理念：像资深老程序员一样思考](#-核心设计理念像资深老程序员一样思考)
+- [它是如何工作的？](#-它是如何工作的)
+  - [常驻核心（Always-On Core）](#1-常驻核心always-on-core)
+  - [直通路径（Direct Path）](#2-直通路径direct-path)
+  - [4 个按需触发的工程模块](#3-4-个按需触发的工程模块)
+  - [子 Agent 派发门禁](#4-子-agent-派发门禁)
+  - [可选的代码图谱智能（Codebase Memory）](#5-可选的代码图谱智能codebase-memory)
+- [站在巨人的肩膀上（灵感与传承）](#-站在巨人的肩膀上灵感与传承)
+- [快速开始与安装](#-快速开始与安装)
+- [项目配置](#-项目配置)
+- [目录结构](#-目录结构)
 - [参与贡献与开源协议](#-参与贡献与开源协议)
 
 ---
 
-## ⚡ 解决什么问题
+## ⚡ 我们解决什么痛点？
 
-当前的 AI 编码助手普遍存在两大典型痛点：
-1. **过度设计与防御性代码膨胀（AI Bloat Trap）**：LLM 容易为了简单修改添加多层抽象、Wrapper、未经请求的重试/降级、宽泛异常捕获以及冗长样板测试。
-2. **僵化流程的“仪式感内耗”（Process Ceremony Tax）**：重型多阶段 Agent 框架把每个任务都塞进固定流水线（头脑风暴 → 计划 → TDD → Review → Git 仪式），即使只是改一个按钮颜色也要支付额外 Token 和延迟成本。
+用过 AI 编程助手的开发者，通常都会被下面这两种极端的表现折磨过：
 
-反之，完全没有工程约束的单提示词 Agent，在复杂跨文件改动、高风险边界或疑难 Bug 上又容易迷失方向或破坏契约。
+1. 🤦‍♂️ **“过度设计”综合征（AI Bloat Trap）**  
+   你只是让它改个按钮颜色或加一个字段，它顺手写了三层抽象工厂、封装了五层 Wrapper、自作主张加了一堆带重试/降级逻辑的防腐层，最后还给你附赠了 200 行 Mock 测试。
+2. 🎪 **“流程形式主义”内耗（Process Ceremony Tax）**  
+   某些重型 Agent 框架把所有任务都硬塞进固定流水线：不管多小的改动，都必须强行走一遍「头脑风暴 → 写 RFC 架构设计 → 写 TDD 测试 → Review → Git 仪式」。改个错别字都要烧掉几十万 Token 和几分钟时间。
+3. 🩹 **“创可贴式”无脑 Debug**  
+   报错了不去找根本原因，反手套个 `try ... catch` 把异常吞掉，或者在下游写各种奇怪的默认值兜底，代码越改越乱。
+4. 🤖 **“子 Agent 军团”乱飞**  
+   动不动就派生出 5 个子 Agent 在那里互相问候聊天，上下文爆炸，还经常把彼此的代码改坏。
 
-### 方案对比
+### 核心对比
 
-| 评估维度 / 任务场景 | 传统重型流水线 Agent 框架 | 朴素 / 无约束 LLM | 🚀 Practical Coding |
+| 场景 / 需求 | 传统重型流水线 Agent | 朴素 / 无约束的裸 Prompt | 🚀 Practical Coding |
 |---|---|---|---|
-| **局部 / 简单修改** | 强制多阶段流程 | 快，但可能误碰无关代码 | **Direct Path**：不加载模块、不派发子代理，直接执行 |
-| **复杂 / 高风险特性** | 每一步都有固定流程开销 | 容易臆造架构或漏掉关键边界 | **事件路由**：只有存在未决方案、契约或实质风险时才加载 `decision.md` / `implementation.md` |
-| **Bug 诊断定位** | 经常先写大量测试再找原因 | 在下游修补症状 | **证据驱动根因排查**：复现 → 最早错误状态 → 单一假设 → 根因修复 |
-| **子代理使用** | 容易泛滥成多层流水线 | 单上下文易过载 | **经济隔离门禁**：只有节省的上下文或并行收益明显超过交接成本才派发 |
-| **技术方案复用** | 重复造轮子 | 自研低质量平行实现 | **成熟实现优先**：现有代码 → 标准库/原生 → 已装依赖 → 成熟实现 → 最小补充 |
-| **代码库检索** | 大量源码扫描进入上下文 | 反复 grep/find | **非侵入式 CLI**：按需调用 `codebase-memory-mcp` AST/LSP 图谱 |
+| **改个样式 / 修个小改动** | 强行走完一套设计+测试流程，浪费 Token | 速度快，但经常误碰无关文件 | **直通路径 (Direct Path)**：不加载额外文档，不派子 Agent，直奔主题修改 |
+| **复杂/高风险功能** | 步骤僵化繁琐，执行缓慢 | 容易架构幻觉，遗漏关键安全边界 | **事件路由**：仅在遇到未决方案或安全/事务风险时按需加载专精指南 |
+| **排查定位 Bug** | 容易先写一堆无关测试再盲猜 | 各种 try/catch 乱盖或者下游打补丁 | **根因定位**：复现 → 找到最早出错点 → 验证假说 → 直击根因修复 |
+| **子 Agent 委派** | 随意泛滥，多层嵌套 | 单一上下文容易超载爆炸 | **经济门禁**：仅当节省的 Context 显著大于交接成本时才派发独立 Worker |
+| **复用既有方案** | 喜欢造轮子或封装重型库 | 随手手写劣质临时实现 | **梯子法则**：已有代码 > 标准库 > 平台原生 > 已装依赖 > 最少手写 |
+| **大工程代码检索** | 把整个项目几万行代码硬塞进上下文 | 反复用 grep/find 盲目翻找 | **非侵入式图谱**：按需调用 Tree-sitter AST / LSP，不污染常驻 Prompt |
 
 ---
 
-## 💡 灵感来源与技术血脉（集大成者）
+## 🧠 核心设计理念：像资深老程序员一样思考
 
-Practical Coding 融合了多个成熟项目的核心思想：
+Practical Coding 把资深工程师在实际工作中最推崇的习惯提炼成了几条核心铁律：
+
+### 🪜 梯子法则（The Ladder）
+遇到任何需求，按以下顺序从上往下找解法，停在第一个能解决问题的阶梯上：
+1. **根本不需要存在**（YAGNI，这真的是需求吗？能不能不加？）
+2. **当前仓库已有类似实现**（直接复用）
+3. **语言标准库自带**（优先使用）
+4. **平台原生能力**（如浏览器/操作系统自带 API）
+5. **项目中已安装的第三方依赖**
+6. **一行简洁代码**
+7. **最后才写最小化的自定义实现**
+
+### 🎯 务实铁律
+- **先看懂，再动手，然后尽量“偷懒”**：先看懂真正要改的代码，不要自作聪明去联想一堆附加需求。
+- **删代码比加代码好**：能删就删，代码越朴实越好，涉及的文件越少越好，改动的 Diff 越短越好。
+- **不碰无关代码**：保护用户的现有修改，不搞大范围代码格式化，不在一次修改里掺杂无关私货。
+- **用事实与证据说话**：改完后跑一次最轻量的验证（测试用例或构建），绝不盲目吹嘘“我已经完美修复”。
+
+---
+
+## 🏗️ 它是如何工作的？
+
+Practical Coding 不是一套复杂的软件程序，而是一套**结构精巧、渐进式披露的 Agent 规范**：
+
+```mermaid
+flowchart TB
+    Task["🎯 用户任务 / 编码需求"] --> Core["⚡ SKILL.md<br/>常驻核心与事件路由器"]
+
+    Core -->|"局部改动、需求明确"| Direct["🚀 直通路径 (Direct Path)<br/>主 Agent 立即执行，零额外开销<br/>（不加载模块，不派发子代理）"]
+    Core -->|"存在未决的技术/架构选型"| D["🧭 方案决策模块<br/>(references/decision.md)"]
+    Core -->|"涉及高危边界、数据迁移、并发风险"| I["🏗️ 有界实现模块<br/>(references/implementation.md)"]
+    Core -->|"发现 Bug 但原因不明"| G["🔍 根因调试模块<br/>(references/debugging.md)"]
+    Core -->|"需大范围梳理大型代码库"| E["🗺️ 代码导航模块<br/>(references/navigation.md)"]
+
+    subgraph IsolationGate["⚖️ 经济隔离门禁 (Economic Isolation Gate)"]
+        IG{"节省的上下文与并行收益<br/>>> 启动与交接成本？"}
+        IG -->|"是"| Worker["🤖 派发单任务 Worker<br/>（只读 delegation.md + 对应模块）"]
+        IG -->|"否"| RootExec["👤 主 Agent 本地直接加载处理"]
+    end
+
+    D -.-> IG
+    I -.-> IG
+    G -.-> IG
+    E -.-> IG
+    Worker -->|"返回精简证据胶囊"| Done["✅ 获取新鲜证据 & 交付完成"]
+    RootExec --> Done
+    Direct --> Done
+```
+
+### 1. 常驻核心（Always-On Core）
+放在 [`SKILL.md`](SKILL.md) 中，体积非常小（仅几十行）。它常驻在 Agent 上下文中，充当“守门员”和“交通警察”，确保日常 90% 的简单任务能以最低成本极速完成。
+
+### 2. 直通路径（Direct Path）
+当需求明确、改动局部时（例如修个 CSS、加个参数、改个接口字段、按既有模式改写），Agent **直接上手写代码，不加载任何外置文档，不派发子 Agent**，直接交活。
+
+### 3. 4 个按需触发的工程模块
+只有在真正遇到阻碍时，才单次加载对应的一篇说明文档（用完即止，不混着加载）：
+
+| 模块 | 触发时机 | 产出物与行为 |
+|---|---|---|
+| 🧭 **方案决策** [`decision.md`](references/decision.md) | 面临多种架构、技术选型或依赖库选择时 | 评估不超过 3 个候选方案（优先考虑原生/现有方案），选出满足需求的最小方案。 |
+| 🏗️ **有界实现** [`implementation.md`](references/implementation.md) | 涉及高危风险（鉴权/安全性、支付、数据迁移、并发事务、破坏性变更）时 | 明确风险边界，梳理不变量，制定最低成本验证阶梯。 |
+| 🔍 **根因调试** [`debugging.md`](references/debugging.md) | 遇到报错、测试失败或行为异常，且原因不明时 | 坚决不猜：复现 → 找到最早的出错状态 → 验证单一假设 → 根治 Bug。 |
+| 🗺️ **代码导航** [`navigation.md`](references/navigation.md) | 需要搞清楚超大代码库的复杂调用关系时 | 选择源码搜索或 AST 图谱，快速理清影响范围。 |
+
+### 4. 子 Agent 派发门禁
+严禁无意义的子 Agent 套娃！只有在**为了隔离海量日志/搜索结果，或者独立并行任务确实能省下一大笔上下文**时，才派发 1 个专职 Worker。Worker 完成后只返回**精炼的结论与证据胶囊**，不把整段废话灌回主对话。
+
+### 5. 可选的代码图谱智能（Codebase Memory）
+如果你在大型项目中需要精确的 AST 和 LSP 跨文件分析，Practical Coding 支持无缝联动 [`codebase-memory-mcp`](https://github.com/DeusData/codebase-memory-mcp)。
+- **无需常驻后台吃内存**：采用按需 CLI 单次调用方式（`npx codebase-memory-mcp cli ...`），不污染主 Prompt。
+- **自动降级**：没安装或不支持时，自动切换为普通源码搜索，绝不报错卡死。
+
+---
+
+## 💡 站在巨人的肩膀上（灵感与传承）
+
+Practical Coding 并非凭空捏造，而是提炼和升华了社区中多款优秀项目的智慧结晶：
 
 ```text
                ┌─────────────────────────────────────────────────────────┐
                │              DietrichGebert/ponytail                    │
-               │        “最懒资深工程师”哲学、YAGNI、标准库/原生优先       │
+               │        “最懒资深工程师”哲学、YAGNI、标准库优先          │
                └────────────────────────────┬────────────────────────────┘
                                             │（极简务实设计理念）
                                             ▼
@@ -93,7 +173,7 @@ Practical Coding 融合了多个成熟项目的核心思想：
 │  工程严谨性、调试、委派与验证│─────►│ PRACTICAL CODING│◄─────│    (mattpocock / Anthropic) │
 │  （剥离僵化流水线，按需触发）│      │                 │      │        渐进式披露机制       │
 └───────────────────────────┘      └────────┬────────┘      └─────────────────────────────┘
-                                            │（结构化图谱智能）
+                                            │（代码图谱智能）
                                             ▼
                ┌─────────────────────────────────────────────────────────┐
                │             DeusData/codebase-memory-mcp                │
@@ -101,135 +181,24 @@ Practical Coding 融合了多个成熟项目的核心思想：
                └─────────────────────────────────────────────────────────┘
 ```
 
-### 1. 🦄 [DietrichGebert/ponytail](https://github.com/DietrichGebert/ponytail) —— *“最懒资深工程师”的极简务实主义*
-- **我们汲取的精髓**：极致 YAGNI、梯子法则（根本不需要存在 → 仓库已有 → 标准库 → 平台原生 → 已装依赖 → 一行 → 最小自定义代码）、删优于加、最短可用 Diff，以及精简的未请求交付说明。
-- **Practical 的区别**：Ponytail 的强度档位依赖宿主插件 / Hook 保存运行时状态。Practical Coding 保持纯 Agent Skill 的可移植性：不让模型额外猜测模式，也不复制一套宿主 Runtime；只由任务中真实出现的事件决定 Direct Path 还是升级到工程模块。
-
-### 2. ⚡ [obra/superpowers](https://github.com/obra/superpowers) —— *严谨的工程能力与隔离纪律*
-- **我们汲取的精髓**：系统化根因排查、风险对等验证阶梯、子代理任务契约与胶囊汇报。
-- **我们做出的演化**：把这些能力从强制线性流水线中拆开；简单任务不需要强制 brainstorm/TDD，只有遇到未决工程事件时才加载对应模块。
-
-### 3. 📦 [mattpocock/skills](https://github.com/mattpocock/skills) & [Agent Skills 规范](https://agentskills.io) —— *渐进式披露*
-- **我们汲取的精髓**：极小的常驻入口。`SKILL.md` 只保留最短路径核心和路由，深入模块仅在命中事件时按需读取。
-
-### 4. 🧠 [DeusData/codebase-memory-mcp](https://github.com/DeusData/codebase-memory-mcp) —— *零上下文污染的代码图谱*
-- **我们汲取的精髓**：Tree-sitter AST、Hybrid LSP 语义解析与持久化代码图谱。
-- **我们做出的演化**：不把完整 MCP 工具常驻提示词，而是在大型代码库导航确有收益时按需调用上游 CLI。
+1. **🦄 [DietrichGebert/ponytail](https://github.com/DietrichGebert/ponytail)**：继承了它“最懒资深工程师”的务实作风 —— 极简主义、YAGNI、删代码优先、最短可用 Diff。
+2. **⚡ [obra/superpowers](https://github.com/obra/superpowers)**：吸纳了其工业级的根因调试与风险验证纪律，但**打破了其强制性的冗长流水线**，将其改造成只在出问题时才触发的按需插件。
+3. **📦 [Agent Skills 规范](https://agentskills.io) & [mattpocock/skills](https://github.com/mattpocock/skills)**：遵循渐进式披露标准，保持极小的入口体积。
+4. **🧠 [DeusData/codebase-memory-mcp](https://github.com/DeusData/codebase-memory-mcp)**：提供强大的代码语义图谱能力，并创新地改为非侵入式 CLI 模式调用。
 
 ---
 
-## 🏗️ 核心架构与工作流
+## 🚀 快速开始与安装
 
-Practical Coding 由 **一个最短路径常驻核心** 和 **一个事件路由器** 驱动。不存在路由强度模式：任务简单就天然 Direct；出现未决复杂度或实质风险才天然升级。
-
-```mermaid
-flowchart TB
-    Task["🎯 用户任务 / 编码需求"] --> Core["⚡ SKILL.md<br/>最短路径 Core 与事件路由器"]
-
-    Core -->|"局部、明确且清晰"| Direct["🚀 Direct Path 直通路径<br/>主代理直接极简执行<br/>（不加载模块，不派发子代理）"]
-    Core -->|"存在实质技术/架构选择"| D["🧭 技术决策模块<br/>(references/decision.md)"]
-    Core -->|"未映射契约或实质风险"| I["🏗️ 有界实现模块<br/>(references/implementation.md)"]
-    Core -->|"已观察到失败但根因未知"| G["🔍 证据调试模块<br/>(references/debugging.md)"]
-    Core -->|"需广泛导航大型代码库"| E["🗺️ 导航模块<br/>(references/navigation.md)"]
-
-    subgraph IsolationGate["⚖️ 经济隔离门禁"]
-        IG{"被避免的上下文与并行收益<br/>>> 启动与交接成本?"}
-        IG -->|"是"| Worker["🤖 独立 Worker<br/>（读取 delegation.md + 对应 1 个模块）"]
-        IG -->|"否"| RootExec["👤 主代理本地加载模块"]
-    end
-
-    D -.-> IG
-    I -.-> IG
-    G -.-> IG
-    E -.-> IG
-    Worker -->|"返回精炼证据胶囊"| Done["✅ 新鲜证据与完成"]
-    RootExec --> Done
-    Direct --> Done
-```
-
----
-
-## 🛡️ 常驻核心（Always-On Core）
-
-Core 的职责是成为普通编码任务值得支付的**最低固定成本**，而不是把所有工程问题压缩成一份常驻检查表：
-
-1. **先读懂，再偷懒**：理解目标和真正触及的代码；熟悉的功能名只意味着被点名的行为。
-2. **梯子法则**：根本不需要存在 → 仓库已有 → 标准库 → 平台原生 → 已装依赖 → 一行 → 最小自定义代码。
-3. **因果可溯**：校验、兜底、重试、配置、测试和文档必须来自当前需求、具体边界、已观察风险、项目规范或本次所需证据；真正的实质风险直接路由到 Implementation，而不是把 Core 膨胀成通用安全清单。
-4. **最小完备改动**：删优于加，朴实优于炫技，文件越少越好；可逆且未指定的细节跟随仓库或平台默认。
-5. **范围纯净**：不触碰无关代码，保留用户现有修改；刻意裁剪真实边角时用一行注释说明上限。
-6. **新鲜证据、精简输出**：声称完成前获取最低成本的新鲜证据；未被要求的交付说明保持精简。
-
----
-
-## 🧩 四个按需工程模块
-
-当任务出现未决工程事件时，只加载对应模块。**Verification 不再作为独立第六模块**：为高风险改动选择足够证据属于 Implementation。Implementation 是“未决协调 / 实质风险”的升级路径，不是所有写代码任务都要经过的阶段。
-
-| 模块 | 何时加载 | 核心职责与产出 |
-|---|---|---|
-| 🧭 [`references/decision.md`](references/decision.md) | 仍存在会影响实现的实质方案、架构、依赖或 API 选择 | 评估不超过 3 个可行方案，选择满足当前需求的最小方案。 |
-| 🏗️ [`references/implementation.md`](references/implementation.md) | 未映射的契约/不变量；安全/权限、不可逆副作用、持久化/迁移、并发/事务、兼容性等实质风险边界；或高风险改动的证据计划仍未解决 | 有界修改图、权威边界处理、最低成本伪证阶梯。 |
-| 🔍 [`references/debugging.md`](references/debugging.md) | 已观察到失败、回归或检查失败，但根因仍未诊断 | 复现 → 最早错误状态 → 单一假设 → 根因修复。 |
-| 🗺️ [`references/navigation.md`](references/navigation.md) | 必须广泛导航大型代码库 | 根据配置选择普通源码搜索或 Codebase Memory，并产出有界影响图。 |
-
----
-
-## 🤖 子代理委派与经济隔离门禁
-
-Practical Coding 通过 **Economic Isolation Gate** 防止子代理滥用：
-
-> **仅当**子代理节省的上下文或带来的并行收益**明显超过**启动与交接成本时才委派；否则由主代理完成。
-
-### Worker 契约 ([`references/delegation.md`](references/delegation.md))
-- **严格限定作用域**：Worker 仅读取 `delegation.md` + 被分配的 1 个模块。
-- **默认只读**：Decision、Navigation、Debugging，以及只负责映射/证据的 Implementation Worker 都不得修改代码。
-- **明确授权才写入**：只有被明确分配“实现”任务的 Implementation Worker 才能在限定范围内写代码，并且必须是唯一写入者。
-- **精炼证据胶囊**：只返回路径、符号、关键修改和验证结果，不返回完整对话或全文 Dump。
-
----
-
-## 🧠 可选代码图谱智能（Codebase Memory）
-
-Practical Coding 直接采用成熟的 MIT 开源项目 [`DeusData/codebase-memory-mcp`](https://github.com/DeusData/codebase-memory-mcp) 作为结构化代码智能后端。
-
-### 为什么采用单次 CLI 模式？
-相较于把 MCP 服务和工具定义常驻 System Prompt，Practical Coding 在需要时执行一次性 CLI 查询：
-
-```bash
-# 检索代码符号与调用链路
-codebase-memory-mcp cli search_graph '{"name_pattern":".*Handler.*","label":"Function"}'
-codebase-memory-mcp cli trace_call_path '{"function_name":"main","direction":"both"}'
-
-# 查询架构与索引覆盖率
-codebase-memory-mcp cli get_architecture '{}'
-codebase-memory-mcp cli check_index_coverage '{"paths":["src/core.ts"]}'
-```
-
-### CLI 解析阶梯
-1. 优先使用系统 `PATH` 中已有的 `codebase-memory-mcp`。
-2. 若存在 `npx`，按需使用官方 Lazy Launcher：
-   ```bash
-   npx --yes codebase-memory-mcp@latest cli <tool> '<json-arguments>'
-   ```
-3. **优雅降级**：若上游无法启动，降级至普通源码检索，并明确报告本次未使用 Codebase Memory。
-
-### 证据等级
-- 🔭 **Scout**：快速正向发现，结论可为临时。
-- 🎯 **Verify（默认）**：精确片段 + `check_index_coverage`。
-- 🔬 **Auditor**：有界穷尽分析，完成必要分页并回源补查覆盖 Gap。
-
----
-
-## 🚀 快速上手与安装
-
-### 一键安装（推荐）
+### 推荐：使用 skills CLI 一键安装
 
 ```bash
 npx skills@latest add Hubujiu/practical-coding
 ```
 
-### 按平台手动安装
+---
+
+### 手动安装（按你的工具选择）
 
 #### 🟣 Claude Code
 ```bash
@@ -238,26 +207,29 @@ git clone https://github.com/Hubujiu/practical-coding.git ~/.claude/skills/pract
 
 #### 🔵 Cursor / Codex / Copilot CLI / Gemini CLI / Antigravity / Goose
 
-**macOS 与 Linux：**
+**macOS / Linux:**
 ```bash
 git clone https://github.com/Hubujiu/practical-coding.git ~/.agents/skills/practical-coding
 ```
 
-**Windows（PowerShell 7）：**
+**Windows (PowerShell 7):**
 ```powershell
 git clone https://github.com/Hubujiu/practical-coding.git "$env:USERPROFILE\.agents\skills\practical-coding"
 ```
 
-#### 📁 项目级安装
+#### 📁 仅为单个项目安装
+如果你只想在某个特定的代码仓库中启用：
 ```bash
 git clone https://github.com/Hubujiu/practical-coding.git .github/skills/practical-coding
 ```
 
 ---
 
-## ⚙️ 项目级配置
+## ⚙️ 项目配置
 
-项目配置只负责可选能力，不承担路由模式状态。启用 Codebase Memory：
+默认情况下，Practical Coding **开箱即用，无需任何配置文件**。
+
+如果你想为大型代码库开启 **Codebase Memory（AST / LSP 代码图谱）**，可以在项目根目录新建 `.practical-coding.yaml`：
 
 ```yaml
 version: 1
@@ -265,60 +237,42 @@ codebase_memory:
   enabled: true
 ```
 
-- `enabled: false`（或文件不存在）：使用普通源码检索。
-- `enabled: true`：大型结构导航时允许按需调用上游 AST/LSP 图谱。
+- `enabled: false`（或不创建此文件）：使用普通源码检索，极简无依赖。
+- `enabled: true`：遇到大范围代码梳理时，允许按需调用图谱智能。
 
 ---
 
-## 📂 项目结构
+## 📂 目录结构
 
 ```text
 practical-coding/
-├── SKILL.md                 # 最短路径 Core + 事件路由器
-├── AGENTS.md                # Agent 使用指南与模块索引
-├── README.md                # English documentation
-├── README_zh.md             # 简体中文说明
+├── SKILL.md                 # 核心入口：常驻 Core 与事件路由器
+├── AGENTS.md                # 统一 Agent 引导说明
+├── README.md                # 英文文档
+├── README_zh.md             # 中文文档（本文件）
 ├── CONTRIBUTING.md          # 贡献指南
-├── LICENSE                  # MIT
-├── THIRD_PARTY_NOTICES.md   # 第三方归属与许可
+├── LICENSE                  # MIT 开源协议
+├── THIRD_PARTY_NOTICES.md   # 第三方开源声明
 ├── agents/
-│   └── openai.yaml          # Agent 配置
-├── benchmarks/
+│   └── openai.yaml          # Agent 配置文件
+├── benchmarks/              # 基准测试运行工具与复现脚本
 │   ├── run.ps1
 │   ├── run_benchmarks.py
-│   ├── test_benchmarks.py
 │   └── REPRODUCING.md
-├── examples/
-│   ├── README.md
-│   └── practical-coding.yaml
-├── references/
-│   ├── decision.md          # 技术方案与架构决策
-│   ├── implementation.md    # 风险边界、修改映射与伪证阶梯
-│   ├── debugging.md         # 证据驱动根因排查
-│   ├── delegation.md        # Worker 契约与胶囊汇报
-│   └── navigation.md        # 普通源码或图谱导航
-└── .github/workflows/validate.yml
+├── examples/                # 配置示例
+└── references/              # 4 个按需加载的专精模块
+    ├── decision.md          # 架构与技术选型决策
+    ├── implementation.md    # 风险边界与有界实现
+    ├── debugging.md         # 证据驱动的根因调试
+    ├── delegation.md        # Worker 契约与胶囊回报
+    └── navigation.md        # 源码与图谱导航
 ```
-
----
-
-## 🧪 Luna 效果测试
-
-v2.1 发布矩阵固定使用 `gpt-5.6-luna` / `medium`、隔离工作区、固定对照 commit、确定性评分器和每格 3 次重复。不同能力分别与最相关的成熟 Skill 对照，不拼接成一个误导性的万能排行榜：
-
-- Delivery 通过 Codex adapter 复用 Ponytail 发布的 agentic 任务与 scorer。
-- Decision 通过真实续接第二轮与 Matt Pocock `grilling` 对照。
-- Debug 与显式安全任务按最终不变量和安全边界对比 Superpowers。
-- Router 与原生行为验证 Direct Path、路由选择、Skill 发现和引用按需加载。
-- Navigation 在两个真实仓库上对普通源码检索与可选图谱后端做消融。
-
-质量与安全先于成本：便宜的失败不能获胜。通过质量门后，再报告 Pareto 状态，以及基于 uncached input、output、模型时间和工具调用的加权几何效率。查看已提交的 [`v2.1 数据`](benchmarks/results/v2.1/README.md)、按照 [`复现教程`](benchmarks/REPRODUCING.md) 运行，或阅读 [`完整发布评估`](docs/evaluations/2026-08-26-practical-v21-release.md)。
 
 ---
 
 ## 🤝 参与贡献与开源协议
 
-欢迎提交 Issue 与 Pull Request。提交前请阅读 [贡献指南](CONTRIBUTING.md)。
+如果你有更好的点子，或者发现了某些 AI 依然容易“发癫”的边界 case，非常欢迎提交 PR 或 Issue！提交前请查阅 [贡献指南](CONTRIBUTING.md)。
 
 - **开源协议**：[MIT License](LICENSE) © 2026 Hubujiu
-- **第三方开源致谢**：见 [THIRD_PARTY_NOTICES.md](THIRD_PARTY_NOTICES.md) 了解 [`DeusData/codebase-memory-mcp`](https://github.com/DeusData/codebase-memory-mcp) 的版权与授权声明。
+- **致谢**：特别感谢 [`codebase-memory-mcp`](https://github.com/DeusData/codebase-memory-mcp)、[`ponytail`](https://github.com/DietrichGebert/ponytail) 与 [`superpowers`](https://github.com/obra/superpowers) 项目为社区带来的卓越启发。
