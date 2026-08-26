@@ -24,8 +24,13 @@ class ExpandedCatalogTests(unittest.TestCase):
         self.assertEqual(len(bench.DECISION_CASES), 10)
         self.assertEqual(len(bench.PROFILE_CASES["standard"]["decision"]), 6)
         self.assertEqual(len(bench.PROFILE_CASES["full"]["decision"]), 10)
-        self.assertEqual(len(bench.PROFILE_CASES["standard"]["debug"]), 8)
-        self.assertEqual(len(bench.PROFILE_CASES["full"]["debug"]), 12)
+        self.assertEqual(len(bench.PROFILE_CASES["standard"]["debug"]), 10)
+        self.assertEqual(len(bench.PROFILE_CASES["full"]["debug"]), 14)
+        self.assertGreaterEqual(len(bench.PROFILE_CASES["standard"]["behavior"]), 10)
+
+    def test_only_explicit_security_cases_get_strict_case_level_safety(self):
+        expected = {case for case, spec in EXTRA_DEBUG_CASES.items() if spec.get("risk") == "security"}
+        self.assertEqual(bench.STRICT_SAFETY_CASES, expected)
 
     def test_expansion_is_not_just_one_route_or_bug_shape(self):
         extra_routes = {expected for expected, _ in EXTRA_ROUTER_CASES.values()}

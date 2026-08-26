@@ -1,52 +1,49 @@
 ---
 name: practical-coding
-description: "Use for general coding work: implementing, modifying, or refactoring code, fixing bugs, regressions, or failed checks, choosing architectures, dependencies, APIs, or data models, reviewing changes, deciding how to verify work, and navigating large or structurally complex codebases. Also use when a task risks over-engineering, speculative abstraction, defensive bloat, unnecessary tests or documentation, or wasteful repeated exploration."
+description: "Use for implementing, fixing, refactoring, or reviewing code with the smallest correct change; routes only unresolved architecture, debugging, exploration, or risk-boundary blockers while ordinary well-specified work stays direct."
 license: MIT
 metadata:
   author: Hubujiu
-  version: "2.0"
+  version: "2.1"
 ---
 
 # Practical Coding
 
-One coding skill: a shortest-path always-on core plus independently loadable modules for engineering events that genuinely block safe direct execution. The best code is the code never written; task complexity, not a user-selected mode, determines escalation.
+One short core for every coding task, with optional modules only for unresolved blockers. Simple work does not enter a workflow.
 
-## Always-on Core
+## Core
 
-These rules apply on every path:
-
-- Read first, then be lazy. Understand the requested outcome and the code it actually touches, and turn them into a small acceptance set before editing. A familiar feature name implies only its named behavior, not every conventional extra.
-- Stop at the first rung that holds: this does not need to exist at all; something in this codebase already does it (one narrow lookup for the nearest implementation and one likely shared primitive, then stop); the standard library does it; a native platform feature covers it; an already-installed dependency solves it; it fits in one line; only then the minimum custom code that works.
-- Reuse an existing primitive through its current API. Do not copy or modify its implementation, translate its value types, or add convenience options without a pre-existing current caller that needs them, and do not create a caller merely to justify extra API or behavior.
-- Build only behavior a current requirement or caller needs: no unrequested abstractions, optional modes, generic configuration, aliases, wrappers, scaffolding "for later", or interface with one implementation.
-- Include the minimum wiring that makes the requested behavior reachable. A named component, helper, or library artifact does not need a demo, mount, registration, or new caller unless requested or required by an existing repository contract. A user-facing feature, endpoint, command, or integration is incomplete until the existing application can reach it.
-- Deletion over addition; boring over clever; fewest files; shortest working diff once the problem is understood. When a reversible, low-risk detail is unspecified, follow the repository or platform default instead of expanding the API or blocking delivery.
-- Validation, fallback, retry, documentation, or a test must trace to a current requirement, concrete boundary, observed risk, project policy, or the cheapest evidence this change needs. If a material risk boundary is involved, route it instead of growing the Core into a universal checklist.
-- For non-trivial capabilities, prefer integrating a mature maintained implementation over building a parallel one.
-- Keep unrelated code and existing user changes untouched. Mark a deliberate simplification that cuts a real corner with a one-line comment naming the ceiling and upgrade path.
-- Before claiming completion, obtain the cheapest fresh evidence sufficient for the change; prefer one existing focused check and do not grow a redundant test suite. Deliver the change first, then keep unrequested prose terse. Explanation the user explicitly asked for is not debt.
+- Read the request and the code it actually touches; define the smallest observable success before editing.
+- Stop at the first rung that works: do nothing; reuse the nearest existing primitive; use the standard library; use a native platform feature; use an installed dependency; use one line; otherwise write the minimum custom code.
+- Reuse current APIs as they are. When an artifact only specializes an existing primitive, make the thinnest adapter and inherit its contract; do not restate its styles, types, refs, events, or value semantics without a requirement.
+- Build only behavior a current requirement or caller needs. Names and common conventions are not requirements; when the request is underspecified, preserve the platform representation and nearest existing contract instead of inventing a richer domain model.
+- Add no speculative options, wrappers, aliases, configuration, scaffolding, or one-implementation interfaces.
+- Make the smallest coherent reachable change. A standalone artifact needs no demo or new caller unless requested; a user-facing feature is incomplete until the existing application can reach it.
+- Prefer deletion, boring code, repository defaults, and mature maintained implementations. Keep unrelated code and existing user changes untouched.
+- Add validation, fallback, retry, documentation, comments, or tests only for a current contract, concrete boundary, observed risk, project rule, or necessary evidence.
+- After the final edit, run the cheapest focused check once. Never repeat an unchanged check. If dependencies are absent, report that limitation instead of installing them solely to enable verification, unless installation is requested, part of the change, or needed for a high-risk claim.
+- If a check creates unrelated generated churn, inspect at most one diff, then leave and report it. Never investigate its provenance or stage, restore, or rewrite unrelated files merely to clean status output.
+- State only what fresh evidence supports; keep unrequested explanation short.
 
 ## Direct Path
 
-Direct Path is the default. When no unresolved event below blocks the next action, read no reference and dispatch no worker; apply the core and proceed. Ordinary narrow source lookup, a reversible repository/platform default, and a known coherent multi-file edit remain Direct Path. File count alone does not select Implementation. Following an already-established repository or platform default is Direct Path, not Decision.
-
-A reported symptom or named failing function is not a diagnosed cause. When a failure's earliest incorrect state is not already established by evidence, Direct Path does not apply: load `references/debugging.md` before editing.
+When the next safe action is clear, apply the Core immediately: read no reference and dispatch no worker. A narrow lookup, reversible default, established project pattern, or known coherent multi-file edit remains Direct. File count and task nouns never select a module. A symptom or named failing function is not a cause; without prior evidence, read `references/debugging.md` before inspecting or editing.
 
 ## Event Router
 
-Otherwise load only the module for the unresolved event that blocks the next safe action. Resolve it, then route again; task nouns and file counts do not select modules.
+Route only when a present unresolved event blocks the next safe action. If the request or repository already settles it, it is an input, not an event. Use this first-match ladder and stop at the first match:
 
-| Unresolved event | Read |
-|---|---|
-| a material choice about architecture, dependencies, APIs, data models, compatibility, or multiple plausible implementations remains unresolved | `references/decision.md` |
-| understanding the task requires broad navigation of a large or structurally complex codebase | `references/exploration.md`, or `references/codebase-memory.md` only when the project explicitly enables it |
-| an observed failure, regression, or failed check still lacks a diagnosed cause | `references/debugging.md` |
-| the change must coordinate an unmapped contract or invariant, touches a material risk boundary (security/permissions, irreversible side effects, persistence/migration, concurrency/transactions, compatibility), or the sufficient evidence for a risky change is itself unresolved | `references/implementation.md` |
+1. An observed failure still lacks an evidenced cause: read `references/debugging.md`.
+2. An open user-owned choice about architecture, dependency, API, data model, or compatibility would change the next action: read `references/decision.md`.
+3. Safe execution requires mapping an unknown cross-boundary contract/invariant, or handling security, irreversible effects, persistence, concurrency, or compatibility risk: read `references/implementation.md`.
+4. Broad structural navigation is necessary: read `references/navigation.md`, which selects the configured backend.
 
-Do not preload modules. Missing or false configuration means Codebase Memory is off.
+Read and apply exactly that one module before routing again. Never load candidates together to compare them; route again only if resolving the first event exposes a different blocker.
 
-When events overlap, diagnose an unexplained failure first; otherwise resolve a material user-owned Decision before mapping or implementing its dependent surface. Use Exploration only when broad navigation is still needed. Use Implementation for unresolved coordination or material risk, not as a mandatory coding stage. Choosing sufficient evidence for a risky change is Implementation, not Decision.
+Do not preload modules. A named option, migration, dependency, or compatibility topic is not a Decision when its material policy is already fixed. Settled choices are inputs to Implementation or Direct execution. A reported symptom is not a diagnosed cause. Known coordinated edits are Direct; Implementation is not a mandatory stage.
+
+Navigation needed to execute a risky change stays inside Implementation; use Navigation when the structural map itself is the current outcome or independently blocks another event.
 
 ## Isolation Gate
 
-Prefer one isolated worker when the context it avoids, or the parallel work it unblocks, clearly exceeds startup and handoff cost. Use multiple workers only for genuinely independent, non-overlapping scopes when parallelism clearly outweighs coordination cost. Each worker reads `references/delegation.md` plus its one assigned module; the root retains user intent, repository state, integration, and the final completion claim, and does not duplicate worker scope. No overlapping writers or worker pipelines.
+Direct work and a single routed event in a small context use no worker. The root never reads `references/delegation.md`; when isolation clearly saves more context than its handoff costs, dispatch one worker and tell that worker to read it plus the one assigned module. Never use overlapping writers or worker pipelines.

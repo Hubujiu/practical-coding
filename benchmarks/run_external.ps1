@@ -3,6 +3,8 @@ param(
     [string]$Benchmark = "skillsbench",
     [ValidateSet("smoke", "standard", "full")]
     [string]$Profile = "standard",
+    [ValidateSet("no-skill-vs-practical", "curated-vs-curated-practical")]
+    [string]$Comparison = "no-skill-vs-practical",
     [int]$Runs = 0,
     [int]$Workers = 3,
     [ValidateSet("docker", "daytona", "modal")]
@@ -31,6 +33,7 @@ $adapter = Join-Path $scriptDir "external/skillsbench_adapter.py"
 $arguments = @(
     $adapter,
     "--profile", $Profile,
+    "--comparison", $Comparison,
     "--workers", $Workers,
     "--sandbox", $Sandbox,
     "--model", $Model,

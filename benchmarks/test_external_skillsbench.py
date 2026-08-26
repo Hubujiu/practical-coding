@@ -37,8 +37,39 @@ class SkillsBenchAdapterTests(unittest.TestCase):
             with self.assertRaises(ValueError):
                 adapter.discover_tasks(root, "standard", ["missing"])
 
+    def test_discovers_category_from_registry_commit_when_task_tree_is_absent(self):
+        with tempfile.TemporaryDirectory() as tmp:
+            root = Path(tmp)
+            registry = [
+                {
+                    "name": "skillsbench",
+                    "version": "1.1",
+                    "tasks": [
+                        {
+                            "name": "se-at-commit",
+                            "git_commit_id": "55bfe693",
+                            "path": "tasks/se-at-commit",
+                        }
+                    ],
+                }
+            ]
+            (root / "registry.json").write_text(json.dumps(registry), encoding="utf-8")
+            shown = adapter.subprocess.CompletedProcess(
+                args=["git", "show"],
+                returncode=0,
+                stdout="---\nmetadata:\n  category: software-engineering\n---\nTask\n",
+            )
+            with patch.object(adapter, "run_command", return_value=shown) as command:
+                self.assertEqual(
+                    adapter.discover_tasks(root, "standard"), ["se-at-commit"]
+                )
+            command.assert_called_once_with(
+                [adapter.shutil.which("git") or "git", "show", "55bfe693:tasks/se-at-commit/task.md"],
+                root,
+            )
+
     def test_bench_commands_pin_dataset_and_mount_only_custom_skill(self):
-        with patch.object(adapter, "resolve_uvx", return_value=["uvx", "--from", "benchflow==0.6.5", "bench"]):
+        with patch.object(adapter, "resolve_uvx", return_value=["uvx", "--from", "benchflow==0.6.3", "bench"]):
             baseline = adapter.bench_command(
                 jobs_dir=Path("base"),
                 tasks=["a", "b"],
@@ -58,7 +89,17 @@ class SkillsBenchAdapterTests(unittest.TestCase):
                 skill_mode="with-skill",
                 skills_root=Path("skills"),
             )
-        self.assertIn("benchflow==0.6.5", baseline)
+            curated = adapter.bench_command(
+                jobs_dir=Path("curated"),
+                tasks=["a", "b"],
+                sandbox="docker",
+                workers=2,
+                model="gpt-5.6-luna",
+                reasoning="medium",
+                skill_mode="with-skill",
+                skills_root=None,
+            )
+        self.assertIn("benchflow==0.6.3", baseline)
         self.assertIn("skillsbench@1.1", baseline)
         self.assertIn("codex-acp", baseline)
         self.assertEqual(baseline.count("--include"), 2)
@@ -67,6 +108,14 @@ class SkillsBenchAdapterTests(unittest.TestCase):
         self.assertIn("--skills-dir", trained)
         self.assertIn("skills", trained)
         self.assertIn("with-skill", trained)
+        self.assertIn("with-skill", curated)
+        self.assertNotIn("--skills-dir", curated)
+
+    def test_curated_comparison_layout(self):
+        comparison = adapter.COMPARISONS["curated-vs-curated-practical"]
+        self.assertEqual(comparison["base_arm"], "curated")
+        self.assertEqual(comparison["trained_arm"], "curated-practical")
+        self.assertEqual(comparison["trained_skills"], "merge")
 
     def test_job_parser_supports_benchflow_reward_shapes(self):
         with tempfile.TemporaryDirectory() as tmp:
@@ -157,6 +206,47 @@ class SkillsBenchAdapterTests(unittest.TestCase):
             self.assertTrue((staged / "SKILL.md").is_file())
             self.assertTrue((staged / "references" / "debugging.md").is_file())
             self.assertFalse((staged / "README.md").exists())
+
+    def test_stages_per_task_union_of_curated_and_practical_skills(self):
+        with tempfile.TemporaryDirectory() as tmp:
+            root = Path(tmp)
+            checkout = root / "checkout"
+            curated = (
+                checkout
+                / "tasks"
+                / "sample"
+                / "environment"
+                / "skills"
+                / "curated"
+            )
+            curated.mkdir(parents=True)
+            (curated / "SKILL.md").write_text("# curated\n", encoding="utf-8")
+            for command in (
+                ["git", "init"],
+                ["git", "config", "user.email", "bench@example.invalid"],
+                ["git", "config", "user.name", "Benchmark"],
+                ["git", "add", "."],
+                ["git", "commit", "-m", "fixture"],
+            ):
+                result = adapter.run_command(command, checkout)
+                self.assertEqual(result.returncode, 0, result.stdout)
+            commit = adapter.run_command(["git", "rev-parse", "HEAD"], checkout)
+            output = root / "output"
+            output.mkdir()
+            merged = adapter.stage_merged_task_skills(
+                output,
+                checkout,
+                [
+                    {
+                        "name": "sample",
+                        "git_commit_id": commit.stdout.strip(),
+                        "path": "tasks/sample",
+                    }
+                ],
+                ["sample"],
+            )["sample"]
+            self.assertTrue((merged / "curated" / "SKILL.md").is_file())
+            self.assertTrue((merged / "practical-coding" / "SKILL.md").is_file())
 
 
 if __name__ == "__main__":

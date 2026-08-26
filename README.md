@@ -110,8 +110,7 @@ flowchart TB
     Core -->|"Unresolved Material Choice"| D["🧭 Decision Module<br/>(references/decision.md)"]
     Core -->|"Unmapped Contract or Material Risk"| I["🏗️ Implementation Module<br/>(references/implementation.md)"]
     Core -->|"Observed Bug / Cause Unknown"| G["🔍 Debugging Module<br/>(references/debugging.md)"]
-    Core -->|"Broad Codebase Navigation"| E["🗺️ Exploration Module<br/>(references/exploration.md)"]
-    E -->|"codebase_memory.enabled: true"| M["🧠 Codebase Memory (CLI Mode)<br/>(references/codebase-memory.md)"]
+    Core -->|"Broad Codebase Navigation"| E["🗺️ Navigation Module<br/>(references/navigation.md)"]
 
     subgraph IsolationGate["⚖️ Economic Isolation Gate"]
         IG{"Avoided Context & Parallelism<br/>>> Startup + Handoff Cost?"}
@@ -154,8 +153,7 @@ When a task encounters an unresolved engineering event, only the matching module
 | 🧭 [`references/decision.md`](references/decision.md) | A material choice about architecture, dependencies, APIs, or data models remains open | Evaluates $\le 3$ viable options (stdlib/native first); chooses the smallest fitting solution. |
 | 🏗️ [`references/implementation.md`](references/implementation.md) | An unmapped contract/invariant, a material risk boundary (security/permissions, irreversible side effects, persistence/migration, concurrency/transactions, compatibility), or the evidence plan for a risky change remains unresolved | Bounded change map; authoritative boundary handling; cheapest falsification ladder. |
 | 🔍 [`references/debugging.md`](references/debugging.md) | An observed failure, regression, or failed verification lacks a diagnosed cause | Evidence-first: symptom → earliest broken state → single hypothesis → root cause fix. |
-| 🗺️ [`references/exploration.md`](references/exploration.md) | Broad navigation of a large codebase is necessary with standard text/symbol tools | Bounded impact map (exact paths, symbols, edges) without full file dumps. |
-| 🧠 [`references/codebase-memory.md`](references/codebase-memory.md) | Broad structural navigation in a project with `codebase_memory.enabled: true` | AST/LSP graph intelligence via upstream CLI across Scout, Verify, and Auditor tiers. |
+| 🗺️ [`references/navigation.md`](references/navigation.md) | Broad navigation is necessary | Selects ordinary source search or the configured Codebase Memory backend and returns a bounded impact map. |
 
 ---
 
@@ -287,8 +285,7 @@ practical-coding/
 │   ├── implementation.md    # Risk boundaries, change maps & falsification ladder
 │   ├── debugging.md         # Evidence-first root-cause diagnosis
 │   ├── delegation.md        # Worker subagent protocol & capsule return
-│   ├── exploration.md       # Standard source navigation & impact maps
-│   └── codebase-memory.md   # Upstream AST/LSP graph intelligence & coverage
+│   └── navigation.md        # Source or graph-backed navigation & impact maps
 └── .github/
     └── workflows/
         └── validate.yml     # Skill validation workflow

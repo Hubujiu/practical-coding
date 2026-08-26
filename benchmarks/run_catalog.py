@@ -42,7 +42,7 @@ def catalog_aware_sha256(path: Path) -> str:
 
 def configure() -> None:
     install(bench)
-    bench.VERSION = "1.3"
+    bench.VERSION = "1.6"
     bench.sha256 = catalog_aware_sha256
 
 

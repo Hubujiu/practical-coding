@@ -47,7 +47,7 @@ def stability_rows(
         unique_repetitions = set(valid_repetitions)
         duplicate_repetitions = len(unique_repetitions) != len(valid_repetitions)
         invalid_repetitions = len(valid_repetitions) != len(repetitions)
-        infrastructure_errors = sum(bool(cell.get("error")) for cell in cells)
+        infrastructure_errors = sum(bool(cell.get("error")) or cell.get("verdict") == "indeterminate" for cell in cells)
         stable = (
             len(unique_repetitions) >= min_runs
             and not duplicate_repetitions

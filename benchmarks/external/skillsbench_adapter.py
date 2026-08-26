@@ -14,6 +14,7 @@ import shutil
 import statistics
 import subprocess
 import tempfile
+import zipfile
 from collections import defaultdict
 from pathlib import Path
 from typing import Any, Iterable
@@ -23,7 +24,7 @@ DATASET_NAME = "skillsbench"
 DATASET_VERSION = "1.1"
 SKILLSBENCH_REPO = "https://github.com/benchflow-ai/skillsbench.git"
 SKILLSBENCH_REF = "v1.1"
-BENCHFLOW_VERSION = "0.6.5"
+BENCHFLOW_VERSION = "0.6.3"
 AGENT = "codex-acp"
 MODEL = "gpt-5.6-luna"
 REASONING = "medium"
@@ -35,10 +36,69 @@ SMOKE_TASKS = (
 )
 AUTH_ENV_VARS = ("OPENAI_API_KEY", "CODEX_API_KEY", "CODEX_ACCESS_TOKEN")
 
+# Paired treatment layouts. Keys are CLI --comparison values.
+# skills: None = task curated only; "staged" = Practical only (replaces curated);
+# "merge" = task curated + Practical (materialized per task by this adapter).
+COMPARISONS: dict[str, dict[str, Any]] = {
+    "no-skill-vs-practical": {
+        "base_arm": "no-skill",
+        "trained_arm": "practical",
+        "base_label": "No Skill",
+        "trained_label": "+ Practical",
+        "base_mode": "no-skill",
+        "trained_mode": "with-skill",
+        "base_skills": None,
+        "trained_skills": "staged",
+        "treatment_blurb": (
+            "baseline is `no-skill`; trained arm mounts only `practical-coding` "
+            "as the custom Skill directory."
+        ),
+        "disclaimer": (
+            "This is a Practical-owned ablation on the immutable SkillsBench "
+            "dataset, not an official SkillsBench leaderboard submission using "
+            "each task's curated Skill."
+        ),
+        "interpretation": (
+            "A positive delta means the same Codex/Luna setup solved more of the "
+            "selected SkillsBench tasks when Practical Coding was mounted."
+        ),
+    },
+    "curated-vs-curated-practical": {
+        "base_arm": "curated",
+        "trained_arm": "curated-practical",
+        "base_label": "Curated Skills",
+        "trained_label": "Curated + Practical",
+        "base_mode": "with-skill",
+        "trained_mode": "with-skill",
+        "base_skills": None,
+        "trained_skills": "merge",
+        "treatment_blurb": (
+            "baseline mounts each task's curated SkillsBench Skill(s); trained "
+            "arm mounts the same curated Skills plus `practical-coding`."
+        ),
+        "disclaimer": (
+            "This measures whether Practical adds lift on top of SkillsBench "
+            "curated Skills under a fixed Codex/Luna harness; it is not a "
+            "substitute for the official curated-only leaderboard row."
+        ),
+        "interpretation": (
+            "A positive delta means Practical Coding improved outcomes beyond "
+            "the task's curated Skills alone."
+        ),
+    },
+}
+
 
 def run_command(
-    command: list[str], cwd: Path | None = None, timeout: float | None = None
+    command: list[str],
+    cwd: Path | None = None,
+    timeout: float | None = None,
+    env: dict[str, str] | None = None,
 ) -> subprocess.CompletedProcess[str]:
+    merged_env = None
+    if env is not None:
+        merged_env = os.environ.copy()
+        merged_env.update(env)
     return subprocess.run(
         command,
         cwd=str(cwd) if cwd else None,
@@ -48,6 +108,7 @@ def run_command(
         stdout=subprocess.PIPE,
         stderr=subprocess.STDOUT,
         timeout=timeout,
+        env=merged_env,
         check=False,
     )
 
@@ -91,6 +152,12 @@ def resolve_uvx() -> list[str]:
 
 
 def check_prerequisites(sandbox: str) -> dict[str, str]:
+    if os.name == "nt":
+        raise RuntimeError(
+            "BenchFlow's Linux-container path handling is not reliable on "
+            "native Windows. Run this external benchmark from Linux or a "
+            "normal WSL2 distribution with Docker access."
+        )
     git = shutil.which("git")
     codex = shutil.which("codex")
     if not git:
@@ -163,19 +230,22 @@ def ensure_skillsbench_checkout(cache_root: Path) -> tuple[Path, str]:
     return checkout, head.stdout.strip()
 
 
-def load_dataset_roster(checkout: Path) -> list[str]:
+def load_dataset_entries(checkout: Path) -> list[dict[str, Any]]:
     registry = json.loads((checkout / "registry.json").read_text(encoding="utf-8"))
     for entry in registry:
         if entry.get("name") == DATASET_NAME and str(entry.get("version")) == DATASET_VERSION:
-            names = [str(task["name"]) for task in entry.get("tasks", [])]
-            if not names:
+            tasks = [dict(task) for task in entry.get("tasks", [])]
+            if not tasks:
                 raise RuntimeError(f"{DATASET} has an empty registry roster")
-            return names
+            return tasks
     raise RuntimeError(f"{DATASET} is missing from SkillsBench registry.json")
 
 
-def task_category(task_md: Path) -> str | None:
-    text = task_md.read_text(encoding="utf-8", errors="replace")
+def load_dataset_roster(checkout: Path) -> list[str]:
+    return [str(task["name"]) for task in load_dataset_entries(checkout)]
+
+
+def task_category_from_text(text: str) -> str | None:
     frontmatter = text.split("---", 2)
     if len(frontmatter) < 3:
         return None
@@ -185,10 +255,71 @@ def task_category(task_md: Path) -> str | None:
     return match.group(1) if match else None
 
 
+def task_category(task_md: Path) -> str | None:
+    return task_category_from_text(
+        task_md.read_text(encoding="utf-8", errors="replace")
+    )
+
+
+def task_category_for_entry(checkout: Path, entry: dict[str, Any]) -> str | None:
+    """Read task metadata from the tree or its immutable registry commit."""
+    name = str(entry["name"])
+    task_md = checkout / "tasks" / name / "task.md"
+    if task_md.is_file():
+        return task_category(task_md)
+
+    commit = str(entry.get("git_commit_id") or "")
+    task_path = str(entry.get("path") or f"tasks/{name}").replace("\\", "/")
+    if not re.fullmatch(r"[0-9a-fA-F]{7,64}", commit):
+        raise RuntimeError(
+            f"{DATASET} task {name!r} is absent from the metadata tree and "
+            "has no valid git_commit_id"
+        )
+    object_name = f"{commit}:{task_path}/task.md"
+    git = shutil.which("git") or "git"
+    result = run_command([git, "show", object_name], checkout)
+    if result.returncode:
+        fetched = run_command(
+            [git, "fetch", "--depth", "1", "origin", commit], checkout, timeout=180
+        )
+        if fetched.returncode:
+            raise RuntimeError(
+                f"failed to fetch metadata for {DATASET} task {name!r}: "
+                f"{fetched.stdout[-1000:]}"
+            )
+        result = run_command([git, "show", object_name], checkout)
+    if result.returncode:
+        raise RuntimeError(
+            f"failed to read metadata for {DATASET} task {name!r} at "
+            f"{object_name}: {result.stdout[-1000:]}"
+        )
+    return task_category_from_text(result.stdout)
+
+
+def _ensure_task_commit(checkout: Path, entry: dict[str, Any]) -> str:
+    name = str(entry["name"])
+    commit = str(entry.get("git_commit_id") or "")
+    if not re.fullmatch(r"[0-9a-fA-F]{7,64}", commit):
+        raise RuntimeError(f"{DATASET} task {name!r} has no valid git_commit_id")
+    git = shutil.which("git") or "git"
+    present = run_command([git, "cat-file", "-e", f"{commit}^{{commit}}"], checkout)
+    if present.returncode:
+        fetched = run_command(
+            [git, "fetch", "--depth", "1", "origin", commit], checkout, timeout=180
+        )
+        if fetched.returncode:
+            raise RuntimeError(
+                f"failed to fetch content for {DATASET} task {name!r}: "
+                f"{fetched.stdout[-1000:]}"
+            )
+    return commit
+
+
 def discover_tasks(
     checkout: Path, profile: str, explicit: Iterable[str] = ()
 ) -> list[str]:
-    roster = load_dataset_roster(checkout)
+    entries = load_dataset_entries(checkout)
+    roster = [str(entry["name"]) for entry in entries]
     roster_set = set(roster)
     explicit = [item for item in explicit if item]
     if explicit:
@@ -198,10 +329,9 @@ def discover_tasks(
         return list(dict.fromkeys(explicit))
 
     software = [
-        name
-        for name in roster
-        if task_category(checkout / "tasks" / name / "task.md")
-        == "software-engineering"
+        str(entry["name"])
+        for entry in entries
+        if task_category_for_entry(checkout, entry) == "software-engineering"
     ]
     if profile == "smoke":
         preferred = [name for name in SMOKE_TASKS if name in software]
@@ -217,6 +347,11 @@ def discover_tasks(
 
 def stage_practical_skill(output: Path) -> Path:
     skills_root = output / "staged-skills"
+    copy_practical_skill(skills_root)
+    return skills_root
+
+
+def copy_practical_skill(skills_root: Path) -> None:
     destination = skills_root / "practical-coding"
     if destination.exists():
         shutil.rmtree(destination)
@@ -225,11 +360,70 @@ def stage_practical_skill(output: Path) -> Path:
     references = ROOT / "references"
     if references.is_dir():
         shutil.copytree(references, destination / "references")
-    return skills_root
+
+
+def stage_merged_task_skills(
+    output: Path,
+    checkout: Path,
+    entries: list[dict[str, Any]],
+    tasks: list[str],
+) -> dict[str, Path]:
+    """Build one exact curated-plus-Practical Skill directory per task."""
+    by_name = {str(entry["name"]): entry for entry in entries}
+    merged: dict[str, Path] = {}
+    git = shutil.which("git") or "git"
+    with tempfile.TemporaryDirectory(prefix="practical-skillsbench-") as tmp:
+        scratch = Path(tmp)
+        for name in tasks:
+            entry = by_name[name]
+            commit = _ensure_task_commit(checkout, entry)
+            task_path = str(entry.get("path") or f"tasks/{name}").replace("\\", "/")
+            path_parts = Path(task_path).parts
+            if Path(task_path).is_absolute() or ".." in path_parts:
+                raise RuntimeError(f"unsafe registry task path for {name!r}: {task_path}")
+            archive = scratch / f"{name}.zip"
+            archived = run_command(
+                [
+                    git,
+                    "archive",
+                    "--format=zip",
+                    f"--output={archive}",
+                    commit,
+                    f"{task_path}/environment/skills",
+                ],
+                checkout,
+            )
+            if archived.returncode:
+                raise RuntimeError(
+                    f"failed to archive curated Skills for {name!r}: "
+                    f"{archived.stdout[-1000:]}"
+                )
+            extracted = scratch / name
+            with zipfile.ZipFile(archive) as bundle:
+                bundle.extractall(extracted)
+            curated = extracted / Path(task_path) / "environment" / "skills"
+            if not curated.is_dir():
+                raise RuntimeError(f"{DATASET} task {name!r} has no curated Skills")
+            destination = output / "merged-skills" / name
+            destination.mkdir(parents=True, exist_ok=False)
+            copied = 0
+            for skill in sorted(curated.iterdir()):
+                if skill.is_dir():
+                    shutil.copytree(skill, destination / skill.name)
+                    copied += 1
+            if not copied:
+                raise RuntimeError(f"{DATASET} task {name!r} has no curated Skill packs")
+            if (destination / "practical-coding").exists():
+                raise RuntimeError(
+                    f"{DATASET} task {name!r} already defines a practical-coding Skill"
+                )
+            copy_practical_skill(destination)
+            merged[name] = destination
+    return merged
 
 
 def _selection_args(tasks: list[str]) -> list[str]:
-    args = ["--expected-tasks", str(len(tasks))]
+    args: list[str] = []
     for task in tasks:
         args += ["--include", task]
     return args
@@ -268,9 +462,7 @@ def bench_command(
         skill_mode,
         *_selection_args(tasks),
     ]
-    if skill_mode == "with-skill":
-        if skills_root is None:
-            raise ValueError("skills_root is required for with-skill")
+    if skill_mode == "with-skill" and skills_root is not None:
         command += ["--skills-dir", str(skills_root)]
     return command
 
@@ -402,24 +594,27 @@ def validate_oracle(
 
 
 def collect_pairs(
-    output: Path, tasks: list[str], runs: int
+    output: Path,
+    tasks: list[str],
+    runs: int,
+    *,
+    base_arm: str = "no-skill",
+    trained_arm: str = "practical",
 ) -> tuple[list[dict[str, Any]], list[dict[str, Any]]]:
     pairs: list[dict[str, Any]] = []
     gaps: list[dict[str, Any]] = []
     for repetition in range(1, runs + 1):
         rep = output / "runs" / f"r{repetition:03d}"
         base = (
-            load_job_rewards(rep / "no-skill")
-            if (rep / "no-skill").exists()
-            else {}
+            load_job_rewards(rep / base_arm) if (rep / base_arm).exists() else {}
         )
-        practical = (
-            load_job_rewards(rep / "practical")
-            if (rep / "practical").exists()
+        trained = (
+            load_job_rewards(rep / trained_arm)
+            if (rep / trained_arm).exists()
             else {}
         )
         for task in tasks:
-            left, right = base.get(task), practical.get(task)
+            left, right = base.get(task), trained.get(task)
             if (
                 not left
                 or not right
@@ -597,6 +792,9 @@ def render_report(
     summary: dict[str, Any],
     gaps: list[dict[str, Any]],
 ) -> str:
+    comparison = COMPARISONS[manifest.get("comparison", "no-skill-vs-practical")]
+    base_label = comparison["base_label"]
+    trained_label = comparison["trained_label"]
     pass_ci = summary["ci95"]["pass_rate_delta"]
     reward_ci = summary["ci95"]["mean_reward_delta"]
     reward_ci_text = (
@@ -609,16 +807,17 @@ def render_report(
         "",
         f"- Dataset: `{manifest['dataset']}`",
         f"- Profile: `{manifest['profile']}` ({len(manifest['tasks'])} tasks)",
+        f"- Comparison: `{manifest.get('comparison', 'no-skill-vs-practical')}`",
         f"- Agent/model: `{manifest['agent']}` / `{manifest['model']}` ({manifest['reasoning']})",
         f"- BenchFlow: `{manifest['benchflow_version']}`",
         f"- Runs per task/arm: `{manifest['runs']}`",
         f"- Evidence: **{'STABLE' if summary['stable'] else 'PROVISIONAL'}**",
-        "- Treatment: baseline is `no-skill`; trained arm mounts only `practical-coding` as the custom Skill directory.",
-        "- This is a Practical-owned ablation on the immutable SkillsBench dataset, not an official SkillsBench leaderboard submission using each task's curated Skill.",
+        f"- Treatment: {comparison['treatment_blurb']}",
+        f"- {comparison['disclaimer']}",
         "",
         "## Overall",
         "",
-        "| Metric | No Skill | + Practical | Delta | 95% cluster-bootstrap CI |",
+        f"| Metric | {base_label} | {trained_label} | Delta | 95% cluster-bootstrap CI |",
         "|---|---:|---:|---:|---|",
         f"| Pass rate | {_fmt_pct(summary['pass_rate_base'])} | {_fmt_pct(summary['pass_rate_practical'])} | {_fmt_signed_pp(summary['pass_rate_delta'])} | {_fmt_signed_pp(pass_ci[0])} … {_fmt_signed_pp(pass_ci[1])} |",
         f"| Mean reward | {summary['mean_reward_base']:.3f} | {summary['mean_reward_practical']:.3f} | {summary['mean_reward_delta']:+.3f} | {reward_ci_text} |",
@@ -627,7 +826,7 @@ def render_report(
         "",
         "## Per task",
         "",
-        "| Task | n | No Skill pass | Practical pass | No Skill reward | Practical reward |",
+        f"| Task | n | {base_label} pass | {trained_label} pass | {base_label} reward | {trained_label} reward |",
         "|---|---:|---:|---:|---:|---:|",
     ]
     for row in summary["by_task"]:
@@ -645,7 +844,10 @@ def render_report(
         "",
         "## Interpretation",
         "",
-        "A positive delta means the same Codex/Luna setup solved more of the selected SkillsBench tasks when Practical Coding was mounted. The confidence interval resamples task IDs as clusters and keeps repeated trials for a task together. Public benchmark exposure still means this is external evidence, not a private holdout.",
+        comparison["interpretation"]
+        + " The confidence interval resamples task IDs as clusters and keeps "
+        "repeated trials for a task together. Public benchmark exposure still "
+        "means this is external evidence, not a private holdout.",
         "",
     ]
     return "\n".join(lines)
@@ -655,6 +857,11 @@ def parse_args() -> argparse.Namespace:
     parser = argparse.ArgumentParser(description=__doc__)
     parser.add_argument(
         "--profile", choices=("smoke", "standard", "full"), default="standard"
+    )
+    parser.add_argument(
+        "--comparison",
+        choices=sorted(COMPARISONS),
+        default="no-skill-vs-practical",
     )
     parser.add_argument("--task", action="append", default=[])
     parser.add_argument("--runs", type=int, default=0)
@@ -670,6 +877,20 @@ def parse_args() -> argparse.Namespace:
     parser.add_argument("--require-stable-ranking", action="store_true")
     parser.add_argument("--self-test", action="store_true")
     return parser.parse_args()
+
+
+def _arm_skills_root(
+    kind: str | None, staged_skills: Path
+) -> Path | None:
+    if kind == "staged" or kind == "merge":
+        return staged_skills
+    return None
+
+
+def _benchflow_env(extra: dict[str, str] | None = None) -> dict[str, str]:
+    env = dict(extra or {})
+    env["PYTHONUTF8"] = "1"
+    return env
 
 
 def self_test() -> None:
@@ -735,6 +956,10 @@ def main() -> int:
     if args.require_stable_ranking and runs < 3:
         raise SystemExit("stable external ranking requires at least 3 runs")
 
+    comparison = COMPARISONS[args.comparison]
+    base_arm = comparison["base_arm"]
+    trained_arm = comparison["trained_arm"]
+
     versions = check_prerequisites(args.sandbox)
     cache_root = (
         args.cache_root
@@ -754,6 +979,12 @@ def main() -> int:
     ).resolve()
     output.mkdir(parents=True, exist_ok=False)
     staged_skills = stage_practical_skill(output)
+    entries = load_dataset_entries(checkout)
+    merged_skills = (
+        stage_merged_task_skills(output, checkout, entries, tasks)
+        if comparison["trained_skills"] == "merge"
+        else {}
+    )
 
     manifest: dict[str, Any] = {
         "schema_version": 1,
@@ -767,6 +998,9 @@ def main() -> int:
         "reasoning": args.reasoning,
         "sandbox": args.sandbox,
         "profile": args.profile,
+        "comparison": args.comparison,
+        "base_arm": base_arm,
+        "trained_arm": trained_arm,
         "runs": runs,
         "workers": args.workers,
         "tasks": tasks,
@@ -775,6 +1009,10 @@ def main() -> int:
         "environment": versions,
         "commands": [],
     }
+    if merged_skills:
+        manifest["merged_skill_strategy"] = (
+            "per-task union of immutable curated Skills and Practical Coding"
+        )
     (output / "manifest.json").write_text(
         json.dumps(manifest, indent=2) + "\n", encoding="utf-8"
     )
@@ -790,7 +1028,7 @@ def main() -> int:
             workers=args.workers,
         )
         manifest["commands"].append({"kind": "oracle", "command": command})
-        result = run_command(command, ROOT)
+        result = run_command(command, ROOT, env=_benchflow_env())
         (output / "oracle.log").write_text(result.stdout, encoding="utf-8")
         if result.returncode:
             raise RuntimeError(
@@ -805,45 +1043,75 @@ def main() -> int:
     for repetition in range(1, runs + 1):
         rep = output / "runs" / f"r{repetition:03d}"
         order = (
-            ("no-skill", "practical")
+            (base_arm, trained_arm)
             if repetition % 2
-            else ("practical", "no-skill")
+            else (trained_arm, base_arm)
         )
         for arm in order:
             jobs_dir = rep / arm
-            mode = "no-skill" if arm == "no-skill" else "with-skill"
-            command = bench_command(
-                jobs_dir=jobs_dir,
-                tasks=tasks,
-                sandbox=args.sandbox,
-                workers=args.workers,
-                model=args.model,
-                reasoning=args.reasoning,
-                skill_mode=mode,
-                skills_root=staged_skills if arm == "practical" else None,
-            )
-            manifest["commands"].append(
-                {"kind": arm, "repetition": repetition, "command": command}
-            )
-            result = run_command(command, ROOT)
+            if arm == base_arm:
+                mode = comparison["base_mode"]
+                skills_kind = comparison["base_skills"]
+            else:
+                mode = comparison["trained_mode"]
+                skills_kind = comparison["trained_skills"]
+            task_batches = [[task] for task in tasks] if skills_kind == "merge" else [tasks]
+            logs: list[str] = []
+            for task_batch in task_batches:
+                task = task_batch[0] if skills_kind == "merge" else None
+                skills_root = (
+                    merged_skills[task]
+                    if task is not None
+                    else _arm_skills_root(skills_kind, staged_skills)
+                )
+                command = bench_command(
+                    jobs_dir=jobs_dir / task if task is not None else jobs_dir,
+                    tasks=task_batch,
+                    sandbox=args.sandbox,
+                    workers=min(args.workers, len(task_batch)),
+                    model=args.model,
+                    reasoning=args.reasoning,
+                    skill_mode=mode,
+                    skills_root=skills_root,
+                )
+                command_record: dict[str, Any] = {
+                    "kind": arm,
+                    "repetition": repetition,
+                    "command": command,
+                }
+                if task is not None:
+                    command_record["task"] = task
+                manifest["commands"].append(command_record)
+                result = run_command(
+                    command, ROOT, env=_benchflow_env()
+                )
+                logs.append(result.stdout)
+                if result.returncode:
+                    manifest.setdefault("infrastructure_failures", []).append(
+                        {
+                            "arm": arm,
+                            "repetition": repetition,
+                            "task": task,
+                            "returncode": result.returncode,
+                        }
+                    )
+                    (output / "manifest.json").write_text(
+                        json.dumps(manifest, indent=2) + "\n", encoding="utf-8"
+                    )
+                    raise RuntimeError(
+                        f"SkillsBench {arm} r{repetition} failed: "
+                        f"{result.stdout[-4000:]}"
+                    )
             rep.mkdir(parents=True, exist_ok=True)
-            (rep / f"{arm}.log").write_text(result.stdout, encoding="utf-8")
-            if result.returncode:
-                manifest.setdefault("infrastructure_failures", []).append(
-                    {
-                        "arm": arm,
-                        "repetition": repetition,
-                        "returncode": result.returncode,
-                    }
-                )
-                (output / "manifest.json").write_text(
-                    json.dumps(manifest, indent=2) + "\n", encoding="utf-8"
-                )
-                raise RuntimeError(
-                    f"SkillsBench {arm} r{repetition} failed: {result.stdout[-4000:]}"
-                )
+            (rep / f"{arm}.log").write_text("\n".join(logs), encoding="utf-8")
 
-    pairs, gaps = collect_pairs(output, tasks, runs)
+    pairs, gaps = collect_pairs(
+        output,
+        tasks,
+        runs,
+        base_arm=base_arm,
+        trained_arm=trained_arm,
+    )
     summary = summarize_pairs(pairs, tasks, runs, gaps, oracle_ok)
     manifest.update(
         {

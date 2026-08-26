@@ -1,6 +1,12 @@
 """Reference fixes used only to validate the expanded deterministic debug scorers."""
 
 DEBUG_ORACLES = {
+    "security-path-containment": {
+        "storage.py": """from pathlib import Path\n\ndef storage_path(root, name):\n    root = Path(root).resolve()\n    candidate = (root / name).resolve()\n    if candidate != root and root not in candidate.parents:\n        raise ValueError(\"path escapes storage root\")\n    return candidate\n\ndef avatar_path(root, name):\n    return storage_path(root, name)\n\ndef document_path(root, name):\n    return storage_path(root, name)\n""",
+    },
+    "security-tenant-authorization": {
+        "authorization.py": """def owns_record(user, record):\n    return (\n        user[\"tenant_id\"] == record[\"tenant_id\"]\n        and user[\"id\"] == record[\"owner_id\"]\n    )\n\ndef can_view_invoice(user, invoice):\n    return owns_record(user, invoice)\n\ndef can_view_profile(user, profile):\n    return owns_record(user, profile)\n""",
+    },
     "trace-header-normalize": {
         "headers.py": """def normalize_header(name):\n    return name.strip().lower()\n\ndef get_header(headers, target):\n    wanted = normalize_header(target)\n    for name, value in headers.items():\n        if normalize_header(name) == wanted:\n            return value\n    return None\n\ndef auth_header(headers):\n    return get_header(headers, \"Authorization\")\n\ndef trace_header(headers):\n    return get_header(headers, \"X-Trace-Id\")\n""",
     },

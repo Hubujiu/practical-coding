@@ -10,6 +10,7 @@ import gc
 import hashlib
 import importlib.util
 import json
+import math
 import os
 import re
 import shutil
@@ -25,11 +26,21 @@ from pathlib import Path
 from typing import Any, Callable
 
 
-VERSION = "1.2"
+VERSION = "1.6"
 MODEL = "gpt-5.6-luna"
 REASONING = "medium"
 ROOT = Path(__file__).resolve().parents[1]
 HERE = Path(__file__).resolve().parent
+
+COMPARATORS = {"delivery": "ponytail", "decision": "grilling", "debug": "superpowers"}
+PASS_NONINFERIORITY_MARGIN = 0.03
+COST_WEIGHTS = {
+    "uncached_input_tokens_median": 0.35,
+    "output_tokens_median": 0.15,
+    "duration_seconds_median": 0.35,
+    "tool_calls_median": 0.15,
+}
+STRICT_SAFETY_CASES: set[str] = set()
 
 SOURCES = {
     "ponytail": ("https://github.com/DietrichGebert/ponytail.git", "2ed6c52c9d7e5e56942508591085fd45dea277d3"),
@@ -93,12 +104,72 @@ CUSTOM_DEBUG = {
     },
 }
 
+BEHAVIOR_CASES = {
+    "native-direct": {
+        "prompt": "Change the greeting in app.py from 'hello' to 'hello world' and run the file once.",
+        "files": {"app.py": "print('hello')\n"},
+        "module": None,
+    },
+    "native-direct-settled-choice": {
+        "prompt": "Repository policy already requires Python's sqlite3 for durable command history. Implement save_history() in cli.py using that settled choice.",
+        "files": {"cli.py": "import sqlite3\n\ndef save_history(connection, command):\n    pass\n"},
+        "module": None,
+    },
+    "native-direct-diagnosed": {
+        "prompt": "The failing test and trace already establish the cause: parse_bool() does not strip surrounding whitespace. Fix that shared function and run a focused check.",
+        "files": {"config.py": "def parse_bool(value):\n    return value.lower() in {'1', 'true', 'yes'}\n\ndef feature_enabled(env):\n    return parse_bool(env.get('FEATURE', 'false'))\n"},
+        "module": None,
+    },
+    "native-decision": {
+        "prompt": "Choose SQLite or a JSON file for durable command history in this small public CLI. Compatibility and operational constraints are not specified. Make the decision only; do not implement it yet.",
+        "files": {"cli.py": "def main():\n    pass\n"},
+        "module": "decision.md",
+    },
+    "native-debugging": {
+        "prompt": "feature_enabled() is wrong for FEATURE=' false '. Fix the reported bug without breaking other settings.",
+        "files": {"config.py": "def parse_bool(value):\n    return value.lower() in {'1', 'true', 'yes'}\n\ndef feature_enabled(env):\n    return parse_bool(env.get('FEATURE', 'false'))\n\ndef audit_enabled(env):\n    return parse_bool(env.get('AUDIT', 'false'))\n"},
+        "module": "debugging.md",
+    },
+    "native-debug-over-decision": {
+        "prompt": "The new queue client intermittently loses messages. Choose retry semantics and fix it, but no cause has been diagnosed. Start with the unresolved event that must be handled first.",
+        "files": {"queue.py": "def publish(client, message):\n    client.send(message)\n"},
+        "module": "debugging.md",
+    },
+    "native-implementation": {
+        "prompt": "Change the persisted account status field from integer codes 1/2 to public strings 'active'/'disabled' with a zero-downtime migration. Keep integer readers compatible for one release, then remove them; rollback restores integer writes. The producers and consumers are not mapped yet.",
+        "files": {"models.py": "ACCOUNT_ACTIVE = 1\nACCOUNT_DISABLED = 2\n"},
+        "module": "implementation.md",
+    },
+    "native-implementation-security": {
+        "prompt": "Add API-token rotation, but the permission boundary, durable secret storage, revocation invariant, and affected callers are not mapped. Determine the safe implementation surface before editing.",
+        "files": {"tokens.py": "def issue_token(user_id):\n    raise NotImplementedError\n"},
+        "module": "implementation.md",
+    },
+    "native-exploration": {
+        "prompt": "Map every service in this monorepo that calls the billing client and where each response is transformed. Report the complete call chain; do not change code.",
+        "files": {"services/api.py": "from shared.billing import charge\n", "services/jobs.py": "from shared.billing import charge\n", "shared/billing.py": "def charge():\n    pass\n"},
+        "module": "navigation.md",
+        "backend": "source",
+    },
+    "native-codebase-memory": {
+        "prompt": "Map the complete call chain from API handlers through billing transformations in this repository. Codebase Memory is explicitly enabled in project configuration. Report only; do not edit code.",
+        "files": {
+            ".practical-coding.yaml": "codebase_memory:\n  enabled: true\n",
+            "api.py": "from billing import charge\n",
+            "billing.py": "def charge():\n    pass\n",
+        },
+        "module": "navigation.md",
+        "backend": "graph",
+    },
+}
+
 PROFILE_CASES = {
     "smoke": {
         "delivery": ["safe-path", "reuse-slug", "tmpl-fe-datepicker"],
         "router": ["direct-artifact", "decision-auth", "debug-named-function", "verification-risk"],
         "decision": ["service-boundary"],
         "debug": ["trace-transfer"],
+        "behavior": ["native-direct", "native-debugging", "native-implementation"],
         "runs": 1,
     },
     "standard": {
@@ -106,6 +177,7 @@ PROFILE_CASES = {
         "router": list(ROUTER_CASES),
         "decision": list(DECISION_CASES),
         "debug": ["trace-transfer", "trace-amount", "trace-config-bool", "trace-url-join"],
+        "behavior": list(BEHAVIOR_CASES),
         "runs": 3,
     },
     "full": {
@@ -113,6 +185,7 @@ PROFILE_CASES = {
         "router": list(ROUTER_CASES),
         "decision": list(DECISION_CASES),
         "debug": ["trace-transfer", "trace-amount", "trace-config-bool", "trace-url-join"],
+        "behavior": list(BEHAVIOR_CASES),
         "runs": 3,
     },
 }
@@ -120,6 +193,22 @@ PROFILE_CASES = {
 
 def run_command(args: list[str], cwd: Path, timeout: float | None = None) -> subprocess.CompletedProcess[str]:
     return subprocess.run(args, cwd=str(cwd), text=True, encoding="utf-8", errors="replace", stdout=subprocess.PIPE, stderr=subprocess.PIPE, timeout=timeout, check=False)
+
+
+def snapshot_workspace(workspace: Path) -> None:
+    """Create the baseline commit used by upstream scoring, failing loudly on setup errors."""
+    git = shutil.which("git") or "git"
+    commands = [
+        [git, "init", "-q"],
+        [git, "config", "core.longpaths", "true"],
+        [git, "add", "-A"],
+        [git, "-c", "user.email=bench@local", "-c", "user.name=bench", "commit", "-q", "-m", "base", "--no-verify"],
+    ]
+    for command in commands:
+        result = run_command(command, workspace)
+        if result.returncode != 0:
+            detail = (result.stderr or result.stdout).strip()
+            raise RuntimeError(f"workspace snapshot failed ({' '.join(command[1:])}): {detail}")
 
 
 def sha256(path: Path) -> str:
@@ -218,6 +307,18 @@ def prepare_eval_home(output: Path) -> Path:
     return home
 
 
+def install_native_skill(eval_home: Path, source: Path) -> Path:
+    destination = eval_home / "skills" / "practical-coding"
+    if destination.exists():
+        shutil.rmtree(destination)
+    destination.mkdir(parents=True)
+    shutil.copy2(source / "SKILL.md", destination / "SKILL.md")
+    references = source / "references"
+    if references.is_dir():
+        shutil.copytree(references, destination / "references")
+    return destination
+
+
 def disabled_skill_config() -> str:
     candidates = [Path.home() / ".agents/skills/practical-coding/SKILL.md", Path.home() / ".codex/skills/practical-coding/SKILL.md"]
     entries = ",".join(f'{{path="{path.as_posix()}",enabled=false}}' for path in candidates if path.is_file())
@@ -280,6 +381,8 @@ def parse_transcript(path: Path) -> dict[str, Any]:
     thread_id = None
     usage = {"input_tokens": 0, "cached_input_tokens": 0, "output_tokens": 0, "reasoning_output_tokens": 0}
     tool_calls = 0
+    tool_commands: list[str] = []
+    tool_outputs: list[str] = []
     for line in path.read_text(encoding="utf-8", errors="replace").splitlines():
         try:
             event = json.loads(line)
@@ -293,16 +396,22 @@ def parse_transcript(path: Path) -> dict[str, Any]:
                 answer = item.get("text") or answer
             elif item.get("type") in {"command_execution", "mcp_tool_call", "file_change"}:
                 tool_calls += 1
+                command = item.get("command")
+                if isinstance(command, str):
+                    tool_commands.append(command)
+                output = item.get("aggregated_output")
+                if isinstance(output, str):
+                    tool_outputs.append(output)
         if event.get("type") == "turn.completed":
             for key in usage:
                 usage[key] += int((event.get("usage") or {}).get(key) or 0)
     usage["uncached_input_tokens"] = usage["input_tokens"] - usage["cached_input_tokens"]
     usage["total_tokens"] = usage["input_tokens"] + usage["output_tokens"]
-    return {"answer": answer, "thread_id": thread_id, "usage": usage, "tool_calls": tool_calls}
+    return {"answer": answer, "thread_id": thread_id, "usage": usage, "tool_calls": tool_calls, "tool_commands": tool_commands, "tool_outputs": tool_outputs}
 
 
 def skill_text(arm: str, sources: dict[str, Path], previous: Path | None, suite: str | None = None) -> str:
-    if arm == "baseline":
+    if arm in {"baseline", "practical-native", "practical-native-previous"}:
         return ""
     if arm in {"practical-current", "practical-previous"}:
         root = ROOT if arm == "practical-current" else previous
@@ -328,6 +437,55 @@ def skill_text(arm: str, sources: dict[str, Path], previous: Path | None, suite:
     raise ValueError(arm)
 
 
+def behavior_score(commands: list[str], expected_module: str | None, outputs: list[str] | None = None, expected_backend: str | None = None) -> dict[str, Any]:
+    normalized = [command.replace("\\", "/").lower() for command in commands]
+    combined_output = "\n".join(outputs or [])
+    triggered = bool(re.search(r"(?m)^# Practical Coding\s*$", combined_output)) or any("practical-coding" in command and "skill.md" in command for command in normalized)
+    module_headings = {
+        "decision.md": "Decision",
+        "debugging.md": "Debugging",
+        "implementation.md": "Implementation",
+        "navigation.md": "Navigation",
+        "delegation.md": "Isolated Module Delegation",
+    }
+    batches: list[list[str]] = []
+    if outputs:
+        for output in outputs:
+            matches = []
+            for module, heading in module_headings.items():
+                match = re.search(rf"(?m)^# {re.escape(heading)}\s*$", output)
+                if match:
+                    matches.append((match.start(), module))
+            if matches:
+                batches.append([module for _, module in sorted(matches)])
+    else:
+        for command in normalized:
+            if "practical-coding" not in command or "references" not in command:
+                continue
+            batch = [module for module in module_headings if module in command]
+            if batch:
+                batches.append(batch)
+    module_sequence = [module for batch in batches for module in batch]
+    module_reads = sorted(set(module_sequence))
+    expected_reads = [] if expected_module is None else [expected_module]
+    first_batch = batches[0] if batches else []
+    routing_ok = not batches if expected_module is None else first_batch == expected_reads
+    graph_used = any("codebase-memory-mcp" in command for command in normalized)
+    backend_ok = expected_backend is None or graph_used == (expected_backend == "graph")
+    return {
+        "triggered": triggered,
+        "expected_module": expected_module,
+        "module_reads": module_reads,
+        "module_sequence": module_sequence,
+        "first_module_batch": first_batch,
+        "routing_ok": routing_ok,
+        "expected_backend": expected_backend,
+        "graph_backend_used": graph_used,
+        "backend_ok": backend_ok,
+        "passed": triggered and routing_ok and backend_ok,
+    }
+
+
 def prepare_upstream_workspace(task_id: str, workspace: Path, ponytail: Any) -> None:
     task = ponytail.TASKS[task_id]
     if task.get("fixture"):
@@ -340,7 +498,7 @@ def prepare_upstream_workspace(task_id: str, workspace: Path, ponytail: Any) -> 
         path.parent.mkdir(parents=True, exist_ok=True)
         path.write_text(content, encoding="utf-8")
     if task.get("fixture"):
-        ponytail._git_snapshot(workspace)
+        snapshot_workspace(workspace)
 
 
 def custom_debug_score(case: str, workspace: Path) -> dict[str, Any]:
@@ -391,7 +549,7 @@ def post_build(task_id: str, workspace: Path, timeout: float) -> dict[str, Any] 
     started = time.monotonic()
     bun = shutil.which("bun")
     if not bun:
-        return {"passed": False, "duration_seconds": 0.0, "output_tail": "bun was not found"}
+        return {"passed": False, "duration_seconds": 0.0, "output_tail": "bun was not found", "infrastructure_error": "bun was not found"}
     launcher = [bun]
     if os.name == "nt" and Path(bun).suffix.lower() == ".ps1":
         launcher = [shutil.which("pwsh") or "pwsh", "-NoProfile", "-File", bun]
@@ -400,10 +558,20 @@ def post_build(task_id: str, workspace: Path, timeout: float) -> dict[str, Any] 
     install = run_command([*launcher, "install", "--frozen-lockfile"], frontend, timeout)
     build = run_command([*launcher, "run", "build"], frontend, timeout) if install.returncode == 0 else None
     output = install.stdout + install.stderr + ((build.stdout + build.stderr) if build else "")
-    return {"passed": bool(build and build.returncode == 0), "duration_seconds": time.monotonic() - started, "output_tail": output[-4000:]}
+    infrastructure_error = build_infrastructure_error(output)
+    return {"passed": bool(build and build.returncode == 0), "duration_seconds": time.monotonic() - started, "output_tail": output[-4000:], "infrastructure_error": infrastructure_error}
 
 
-def run_cell(spec: tuple[str, str, str, int], args: argparse.Namespace, sources: dict[str, Path], previous: Path | None, ponytail: Any, eval_home: Path, output: Path) -> dict[str, Any]:
+def build_infrastructure_error(output: str) -> str | None:
+    lower = output.lower()
+    if "out of memory" in lower or "memory allocation of" in lower or "allocation failed - process out of memory" in lower:
+        return "frontend build exhausted memory"
+    if "bun was not found" in lower:
+        return "bun was not found"
+    return None
+
+
+def run_cell(spec: tuple[str, str, str, int], args: argparse.Namespace, sources: dict[str, Path], previous: Path | None, ponytail: Any, eval_homes: dict[str, Path], output: Path) -> dict[str, Any]:
     suite, case, arm, repetition = spec
     cell = output / "cells" / suite / case / arm / f"r{repetition:03d}"
     cell.mkdir(parents=True, exist_ok=False)
@@ -416,10 +584,18 @@ def run_cell(spec: tuple[str, str, str, int], args: argparse.Namespace, sources:
         custom = CUSTOM_DEBUG[case]
         for name, content in custom["files"].items():
             (workspace / name).write_text(content, encoding="utf-8")
-        ponytail._git_snapshot(workspace)
+        snapshot_workspace(workspace)
         request = custom["prompt"]
     elif suite == "router":
         request = ROUTER_CASES[case][1]
+    elif suite == "behavior":
+        behavior = BEHAVIOR_CASES[case]
+        for name, content in behavior["files"].items():
+            path = workspace / name
+            path.parent.mkdir(parents=True, exist_ok=True)
+            path.write_text(content, encoding="utf-8")
+        snapshot_workspace(workspace)
+        request = behavior["prompt"]
     else:
         request = DECISION_CASES[case]["prompt"]
 
@@ -428,10 +604,18 @@ def run_cell(spec: tuple[str, str, str, int], args: argparse.Namespace, sources:
         prompt = "Classify the unresolved event. Return exactly one token: DIRECT, DECISION, DEBUGGING, IMPLEMENTATION, or EXPLORATION. Do not use tools or solve it.\n\nRequest: " + request + "\n\n" + loaded
     elif suite == "decision":
         prompt = request + "\n\nReturn only the first decision round, then wait. Do not use tools or implement.\n" + loaded
-    else:
+    elif suite in {"delivery", "debug"}:
         prompt = request + "\n\nImplement the requested change in the current workspace. Do not start long-lived services.\n" + loaded
+    else:
+        prompt = request + "\n\nHandle this request in the current workspace. Do not start long-lived services.\n" + loaded
     (cell / "prompt.txt").write_text(prompt, encoding="utf-8")
     env = os.environ.copy()
+    if arm == "practical-native":
+        eval_home = eval_homes["native"]
+    elif arm == "practical-native-previous":
+        eval_home = eval_homes["native-previous"]
+    else:
+        eval_home = eval_homes["default"]
     env["CODEX_HOME"] = str(eval_home)
     codex = resolve_codex(args.codex)
     first_out, first_err = cell / "round1.jsonl", cell / "round1.stderr.txt"
@@ -455,6 +639,12 @@ def run_cell(spec: tuple[str, str, str, int], args: argparse.Namespace, sources:
     usage = {key: sum(round_["usage"].get(key, 0) for round_ in rounds) for key in rounds[0]["usage"]}
     tool_calls = sum(round_["tool_calls"] for round_ in rounds)
     record: dict[str, Any] = {"suite": suite, "case": case, "arm": arm, "repetition": repetition, "exit_status": code, "timed_out": timed_out, "forced_after_completion": forced, "duration_seconds": duration, "tool_calls": tool_calls, **usage, "workspace": str(workspace), "answers": answers}
+    infrastructure_error = "timeout" if timed_out else (f"codex exit status {code}" if code and not forced else None)
+    if infrastructure_error:
+        record.update({"passed": None, "verdict": "indeterminate", "error": infrastructure_error})
+        (cell / "answer.md").write_text("\n\n--- ROUND ---\n\n".join(answers) + "\n", encoding="utf-8")
+        (cell / "result.json").write_text(json.dumps(record, ensure_ascii=False, indent=2) + "\n", encoding="utf-8")
+        return record
     if suite == "router":
         expected = ROUTER_CASES[case][0]
         actual = answers[0].upper().strip("` .\r\n\t")
@@ -466,6 +656,11 @@ def run_cell(spec: tuple[str, str, str, int], args: argparse.Namespace, sources:
         converged = second["questions"] == 0 and any(term in answers[-1].lower() for term in expected_terms)
         passed = first["questions"] > 0 and first["recommendations"] >= first["questions"] and not first["attempted_implementation"] and converged and not second["attempted_implementation"]
         record.update({"first_round": first, "second_round": second, "converged": converged, "passed": passed})
+    elif suite == "behavior":
+        commands = [command for round_ in rounds for command in round_["tool_commands"]]
+        outputs = [output for round_ in rounds for output in round_["tool_outputs"]]
+        behavior = BEHAVIOR_CASES[case]
+        record.update(behavior_score(commands, behavior["module"], outputs, behavior.get("backend")))
     else:
         if case in ponytail.TASKS:
             scored = ponytail.score_workspace(case, arm, MODEL, workspace)
@@ -473,9 +668,13 @@ def run_cell(spec: tuple[str, str, str, int], args: argparse.Namespace, sources:
             scored = custom_debug_score(case, workspace)
             scored.update(ponytail.git_diff_stats(workspace))
         build = None if args.no_builds else post_build(case, workspace, args.build_timeout)
-        passed = scored.get("correct") == 1 and scored.get("safe") == 1 and (build is None or build["passed"])
+        build_indeterminate = bool(build and build.get("infrastructure_error"))
+        passed = None if build_indeterminate else scored.get("correct") == 1 and scored.get("safe") == 1 and (build is None or build["passed"])
         record.update(scored)
         record.update({"build": build, "build_duration_seconds": build["duration_seconds"] if build else 0.0, "end_to_end_duration_seconds": duration + (build["duration_seconds"] if build else 0.0), "passed": passed})
+        if build_indeterminate:
+            record["indeterminate_reason"] = build["infrastructure_error"]
+    record["verdict"] = "indeterminate" if record.get("passed") is None else ("pass" if record["passed"] else "fail")
     (cell / "answer.md").write_text("\n\n--- ROUND ---\n\n".join(answers) + "\n", encoding="utf-8")
     (cell / "result.json").write_text(json.dumps(record, ensure_ascii=False, indent=2) + "\n", encoding="utf-8")
     return record
@@ -487,17 +686,26 @@ def aggregate(records: list[dict[str, Any]]) -> list[dict[str, Any]]:
         groups[(record["suite"], record["case"], record["arm"])].append(record)
     rows = []
     for (suite, case, arm), cells in sorted(groups.items()):
-        row: dict[str, Any] = {"suite": suite, "case": case, "arm": arm, "n": len(cells), "pass_rate": sum(bool(cell.get("passed")) for cell in cells) / len(cells)}
+        determinate = [cell for cell in cells if cell.get("verdict") != "indeterminate"]
+        row: dict[str, Any] = {
+            "suite": suite,
+            "case": case,
+            "arm": arm,
+            "n": len(cells),
+            "determinate_n": len(determinate),
+            "indeterminate_n": len(cells) - len(determinate),
+            "pass_rate": (sum(bool(cell.get("passed")) for cell in determinate) / len(determinate)) if determinate else None,
+        }
         for key in ("total_loc", "input_tokens", "cached_input_tokens", "uncached_input_tokens", "output_tokens", "reasoning_output_tokens", "total_tokens", "duration_seconds", "build_duration_seconds", "end_to_end_duration_seconds", "tool_calls"):
-            values = [float(cell[key]) for cell in cells if cell.get(key) is not None]
+            values = [float(cell[key]) for cell in determinate if cell.get(key) is not None]
             if values:
                 row[f"{key}_median"] = statistics.median(values)
                 row[f"{key}_mean"] = statistics.mean(values)
                 row[f"{key}_stdev"] = statistics.stdev(values) if len(values) > 1 else 0.0
         if suite in {"delivery", "debug"}:
-            row["correct_rate"] = sum(cell.get("correct") == 1 for cell in cells) / len(cells)
-            row["safe_rate"] = sum(cell.get("safe") == 1 for cell in cells) / len(cells)
-            builds = [cell["build"]["passed"] for cell in cells if cell.get("build") is not None]
+            row["correct_rate"] = (sum(cell.get("correct") == 1 for cell in determinate) / len(determinate)) if determinate else None
+            row["safe_rate"] = (sum(cell.get("safe") == 1 for cell in determinate) / len(determinate)) if determinate else None
+            builds = [cell["build"]["passed"] for cell in determinate if cell.get("build") is not None]
             row["build_rate"] = (sum(builds) / len(builds)) if builds else None
         rows.append(row)
     return rows
@@ -505,15 +713,16 @@ def aggregate(records: list[dict[str, Any]]) -> list[dict[str, Any]]:
 
 def comparisons(summary: list[dict[str, Any]]) -> list[dict[str, Any]]:
     by_key = {(row["suite"], row["case"], row["arm"]): row for row in summary}
-    comparators = {"delivery": "ponytail", "decision": "grilling", "debug": "superpowers"}
     rows = []
     for current in summary:
         if current["arm"] != "practical-current":
             continue
-        arms = [comparators.get(current["suite"]), "practical-previous"]
+        arms = [COMPARATORS.get(current["suite"]), "practical-previous"]
         for arm in filter(None, arms):
             other = by_key.get((current["suite"], current["case"], arm))
             if not other:
+                continue
+            if current.get("indeterminate_n", 0) or other.get("indeterminate_n", 0):
                 continue
             row = {"suite": current["suite"], "case": current["case"], "current": "practical-current", "comparator": arm}
             for key in ("pass_rate", "correct_rate", "safe_rate", "total_loc_median", "uncached_input_tokens_median", "output_tokens_median", "duration_seconds_median", "end_to_end_duration_seconds_median"):
@@ -525,6 +734,123 @@ def comparisons(summary: list[dict[str, Any]]) -> list[dict[str, Any]]:
 
 def suite_rollups(records: list[dict[str, Any]]) -> list[dict[str, Any]]:
     return aggregate([{**record, "case": "__all__"} for record in records])
+
+
+def _geometric_ratio(
+    current: dict[str, Any],
+    comparator: dict[str, Any],
+    weighted_metrics: dict[str, float],
+) -> tuple[float | None, dict[str, float]]:
+    ratios: dict[str, float] = {}
+    available: list[tuple[float, float]] = []
+    for metric, weight in weighted_metrics.items():
+        current_value = current.get(metric)
+        comparator_value = comparator.get(metric)
+        if current_value is None or comparator_value is None:
+            continue
+        current_cost = float(current_value)
+        comparator_cost = float(comparator_value)
+        if current_cost <= 0 or comparator_cost <= 0:
+            continue
+        ratio = comparator_cost / current_cost
+        ratios[metric] = ratio
+        available.append((weight, ratio))
+    if not available:
+        return None, ratios
+    weight_total = sum(weight for weight, _ in available)
+    efficiency = math.exp(sum((weight / weight_total) * math.log(ratio) for weight, ratio in available))
+    return efficiency, ratios
+
+
+def _pareto_status(current: dict[str, Any], comparator: dict[str, Any]) -> str:
+    quality_metrics = ("pass_rate", "correct_rate", "safe_rate", "build_rate")
+    cost_metrics = (*COST_WEIGHTS, "total_loc_median")
+    comparisons_: list[int] = []
+    for metric in quality_metrics:
+        if current.get(metric) is not None and comparator.get(metric) is not None:
+            delta = float(current[metric]) - float(comparator[metric])
+            comparisons_.append(1 if delta > 0 else -1 if delta < 0 else 0)
+    for metric in cost_metrics:
+        if current.get(metric) is not None and comparator.get(metric) is not None:
+            delta = float(comparator[metric]) - float(current[metric])
+            comparisons_.append(1 if delta > 0 else -1 if delta < 0 else 0)
+    if comparisons_ and all(value >= 0 for value in comparisons_) and any(value > 0 for value in comparisons_):
+        return "practical-dominates"
+    if comparisons_ and all(value <= 0 for value in comparisons_) and any(value < 0 for value in comparisons_):
+        return "comparator-dominates"
+    return "tradeoff"
+
+
+def scorecards(summary: list[dict[str, Any]], rollups: list[dict[str, Any]]) -> list[dict[str, Any]]:
+    """Quality-gated relative efficiency; never trades safety for resource savings."""
+    summary_by_key = {(row["suite"], row["case"], row["arm"]): row for row in summary}
+    rollup_by_key = {(row["suite"], row["arm"]): row for row in rollups}
+    cards: list[dict[str, Any]] = []
+    for suite, comparator_arm in COMPARATORS.items():
+        current = rollup_by_key.get((suite, "practical-current"))
+        comparator = rollup_by_key.get((suite, comparator_arm))
+        if not current or not comparator:
+            continue
+        case_names = sorted({case for row_suite, case, arm in summary_by_key if row_suite == suite and arm == "practical-current"})
+        sample_reasons: list[str] = []
+        quality_reasons: list[str] = []
+        for case in case_names:
+            current_case = summary_by_key[(suite, case, "practical-current")]
+            comparator_case = summary_by_key.get((suite, case, comparator_arm))
+            if not comparator_case:
+                sample_reasons.append(f"{case}: comparator cell missing")
+                continue
+            for arm_name, case_row in (("practical", current_case), (comparator_arm, comparator_case)):
+                if case_row.get("n", 0) < 3:
+                    sample_reasons.append(f"{case}/{arm_name}: n={case_row.get('n', 0)} < 3")
+                if case_row.get("indeterminate_n", 0):
+                    sample_reasons.append(f"{case}/{arm_name}: indeterminate={case_row['indeterminate_n']}")
+            if case in STRICT_SAFETY_CASES:
+                current_safe = current_case.get("safe_rate")
+                comparator_safe = comparator_case.get("safe_rate")
+                if current_safe is not None and comparator_safe is not None and current_safe < comparator_safe:
+                    quality_reasons.append(f"{case}: safety {current_safe:.3f} < {comparator_safe:.3f}")
+
+        current_pass = current.get("pass_rate")
+        comparator_pass = comparator.get("pass_rate")
+        if current_pass is None or comparator_pass is None:
+            quality_reasons.append("suite pass rate unavailable")
+        elif current_pass < comparator_pass - PASS_NONINFERIORITY_MARGIN:
+            quality_reasons.append(
+                f"pass rate {current_pass:.3f} is more than {PASS_NONINFERIORITY_MARGIN:.3f} below {comparator_pass:.3f}"
+            )
+        for metric in ("safe_rate", "build_rate"):
+            current_value = current.get(metric)
+            comparator_value = comparator.get(metric)
+            if current_value is not None and comparator_value is not None and current_value < comparator_value:
+                quality_reasons.append(f"{metric} {current_value:.3f} < {comparator_value:.3f}")
+
+        efficiency, cost_ratios = _geometric_ratio(current, comparator, COST_WEIGHTS)
+        quality_ratio = None
+        utility = None
+        if current_pass is not None and comparator_pass is not None:
+            quality_ratio = (float(current_pass) + 0.01) / (float(comparator_pass) + 0.01)
+            if not quality_reasons and efficiency is not None:
+                utility = (quality_ratio**2) * efficiency
+        cards.append(
+            {
+                "suite": suite,
+                "current": "practical-current",
+                "comparator": comparator_arm,
+                "sample_qualified": not sample_reasons,
+                "quality_qualified": not quality_reasons,
+                "status": "qualified" if not sample_reasons and not quality_reasons else "provisional" if not quality_reasons else "not-qualified",
+                "pareto": _pareto_status(current, comparator),
+                "pass_noninferiority_margin": PASS_NONINFERIORITY_MARGIN,
+                "quality_ratio": quality_ratio,
+                "cost_efficiency_index": efficiency,
+                "qualified_utility_index": utility,
+                "cost_ratios": cost_ratios,
+                "sample_reasons": sample_reasons,
+                "quality_reasons": quality_reasons,
+            }
+        )
+    return cards
 
 
 def rescore_run(run_dir: Path, ponytail: Any) -> None:
@@ -545,6 +871,15 @@ def rescore_run(run_dir: Path, ponytail: Any) -> None:
             converged = second["questions"] == 0 and any(term in (answers[-1].lower() if answers else "") for term in DECISION_CASES[case]["expected"])
             passed = first["questions"] > 0 and first["recommendations"] >= first["questions"] and not first["attempted_implementation"] and converged and not second["attempted_implementation"]
             record.update({"first_round": first, "second_round": second, "converged": converged, "passed": passed})
+        elif suite == "behavior":
+            commands = []
+            outputs = []
+            for transcript in sorted(Path(record["workspace"]).parent.glob("round*.jsonl")):
+                parsed = parse_transcript(transcript)
+                commands.extend(parsed["tool_commands"])
+                outputs.extend(parsed["tool_outputs"])
+            behavior = BEHAVIOR_CASES[case]
+            record.update(behavior_score(commands, behavior["module"], outputs, behavior.get("backend")))
         elif "workspace" in record:
             workspace = Path(record["workspace"])
             scored = ponytail.score_workspace(case, record["arm"], MODEL, workspace) if case in ponytail.TASKS else custom_debug_score(case, workspace)
@@ -552,45 +887,65 @@ def rescore_run(run_dir: Path, ponytail: Any) -> None:
                 scored.update(ponytail.git_diff_stats(workspace))
             record.update(scored)
             build = record.get("build")
-            record["passed"] = scored.get("correct") == 1 and scored.get("safe") == 1 and (build is None or build.get("passed"))
+            if build is not None:
+                build["infrastructure_error"] = build.get("infrastructure_error") or build_infrastructure_error(build.get("output_tail", ""))
+            if build and build.get("infrastructure_error"):
+                record["passed"] = None
+                record["indeterminate_reason"] = build["infrastructure_error"]
+            else:
+                record["passed"] = scored.get("correct") == 1 and scored.get("safe") == 1 and (build is None or build.get("passed"))
+        if record.get("error") or record.get("timed_out"):
+            record["verdict"] = "indeterminate"
+        else:
+            record["verdict"] = "indeterminate" if record.get("passed") is None else ("pass" if record["passed"] else "fail")
     summary = aggregate(records)
     deltas = comparisons(summary)
     rollups = suite_rollups(records)
     rollup_deltas = comparisons(rollups)
+    cards = scorecards(summary, rollups)
     results_path.write_text(json.dumps(records, ensure_ascii=False, indent=2) + "\n", encoding="utf-8")
     (run_dir / "summary.json").write_text(json.dumps(summary, indent=2) + "\n", encoding="utf-8")
     (run_dir / "comparisons.json").write_text(json.dumps(deltas, indent=2) + "\n", encoding="utf-8")
     (run_dir / "rollups.json").write_text(json.dumps(rollups, indent=2) + "\n", encoding="utf-8")
     (run_dir / "rollup-comparisons.json").write_text(json.dumps(rollup_deltas, indent=2) + "\n", encoding="utf-8")
+    (run_dir / "scorecards.json").write_text(json.dumps(cards, indent=2) + "\n", encoding="utf-8")
     manifest.update({"rescored_at": dt.datetime.now(dt.timezone.utc).isoformat(), "runner_version": VERSION, "runner_sha256": sha256(Path(__file__))})
     manifest_path.write_text(json.dumps(manifest, indent=2) + "\n", encoding="utf-8")
-    write_report(run_dir / "report.md", manifest, summary, deltas, float(manifest.get("suite_elapsed_seconds", 0)), rollups, rollup_deltas)
+    write_report(run_dir / "report.md", manifest, summary, deltas, float(manifest.get("suite_elapsed_seconds", 0)), rollups, rollup_deltas, cards)
     print(f"rescored {len(records)} cells in {run_dir}")
 
 
-def write_report(path: Path, manifest: dict[str, Any], summary: list[dict[str, Any]], deltas: list[dict[str, Any]], elapsed: float, rollups: list[dict[str, Any]], rollup_deltas: list[dict[str, Any]]) -> None:
-    lines = ["# Practical Coding benchmark report", "", f"- Model: `{MODEL}` / `{REASONING}`", f"- Profile: `{manifest['profile']}`", f"- Runs: `{manifest['runs']}`", f"- Suite elapsed: `{elapsed:.1f}s`", "", "## Results", "", "| Suite | Case | Arm | n | Pass | Correct | Safe | Build | LOC median | Tokens median | Uncached median | Time median |", "|---|---|---|---:|---:|---:|---:|---:|---:|---:|---:|---:|"]
+def write_report(path: Path, manifest: dict[str, Any], summary: list[dict[str, Any]], deltas: list[dict[str, Any]], elapsed: float, rollups: list[dict[str, Any]], rollup_deltas: list[dict[str, Any]], cards: list[dict[str, Any]]) -> None:
+    lines = ["# Practical Coding benchmark report", "", f"- Model: `{MODEL}` / `{REASONING}`", f"- Profile: `{manifest['profile']}`", f"- Runs: `{manifest['runs']}`", f"- Suite elapsed: `{elapsed:.1f}s`", "", "## Results", "", "| Suite | Case | Arm | n | Indeterminate | Pass | Correct | Safe | Build | LOC median | Tokens median | Uncached median | Time median |", "|---|---|---|---:|---:|---:|---:|---:|---:|---:|---:|---:|---:|"]
     for row in summary:
         def pct(value: Any) -> str:
             return "—" if value is None else f"{100 * value:.1f}%"
-        lines.append("| {suite} | {case} | {arm} | {n} | {passed} | {correct} | {safe} | {build} | {loc} | {tokens} | {uncached} | {time} |".format(
-            suite=row["suite"], case=row["case"], arm=row["arm"], n=row["n"], passed=pct(row["pass_rate"]), correct=pct(row.get("correct_rate")), safe=pct(row.get("safe_rate")), build=pct(row.get("build_rate")), loc=f"{row.get('total_loc_median', 0):.0f}" if "total_loc_median" in row else "—", tokens=f"{row.get('total_tokens_median', 0):.0f}", uncached=f"{row.get('uncached_input_tokens_median', 0):.0f}", time=f"{row.get('duration_seconds_median', 0):.1f}s"))
+        lines.append("| {suite} | {case} | {arm} | {n} | {indeterminate} | {passed} | {correct} | {safe} | {build} | {loc} | {tokens} | {uncached} | {time} |".format(
+            suite=row["suite"], case=row["case"], arm=row["arm"], n=row["n"], indeterminate=row.get("indeterminate_n", 0), passed=pct(row["pass_rate"]), correct=pct(row.get("correct_rate")), safe=pct(row.get("safe_rate")), build=pct(row.get("build_rate")), loc=f"{row.get('total_loc_median', 0):.0f}" if "total_loc_median" in row else "—", tokens=f"{row.get('total_tokens_median', 0):.0f}", uncached=f"{row.get('uncached_input_tokens_median', 0):.0f}", time=f"{row.get('duration_seconds_median', 0):.1f}s"))
     if deltas:
         lines += ["", "## Practical deltas", "", "Positive pass deltas favor Practical; negative LOC/token/time deltas mean Practical used less.", "", "| Suite | Case | Comparator | Pass pp | LOC | Uncached tokens | Output tokens | Model time |", "|---|---|---|---:|---:|---:|---:|---:|"]
         for row in deltas:
             pp = 100 * row.get("pass_rate_delta", 0)
             lines.append(f"| {row['suite']} | {row['case']} | {row['comparator']} | {pp:+.1f} | {row.get('total_loc_median_delta', 0):+.0f} | {row.get('uncached_input_tokens_median_delta', 0):+.0f} | {row.get('output_tokens_median_delta', 0):+.0f} | {row.get('duration_seconds_median_delta', 0):+.1f}s |")
     if rollups:
-        lines += ["", "## Suite rollups", "", "| Suite | Arm | Cells | Pass | Correct | Safe | Tokens median | Time median |", "|---|---|---:|---:|---:|---:|---:|---:|"]
+        lines += ["", "## Suite rollups", "", "| Suite | Arm | Cells | Indeterminate | Pass | Correct | Safe | Tokens median | Time median |", "|---|---|---:|---:|---:|---:|---:|---:|---:|"]
         for row in rollups:
             correct = "—" if row.get("correct_rate") is None else f"{100 * row['correct_rate']:.1f}%"
             safe = "—" if row.get("safe_rate") is None else f"{100 * row['safe_rate']:.1f}%"
-            lines.append(f"| {row['suite']} | {row['arm']} | {row['n']} | {100 * row['pass_rate']:.1f}% | {correct} | {safe} | {row.get('total_tokens_median', 0):.0f} | {row.get('duration_seconds_median', 0):.1f}s |")
+            passed = "—" if row.get("pass_rate") is None else f"{100 * row['pass_rate']:.1f}%"
+            lines.append(f"| {row['suite']} | {row['arm']} | {row['n']} | {row.get('indeterminate_n', 0)} | {passed} | {correct} | {safe} | {row.get('total_tokens_median', 0):.0f} | {row.get('duration_seconds_median', 0):.1f}s |")
     if rollup_deltas:
         lines += ["", "## Suite-level Practical deltas", "", "| Suite | Comparator | Pass pp | LOC | Uncached tokens | Output tokens | Model time |", "|---|---|---:|---:|---:|---:|---:|"]
         for row in rollup_deltas:
             lines.append(f"| {row['suite']} | {row['comparator']} | {100 * row.get('pass_rate_delta', 0):+.1f} | {row.get('total_loc_median_delta', 0):+.0f} | {row.get('uncached_input_tokens_median_delta', 0):+.0f} | {row.get('output_tokens_median_delta', 0):+.0f} | {row.get('duration_seconds_median_delta', 0):+.1f}s |")
-    lines += ["", "## Interpretation", "", "Correctness, safety, and build pass before LOC/tokens/time. Token totals include cached input; use uncached and output columns to interpret cost. Repeated-run standard deviations are in `summary.json`. A smoke profile is not a stable ranking.", ""]
+    if cards:
+        lines += ["", "## Quality-gated scorecards", "", "A score is emitted only after the quality gate passes. Efficiency above 1 favors Practical; the utility index squares the pass-rate ratio before applying efficiency. A qualified ranking also requires n>=3 with no indeterminate cells.", "", "| Suite | Comparator | Status | Pareto | Quality ratio | Efficiency | Qualified utility |", "|---|---|---|---|---:|---:|---:|"]
+        for card in cards:
+            quality = "—" if card["quality_ratio"] is None else f"{card['quality_ratio']:.3f}"
+            efficiency = "—" if card["cost_efficiency_index"] is None else f"{card['cost_efficiency_index']:.3f}"
+            utility = "—" if card["qualified_utility_index"] is None else f"{card['qualified_utility_index']:.3f}"
+            lines.append(f"| {card['suite']} | {card['comparator']} | {card['status']} | {card['pareto']} | {quality} | {efficiency} | {utility} |")
+    lines += ["", "## Interpretation", "", "Correctness, safety, and build pass before LOC/tokens/time. Infrastructure, timeout, and capture failures are indeterminate and excluded from pass-rate denominators. Token totals include cached input; use uncached and output columns to interpret cost. Repeated-run standard deviations are in `summary.json`. A smoke profile is not a stable ranking.", ""]
     path.write_text("\n".join(lines), encoding="utf-8")
 
 
@@ -601,6 +956,7 @@ def scorer_selftest(ponytail: Any) -> None:
             "router": set(profile["router"]) - set(ROUTER_CASES),
             "decision": set(profile["decision"]) - set(DECISION_CASES),
             "debug": set(profile["debug"]) - (set(ponytail.TASKS) | set(CUSTOM_DEBUG)),
+            "behavior": set(profile["behavior"]) - set(BEHAVIOR_CASES),
         }
         if any(missing.values()):
             raise RuntimeError(f"unknown cases in profile {profile_name}: {missing}")
@@ -640,7 +996,7 @@ def scorer_selftest(ponytail: Any) -> None:
 def parse_args() -> argparse.Namespace:
     parser = argparse.ArgumentParser(description=__doc__)
     parser.add_argument("--profile", choices=PROFILE_CASES, default="standard")
-    parser.add_argument("--suite", action="append", choices=("delivery", "router", "decision", "debug"), help="run only a suite; repeatable")
+    parser.add_argument("--suite", action="append", choices=("delivery", "router", "decision", "debug", "behavior"), help="run only a suite; repeatable")
     parser.add_argument("--case", action="append", help="run only a case id; repeatable")
     parser.add_argument("--arm", action="append", help="run only an arm; repeatable")
     parser.add_argument("--runs", type=int, default=0)
@@ -698,10 +1054,18 @@ def main() -> int:
         previous = materialize_git_skill(args.baseline_ref, output / "baseline-skill")
     if previous and not (previous / "SKILL.md").is_file():
         raise FileNotFoundError(f"baseline skill missing SKILL.md: {previous}")
-    eval_home = prepare_eval_home(output)
+    eval_homes = {
+        "default": prepare_eval_home(output / "default"),
+        "native": prepare_eval_home(output / "native"),
+    }
+    native_skill = install_native_skill(eval_homes["native"], ROOT)
+    native_previous_skill = None
+    if previous:
+        eval_homes["native-previous"] = prepare_eval_home(output / "native-previous")
+        native_previous_skill = install_native_skill(eval_homes["native-previous"], previous)
     codex_path = resolve_codex(args.codex)
     codex_version = run_command([codex_path, "--version"], ROOT)
-    manifest = {"runner_version": VERSION, "runner_sha256": sha256(Path(__file__)), "model": MODEL, "reasoning": REASONING, "profile": args.profile, "runs": runs, "workers": args.workers, "started_at": dt.datetime.now(dt.timezone.utc).isoformat(), "environment": {"platform": platform.platform(), "python": sys.version, "codex": codex_version.stdout.strip(), "codex_path": codex_path}, "skill": {"current_entrypoint_sha256": sha256(ROOT / "SKILL.md"), "current_bundle_sha256": bundle_sha256(ROOT), "previous_ref": args.baseline_ref, "previous_entrypoint_sha256": sha256(previous / "SKILL.md") if previous else None, "previous_bundle_sha256": bundle_sha256(previous) if previous else None}, "sources": {name: {"url": SOURCES[name][0], "commit": SOURCES[name][1], "path": str(sources[name])} for name in SOURCES}, "cases": profile}
+    manifest = {"runner_version": VERSION, "runner_sha256": sha256(Path(__file__)), "model": MODEL, "reasoning": REASONING, "profile": args.profile, "runs": runs, "workers": args.workers, "started_at": dt.datetime.now(dt.timezone.utc).isoformat(), "environment": {"platform": platform.platform(), "python": sys.version, "codex": codex_version.stdout.strip(), "codex_path": codex_path}, "skill": {"current_entrypoint_sha256": sha256(ROOT / "SKILL.md"), "current_bundle_sha256": bundle_sha256(ROOT), "native_install": str(native_skill), "native_previous_install": str(native_previous_skill) if native_previous_skill else None, "previous_ref": args.baseline_ref, "previous_entrypoint_sha256": sha256(previous / "SKILL.md") if previous else None, "previous_bundle_sha256": bundle_sha256(previous) if previous else None}, "sources": {name: {"url": SOURCES[name][0], "commit": SOURCES[name][1], "path": str(sources[name])} for name in SOURCES}, "cases": profile}
     (output / "manifest.json").write_text(json.dumps(manifest, indent=2) + "\n", encoding="utf-8")
     specs = []
     previous_arm = ["practical-previous"] if previous else []
@@ -722,6 +1086,11 @@ def main() -> int:
         for repetition in range(1, runs + 1):
             for arm in ["practical-current", "superpowers", *previous_arm]:
                 specs.append(("debug", case, arm, repetition))
+    for case in profile["behavior"]:
+        for repetition in range(1, runs + 1):
+            specs.append(("behavior", case, "practical-native", repetition))
+            if previous:
+                specs.append(("behavior", case, "practical-native-previous", repetition))
     if args.suite:
         specs = [spec for spec in specs if spec[0] in args.suite]
     if args.case:
@@ -741,13 +1110,13 @@ def main() -> int:
     started = time.monotonic()
     print(f"running {len(specs)} Luna cells with {args.workers} workers", flush=True)
     with concurrent.futures.ThreadPoolExecutor(max_workers=args.workers) as pool:
-        futures = {pool.submit(run_cell, spec, args, sources, previous, ponytail, eval_home, output): spec for spec in specs}
+        futures = {pool.submit(run_cell, spec, args, sources, previous, ponytail, eval_homes, output): spec for spec in specs}
         for future in concurrent.futures.as_completed(futures):
             spec = futures[future]
             try:
                 record = future.result()
             except Exception as error:
-                record = {"suite": spec[0], "case": spec[1], "arm": spec[2], "repetition": spec[3], "passed": False, "error": repr(error)}
+                record = {"suite": spec[0], "case": spec[1], "arm": spec[2], "repetition": spec[3], "passed": None, "verdict": "indeterminate", "error": repr(error)}
             with lock:
                 records.append(record)
                 records.sort(key=lambda item: (item["suite"], item["case"], item["arm"], item["repetition"]))
@@ -762,12 +1131,14 @@ def main() -> int:
     (output / "comparisons.json").write_text(json.dumps(deltas, indent=2) + "\n", encoding="utf-8")
     (output / "rollups.json").write_text(json.dumps(rollups, indent=2) + "\n", encoding="utf-8")
     (output / "rollup-comparisons.json").write_text(json.dumps(rollup_deltas, indent=2) + "\n", encoding="utf-8")
-    write_report(output / "report.md", manifest, summary, deltas, elapsed, rollups, rollup_deltas)
+    cards = scorecards(summary, rollups)
+    (output / "scorecards.json").write_text(json.dumps(cards, indent=2) + "\n", encoding="utf-8")
+    write_report(output / "report.md", manifest, summary, deltas, elapsed, rollups, rollup_deltas, cards)
     manifest.update({"completed_at": dt.datetime.now(dt.timezone.utc).isoformat(), "suite_elapsed_seconds": elapsed, "cells": len(records)})
     (output / "manifest.json").write_text(json.dumps(manifest, indent=2) + "\n", encoding="utf-8")
     print(f"wrote {output}")
-    infrastructure_failed = any(record.get("error") for record in records)
-    cells_failed = any(not record.get("passed") for record in records)
+    infrastructure_failed = any(record.get("error") or record.get("verdict") == "indeterminate" for record in records)
+    cells_failed = any(record.get("verdict") == "fail" for record in records)
     return 2 if infrastructure_failed or (args.fail_on_cell_failure and cells_failed) else 0
 
 

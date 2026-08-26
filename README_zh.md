@@ -110,8 +110,7 @@ flowchart TB
     Core -->|"存在实质技术/架构选择"| D["🧭 技术决策模块<br/>(references/decision.md)"]
     Core -->|"未映射契约或实质风险"| I["🏗️ 有界实现模块<br/>(references/implementation.md)"]
     Core -->|"已观察到失败但根因未知"| G["🔍 证据调试模块<br/>(references/debugging.md)"]
-    Core -->|"需广泛导航大型代码库"| E["🗺️ 普通源码导航<br/>(references/exploration.md)"]
-    E -->|"codebase_memory.enabled: true"| M["🧠 代码图谱智能 (CLI 模式)<br/>(references/codebase-memory.md)"]
+    Core -->|"需广泛导航大型代码库"| E["🗺️ 导航模块<br/>(references/navigation.md)"]
 
     subgraph IsolationGate["⚖️ 经济隔离门禁"]
         IG{"被避免的上下文与并行收益<br/>>> 启动与交接成本?"}
@@ -154,8 +153,7 @@ Core 的职责是成为普通编码任务值得支付的**最低固定成本**�
 | 🧭 [`references/decision.md`](references/decision.md) | 仍存在会影响实现的实质方案、架构、依赖或 API 选择 | 评估不超过 3 个可行方案，选择满足当前需求的最小方案。 |
 | 🏗️ [`references/implementation.md`](references/implementation.md) | 未映射的契约/不变量；安全/权限、不可逆副作用、持久化/迁移、并发/事务、兼容性等实质风险边界；或高风险改动的证据计划仍未解决 | 有界修改图、权威边界处理、最低成本伪证阶梯。 |
 | 🔍 [`references/debugging.md`](references/debugging.md) | 已观察到失败、回归或检查失败，但根因仍未诊断 | 复现 → 最早错误状态 → 单一假设 → 根因修复。 |
-| 🗺️ [`references/exploration.md`](references/exploration.md) | 必须广泛导航大型代码库且未启用代码图谱 | 产出有界影响图，不复制全文。 |
-| 🧠 [`references/codebase-memory.md`](references/codebase-memory.md) | 同一大型结构导航事件，且项目显式启用 `codebase_memory.enabled: true` | 通过上游 CLI 使用 AST/LSP 图谱，并校验覆盖率。 |
+| 🗺️ [`references/navigation.md`](references/navigation.md) | 必须广泛导航大型代码库 | 根据配置选择普通源码搜索或 Codebase Memory，并产出有界影响图。 |
 
 ---
 
@@ -280,8 +278,7 @@ practical-coding/
 │   ├── implementation.md    # 风险边界、修改映射与伪证阶梯
 │   ├── debugging.md         # 证据驱动根因排查
 │   ├── delegation.md        # Worker 契约与胶囊汇报
-│   ├── exploration.md       # 普通源码导航
-│   └── codebase-memory.md   # 上游 AST/LSP 图谱能力
+│   └── navigation.md        # 普通源码或图谱导航
 └── .github/workflows/validate.yml
 ```
 

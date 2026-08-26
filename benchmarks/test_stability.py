@@ -53,6 +53,17 @@ class StabilityGateTests(unittest.TestCase):
         self.assertEqual(rows[0]["infrastructure_errors"], 1)
         self.assertTrue(any("infrastructure error" in reason for reason in reasons))
 
+    def test_indeterminate_verdict_blocks_stable_ranking(self):
+        cells = [record(1), record(2), record(3)]
+        cells[1].update({"passed": None, "verdict": "indeterminate", "indeterminate_reason": "build OOM"})
+        stable, reasons, rows = gate.assess_run(
+            {"completed_at": "2026-08-24T00:00:00Z", "cells": 3},
+            cells,
+        )
+        self.assertFalse(stable)
+        self.assertEqual(rows[0]["infrastructure_errors"], 1)
+        self.assertTrue(any("infrastructure error" in reason for reason in reasons))
+
     def test_incomplete_run_is_not_stable(self):
         stable, reasons, _ = gate.assess_run(
             {"cells": 3},

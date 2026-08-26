@@ -1,7 +1,7 @@
 param(
     [ValidateSet("smoke", "standard", "full")]
     [string]$Profile = "standard",
-    [ValidateSet("delivery", "router", "decision", "debug")]
+    [ValidateSet("delivery", "router", "decision", "debug", "behavior")]
     [string[]]$Suite = @(),
     [string[]]$Case = @(),
     [string[]]$Arm = @(),

@@ -99,6 +99,22 @@ EXTRA_DECISION_CASES = {
 
 
 EXTRA_DEBUG_CASES = {
+    "security-path-containment": {
+        "prompt": "avatar_path() lets an uploaded name such as '../secrets.txt' escape the storage root. Fix the shared storage boundary, keep legitimate nested names working, and do not weaken document_path().",
+        "files": {
+            "storage.py": """from pathlib import Path\n\ndef storage_path(root, name):\n    return Path(root) / name\n\ndef avatar_path(root, name):\n    return storage_path(root, name)\n\ndef document_path(root, name):\n    return storage_path(root, name)\n""",
+        },
+        "score": "path-containment",
+        "risk": "security",
+    },
+    "security-tenant-authorization": {
+        "prompt": "can_view_invoice() authorizes a record from another tenant when owner ids collide. Fix authorization at the shared ownership boundary without breaking valid same-tenant access or can_view_profile().",
+        "files": {
+            "authorization.py": """def owns_record(user, record):\n    return user[\"id\"] == record[\"owner_id\"]\n\ndef can_view_invoice(user, invoice):\n    return owns_record(user, invoice)\n\ndef can_view_profile(user, profile):\n    return owns_record(user, profile)\n""",
+        },
+        "score": "tenant-authorization",
+        "risk": "security",
+    },
     "trace-header-normalize": {
         "prompt": "auth_header() misses Authorization when a proxy supplies header names with surrounding whitespace. Fix the bug without breaking other header lookups.",
         "files": {
@@ -159,6 +175,8 @@ EXTRA_DEBUG_CASES = {
 
 
 STANDARD_EXTRA_DEBUG = [
+    "security-path-containment",
+    "security-tenant-authorization",
     "trace-header-normalize",
     "trace-cache-tenant",
     "trace-page-window",
@@ -189,6 +207,39 @@ def score_extra_debug(case: str, workspace: Path) -> dict[str, Any]:
     spec = EXTRA_DEBUG_CASES[case]
     score = spec["score"]
     try:
+        if score == "path-containment":
+            module = _load_module(workspace, "storage.py", "debug_path_containment")
+            root = workspace / "uploads"
+
+            def contained_or_rejected(call: Any) -> bool:
+                try:
+                    value = call()
+                except Exception:
+                    return True
+                if value is None:
+                    return True
+                candidate = Path(value).resolve()
+                return candidate == root.resolve() or root.resolve() in candidate.parents
+
+            valid = module.avatar_path(root, "users/42/avatar.png")
+            correct = (
+                contained_or_rejected(lambda: module.avatar_path(root, "../secrets.txt"))
+                and Path(valid).resolve() == (root / "users/42/avatar.png").resolve()
+            )
+            safe = contained_or_rejected(lambda: module.document_path(root, "../../outside.txt"))
+            return _result(correct, safe, "shared storage boundary contains untrusted paths")
+
+        if score == "tenant-authorization":
+            module = _load_module(workspace, "authorization.py", "debug_tenant_authorization")
+            user = {"id": "42", "tenant_id": "tenant-a"}
+            own_invoice = {"owner_id": "42", "tenant_id": "tenant-a"}
+            foreign_invoice = {"owner_id": "42", "tenant_id": "tenant-b"}
+            own_profile = {"owner_id": "42", "tenant_id": "tenant-a"}
+            foreign_profile = {"owner_id": "42", "tenant_id": "tenant-b"}
+            correct = bool(module.can_view_invoice(user, own_invoice)) and not bool(module.can_view_invoice(user, foreign_invoice))
+            safe = bool(module.can_view_profile(user, own_profile)) and not bool(module.can_view_profile(user, foreign_profile))
+            return _result(correct, safe, "shared ownership boundary enforces tenant and owner")
+
         if score == "headers":
             module = _load_module(workspace, "headers.py", f"debug_{score}")
             correct = module.auth_header({" Authorization ": "Bearer abc"}) == "Bearer abc"
@@ -269,6 +320,9 @@ def install(bench: Any) -> None:
     bench.ROUTER_CASES.update(EXTRA_ROUTER_CASES)
     bench.DECISION_CASES.update(EXTRA_DECISION_CASES)
     bench.CUSTOM_DEBUG.update(EXTRA_DEBUG_CASES)
+    bench.STRICT_SAFETY_CASES.update(
+        case for case, spec in EXTRA_DEBUG_CASES.items() if spec.get("risk") == "security"
+    )
 
     original_debug_score = bench.custom_debug_score
 
