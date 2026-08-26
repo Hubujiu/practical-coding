@@ -1,0 +1,44 @@
+suite,metric,practical,comparator,comparator_value,interpretation
+delivery,cells,27,ponytail,27,three runs per case
+delivery,pass_rate,0.9629629630,ponytail,1.0000000000,ponytail leads by one build outcome
+delivery,correct_rate,1.0000000000,ponytail,1.0000000000,tie
+delivery,safe_rate,1.0000000000,ponytail,1.0000000000,tie
+delivery,build_rate,0.8888888889,ponytail,1.0000000000,ponytail leads
+delivery,loc_median,21,ponytail,11,lower is better
+delivery,uncached_input_tokens_median,17694,ponytail,20726,lower is better
+delivery,output_tokens_median,1709,ponytail,1943,lower is better
+delivery,duration_seconds_median,44.4749,ponytail,50.2936,lower is better
+delivery,tool_calls_median,6,ponytail,6,tie
+decision,cells,18,grilling,18,three runs per case
+decision,pass_rate,1.0000000000,grilling,0.9444444444,practical leads by one cell
+decision,uncached_input_tokens_median,8666.5,grilling,6178.5,lower is better
+decision,output_tokens_median,769,grilling,1012,lower is better
+decision,duration_seconds_median,20.6878,grilling,22.4838,lower is better
+debug,cells,30,superpowers,30,three runs per case
+debug,pass_rate,0.9000000000,superpowers,0.8333333333,practical leads by two cells
+debug,correct_rate,1.0000000000,superpowers,1.0000000000,tie
+debug,safe_rate,0.9000000000,superpowers,0.8333333333,practical leads
+debug,loc_median,2.5,superpowers,2.5,tie
+debug,uncached_input_tokens_median,11209,superpowers,27297,lower is better
+debug,output_tokens_median,1189.5,superpowers,3067.5,lower is better
+debug,duration_seconds_median,36.1960,superpowers,77.8998,lower is better
+debug,tool_calls_median,6,superpowers,13,lower is better
+explicit_security,cells,6,superpowers,6,twelve combined cells
+explicit_security,pass_rate,1.0000000000,superpowers,1.0000000000,tie
+explicit_security,correct_rate,1.0000000000,superpowers,1.0000000000,tie
+explicit_security,safe_rate,1.0000000000,superpowers,1.0000000000,tie
+explicit_security,uncached_input_tokens_median,12659.5,superpowers,28720,lower is better
+explicit_security,output_tokens_median,1512.5,superpowers,3687.5,lower is better
+explicit_security,duration_seconds_median,41.14,superpowers,90.39,lower is better
+explicit_security,tool_calls_median,6,superpowers,16,lower is better
+router,cells,84,,,project-owned regression corpus
+router,pass_rate,0.9523809524,,,two misses
+router,uncached_input_tokens_median,3217,,,lower is better
+router,output_tokens_median,32,,,lower is better
+router,duration_seconds_median,6.6304,,,lower is better
+native_behavior,cells,30,,,native discovery and reference loading
+native_behavior,pass_rate,0.9666666667,,,one miss
+native_behavior,uncached_input_tokens_median,15534.5,,,lower is better
+native_behavior,output_tokens_median,1667,,,lower is better
+native_behavior,duration_seconds_median,45.8397,,,lower is better
+native_behavior,tool_calls_median,7.5,,,lower is better

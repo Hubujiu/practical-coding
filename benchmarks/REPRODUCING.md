@@ -1,4 +1,4 @@
-# Reproducing the Luna benchmarks
+# Reproducing the v2.1 Luna benchmarks
 
 This document reproduces Practical Coding's Codex benchmark chain. The runner invokes `gpt-5.6-luna` directly through `codex exec`; it does not use a child agent, a hidden judge model, or the user's normal Skill installation.
 
@@ -61,21 +61,72 @@ pwsh -NoProfile -File benchmarks/run.ps1 -SelfTest
 
 `-SelfTest` makes no model calls. It runs the harness/stability/catalog unit tests, verifies every profile case ID, proves the pinned Ponytail scorers reject their bad references, proves every Practical-owned Debug seed fails, and proves each expanded Debug oracle passes its deterministic scorer.
 
-## 2. Run the standard comparison
+## 2. Reproduce the published v2.1 suites
+
+The release was intentionally split into capability-specific artifacts. This makes failures easier to diagnose and prevents a large unrelated suite from obscuring the comparison being reported.
+
+Delivery, Decision, and Debug comparator matrix (150 cells):
 
 ```powershell
 pwsh -NoProfile -File benchmarks/run.ps1 `
   -Profile standard `
+  -Suite delivery `
+  -Suite decision `
+  -Suite debug `
   -Runs 3 `
-  -Workers 3
+  -Workers 3 `
+  -RequireStableRanking
 ```
 
-The current public `standard` profile runs 222 isolated cells when no previous-version or no-Skill arm is requested:
+Router regression matrix (84 cells):
+
+```powershell
+pwsh -NoProfile -File benchmarks/run.ps1 `
+  -Profile standard `
+  -Suite router `
+  -Runs 3 `
+  -RequireStableRanking
+```
+
+Native Skill discovery and on-demand routing (30 cells):
+
+```powershell
+pwsh -NoProfile -File benchmarks/run.ps1 `
+  -Profile standard `
+  -Suite behavior `
+  -Runs 3 `
+  -RequireStableRanking
+```
+
+Focused explicit-security comparison with Superpowers (12 cells):
+
+```powershell
+pwsh -NoProfile -File benchmarks/run.ps1 `
+  -Profile standard `
+  -Suite debug `
+  -Case security-path-containment `
+  -Case security-tenant-authorization `
+  -Runs 3 `
+  -RequireStableRanking
+```
+
+Published aggregate values are committed in [`results/v2.1/summary.json`](results/v2.1/summary.json), with navigation results in [`results/v2.1/navigation.json`](results/v2.1/navigation.json). Raw transcripts and generated workspaces are deliberately not committed because they are large and can contain environment-specific paths.
+
+## 3. Run a complete profile
+
+To run all suites together:
+
+```powershell
+pwsh -NoProfile -File benchmarks/run.ps1 -Profile standard -Runs 3 -Workers 3
+```
+
+The current public `standard` profile runs 264 isolated cells when no previous-version or no-Skill arm is requested:
 
 - 9 Delivery cases × 2 arms × 3 runs = 54;
 - 28 Router cases × 1 arm × 3 runs = 84;
 - 6 Decision cases × 2 arms × 3 runs = 36;
-- 8 Debug cases × 2 arms × 3 runs = 48.
+- 10 Debug cases × 2 arms × 3 runs = 60;
+- 10 native-behavior cases × 1 arm × 3 runs = 30.
 
 For the complete public matrix:
 
@@ -83,16 +134,17 @@ For the complete public matrix:
 pwsh -NoProfile -File benchmarks/run.ps1 -Profile full -Runs 3 -Workers 3
 ```
 
-`full` runs 324 cells without a previous-version or no-Skill arm:
+`full` runs 366 cells without a previous-version or no-Skill arm:
 
 - 18 Delivery cases × 2 arms × 3 runs = 108;
 - 28 Router cases × 1 arm × 3 runs = 84;
 - 10 Decision cases × 2 arms × 3 runs = 60;
-- 12 Debug cases × 2 arms × 3 runs = 72.
+- 14 Debug cases × 2 arms × 3 runs = 84;
+- 10 native-behavior cases × 1 arm × 3 runs = 30.
 
 The `smoke` profile intentionally remains small and defaults to one repetition. It is for harness/model sanity only.
 
-## 3. Run a before/after candidate gate
+## 4. Run a before/after candidate gate
 
 While editing a dirty candidate, compare it with the checked-in version:
 
@@ -117,7 +169,7 @@ The materialized baseline Skill is copied into the run directory. Both entrypoin
 
 For a comparison that will be published as a stable ranking, add `-RequireStableRanking`. It rejects effective `n<3`, incomplete runs, infrastructure failures, and Delivery rankings without production-build evidence. For release claims, also follow the stricter current/previous/no-Skill and claim-boundary requirements in [`NEXT_VALIDATION.md`](NEXT_VALIDATION.md).
 
-## 4. Run a focused regression
+## 5. Run a focused regression
 
 Selectors are repeatable:
 
@@ -137,7 +189,43 @@ pwsh -NoProfile -File benchmarks/run.ps1 `
 
 Use `-FailOnCellFailure` only when every selected cell is expected to pass. A comparison run normally returns success when the infrastructure completed, even when it correctly exposes a behavioral failure in one arm.
 
-## 5. Inspect and rescore results
+## 6. Reproduce Navigation and external evidence
+
+Navigation is a repository-specific paired ablation. Substitute a real tracked checkout and an independently checkable answer oracle:
+
+```powershell
+python benchmarks/navigation_ablation.py `
+  --repository D:\path\to\large-project `
+  --prompt "Map the complete production call chain for the named boundary." `
+  --required "ExpectedController.java" `
+  --required "ExpectedRepository.java" `
+  --runs 3 `
+  --output benchmark-results\navigation-large-n3
+```
+
+Publish the repository commit, tracked file/byte counts, prompt, required evidence, and both cold and warm graph observations. The v2.1 results do not establish a universal file-count threshold: graph navigation lost clearly on the 496-file repository and was promising but still provisional on the 1,385-file repository.
+
+The external SkillsBench adapter is a separate evidence layer:
+
+```powershell
+# Instrument check only; no model calls.
+pwsh -NoProfile -File benchmarks/run_external.ps1 `
+  -Benchmark skillsbench `
+  -SelfTest
+
+# Stable curated-Skill versus curated-Skill-plus-Practical comparison.
+pwsh -NoProfile -File benchmarks/run_external.ps1 `
+  -Benchmark skillsbench `
+  -Comparison curated-vs-curated-practical `
+  -Profile standard `
+  -Runs 3 `
+  -Workers 3 `
+  -RequireStableRanking
+```
+
+Use Linux or WSL for the published BenchFlow path. The v2.1 native-Windows attempt was blocked by upstream path/launcher behavior, so it is not reported as a passed external result. The last completed external result is the historical v2.0 48-pair comparison in [`results/v2.1/summary.json`](results/v2.1/summary.json); its confidence intervals include zero.
+
+## 7. Inspect and rescore results
 
 Each run is stored under `benchmark-results/<timestamp>/`:
 
@@ -148,6 +236,7 @@ summary.json              per-case rates, median, mean, standard deviation
 comparisons.json          per-case Practical-minus-comparator deltas
 rollups.json              suite/arm aggregate results
 rollup-comparisons.json   suite-level deltas
+scorecards.json           quality gates, Pareto status, relative efficiency
 report.md                 human-readable report
 cells/                    prompts, JSONL transcripts, stderr, answers, workspaces
 ```
@@ -161,22 +250,20 @@ pwsh -NoProfile -File benchmarks/run.ps1 `
 
 The rescore timestamp and current runner hash are written to the manifest. Raw run directories are intentionally ignored by Git because they contain large generated workspaces and transcripts.
 
-## Published v1.11 calibration
+## Published v2.1 result summary
 
-The following table is a **historical calibration produced before the public catalog expansion in this document**. It remains the evidence for the v1.11 iteration and must not be relabeled as results on the new 28/10/12 matrix.
+The release matrix used Windows 11, Codex CLI, `gpt-5.6-luna`, reasoning `medium`, isolated workspaces, three repetitions per cell, and the pinned comparator commits above.
 
-The run used Windows 11 with Python 3.13.14, Codex CLI 0.145.0, `gpt-5.6-luna`, reasoning `medium`, and three parallel workers.
+| Suite | Practical | Comparator | Qualified interpretation |
+|---|---:|---:|---|
+| Delivery, 27 cells | 96.3% | Ponytail 100% | Quality gate failed by one build; Practical used fewer tokens/time, while Ponytail produced less code |
+| Decision, 18 cells | 100% | grilling 94.4% | Quality-qualified trade-off; Practical used more uncached input but less output/time |
+| Debug, 30 cells | 90.0% | Superpowers 83.3% | Practical dominates; relative efficiency 2.311 and diagnostic utility 2.691 |
+| Explicit security, 12 cells | 100% safe | Superpowers 100% safe | Equal observed correctness/safety; Practical relative efficiency 2.323 |
+| Router, 84 cells | 95.238% | — | Two route misses; project-owned regression evidence |
+| Native behavior, 30 cells | 96.667% | — | One behavior miss; verifies real discovery and selective reference loading |
 
-| Historical matrix | Practical v1.11 | Frozen v1.10 | Comparator | Main difference |
-|---|---:|---:|---:|---|
-| Router, 16 cases × n=3 | 48/48 | 48/48 | — | Both arms reached that harness ceiling; the new negative rules caused no regression but did not prove a gain |
-| Debug, 4 cases × n=3 | 12/12 | 12/12 | Superpowers 10/12 | Superpowers twice repaired only the named caller and missed the sibling/shared invariant |
-| Decision, 4 cases × n=3 | 12/12 | 12/12 | grilling 10/12 | Both Practical versions converged after the scripted reply; grilling reopened `api-migration` twice |
-| Delivery, 6 differentiating cases × n=1 | 5/6 | 5/6 | Ponytail 5/6 | All arms scored 6/6 correct/safe; production builds separated the pass rate and remain unstable at `n=1` |
-
-For historical Debug, suite median time was 39.1 seconds for v1.11, 44.5 seconds for v1.10, and 78.8 seconds for Superpowers; median total tokens were 80,940, 88,053, and 245,966 respectively. These secondary efficiency metrics matter only after correctness and safety. Historical Delivery total LOC at `n=1` was 376 for v1.11, 363 for v1.10, and 343 for Ponytail, so those data do **not** support a claim that v1.11 matches Ponytail's compactness.
-
-The published comparison used `-BaselineSkill docs/evaluations/snapshots/practical-v1.10`, not commit `75d5013`. See [`../docs/evaluations/2026-08-24-practical-v111-iteration.md`](../docs/evaluations/2026-08-24-practical-v111-iteration.md) for the complete historical per-case tables and acceptance decisions.
+The formulas, exact medians, limitations, and machine-readable values are in [`results/v2.1/`](results/v2.1/). Older iteration reports remain under [`../docs/evaluations/`](../docs/evaluations/) and must not be relabeled as v2.1 results.
 
 ## Reproducibility limits
 
@@ -186,4 +273,4 @@ The published comparison used `-BaselineSkill docs/evaluations/snapshots/practic
 - A successful Ponytail-derived Delivery score proves the reused deterministic contract, not equivalence with Ponytail's original Claude runtime.
 - The runner disables normal user Skills, plugins, apps, memories, and multi-agent behavior, then embeds exactly one selected Skill arm. This isolates the comparison but differs from a user's fully configured interactive session.
 - The public Practical-owned cases are visible regression tests. Do not use their saturation as proof of unseen-task generalization.
-- Do not generalize the focused v1.11 historical calibration rows into a whole-Skill ranking. Run the current standard/full matrix and an independent external or held-out suite after material prompt changes.
+- Do not combine specialist suites into a universal leaderboard. Run the current standard/full matrix and an independent external or held-out suite after material prompt changes.

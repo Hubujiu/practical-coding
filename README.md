@@ -3,7 +3,7 @@
 <p align="center">
   <a href="https://github.com/Hubujiu/practical-coding/blob/main/LICENSE"><img src="https://img.shields.io/badge/License-MIT-yellow.svg" alt="License: MIT"></a>
   <a href="https://agentskills.io"><img src="https://img.shields.io/badge/Agent_Skills-Compliant-success.svg" alt="Agent Skills Compliant"></a>
-  <img src="https://img.shields.io/badge/Version-2.0-blue.svg" alt="Version 2.0">
+  <img src="https://img.shields.io/badge/Version-2.1-blue.svg" alt="Version 2.1">
   <img src="https://img.shields.io/badge/Supports-Claude_Code_|_Cursor_|_Copilot_|_Gemini_|_Antigravity_|_Codex_|_Goose-purple.svg" alt="Compatible Agents">
   <a href="https://github.com/Hubujiu/practical-coding/pulls"><img src="https://img.shields.io/badge/PRs-welcome-brightgreen.svg" alt="PRs Welcome"></a>
 </p>
@@ -19,13 +19,33 @@
 
 ---
 
+<p align="center">
+  <strong>90.0% Debug pass vs Superpowers 83.3% · 2.31× Debug efficiency · 100% explicit security · 96.7% native routing behavior</strong><br>
+  <sub>Codex/Luna, isolated workspaces, n=3 per cell. Practical also reached 100% on Decision vs grilling 94.4%. Ponytail retains the Delivery specialist lead: 100% vs Practical 96.3%.</sub>
+</p>
+
+| Measured suite | Practical Coding | Comparator | What the result says |
+|---|---:|---:|---|
+| Debug, 30 cells | **90.0%** | Superpowers 83.3% | **2.31× relative efficiency**; less than half the median time and tool calls |
+| Explicit security, 12 cells | **100% safe** | Superpowers 100% safe | Equal observed safety; ~56% less uncached input and ~54% less time |
+| Decision, 18 cells | **100%** | grilling 94.4% | Better pass rate and lower output/time; higher uncached input |
+| Delivery, 27 cells | 96.3% | **Ponytail 100%** | Practical was cheaper; Ponytail remained leaner and passed one more build |
+
+<p align="center">
+  <a href="benchmarks/results/v2.1/README.md">Published data</a> ·
+  <a href="benchmarks/REPRODUCING.md">Reproduce</a> ·
+  <a href="docs/evaluations/2026-08-26-practical-v21-release.md">Full evaluation</a>
+</p>
+
+---
+
 ## 📑 Table of Contents
 
 - [The Problems We Solve](#-the-problems-we-solve)
 - [Inspirations & Lineage (The Synthesis of Giants)](#-inspirations--lineage-the-synthesis-of-giants)
 - [Architecture & How It Works](#-architecture--how-it-works)
 - [The Always-On Core](#-the-always-on-core)
-- [The 5 Modular Pillars](#-the-5-modular-pillars)
+- [The 4 On-Demand Modules](#-the-4-on-demand-modules)
 - [Subagent Delegation & Isolation Gate](#-subagent-delegation--isolation-gate)
 - [Optional Codebase Memory (AST & LSP Intelligence)](#-optional-codebase-memory-ast--lsp-intelligence)
 - [Quick Start & Installation](#-quick-start--installation)
@@ -122,8 +142,6 @@ flowchart TB
     I -.-> IG
     G -.-> IG
     E -.-> IG
-    M -.-> IG
-
     Worker -->|"Returns compact evidence capsule"| Done["✅ Fresh Evidence Check & Completion"]
     RootExec --> Done
     Direct --> Done
@@ -144,7 +162,7 @@ The Core is deliberately the shortest useful path for ordinary coding work, not 
 
 ---
 
-## 🧩 The 5 Modular Pillars
+## 🧩 The 4 On-Demand Modules
 
 When a task encounters an unresolved engineering event, only the matching module is loaded. **Verification is not a sixth module**: choosing sufficient evidence for a risky change is part of Implementation. Implementation is an escalation for unresolved coordination or material risk, not a mandatory stage for writing code.
 
@@ -166,7 +184,7 @@ Practical Coding prevents runaway subagent proliferation through a strict **Econ
 
 ### Worker Protocol ([`references/delegation.md`](references/delegation.md))
 - **Focused Scope**: Worker reads `delegation.md` + exactly **one** assigned module.
-- **Read-Only by Default**: Decision, Exploration, Codebase Memory, Debugging, and mapping/evidence-only Implementation workers cannot modify code.
+- **Read-Only by Default**: Decision, Navigation, Debugging, and mapping/evidence-only Implementation workers cannot modify code.
 - **Sole Writer When Authorized**: An Implementation worker may write only when explicitly assigned implementation, only within its assigned directory/files, and must be the sole writer there.
 - **Compact Evidence Capsule**: Workers return structured summaries (paths, symbols, diff summaries, test outputs), never raw transcripts or full file contents.
 
@@ -295,7 +313,15 @@ practical-coding/
 
 ## 🧪 Luna Benchmarks
 
-`benchmarks/run.ps1` invokes the fixed `gpt-5.6-luna` model in isolated sessions for Ponytail delivery tasks, event routing, multi-round grilling decisions, and Superpowers debugging comparisons. Standard and full profiles default to three runs per cell, while `-BaselineRef HEAD` adds the pre-change Git version to the same paired run. See [`benchmarks/README.md`](benchmarks/README.md) and [`benchmarks/REPRODUCING.md`](benchmarks/REPRODUCING.md) for evidence boundaries, artifacts, graders, and exact commands. The published v2.0 full `n=3` stable ranking is summarized in [`docs/evaluations/2026-08-25-practical-v20-full-stable.md`](docs/evaluations/2026-08-25-practical-v20-full-stable.md).
+The v2.1 release matrix uses a fixed `gpt-5.6-luna` / `medium` setup, isolated workspaces, pinned comparator commits, deterministic graders, and three repetitions per cell. It measures different capabilities against the relevant specialist rather than manufacturing one universal leaderboard:
+
+- Delivery reuses Ponytail's published agentic tasks and scorer through a Codex adapter.
+- Decision uses real resumed turns against Matt Pocock's `grilling` Skill.
+- Debug and explicit security compare delivered invariants against Superpowers.
+- Router and native behavior verify Direct Path, route selection, Skill discovery, and on-demand reference loading.
+- Navigation ablates ordinary source search against the optional graph backend on two real repositories.
+
+Correctness and safety gate cost: a cheap failure cannot win. Qualified comparisons then report Pareto status and a weighted geometric efficiency index over uncached input, output, model time, and tool calls. Read the committed [`v2.1 data`](benchmarks/results/v2.1/README.md), follow the exact [`reproduction guide`](benchmarks/REPRODUCING.md), or inspect the [`release evaluation`](docs/evaluations/2026-08-26-practical-v21-release.md).
 
 ---
 

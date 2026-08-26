@@ -3,7 +3,7 @@
 <p align="center">
   <a href="https://github.com/Hubujiu/practical-coding/blob/main/LICENSE"><img src="https://img.shields.io/badge/License-MIT-yellow.svg" alt="License: MIT"></a>
   <a href="https://agentskills.io"><img src="https://img.shields.io/badge/Agent_Skills-Compliant-success.svg" alt="Agent Skills 规范兼容"></a>
-  <img src="https://img.shields.io/badge/Version-2.0-blue.svg" alt="Version 2.0">
+  <img src="https://img.shields.io/badge/Version-2.1-blue.svg" alt="Version 2.1">
   <img src="https://img.shields.io/badge/Supports-Claude_Code_|_Cursor_|_Copilot_|_Gemini_|_Antigravity_|_Codex_|_Goose-purple.svg" alt="支持的 Agent 平台">
   <a href="https://github.com/Hubujiu/practical-coding/pulls"><img src="https://img.shields.io/badge/PRs-welcome-brightgreen.svg" alt="欢迎 PR"></a>
 </p>
@@ -19,13 +19,33 @@
 
 ---
 
+<p align="center">
+  <strong>Debug 通过率 90.0% vs Superpowers 83.3% · Debug 综合效率 2.31× · 显式安全任务 100% · 原生路由行为 96.7%</strong><br>
+  <sub>Codex/Luna、隔离工作区、每格 n=3。Decision 为 100%，grilling 为 94.4%。Delivery 专项仍由 Ponytail 领先：100% vs Practical 96.3%。</sub>
+</p>
+
+| 实测模块 | Practical Coding | 对照 | 结果说明 |
+|---|---:|---:|---|
+| Debug，30 格 | **90.0%** | Superpowers 83.3% | **2.31× 相对效率**；时间和工具调用中位数均不到一半 |
+| 显式安全，12 格 | **100% safe** | Superpowers 100% safe | 观测安全性相同；uncached input 约少 56%，时间约少 54% |
+| Decision，18 格 | **100%** | grilling 94.4% | 通过率、输出 Token 和时间占优；uncached input 较高 |
+| Delivery，27 格 | 96.3% | **Ponytail 100%** | Practical 成本较低；Ponytail 更精简并多通过一次构建 |
+
+<p align="center">
+  <a href="benchmarks/results/v2.1/README.md">发布数据</a> ·
+  <a href="benchmarks/REPRODUCING.md">复现教程</a> ·
+  <a href="docs/evaluations/2026-08-26-practical-v21-release.md">完整评估</a>
+</p>
+
+---
+
 ## 📑 目录
 
 - [解决什么问题](#-解决什么问题)
 - [灵感来源与技术血脉（集大成者）](#-灵感来源与技术血脉集大成者)
 - [核心架构与工作流](#-核心架构与工作流)
 - [常驻核心（Always-On Core）](#-常驻核心always-on-core)
-- [五大按需工程模块](#-五大按需工程模块)
+- [四个按需工程模块](#-四个按需工程模块)
 - [子代理委派与经济隔离门禁](#-子代理委派与经济隔离门禁)
 - [可选代码图谱智能（Codebase Memory）](#-可选代码图谱智能codebase-memory)
 - [快速上手与安装](#-快速上手与安装)
@@ -122,8 +142,6 @@ flowchart TB
     I -.-> IG
     G -.-> IG
     E -.-> IG
-    M -.-> IG
-
     Worker -->|"返回精炼证据胶囊"| Done["✅ 新鲜证据与完成"]
     RootExec --> Done
     Direct --> Done
@@ -144,7 +162,7 @@ Core 的职责是成为普通编码任务值得支付的**最低固定成本**�
 
 ---
 
-## 🧩 五大按需工程模块
+## 🧩 四个按需工程模块
 
 当任务出现未决工程事件时，只加载对应模块。**Verification 不再作为独立第六模块**：为高风险改动选择足够证据属于 Implementation。Implementation 是“未决协调 / 实质风险”的升级路径，不是所有写代码任务都要经过的阶段。
 
@@ -165,7 +183,7 @@ Practical Coding 通过 **Economic Isolation Gate** 防止子代理滥用：
 
 ### Worker 契约 ([`references/delegation.md`](references/delegation.md))
 - **严格限定作用域**：Worker 仅读取 `delegation.md` + 被分配的 1 个模块。
-- **默认只读**：Decision、Exploration、Codebase Memory、Debugging，以及只负责映射/证据的 Implementation Worker 都不得修改代码。
+- **默认只读**：Decision、Navigation、Debugging，以及只负责映射/证据的 Implementation Worker 都不得修改代码。
 - **明确授权才写入**：只有被明确分配“实现”任务的 Implementation Worker 才能在限定范围内写代码，并且必须是唯一写入者。
 - **精炼证据胶囊**：只返回路径、符号、关键修改和验证结果，不返回完整对话或全文 Dump。
 
@@ -286,7 +304,15 @@ practical-coding/
 
 ## 🧪 Luna 效果测试
 
-`benchmarks/run.ps1` 使用固定 `gpt-5.6-luna` 隔离运行 Ponytail Delivery、事件 Router、grilling 多轮 Decision 和 Superpowers Debug 对照。`standard` / `full` 默认每格重复 3 次；完整命令、固定 commit、评分器和证据边界见 [`benchmarks/README.md`](benchmarks/README.md) 与 [`benchmarks/REPRODUCING.md`](benchmarks/REPRODUCING.md)。v2.0 完整矩阵 `n=3` 稳定排名见 [`docs/evaluations/2026-08-25-practical-v20-full-stable.md`](docs/evaluations/2026-08-25-practical-v20-full-stable.md)。
+v2.1 发布矩阵固定使用 `gpt-5.6-luna` / `medium`、隔离工作区、固定对照 commit、确定性评分器和每格 3 次重复。不同能力分别与最相关的成熟 Skill 对照，不拼接成一个误导性的万能排行榜：
+
+- Delivery 通过 Codex adapter 复用 Ponytail 发布的 agentic 任务与 scorer。
+- Decision 通过真实续接第二轮与 Matt Pocock `grilling` 对照。
+- Debug 与显式安全任务按最终不变量和安全边界对比 Superpowers。
+- Router 与原生行为验证 Direct Path、路由选择、Skill 发现和引用按需加载。
+- Navigation 在两个真实仓库上对普通源码检索与可选图谱后端做消融。
+
+质量与安全先于成本：便宜的失败不能获胜。通过质量门后，再报告 Pareto 状态，以及基于 uncached input、output、模型时间和工具调用的加权几何效率。查看已提交的 [`v2.1 数据`](benchmarks/results/v2.1/README.md)、按照 [`复现教程`](benchmarks/REPRODUCING.md) 运行，或阅读 [`完整发布评估`](docs/evaluations/2026-08-26-practical-v21-release.md)。
 
 ---
 

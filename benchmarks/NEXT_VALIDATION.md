@@ -2,7 +2,7 @@
 
 This document freezes the evidence requirements for the next Practical Coding benchmark cycle **before** any new model results are inspected. Its purpose is to prevent post-hoc metric selection, public-regression overfitting, and ambiguous claims about what a benchmark proves.
 
-The current accepted Skill is Practical Coding v2.0 from `a4e8f8c1c9e230f43297b38d885dd34d00b464a7`. The published internal full-matrix result is [`docs/evaluations/2026-08-25-practical-v20-full-stable.md`](../docs/evaluations/2026-08-25-practical-v20-full-stable.md). That result is a public regression/comparator matrix, not external generalization evidence.
+The current accepted Skill is Practical Coding v2.1 from `53ee5ec5c48fc51795415986a54d9e93afa14105`. The published release result is [`docs/evaluations/2026-08-26-practical-v21-release.md`](../docs/evaluations/2026-08-26-practical-v21-release.md), with compact data under [`results/v2.1/`](results/v2.1/). That result is a public regression/comparator matrix, not external generalization evidence.
 
 ## 1. Freeze before running
 
@@ -14,7 +14,7 @@ Before any release-quality model run:
 4. If a benchmark/scorer bug is discovered, fix the instrument, invalidate the affected run, document why, and rerun the complete affected matrix. Do not selectively rescore or exclude only unfavorable cells.
 5. Preserve the candidate Skill bundle hash and benchmark runner/manifest hashes produced by the harness.
 
-Documentation-only changes that do not change `SKILL.md` or `references/` do not require rerunning the accepted internal v2.0 matrix. The next new evidence priority is the independent external run.
+Documentation-only changes that do not change `SKILL.md` or `references/` do not require rerunning the accepted internal v2.1 matrix. The next new evidence priority is the independent external run.
 
 ## 2. Required run order
 
@@ -40,12 +40,12 @@ pwsh -NoProfile -File benchmarks/run.ps1 `
   -Profile full `
   -Runs 3 `
   -Workers 3 `
-  -BaselineRef a4e8f8c1c9e230f43297b38d885dd34d00b464a7 `
+  -BaselineRef 53ee5ec5c48fc51795415986a54d9e93afa14105 `
   -IncludeBaseline `
   -RequireStableRanking
 ```
 
-For a later release, replace the baseline SHA with the immediately preceding accepted Skill revision. Do not silently keep comparing every future version against v2.0.
+For a later release, replace the baseline SHA with the immediately preceding accepted Skill revision. Do not silently keep comparing every future version against v2.1.
 
 Acceptance rules:
 
@@ -61,13 +61,14 @@ The public Router/Decision/Debug/Delivery catalog is allowed to become saturated
 
 ### Gate C — external SkillsBench software-engineering lift
 
-This is the **mandatory next evidence milestone for the current unchanged v2.0 Skill**.
+This is the **mandatory next evidence milestone for the current unchanged v2.1 Skill**.
 
-Run the complete SkillsBench v1.1 `software-engineering` roster with paired no-Skill/Practical arms and three repetitions:
+Run the complete SkillsBench v1.1 `software-engineering` roster with paired curated-Skills-only / curated-Skills-plus-Practical arms and three repetitions. Use Linux or WSL2 with Docker; the native-Windows v2.1 attempt was rejected as infrastructure-blocked before model execution.
 
 ```powershell
 pwsh -NoProfile -File benchmarks/run_external.ps1 `
   -Benchmark skillsbench `
+  -Comparison curated-vs-curated-practical `
   -Profile standard `
   -Runs 3 `
   -Workers 3 `
@@ -78,7 +79,7 @@ A stable external result requires:
 
 - SkillsBench oracle reward `1.0` for every selected task before model calls;
 - at least three repetitions;
-- exactly one healthy `no-skill` and one healthy `practical` result for every task/repetition pair;
+- exactly one healthy curated-only and one healthy curated-plus-Practical result for every task/repetition pair;
 - no missing/unhealthy pairs;
 - no post-hoc task removal because a task is unfavorable to Practical;
 - the exact dataset version, BenchFlow version, model, reasoning effort, Skill bundle hash, task roster, commands, and adapter hash preserved in artifacts.
@@ -91,7 +92,7 @@ Interpretation rule:
 - CI crossing zero: report the numerical delta, but do not claim a resolved improvement;
 - CI entirely below zero: treat as external regression and investigate before strengthening project claims.
 
-This run is a Practical-owned custom-Skill ablation on SkillsBench, **not** an official SkillsBench curated-Skill leaderboard submission.
+This run is a Practical-owned additive-Skill ablation on SkillsBench, **not** an official SkillsBench leaderboard submission.
 
 ### Gate D — cross-domain interference
 
@@ -181,7 +182,7 @@ Router exact-classification accuracy is necessary but insufficient for the proje
 
 A separate noise/interference treatment should install unrelated or competing Skills and test whether Practical still avoids unnecessary module loading. Do not claim resistance to Skill-context interference until that treatment exists.
 
-These are **future benchmark requirements**, not metrics available in the current v2.0 report.
+These are **future benchmark requirements**, not metrics available in the current v2.1 report.
 
 ## 7. Failure handling discipline
 
@@ -196,7 +197,7 @@ When a failure appears:
 5. Prefer a general invariant only after the same mechanism appears in an independent task or held-out analogue.
 6. After a Skill change, rerun the complete affected gate against the previous accepted Skill; do not publish only the repaired case.
 
-For the current v2.0 Debug failures (`trace-ttl-zero`, occasional config-bool/header-normalize misses), the next useful evidence is an independent shared-boundary analogue, not wording that explicitly names TTL, booleans, or headers.
+For any current public Debug failure, the next useful evidence is an independent shared-boundary analogue, not wording that explicitly names the failed fixture's domain nouns.
 
 ## 8. Artifact retention and publication
 
@@ -231,7 +232,7 @@ Never collapse Delivery vs Ponytail, Decision vs grilling, and Debug vs Superpow
 
 ## 10. Immediate next action
 
-Because the current documentation changes do not alter the accepted v2.0 Skill bundle, **do not tune the Skill against the existing 324 public cells again before obtaining new evidence**.
+Because the current documentation changes do not alter the accepted v2.1 Skill bundle, **do not tune the Skill against the existing public cells again before obtaining new evidence**.
 
 Run in this order:
 

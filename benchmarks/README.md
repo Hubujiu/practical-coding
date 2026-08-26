@@ -2,7 +2,7 @@
 
 This chain runs isolated Codex sessions directly against `gpt-5.6-luna`, preserves every prompt/transcript/workspace, applies mechanical graders, and writes JSON plus Markdown summaries. It follows the mature evaluation shape used by Agent Skills and Ponytail: realistic cases, fixed sources, clean sessions, repeated paired arms, deterministic assertions where possible, tokens/time, and raw evidence.
 
-For prerequisites, pinned revisions, exact reproduction commands, evidence boundaries, and the published v1.11 calibration results, see [`REPRODUCING.md`](REPRODUCING.md). For the external benchmark landscape and the public-regression/external/held-out evidence model, see [`../docs/evaluations/2026-08-24-benchmark-landscape.md`](../docs/evaluations/2026-08-24-benchmark-landscape.md). The executable external SkillsBench workflow is documented in [`external/README.md`](external/README.md).
+For prerequisites, pinned revisions, exact reproduction commands, evidence boundaries, and the published v2.1 results, see [`REPRODUCING.md`](REPRODUCING.md). The compact machine-readable release data live in [`results/v2.1/`](results/v2.1/). For the external benchmark landscape and the public-regression/external/held-out evidence model, see [`../docs/evaluations/2026-08-24-benchmark-landscape.md`](../docs/evaluations/2026-08-24-benchmark-landscape.md). The executable external SkillsBench workflow is documented in [`external/README.md`](external/README.md).
 
 ## Run the project-owned benchmark
 
@@ -60,10 +60,10 @@ pwsh -File benchmarks/run_external.ps1 `
 | Profile | Delivery | Router | Decision | Debug | Native behavior | Default runs |
 |---|---:|---:|---:|---:|---:|---:|
 | `smoke` | 3 | 4 | 1 | 1 | 3 | 1 |
-| `standard` | 9 | 28 | 6 | 8 | 5 | 3 |
-| `full` | 18 | 28 | 10 | 12 | 5 | 3 |
+| `standard` | 9 | 28 | 6 | 10 | 10 | 3 |
+| `full` | 18 | 28 | 10 | 14 | 10 | 3 |
 
-`standard` is the normal release gate. `full` carries the complete public regression matrix. The extra Router cases span all five routes; the expanded Debug set covers twelve cases across parsing, normalization, tenant isolation, pagination, units, row handling, state invariants, TTL semantics, URL handling, and the upstream transfer/amount tasks. Decision grows from four to ten two-turn decisions in `full`.
+`standard` is the normal release gate. `full` carries the complete public regression matrix. The extra Router cases span all five routes; the expanded Debug set covers fourteen cases across parsing, normalization, tenant isolation, pagination, units, row handling, state invariants, TTL semantics, URL handling, and the upstream transfer/amount tasks. Decision grows from six to ten two-turn decisions in `full`.
 
 Useful internal options:
 
