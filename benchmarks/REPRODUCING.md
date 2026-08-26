@@ -18,7 +18,7 @@ The chain deliberately separates three evidence types:
 
 The Decision and Debug comparisons must not be described as official Matt Pocock or Superpowers benchmark results. They are controlled Codex/Luna comparisons against those Skills' relevant behavior. Tests, TDD phases, planning prose, and workflow completeness receive no quality points; only the delivered behavior, safety invariant, build, and artifact metrics are scored.
 
-The public Router/Decision/Debug catalog is a regression corpus. Cases that have influenced Skill wording remain useful for preventing regressions but are no longer independent evidence of generalization. See [`../docs/evaluations/2026-08-24-benchmark-landscape.md`](../docs/evaluations/2026-08-24-benchmark-landscape.md) for the external and held-out evidence plan.
+The public Router/Decision/Debug catalog is a regression corpus. Cases that have influenced Skill wording remain useful for preventing regressions but are no longer independent evidence of generalization. See [`../docs/evaluations/2026-08-24-benchmark-landscape.md`](../docs/evaluations/2026-08-24-benchmark-landscape.md) for the held-out evidence plan.
 
 ## Pinned upstream sources
 
@@ -189,7 +189,7 @@ pwsh -NoProfile -File benchmarks/run.ps1 `
 
 Use `-FailOnCellFailure` only when every selected cell is expected to pass. A comparison run normally returns success when the infrastructure completed, even when it correctly exposes a behavioral failure in one arm.
 
-## 6. Reproduce Navigation and external evidence
+## 6. Reproduce Navigation evidence
 
 Navigation is a repository-specific paired ablation. Substitute a real tracked checkout and an independently checkable answer oracle:
 
@@ -204,26 +204,6 @@ python benchmarks/navigation_ablation.py `
 ```
 
 Publish the repository commit, tracked file/byte counts, prompt, required evidence, and both cold and warm graph observations. The v2.1 results do not establish a universal file-count threshold: graph navigation lost clearly on the 496-file repository and was promising but still provisional on the 1,385-file repository.
-
-The external SkillsBench adapter is a separate evidence layer:
-
-```powershell
-# Instrument check only; no model calls.
-pwsh -NoProfile -File benchmarks/run_external.ps1 `
-  -Benchmark skillsbench `
-  -SelfTest
-
-# Stable curated-Skill versus curated-Skill-plus-Practical comparison.
-pwsh -NoProfile -File benchmarks/run_external.ps1 `
-  -Benchmark skillsbench `
-  -Comparison curated-vs-curated-practical `
-  -Profile standard `
-  -Runs 3 `
-  -Workers 3 `
-  -RequireStableRanking
-```
-
-Use Linux or WSL for the published BenchFlow path. The v2.1 native-Windows attempt was blocked by upstream path/launcher behavior, so it is not reported as a passed external result. The last completed external result is the historical v2.0 48-pair comparison in [`results/v2.1/summary.json`](results/v2.1/summary.json); its confidence intervals include zero.
 
 ## 7. Inspect and rescore results
 

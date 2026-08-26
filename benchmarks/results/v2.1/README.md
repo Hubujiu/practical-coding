@@ -13,7 +13,7 @@ The headline comparison uses `gpt-5.6-luna`, reasoning `medium`, isolated worksp
 
 Machine-readable files:
 
-- [`summary.json`](summary.json) contains release suite rollups, comparator pins, quality-gated scores, and the historical external result.
+- [`summary.json`](summary.json) contains release suite rollups, comparator pins, and quality-gated scores.
 - [`comparisons.csv`](comparisons.csv) provides the same headline arm metrics in a spreadsheet-friendly long format.
 - [`navigation.json`](navigation.json) contains the two real-repository source-vs-graph ablations.
 

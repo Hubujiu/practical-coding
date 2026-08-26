@@ -16,7 +16,7 @@
 **不可宣称**
 
 - 已全面超越成熟 Skill 集合体；
-- SkillsBench / 其它外部基准已验证（本环境未跑）；
+- 其它外部基准已验证；
 - 公开 Router/Decision/Debug 高分等于未见任务泛化。
 
 复现协议已在仓库中：[`benchmarks/REPRODUCING.md`](../../benchmarks/REPRODUCING.md)。本报告不重复该文档。
@@ -123,7 +123,7 @@ pwsh -NoProfile -File benchmarks/run.ps1 `
 ## 证据边界与缺口
 
 1. **公开回归层**：本报告。防回退，不证泛化。
-2. **外部层**：SkillsBench 适配器已实现，但本环境无法完成稳定跑；报告不声称外部 Skill lift。
+2. **外部层**：尚无可复现的稳定结果；报告不声称外部 Skill lift。
 3. **Held-out**：仍缺改 Skill 时不看的私有任务集。
 
 相对成熟 Skill 的诚实定位：在固定 Luna harness 上，按职责切片可打且局部领先；前端相对 Ponytail 仍偏肥，debug 共享边界仍有洞，外部证据空缺。

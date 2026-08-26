@@ -2,7 +2,7 @@
 
 This chain runs isolated Codex sessions directly against `gpt-5.6-luna`, preserves every prompt/transcript/workspace, applies mechanical graders, and writes JSON plus Markdown summaries. It follows the mature evaluation shape used by Agent Skills and Ponytail: realistic cases, fixed sources, clean sessions, repeated paired arms, deterministic assertions where possible, tokens/time, and raw evidence.
 
-For prerequisites, pinned revisions, exact reproduction commands, evidence boundaries, and the published v2.1 results, see [`REPRODUCING.md`](REPRODUCING.md). The compact machine-readable release data live in [`results/v2.1/`](results/v2.1/). For the external benchmark landscape and the public-regression/external/held-out evidence model, see [`../docs/evaluations/2026-08-24-benchmark-landscape.md`](../docs/evaluations/2026-08-24-benchmark-landscape.md). The executable external SkillsBench workflow is documented in [`external/README.md`](external/README.md).
+For prerequisites, pinned revisions, exact reproduction commands, evidence boundaries, and the published v2.1 results, see [`REPRODUCING.md`](REPRODUCING.md). The compact machine-readable release data live in [`results/v2.1/`](results/v2.1/). For the public-regression and held-out evidence model, see [`../docs/evaluations/2026-08-24-benchmark-landscape.md`](../docs/evaluations/2026-08-24-benchmark-landscape.md).
 
 ## Run the project-owned benchmark
 
@@ -33,28 +33,6 @@ python benchmarks/check_stability.py benchmark-results\v111-delivery-n1-core-rev
 
 That command intentionally reports the published v1.11 Delivery `n=1` artifact as `PROVISIONAL`; it must not be used for a stable ranking until the same cells are rerun with at least three distinct repetitions.
 
-## Run the external SkillsBench lift
-
-The external adapter uses BenchFlow's immutable `skillsbench@1.1` dataset and compares the same Codex/Luna configuration with no Skill against a custom Skill directory containing only Practical Coding.
-
-```powershell
-# Instrument-only self-test; no model calls.
-pwsh -File benchmarks/run_external.ps1 -Benchmark skillsbench -SelfTest
-
-# Fast three-task plumbing check; n=1 and provisional.
-pwsh -File benchmarks/run_external.ps1 -Benchmark skillsbench -Profile smoke
-
-# Stable external software-engineering lift.
-pwsh -File benchmarks/run_external.ps1 `
-  -Benchmark skillsbench `
-  -Profile standard `
-  -Runs 3 `
-  -Workers 3 `
-  -RequireStableRanking
-```
-
-`standard` dynamically selects every `software-engineering` task in the SkillsBench v1.1 registry roster. `full` runs the complete versioned roster and is intended mainly as a cross-domain interference check. The adapter pins BenchFlow, runs the SkillsBench oracle before model calls, alternates arm order across repetitions, preserves raw BenchFlow jobs, and reports pass/reward lift with task-cluster bootstrap confidence intervals. It is a Practical-owned custom-Skill ablation on SkillsBench, not an official SkillsBench leaderboard submission using the benchmark's per-task curated Skills.
-
 ## Internal profiles
 
 | Profile | Delivery | Router | Decision | Debug | Native behavior | Default runs |
@@ -84,8 +62,7 @@ By default, run artifacts are written under `benchmark-results/` and ignored by 
 The fast harness regression suite is also runnable without model calls:
 
 ```powershell
-python -m unittest benchmarks.test_benchmarks benchmarks.test_stability benchmarks.test_catalog benchmarks.test_external_skillsbench
-python benchmarks/external/skillsbench_adapter.py --self-test
+python -m unittest benchmarks.test_benchmarks benchmarks.test_stability benchmarks.test_catalog
 ```
 
 For a native Navigation source-vs-graph ablation on a real Git repository, use `navigation_ablation.py`. It copies only tracked files, alternates arm order, reuses each arm's read-only workspace so the graph arm exposes cold and warm behavior, verifies the Navigation route/backend, checks required answer evidence, and rejects file edits:
@@ -138,6 +115,4 @@ over uncached input tokens (0.35), output tokens (0.15), model time (0.35), and 
 
 A published internal stable ranking must pass `benchmarks/check_stability.py` with the default minimum `n=3`. The gate checks distinct repetition IDs, complete-run metadata, and infrastructure errors. Behavioral or build failures remain valid benchmark observations and therefore do not invalidate the sample by themselves.
 
-A published SkillsBench external lift must pass the adapter's independent stable gate: oracle success, at least three runs, and one healthy result from each arm for every selected task/repetition pair.
-
-The public catalog is a **regression suite**, not a hidden generalization test. Once a case has influenced Skill wording, its future 100% score should be treated as a ceiling check. SkillsBench provides external public evidence; a private held-out set is still required for the strongest generalization claims.
+The public catalog is a **regression suite**, not a hidden generalization test. Once a case has influenced Skill wording, its future 100% score should be treated as a ceiling check. A private held-out set is still required for the strongest generalization claims.

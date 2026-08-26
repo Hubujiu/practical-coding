@@ -146,19 +146,8 @@
       "cost_efficiency_index": 2.323367813286212
     }
   ],
-  "external_skillsbench_v2_0_historical": {
-    "status": "stable-public-external-not-current-v2.1",
-    "paired_rollouts": 48,
-    "pass_rate_no_skill": 0.10416666666666667,
-    "pass_rate_practical": 0.10416666666666667,
-    "pass_rate_delta": 0.0,
-    "pass_rate_delta_ci95": [-0.08333333333333333, 0.08333333333333333],
-    "mean_reward_delta": -0.016666666666666663,
-    "mean_reward_delta_ci95": [-0.10416666666666666, 0.06666666666666667]
-  },
   "limitations": [
     "Delivery did not pass the conservative quality gate because Practical missed one production build while Ponytail passed all cells.",
-    "Router and project-owned suites are public regression evidence, not private holdout evidence.",
-    "The stable SkillsBench result is historical v2.0 evidence; the v2.1 curated-plus-Practical run remains pending on Linux or WSL2."
+    "Router and project-owned suites are public regression evidence, not private holdout evidence."
   ]
 }

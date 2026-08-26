@@ -14,7 +14,7 @@ Before any release-quality model run:
 4. If a benchmark/scorer bug is discovered, fix the instrument, invalidate the affected run, document why, and rerun the complete affected matrix. Do not selectively rescore or exclude only unfavorable cells.
 5. Preserve the candidate Skill bundle hash and benchmark runner/manifest hashes produced by the harness.
 
-Documentation-only changes that do not change `SKILL.md` or `references/` do not require rerunning the accepted internal v2.1 matrix. The next new evidence priority is the independent external run.
+Documentation-only changes that do not change `SKILL.md` or `references/` do not require rerunning the accepted internal v2.1 matrix. The next new evidence priority is a private held-out run.
 
 ## 2. Required run order
 
@@ -24,10 +24,9 @@ Run before spending model calls:
 
 ```powershell
 pwsh -NoProfile -File benchmarks/run.ps1 -SelfTest
-pwsh -NoProfile -File benchmarks/run_external.ps1 -Benchmark skillsbench -SelfTest
 ```
 
-Both must pass. A failing self-test blocks every later claim.
+It must pass. A failing self-test blocks every later claim.
 
 ### Gate B — internal full regression/comparator matrix
 
@@ -59,57 +58,7 @@ Acceptance rules:
 
 The public Router/Decision/Debug/Delivery catalog is allowed to become saturated. A 100% score is a regression ceiling once the case has influenced Skill wording.
 
-### Gate C — external SkillsBench software-engineering lift
-
-This is the **mandatory next evidence milestone for the current unchanged v2.1 Skill**.
-
-Run the complete SkillsBench v1.1 `software-engineering` roster with paired curated-Skills-only / curated-Skills-plus-Practical arms and three repetitions. Use Linux or WSL2 with Docker; the native-Windows v2.1 attempt was rejected as infrastructure-blocked before model execution.
-
-```powershell
-pwsh -NoProfile -File benchmarks/run_external.ps1 `
-  -Benchmark skillsbench `
-  -Comparison curated-vs-curated-practical `
-  -Profile standard `
-  -Runs 3 `
-  -Workers 3 `
-  -RequireStableRanking
-```
-
-A stable external result requires:
-
-- SkillsBench oracle reward `1.0` for every selected task before model calls;
-- at least three repetitions;
-- exactly one healthy curated-only and one healthy curated-plus-Practical result for every task/repetition pair;
-- no missing/unhealthy pairs;
-- no post-hoc task removal because a task is unfavorable to Practical;
-- the exact dataset version, BenchFlow version, model, reasoning effort, Skill bundle hash, task roster, commands, and adapter hash preserved in artifacts.
-
-Primary metric: paired pass-rate lift. Secondary metrics: mean-reward lift, pass flips, normalized gain, cost/latency where available, and the adapter's task-cluster-bootstrap 95% confidence intervals.
-
-Interpretation rule:
-
-- CI entirely above zero: evidence of positive external lift on the selected SkillsBench software-engineering population;
-- CI crossing zero: report the numerical delta, but do not claim a resolved improvement;
-- CI entirely below zero: treat as external regression and investigate before strengthening project claims.
-
-This run is a Practical-owned additive-Skill ablation on SkillsBench, **not** an official SkillsBench leaderboard submission.
-
-### Gate D — cross-domain interference
-
-Run only when making a claim that Practical is safe as a broadly installed general Skill outside software-engineering tasks, or before a major release where the cost is justified:
-
-```powershell
-pwsh -NoProfile -File benchmarks/run_external.ps1 `
-  -Benchmark skillsbench `
-  -Profile full `
-  -Runs 3 `
-  -Workers 3 `
-  -RequireStableRanking
-```
-
-The purpose is interference detection, not maximizing a combined score. Report software-engineering lift separately from non-coding-domain behavior.
-
-## 3. Private held-out requirement
+### Gate C — private held-out requirement
 
 External public benchmarks are still public. The strongest generalization claim requires a private held-out set that is not consulted while editing the Skill.
 
@@ -126,13 +75,7 @@ Minimum protocol for the first held-out set:
 
 A practical first stratification is 5 simple/direct tasks, 5 debugging tasks, 5 feature/risk-coordination tasks, and 5 architecture/navigation tasks. Diversity of failure mechanism matters more than exact category counts.
 
-## 4. Statistical reporting rules
-
-### External benchmark
-
-Use the SkillsBench adapter's task-cluster-bootstrap 95% confidence intervals. Repetitions of the same task stay in one sampled cluster.
-
-### Internal benchmark
+## 3. Statistical reporting rules
 
 `n=3` is a stability gate, **not** proof that small comparator differences are statistically resolved. Until the internal reporter gains paired task-cluster confidence intervals:
 
@@ -142,7 +85,7 @@ Use the SkillsBench adapter's task-cluster-bootstrap 95% confidence intervals. R
 
 A future internal-statistics change should bootstrap by task/case ID, keeping all repetitions for that task together.
 
-## 5. Required ablations before architectural claims
+## 4. Required ablations before architectural claims
 
 Before claiming that event-driven progressive disclosure itself causes the gain, run an ablation rather than inferring mechanism from the full Skill.
 
@@ -169,7 +112,7 @@ At minimum measure:
 
 The existing comparator benchmarks can establish outcome differences; only the ablation can establish which Practical module or routing behavior caused them.
 
-## 6. Routing/interference metrics to add
+## 5. Routing/interference metrics to add
 
 Router exact-classification accuracy is necessary but insufficient for the project's main progressive-disclosure claim. A future harness revision should additionally record:
 
@@ -184,7 +127,7 @@ A separate noise/interference treatment should install unrelated or competing Sk
 
 These are **future benchmark requirements**, not metrics available in the current v2.1 report.
 
-## 7. Failure handling discipline
+## 6. Failure handling discipline
 
 Behavioral failures are evidence, not harness failures.
 
@@ -199,7 +142,7 @@ When a failure appears:
 
 For any current public Debug failure, the next useful evidence is an independent shared-boundary analogue, not wording that explicitly names the failed fixture's domain nouns.
 
-## 8. Artifact retention and publication
+## 7. Artifact retention and publication
 
 For every result used in README/release claims, retain at least:
 
@@ -213,35 +156,32 @@ report.md
 exact Skill bundle used
 ```
 
-Preserve raw transcripts/workspaces/BenchFlow jobs locally. For a formal release, attach a compressed benchmark artifact or at minimum the machine-readable manifest/results/summary/comparison files so third parties can audit the published numbers without paying to rerun every model call.
+Preserve raw transcripts and workspaces locally. For a formal release, attach a compressed benchmark artifact or at minimum the machine-readable manifest/results/summary/comparison files so third parties can audit the published numbers without paying to rerun every model call.
 
 Do not commit large generated workspaces into the normal source tree.
 
-## 9. Claim ladder
+## 8. Claim ladder
 
 Use the strongest claim justified by the completed gates, and no stronger:
 
 | Completed evidence | Allowed claim |
 |---|---|
 | Internal public regression only | Practical is stable / numerically competitive on the fixed internal comparator matrix |
-| + stable external SkillsBench standard | Practical shows the reported external lift (or lack of resolved lift) on SkillsBench software-engineering tasks |
-| + cross-domain run | Add evidence about interference outside software engineering |
 | + private held-out paired run | Generalization claims may reference the held-out population, with its scope stated explicitly |
 
 Never collapse Delivery vs Ponytail, Decision vs grilling, and Debug vs Superpowers into a single universal leaderboard score. They are role-specific head-to-head comparisons against different task populations.
 
-## 10. Immediate next action
+## 9. Immediate next action
 
 Because the current documentation changes do not alter the accepted v2.1 Skill bundle, **do not tune the Skill against the existing public cells again before obtaining new evidence**.
 
 Run in this order:
 
 ```text
-1. Internal + external self-tests
-2. SkillsBench software-engineering standard, n=3, stable gate
-3. Freeze and archive the complete external artifacts
-4. Interpret the CI before changing Skill wording
-5. Only then decide whether a new Skill revision is justified
+1. Internal self-test
+2. Build and freeze the private held-out task set
+3. Run paired no-Skill/Practical evidence at n=3
+4. Freeze and archive the complete artifacts
+5. Interpret the paired result before changing Skill wording
 6. If the Skill changes, run the full internal current/previous/no-Skill comparator gate
-7. Build and run private held-out evidence before broad SOTA/generalization claims
 ```

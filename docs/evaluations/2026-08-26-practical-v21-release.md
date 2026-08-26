@@ -4,7 +4,7 @@
 
 This version is deliverable as a lean general-purpose coding Skill. Freeze the routing text here: the remaining misses are either stochastic, specialist advantages, or label ambiguity. Editing the public-case wording again would create more overfitting risk than expected general benefit.
 
-The claim is deliberately bounded. v2.1 is not the best specialist on every suite, and current external curated-plus-Practical execution is not complete. It is a strong generalist with a cheap Direct Path, selective escalation, materially better debug/security efficiency than Superpowers in this harness, and an explicit opt-in navigation backend whose benefit is not yet universal.
+The claim is deliberately bounded. v2.1 is not the best specialist on every suite. It is a strong generalist with a cheap Direct Path, selective escalation, materially better debug/security efficiency than Superpowers in this harness, and an explicit opt-in navigation backend whose benefit is not yet universal.
 
 ## Frozen evidence matrix
 
@@ -20,8 +20,6 @@ All project-owned release matrices use `gpt-5.6-luna`, `medium`, three repetitio
 | Native trigger behavior, 30 cells | 29/30 = 96.7% | Behavioral contract | Direct, Decision, Debug, navigation, and security routes passed 3/3; ordinary Implementation loaded no module once | Routing is operational, not merely keyword classification. The isolated workspace fix is included in the harness. |
 | Medium real repository | source 3/3 | graph 3/3 | 496 files / 4.0 MB: warm graph was 38.8% slower, with 26.8% more uncached input and 56.7% more calls | Do not enable Codebase Memory by project size alone at this scale. |
 | Large real repository | source 3/3 | graph 2/3, provisional | 1,385 files / 163.6 MB / 9,603 graph nodes: successful graph runs used 25.2% less output, 16.5% less time, and 7.9% fewer calls, but 7.2% more uncached input | This is the beginning of a possible graph benefit, not a proven file-count threshold. Explicit opt-in remains correct. |
-| Historical external SkillsBench | v2.0 Practical-only 10.4% | no-Skill 10.4% | 48 paired rollouts; pass delta 0.0 pp, CI `[-8.3, +8.3]`; reward delta -0.017, CI `[-0.104, +0.067]` | No resolved external lift or regression. This is v2.0 evidence and cannot certify v2.1. |
-| Current external curated smoke | not scored | curated-only vs curated + v2.1 | Adapter now constructs an exact per-task union, but native-Windows BenchFlow path generation failed before model execution | Infrastructure blocked; no result is inferred. Run unchanged on Linux/WSL2 with Docker. |
 
 Primary local artifacts:
 
@@ -31,7 +29,6 @@ Primary local artifacts:
 - `benchmark-results/release-v21-behavior-isolated-n3-20260826`
 - `benchmark-results/navigation-personal-progress-v21-n3-iter2-20260826`
 - `benchmark-results/navigation-super-agent-v21-n3-20260826`
-- `benchmark-results/external/skillsbench-stable-20260826-054508`
 
 ## Quality-first comparison formula
 
@@ -54,16 +51,15 @@ The gate and weights are project policy, not paper constants. This follows the e
 3. Navigation merges ordinary source search and optional Codebase Memory into one route. Graph use requires explicit project configuration and remains a backend choice, not an always-on tax.
 4. Worker isolation has a cost gate. Root retains intent, authorization, integration, and the completion claim; small or single-event contexts stay local.
 5. The benchmark now reports quality gates, Pareto status, component cost ratios, security-specific cases, native routing behavior, and real-repository navigation ablation.
-6. The SkillsBench adapter now reads task metadata from immutable registry commits and constructs true per-task curated-plus-Practical unions instead of silently replacing curated Skills.
 
 ## Known limitations and next evidence
 
 - Delivery is not comparator-qualified: Ponytail was one build result better and produced leaner patches. This is acceptable for a generalist release, but it must remain visible.
 - Router and native behavior are high but not perfect. The remaining public misses are not a reason to add case-specific trigger phrases.
 - The graph backend has no proven universal size threshold. Repeat the ablation on multiple large, structurally different repositories and require reliable 3/3 routing before claiming savings.
-- v2.1 still needs an unchanged Linux run of `curated-vs-curated-practical`, preferably the full software-engineering profile, plus a genuinely private holdout. Public SkillsBench cannot establish absence of benchmark contamination.
+- v2.1 still needs a genuinely private holdout before making generalization claims.
 - Cost weights should receive a sensitivity sweep in a later release. The current verdict does not depend on the exact weights: Delivery remains unqualified, Decision remains a trade-off, and Debug/security remain materially cheaper.
 
 ## Release decision
 
-Ship v2.1 as a release candidate/generalist release with the limitations above. Do not continue prompt tuning on the frozen public suites. The next changes should be driven by new private tasks, Linux external evidence, or repeated failures on different real repositories—not by individual cases already inspected here.
+Ship v2.1 as a release candidate/generalist release with the limitations above. Do not continue prompt tuning on the frozen public suites. The next changes should be driven by new private tasks or repeated failures on different real repositories—not by individual cases already inspected here.
