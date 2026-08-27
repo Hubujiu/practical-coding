@@ -4,7 +4,7 @@ description: "Use for implementing, fixing, refactoring, or reviewing code with 
 license: MIT
 metadata:
   author: Hubujiu
-  version: "2.1"
+  version: "1.0"
 ---
 
 # Practical Coding
