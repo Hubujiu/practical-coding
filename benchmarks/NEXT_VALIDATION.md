@@ -1,95 +1,105 @@
 # Next validation protocol
 
-This document freezes the evidence requirements for the next Practical Coding benchmark cycle **before** any new model results are inspected. Its purpose is to prevent post-hoc metric selection, public-regression overfitting, and ambiguous claims about what a benchmark proves.
+This document freezes the evidence requirements for the next Practical Coding validation cycle before new results are inspected. Its purpose is to prevent post-hoc metric selection, public-regression overfitting, and marketing claims stronger than the evidence.
 
-The current accepted Skill is Practical Coding v2.1 from `53ee5ec5c48fc51795415986a54d9e93afa14105`. The published release result is [`docs/evaluations/2026-08-26-practical-v21-release.md`](../docs/evaluations/2026-08-26-practical-v21-release.md), with compact data under [`results/v2.1/`](results/v2.1/). That result is a public regression/comparator matrix, not external generalization evidence.
+The current public release is **Practical Coding v1.0**. The published evaluation is [`../docs/evaluations/2026-08-26-practical-v1-release.md`](../docs/evaluations/2026-08-26-practical-v1-release.md), with compact aggregates in [`results/v1.0/`](results/v1.0/).
 
 ## 1. Freeze before running
 
 Before any release-quality model run:
 
-1. Commit the candidate. Do not benchmark a moving working tree for publication.
-2. Record `git rev-parse HEAD` and `git status --short` in the run notes. The working tree must be clean.
-3. Do not change `SKILL.md`, `references/`, benchmark task definitions, scorers, or acceptance thresholds after seeing partial results from the same validation cycle.
-4. If a benchmark/scorer bug is discovered, fix the instrument, invalidate the affected run, document why, and rerun the complete affected matrix. Do not selectively rescore or exclude only unfavorable cells.
-5. Preserve the candidate Skill bundle hash and benchmark runner/manifest hashes produced by the harness.
+1. commit the candidate and use a clean working tree;
+2. record the exact candidate commit and benchmark manifest hashes;
+3. do not change Skill text, tasks, scorers, or acceptance thresholds after seeing partial results from the same cycle;
+4. if an instrument bug is found, invalidate the affected run, fix the instrument, document why, and rerun the complete affected matrix;
+5. preserve the complete candidate Skill bundle and comparator pins.
 
-Documentation-only changes that do not change `SKILL.md` or `references/` do not require rerunning the accepted internal v2.1 matrix. The next new evidence priority is a private held-out run.
+Documentation-only changes do not justify retuning against already-inspected public cells. New evidence should come from held-out tasks, stack/interference tests, or repeated independent failures.
 
-## 2. Required run order
+## 2. Required gate order
 
-### Gate A — instrument self-test
-
-Run before spending model calls:
+### Gate A — harness self-test
 
 ```powershell
 pwsh -NoProfile -File benchmarks/run.ps1 -SelfTest
 ```
 
-It must pass. A failing self-test blocks every later claim.
+A failing self-test blocks all benchmark claims.
 
-### Gate B — internal full regression/comparator matrix
+### Gate B — public regression/current-vs-previous gate
 
-Run this gate whenever `SKILL.md` or anything under `references/` changes from the last accepted Skill.
-
-Use the last accepted Skill commit as the previous-version baseline and include the Delivery no-Skill arm:
+Run whenever `SKILL.md` or `references/` behavior changes:
 
 ```powershell
 pwsh -NoProfile -File benchmarks/run.ps1 `
   -Profile full `
   -Runs 3 `
   -Workers 3 `
-  -BaselineRef 53ee5ec5c48fc51795415986a54d9e93afa14105 `
+  -BaselineRef <accepted-v1.0-or-later-commit> `
   -IncludeBaseline `
   -RequireStableRanking
 ```
 
-For a later release, replace the baseline SHA with the immediately preceding accepted Skill revision. Do not silently keep comparing every future version against v2.1.
+Acceptance order remains correctness/safety → build/reachability → efficiency.
 
-Acceptance rules:
+### Gate C — private held-out evidence
 
-- zero infrastructure failures;
-- every selected case/arm/repetition is present;
-- Delivery production builds remain enabled;
-- minimum `n=3` is satisfied for every published cell;
-- correctness, safety, and build behavior take precedence over LOC, tokens, tool calls, and latency;
-- a candidate with a material correctness/safety/build regression against the previous accepted Practical version is rejected even if it is smaller or cheaper;
-- comparator deltas are reported as controlled results on this public matrix, not as universal rankings.
+The strongest generalization claim requires a task set that was not consulted while editing the Skill.
 
-The public Router/Decision/Debug/Delivery catalog is allowed to become saturated. A 100% score is a regression ceiling once the case has influenced Skill wording.
+Minimum first held-out target:
 
-### Gate C — private held-out requirement
+- at least 20 real coding tasks;
+- include simple/direct tasks, root-cause bugs, risky multi-file changes, and architecture/navigation tasks;
+- executable verification whenever possible;
+- seed state fails and oracle/reference state passes before model calls;
+- same fixed model/harness for `no-skill` and Practical arms;
+- at least three paired repetitions for publication-quality claims.
 
-External public benchmarks are still public. The strongest generalization claim requires a private held-out set that is not consulted while editing the Skill.
+## 3. Required combined-stack benchmark
 
-Minimum protocol for the first held-out set:
+Before claiming that Practical Coding is experimentally better than installing Ponytail and Superpowers together, add this arm:
 
-- at least 20 real coding tasks from recent issues/PRs or independently authored repositories;
-- include simple/local changes, root-cause bugs, multi-file/risky changes, and broad-navigation/design work rather than prompt paraphrases of public regression cases;
-- deterministic executable verification whenever possible;
-- each task has a seed state that fails its verifier and an oracle/reference state that passes before model calls;
-- compare the same fixed agent/model/harness under `no-skill` and `practical` treatments;
-- use at least three paired repetitions for a publication-quality claim;
-- keep task prompts, expected mechanisms, and verifier details unavailable while editing `SKILL.md` and `references/`;
-- do not move failed held-out tasks into the public regression set until the validation cycle is frozen and reported.
+```text
+no-skill
+Ponytail
+Superpowers
+Ponytail + Superpowers
+Practical Coding
+```
 
-A practical first stratification is 5 simple/direct tasks, 5 debugging tasks, 5 feature/risk-coordination tasks, and 5 architecture/navigation tasks. Diversity of failure mechanism matters more than exact category counts.
+The combined arm must install the **actual current Skills simultaneously** in the same harness rather than concatenate their text manually.
 
-## 3. Statistical reporting rules
+Measure at minimum:
 
-`n=3` is a stability gate, **not** proof that small comparator differences are statistically resolved. Until the internal reporter gains paired task-cluster confidence intervals:
+- task success, safety, and build;
+- total/uncached input tokens, output tokens, reasoning tokens;
+- model time and tool calls;
+- number of Skill/reference files loaded;
+- unnecessary process/module loads;
+- missed escalations;
+- number of planning/debugging/delegation phases entered;
+- final production/test LOC;
+- whether both broad coding/process policies are invoked on simple tasks.
 
-- say `numerically ahead`, `numerically behind`, or `tied on this matrix` for small deltas;
-- do not convert a one-cell difference such as 54/54 versus 53/54 into a broad superiority claim;
-- report task counts and repetitions separately so repeated trials are not mistaken for independent tasks.
+The task set must include at least:
 
-A future internal-statistics change should bootstrap by task/case ID, keeping all repetitions for that task together.
+1. trivial/local direct edits;
+2. clear multi-file but low-risk changes;
+3. unknown root-cause bugs;
+4. security/persistence/concurrency boundaries;
+5. unresolved architecture/dependency decisions.
 
-## 4. Required ablations before architectural claims
+### Hypothesis being tested
 
-Before claiming that event-driven progressive disclosure itself causes the gain, run an ablation rather than inferring mechanism from the full Skill.
+The architectural hypothesis is not "Ponytail is bad" or "Superpowers is bad." It is:
 
-Target treatment matrix:
+> Two independently broad Skills may provide useful capabilities but incur duplicated routing/process context and leave their interaction to the host/model, while Practical's single event router should preserve similar specialist rigor with less unnecessary process on tasks that do not need it.
+
+This remains a hypothesis until the combined arm is measured.
+
+## 4. Routing and interference ablation
+
+To attribute any gain to adaptive routing rather than prompt wording, test:
 
 ```text
 no-skill
@@ -98,90 +108,40 @@ Core + Decision
 Core + Debugging
 Core + Implementation
 Full Practical
-relevant external comparator
+Ponytail + Superpowers
 ```
 
-At minimum measure:
+Record:
 
-- task success / safety / build;
 - unnecessary module loads;
 - missed escalations;
-- references loaded and reference bytes/tokens injected;
-- uncached input, output, and reasoning tokens;
-- tool calls and model time.
-
-The existing comparator benchmarks can establish outcome differences; only the ablation can establish which Practical module or routing behavior caused them.
-
-## 5. Routing/interference metrics to add
-
-Router exact-classification accuracy is necessary but insufficient for the project's main progressive-disclosure claim. A future harness revision should additionally record:
-
-- `unnecessary_module_loads`;
-- `missed_escalations`;
-- `references_loaded`;
-- reference bytes/tokens loaded;
+- references loaded and bytes/tokens injected;
 - route changes per task;
-- time/token cost before the correct route is reached.
+- time/tokens before the correct route is reached;
+- worker/subagent dispatches.
 
-A separate noise/interference treatment should install unrelated or competing Skills and test whether Practical still avoids unnecessary module loading. Do not claim resistance to Skill-context interference until that treatment exists.
+## 5. Statistical language
 
-These are **future benchmark requirements**, not metrics available in the current v2.1 report.
+`n=3` is a stability gate, not proof that small differences are statistically resolved. For small deltas use language such as `numerically ahead`, `numerically behind`, or `tied on this matrix` and report task counts separately from repeated trials.
 
-## 6. Failure handling discipline
+Future confidence intervals should bootstrap by task/case ID so repetitions of one task are not treated as independent tasks.
 
-Behavioral failures are evidence, not harness failures.
+## 6. Failure discipline
 
 When a failure appears:
 
-1. Freeze and save the complete run first.
-2. Classify it as infrastructure, scorer/oracle defect, stochastic behavior, or genuine Skill behavior.
-3. For genuine behavior, identify the underlying mechanism across tasks before editing the Skill.
-4. Do not add case-specific nouns or examples from the failed public task to `SKILL.md` merely to turn the cell green.
-5. Prefer a general invariant only after the same mechanism appears in an independent task or held-out analogue.
-6. After a Skill change, rerun the complete affected gate against the previous accepted Skill; do not publish only the repaired case.
+1. save the complete run first;
+2. classify infrastructure vs scorer/oracle defect vs stochastic behavior vs genuine Skill behavior;
+3. do not add case-specific nouns merely to turn a public cell green;
+4. prefer a general invariant only after the same mechanism appears independently;
+5. rerun the complete affected gate after a behavior change.
 
-For any current public Debug failure, the next useful evidence is an independent shared-boundary analogue, not wording that explicitly names the failed fixture's domain nouns.
+## 7. Claim ladder
 
-## 7. Artifact retention and publication
-
-For every result used in README/release claims, retain at least:
-
-```text
-manifest.json
-results.json / pairs.json
-summary.json
-comparisons.json (internal, when present)
-rollups.json and rollup-comparisons.json (internal, when present)
-report.md
-exact Skill bundle used
-```
-
-Preserve raw transcripts and workspaces locally. For a formal release, attach a compressed benchmark artifact or at minimum the machine-readable manifest/results/summary/comparison files so third parties can audit the published numbers without paying to rerun every model call.
-
-Do not commit large generated workspaces into the normal source tree.
-
-## 8. Claim ladder
-
-Use the strongest claim justified by the completed gates, and no stronger:
-
-| Completed evidence | Allowed claim |
+| Evidence completed | Allowed claim |
 |---|---|
-| Internal public regression only | Practical is stable / numerically competitive on the fixed internal comparator matrix |
-| + private held-out paired run | Generalization claims may reference the held-out population, with its scope stated explicitly |
+| Public regression only | Stable / numerically competitive on the fixed public matrix |
+| + combined Ponytail/Superpowers arm | Bounded claims about integrated-stack efficiency/quality on that task population |
+| + private held-out paired run | Bounded generalization claims for the held-out population |
 
-Never collapse Delivery vs Ponytail, Decision vs grilling, and Debug vs Superpowers into a single universal leaderboard score. They are role-specific head-to-head comparisons against different task populations.
-
-## 9. Immediate next action
-
-Because the current documentation changes do not alter the accepted v2.1 Skill bundle, **do not tune the Skill against the existing public cells again before obtaining new evidence**.
-
-Run in this order:
-
-```text
-1. Internal self-test
-2. Build and freeze the private held-out task set
-3. Run paired no-Skill/Practical evidence at n=3
-4. Freeze and archive the complete artifacts
-5. Interpret the paired result before changing Skill wording
-6. If the Skill changes, run the full internal current/previous/no-Skill comparator gate
-```
+Never collapse Delivery vs Ponytail, Decision vs grilling, Debug vs Superpowers, and the combined-stack comparison into a single universal score.

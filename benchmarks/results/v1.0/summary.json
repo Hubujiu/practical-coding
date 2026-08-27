@@ -1,6 +1,6 @@
 {
   "schema_version": 1,
-  "release": "2.1",
+  "release": "1.0",
   "date": "2026-08-26",
   "model": "gpt-5.6-luna",
   "reasoning": "medium",
@@ -17,14 +17,14 @@
       "suite": "delivery",
       "practical": {
         "cells": 27,
-        "pass_rate": 0.9629629629629629,
+        "pass_rate": 0.9629629630,
         "correct_rate": 1.0,
         "safe_rate": 1.0,
-        "build_rate": 0.8888888888888888,
+        "build_rate": 0.8888888889,
         "loc_median": 21.0,
         "uncached_input_tokens_median": 17694.0,
         "output_tokens_median": 1709.0,
-        "duration_seconds_median": 44.474915500031784,
+        "duration_seconds_median": 44.4749155000,
         "tool_calls_median": 6.0
       },
       "comparator": {
@@ -37,12 +37,12 @@
         "loc_median": 11.0,
         "uncached_input_tokens_median": 20726.0,
         "output_tokens_median": 1943.0,
-        "duration_seconds_median": 50.293643999961205,
+        "duration_seconds_median": 50.2936440000,
         "tool_calls_median": 6.0
       },
       "quality_gate": "not-qualified",
       "pareto": "tradeoff",
-      "cost_efficiency_index": 1.1248386113909818
+      "cost_efficiency_index": 1.1248386114
     },
     {
       "suite": "decision",
@@ -51,20 +51,20 @@
         "pass_rate": 1.0,
         "uncached_input_tokens_median": 8666.5,
         "output_tokens_median": 769.0,
-        "duration_seconds_median": 20.687841049977578
+        "duration_seconds_median": 20.6878410500
       },
       "comparator": {
         "name": "grilling",
         "cells": 18,
-        "pass_rate": 0.9444444444444444,
+        "pass_rate": 0.9444444444,
         "uncached_input_tokens_median": 6178.5,
         "output_tokens_median": 1012.0,
-        "duration_seconds_median": 22.48382669998682
+        "duration_seconds_median": 22.4838267000
       },
       "quality_gate": "qualified",
       "pareto": "tradeoff",
-      "cost_efficiency_index": 0.9449721419610353,
-      "qualified_utility_index": 1.058182181722671
+      "cost_efficiency_index": 0.9449721420,
+      "qualified_utility_index": 1.0581821817
     },
     {
       "suite": "debug",
@@ -76,34 +76,34 @@
         "loc_median": 2.5,
         "uncached_input_tokens_median": 11209.0,
         "output_tokens_median": 1189.5,
-        "duration_seconds_median": 36.19598330001463,
+        "duration_seconds_median": 36.1959833000,
         "tool_calls_median": 6.0
       },
       "comparator": {
         "name": "superpowers",
         "cells": 30,
-        "pass_rate": 0.8333333333333334,
+        "pass_rate": 0.8333333333,
         "correct_rate": 1.0,
-        "safe_rate": 0.8333333333333334,
+        "safe_rate": 0.8333333333,
         "loc_median": 2.5,
         "uncached_input_tokens_median": 27297.0,
         "output_tokens_median": 3067.5,
-        "duration_seconds_median": 77.89975529996445,
+        "duration_seconds_median": 77.8997553000,
         "tool_calls_median": 13.0
       },
       "quality_gate": "qualified",
       "pareto": "practical-dominates",
-      "cost_efficiency_index": 2.311426838969439,
-      "qualified_utility_index": 2.6913142039643376
+      "cost_efficiency_index": 2.3114268390,
+      "qualified_utility_index": 2.6913142040
     },
     {
       "suite": "router",
       "practical": {
         "cells": 84,
-        "pass_rate": 0.9523809523809523,
+        "pass_rate": 0.9523809524,
         "uncached_input_tokens_median": 3217.0,
         "output_tokens_median": 32.0,
-        "duration_seconds_median": 6.630429150012787,
+        "duration_seconds_median": 6.6304291500,
         "tool_calls_median": 0.0
       }
     },
@@ -111,10 +111,10 @@
       "suite": "native_behavior",
       "practical": {
         "cells": 30,
-        "pass_rate": 0.9666666666666667,
+        "pass_rate": 0.9666666667,
         "uncached_input_tokens_median": 15534.5,
         "output_tokens_median": 1667.0,
-        "duration_seconds_median": 45.839743100019405,
+        "duration_seconds_median": 45.8397431000,
         "tool_calls_median": 7.5
       }
     },
@@ -143,11 +143,12 @@
       },
       "quality_gate": "qualified",
       "pareto": "practical-dominates",
-      "cost_efficiency_index": 2.323367813286212
+      "cost_efficiency_index": 2.3233678133
     }
   ],
   "limitations": [
     "Delivery did not pass the conservative quality gate because Practical missed one production build while Ponytail passed all cells.",
-    "Router and project-owned suites are public regression evidence, not private holdout evidence."
+    "Router and project-owned suites are public regression evidence, not private holdout evidence.",
+    "The release did not test Ponytail and Superpowers installed together as a combined comparator arm."
   ]
 }

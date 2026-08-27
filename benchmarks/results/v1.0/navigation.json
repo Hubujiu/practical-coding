@@ -1,6 +1,6 @@
 {
   "schema_version": 1,
-  "release": "2.1",
+  "release": "1.0",
   "model": "gpt-5.6-luna",
   "reasoning": "medium",
   "runs_per_arm": 3,
@@ -15,7 +15,7 @@
         "uncached_input_tokens_median": 73118.0,
         "output_tokens_median": 5001.0,
         "total_tokens_median": 568326.0,
-        "duration_seconds_median": 122.96699149999768,
+        "duration_seconds_median": 122.9669915,
         "tool_calls_median": 15.0
       },
       "graph_warm": {
@@ -23,7 +23,7 @@
         "uncached_input_tokens_median": 92706.5,
         "output_tokens_median": 5884.0,
         "total_tokens_median": 1088926.5,
-        "duration_seconds_median": 170.63187015001313,
+        "duration_seconds_median": 170.63187015,
         "tool_calls_median": 23.5
       },
       "interpretation": "Graph navigation was materially more expensive; do not enable it by size alone at this scale."
@@ -39,7 +39,7 @@
         "uncached_input_tokens_median": 91526.0,
         "output_tokens_median": 7611.0,
         "total_tokens_median": 1054126.0,
-        "duration_seconds_median": 170.50131520000286,
+        "duration_seconds_median": 170.5013152,
         "tool_calls_median": 19.0
       },
       "graph_successful_runs": {
@@ -48,7 +48,7 @@
         "uncached_input_tokens_median": 98141.0,
         "output_tokens_median": 5694.5,
         "total_tokens_median": 1003675.5,
-        "duration_seconds_median": 142.31087459999253,
+        "duration_seconds_median": 142.3108746,
         "tool_calls_median": 17.5
       },
       "interpretation": "Successful graph runs were faster and used fewer output tokens and calls, but routing reliability was only 2/3; this is not a universal threshold claim."
