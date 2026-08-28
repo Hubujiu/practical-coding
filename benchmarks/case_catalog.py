@@ -61,6 +61,102 @@ EXTRA_ROUTER_CASES = {
         "IMPLEMENTATION",
         "The optimization is implemented. Decide whether unit timings, a benchmark, or a load test is sufficient evidence for the performance claim.",
     ),
+    "direct-persistence-known-helper": (
+        "DIRECT",
+        "Repository evidence confirms append_audit_event() is the authoritative transactional persistence boundary and its focused test is sufficient. Call it from the one known handler and run that test.",
+    ),
+    "direct-security-known-guard": (
+        "DIRECT",
+        "The permission policy, require_admin() guard, rejection-before-side-effect invariant, affected route, and focused tests are already established. Apply that guard to the known route and run those tests.",
+    ),
+    "direct-compat-known-adapter": (
+        "DIRECT",
+        "The approved one-release compatibility alias and its sole public serialization adapter are already identified. Add the alias there and run the existing old/new-client contract test.",
+    ),
+    "implementation-single-file-persistence": (
+        "IMPLEMENTATION",
+        "Change the persisted status encoding in serializer.py from integer codes to strings. The edit appears confined to one file, but existing on-disk data, readers, rollback, and compatibility guarantees have not been mapped.",
+    ),
+    "implementation-sqlite-transaction-unknown": (
+        "IMPLEMENTATION",
+        "Implement the body of save_history() with sqlite3. The function and dependency are fixed, but atomicity, concurrent callers, restart behavior, and the authoritative transaction boundary are unknown.",
+    ),
+    "implementation-one-line-irreversible": (
+        "IMPLEMENTATION",
+        "Flip purge_after_sync from false to true in one configuration file. The flag permanently deletes local records, and retry, rollback, idempotency, and ownership of that guarantee are not mapped.",
+    ),
+    "implementation-security-local-boundary": (
+        "IMPLEMENTATION",
+        "Add one authorization check to download(). The code edit is local, but tenant ownership, rejection-before-read behavior, indirect callers, and the authoritative permission boundary are unknown.",
+    ),
+    "decision-migration-policy-open": (
+        "DECISION",
+        "Choose an offline rewrite or a dual-read rolling migration for persisted session records. Downtime tolerance and cross-version compatibility policy are unresolved and would change the implementation surface.",
+    ),
+    "debug-persistence-corruption": (
+        "DEBUGGING",
+        "Some command-history rows disappear after two CLI processes exit at nearly the same time. The sqlite write path is named, but the earliest incorrect state and cause are not diagnosed.",
+    ),
+    "debug-security-symptom": (
+        "DEBUGGING",
+        "A user sometimes downloads another tenant's invoice through download(). The permission boundary may be involved, but the failing execution path and cause have not been traced.",
+    ),
+}
+
+
+EXTRA_BEHAVIOR_CASES = {
+    "native-direct-known-transaction": {
+        "prompt": "Repository evidence already establishes append_audit_event() as the authoritative transactional persistence boundary, this handler as the only affected caller, and test_audit_handler as the sufficient check. Replace the handler's placeholder with that existing helper and run the test.",
+        "files": {
+            "audit.py": "def append_audit_event(connection, event):\n    with connection:\n        connection.execute('insert into audit(event) values (?)', (event,))\n\ndef handle_login(connection):\n    pass\n",
+        },
+        "module": None,
+    },
+    "native-direct-known-permission": {
+        "prompt": "The repository's settled policy requires require_admin() on administrative routes, its rejection-before-side-effect contract is already tested, and delete_report() is the only missing known caller. Add the existing guard there and run the focused test.",
+        "files": {
+            "reports.py": "def require_admin(user):\n    if not user.get('admin'):\n        raise PermissionError\n\ndef delete_report(user, store, report_id):\n    store.delete(report_id)\n",
+        },
+        "module": None,
+    },
+    "native-direct-known-compatibility": {
+        "prompt": "Compatibility policy is settled: emit old_name beside new_name for one release. serialize_user() is the sole public adapter, all affected callers are mapped, and its existing contract test is sufficient. Make that local edit and run the test.",
+        "files": {
+            "users.py": "def serialize_user(user):\n    return {'new_name': user['name']}\n",
+        },
+        "module": None,
+    },
+    "native-implementation-local-persistence": {
+        "prompt": "Change serializer.py so persisted account status uses strings instead of integer codes. It looks like a one-file edit, but existing data, every reader, mixed-version compatibility, rollback, and the authoritative storage contract have not been mapped. Determine the safe implementation surface before editing.",
+        "files": {
+            "serializer.py": "def encode_status(status):\n    return 1 if status == 'active' else 2\n",
+        },
+        "module": "implementation.md",
+    },
+    "native-implementation-local-transaction": {
+        "prompt": "Python sqlite3 is already mandated and save_history() is the named function. Implementing it is locally small, but atomicity, concurrent writers, restart guarantees, and transaction ownership are unknown. Map those guarantees and sufficient evidence before editing.",
+        "files": {
+            "history.py": "import sqlite3\n\ndef save_history(connection, command):\n    pass\n",
+        },
+        "module": "implementation.md",
+    },
+    "native-implementation-one-line-irreversible": {
+        "prompt": "Set purge_after_sync=true in settings.py. Although this is one line, it permanently deletes local records, and retry, rollback, idempotency, affected callers, and ownership of the deletion guarantee are unknown. Determine the safe change and evidence first.",
+        "files": {"settings.py": "purge_after_sync = False\n"},
+        "module": "implementation.md",
+    },
+    "native-decision-migration-policy": {
+        "prompt": "Choose an offline rewrite or a dual-read rolling migration for persisted session records. Downtime tolerance and mixed-version compatibility policy are unresolved and the choice changes the next implementation action. Resolve the choice before implementation.",
+        "files": {"sessions.py": "def decode_session(raw):\n    return raw\n"},
+        "module": "decision.md",
+    },
+    "native-debug-persistent-corruption": {
+        "prompt": "Some sqlite command-history rows disappear when two CLI processes exit at nearly the same time. save_history() is named, but no trace has established the earliest incorrect state or cause. Diagnose the observed failure before deciding the fix.",
+        "files": {
+            "history.py": "def save_history(connection, command):\n    connection.execute('insert into history(command) values (?)', (command,))\n",
+        },
+        "module": "debugging.md",
+    },
 }
 
 
@@ -320,6 +416,7 @@ def install(bench: Any) -> None:
     bench.ROUTER_CASES.update(EXTRA_ROUTER_CASES)
     bench.DECISION_CASES.update(EXTRA_DECISION_CASES)
     bench.CUSTOM_DEBUG.update(EXTRA_DEBUG_CASES)
+    bench.BEHAVIOR_CASES.update(EXTRA_BEHAVIOR_CASES)
     bench.STRICT_SAFETY_CASES.update(
         case for case, spec in EXTRA_DEBUG_CASES.items() if spec.get("risk") == "security"
     )
@@ -341,5 +438,7 @@ def install(bench: Any) -> None:
     bench.PROFILE_CASES["full"]["decision"] = list(bench.DECISION_CASES)
     bench.PROFILE_CASES["standard"]["debug"] = [*base_debug, *STANDARD_EXTRA_DEBUG]
     bench.PROFILE_CASES["full"]["debug"] = [*base_debug, *EXTRA_DEBUG_CASES]
+    bench.PROFILE_CASES["standard"]["behavior"] = list(bench.BEHAVIOR_CASES)
+    bench.PROFILE_CASES["full"]["behavior"] = list(bench.BEHAVIOR_CASES)
 
     bench._extended_case_catalog_installed = True

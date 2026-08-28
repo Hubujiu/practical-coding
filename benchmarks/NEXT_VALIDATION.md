@@ -2,7 +2,7 @@
 
 This document freezes the evidence requirements for the next Practical Coding validation cycle before new results are inspected. Its purpose is to prevent post-hoc metric selection, public-regression overfitting, and marketing claims stronger than the evidence.
 
-The current public release is **Practical Coding v1.0**. The published evaluation is [`../docs/evaluations/2026-08-26-practical-v1-release.md`](../docs/evaluations/2026-08-26-practical-v1-release.md), with compact aggregates in [`results/v1.0/`](results/v1.0/).
+The current public release is **Practical Coding v1.1**. Its compact aggregates and evidence boundaries are in [`results/v1.1/`](results/v1.1/); the v1.0 release remains archived in [`results/v1.0/`](results/v1.0/).
 
 ## 1. Freeze before running
 
@@ -35,7 +35,7 @@ pwsh -NoProfile -File benchmarks/run.ps1 `
   -Profile full `
   -Runs 3 `
   -Workers 3 `
-  -BaselineRef <accepted-v1.0-or-later-commit> `
+  -BaselineRef <accepted-v1.1-or-later-commit> `
   -IncludeBaseline `
   -RequireStableRanking
 ```

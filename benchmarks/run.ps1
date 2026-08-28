@@ -12,6 +12,7 @@ param(
     [string]$BaselineSkill = "",
     [string]$BaselineRef = "",
     [switch]$IncludeBaseline,
+    [switch]$ComboMatrix,
     [switch]$NoBuilds,
     [switch]$SelfTest,
     [switch]$FailOnCellFailure,
@@ -77,6 +78,7 @@ if ($SourcesRoot) { $arguments += @("--sources-root", $SourcesRoot) }
 if ($BaselineSkill) { $arguments += @("--baseline-skill", $BaselineSkill) }
 if ($BaselineRef) { $arguments += @("--baseline-ref", $BaselineRef) }
 if ($IncludeBaseline) { $arguments += "--include-baseline" }
+if ($ComboMatrix) { $arguments += "--combo-matrix" }
 if ($NoBuilds) { $arguments += "--no-builds" }
 if ($SelfTest) { $arguments += "--self-test" }
 if ($FailOnCellFailure) { $arguments += "--fail-on-cell-failure" }

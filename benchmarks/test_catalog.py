@@ -5,6 +5,7 @@ from pathlib import Path
 from benchmarks import run_benchmarks as bench
 from benchmarks import run_catalog
 from benchmarks.case_catalog import (
+    EXTRA_BEHAVIOR_CASES,
     EXTRA_DEBUG_CASES,
     EXTRA_DECISION_CASES,
     EXTRA_ROUTER_CASES,
@@ -20,13 +21,14 @@ class ExpandedCatalogTests(unittest.TestCase):
         install(bench)
 
     def test_public_matrix_is_materially_broader(self):
-        self.assertEqual(len(bench.ROUTER_CASES), 28)
+        self.assertEqual(len(bench.ROUTER_CASES), 38)
         self.assertEqual(len(bench.DECISION_CASES), 10)
         self.assertEqual(len(bench.PROFILE_CASES["standard"]["decision"]), 6)
         self.assertEqual(len(bench.PROFILE_CASES["full"]["decision"]), 10)
         self.assertEqual(len(bench.PROFILE_CASES["standard"]["debug"]), 10)
         self.assertEqual(len(bench.PROFILE_CASES["full"]["debug"]), 14)
-        self.assertGreaterEqual(len(bench.PROFILE_CASES["standard"]["behavior"]), 10)
+        self.assertEqual(len(bench.PROFILE_CASES["standard"]["behavior"]), 18)
+        self.assertEqual(len(bench.PROFILE_CASES["full"]["behavior"]), 18)
 
     def test_only_explicit_security_cases_get_strict_case_level_safety(self):
         expected = {case for case, spec in EXTRA_DEBUG_CASES.items() if spec.get("risk") == "security"}
@@ -41,9 +43,21 @@ class ExpandedCatalogTests(unittest.TestCase):
         self.assertEqual(len({case["score"] for case in EXTRA_DEBUG_CASES.values()}), len(EXTRA_DEBUG_CASES))
         self.assertGreaterEqual(len(EXTRA_DECISION_CASES), 6)
 
+    def test_extreme_behavior_cases_pair_direct_and_escalated_risks(self):
+        modules = {case["module"] for case in EXTRA_BEHAVIOR_CASES.values()}
+        self.assertEqual(modules, {None, "decision.md", "debugging.md", "implementation.md"})
+        self.assertEqual(
+            sum(case["module"] is None for case in EXTRA_BEHAVIOR_CASES.values()),
+            3,
+        )
+        self.assertEqual(
+            sum(case["module"] == "implementation.md" for case in EXTRA_BEHAVIOR_CASES.values()),
+            3,
+        )
+
     def test_profiles_have_no_duplicate_case_ids(self):
         for profile in ("standard", "full"):
-            for suite in ("router", "decision", "debug"):
+            for suite in ("router", "decision", "debug", "behavior"):
                 cases = bench.PROFILE_CASES[profile][suite]
                 self.assertEqual(len(cases), len(set(cases)), f"duplicates in {profile}/{suite}")
 

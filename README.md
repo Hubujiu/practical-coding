@@ -3,7 +3,7 @@
 <p align="center">
   <a href="LICENSE"><img src="https://img.shields.io/badge/License-MIT-yellow.svg" alt="License: MIT"></a>
   <a href="https://agentskills.io"><img src="https://img.shields.io/badge/Agent_Skills-Compliant-success.svg" alt="Agent Skills Compliant"></a>
-  <img src="https://img.shields.io/badge/Version-1.0-blue.svg" alt="Version 1.0">
+  <img src="https://img.shields.io/badge/Version-1.1-blue.svg" alt="Version 1.1">
   <img src="https://img.shields.io/badge/Claude_Code_|_Cursor_|_Copilot_|_Gemini_|_Antigravity_|_Codex_|_Goose-supported-purple.svg" alt="Compatible Agents">
 </p>
 
@@ -82,9 +82,7 @@ Not:
 
 ### Important evidence boundary
 
-The v1.0 benchmark compares Practical Coding with Ponytail and Superpowers **as separate specialist comparators**. It does **not** yet contain a `Ponytail + Superpowers` combined-install arm. Therefore this repository does not claim that combined-install superiority has already been experimentally proven.
-
-That exact stack is now part of the next validation plan. Until it is measured, the argument above is an **architectural difference**, while the benchmark claims below remain limited to the tested head-to-head suites.
+The v1.1 evidence includes a 15-arm prompt-inlined interference matrix covering every non-empty subset of Practical, Ponytail, Superpowers, and grill-me. It is useful evidence about cross-Skill interference, but it is not yet an actual plugin-lifecycle installation test. Therefore the repository still does not claim universal superiority over every host's real combined installation.
 
 ---
 
@@ -150,22 +148,22 @@ The differentiator is not ownership of those ideas. It is the **routing contract
 
 ---
 
-## Benchmark evidence — v1.0
+## Benchmark evidence — v1.1
 
-The published v1.0 matrix uses `gpt-5.6-luna`, reasoning `medium`, isolated workspaces, pinned comparator commits, deterministic graders where possible, and three repetitions per cell.
+The v1.1 evidence uses `gpt-5.6-luna`, reasoning `medium`, isolated workspaces, pinned comparator commits, deterministic graders where possible, and three repetitions per cell. Current Practical results replace the older Cursor-matrix Practical rows; historical comparator/combo rows remain clearly marked as cross-run evidence rather than a new paired scorecard.
 
 | Suite | Practical | Comparator | What the result supports |
 |---|---:|---:|---|
-| **Debug** | **90.0%** | Superpowers 83.3% | Practical dominated the quality-gated scorecard with `2.311×` relative efficiency in this harness |
-| **Explicit security** | **100% safe** | Superpowers 100% safe | Equal observed safety; Practical used materially less input/output/time/tool calls |
-| **Decision** | **100%** | grilling 94.4% | Practical led on quality; cost remained a trade-off |
-| **Delivery** | 96.3% | **Ponytail 100%** | Ponytail retained the build and LOC lead; Practical was cheaper but did not pass the conservative quality gate |
-| **Router** | 95.2% | expected route | Public regression evidence for route selection |
-| **Native behavior** | 96.7% | route/load contract | Verifies real Skill discovery and selective reference loading |
+| **Delivery** | **100% (27/27)** | Ponytail 96.3% historical arm | Current Practical passed correctness, safety, and build; cross-run comparison is not a new paired scorecard |
+| **Decision** | **100% (18/18)** | role-dependent | Confirms current Decision routing and two-turn convergence |
+| **Debug** | **96.7% (29/30)** | Ponytail 93.3% historical arm | Correctness was 100%; one run missed a sibling caller, so the safety result is not presented as perfect |
+| **Router** | **100% (114/114)** | expected route | Expanded five-route regression matrix |
+| **Native behavior** | **100% (54/54)** | route/load contract | Native discovery and exact reference-loading regression |
+| **Applicable total** | **99.6% (242/243)** | — | Combined from three affected-surface reruns, not one atomic 243-cell manifest |
 
 These are **role-specific comparisons**, not a universal leaderboard. Delivery uses Ponytail's published task content/scorer through a Codex adapter; Decision and Debug are controlled project comparisons against the relevant behavior of the comparator Skills.
 
-Read the [published v1.0 data](benchmarks/results/v1.0/README.md), the [reproduction guide](benchmarks/REPRODUCING.md), and the [release evaluation](docs/evaluations/2026-08-26-practical-v1-release.md).
+Read the [published v1.1 data](benchmarks/results/v1.1/README.md), the [full Chinese report](benchmarks/results/v1.1/REPORT_ZH.md), and the [reproduction guide](benchmarks/REPRODUCING.md). The [v1.0 data](benchmarks/results/v1.0/README.md) remain available as historical evidence.
 
 ---
 
@@ -239,7 +237,7 @@ practical-coding/
 │   ├── run.ps1
 │   ├── run_benchmarks.py
 │   ├── REPRODUCING.md
-│   └── results/v1.0/
+│   └── results/{v1.0,v1.1}/
 ├── examples/
 ├── agents/
 └── docs/evaluations/

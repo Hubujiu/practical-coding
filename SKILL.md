@@ -4,7 +4,7 @@ description: "Use for implementing, fixing, refactoring, or reviewing code with 
 license: MIT
 metadata:
   author: Hubujiu
-  version: "1.0"
+  version: "1.1"
 ---
 
 # Practical Coding
@@ -21,7 +21,8 @@ One short core for every coding task, with optional modules only for unresolved 
 - Make the smallest coherent reachable change. A standalone artifact needs no demo or new caller unless requested; a user-facing feature is incomplete until the existing application can reach it.
 - Prefer deletion, boring code, repository defaults, and mature maintained implementations. Keep unrelated code and existing user changes untouched.
 - Add validation, fallback, retry, documentation, comments, or tests only for a current contract, concrete boundary, observed risk, project rule, or necessary evidence.
-- After the final edit, run the cheapest focused check once. Never repeat an unchanged check. If dependencies are absent, report that limitation instead of installing them solely to enable verification, unless installation is requested, part of the change, or needed for a high-risk claim.
+- Before finishing, remove every added line, file, option, or explanation that does not directly support the requested behavior, a preserved contract, or the chosen check; keep the smallest version that still works.
+- After the final edit, run the cheapest focused check once. Never repeat an unchanged check or substitute diff inspection for a required compile, type, or build gate. In an isolated workspace, a lockfile-preserving routine dependency install is allowed when it is the bounded prerequisite for that gate; otherwise report missing dependencies instead of installing them solely for verification.
 - If a check creates unrelated generated churn, inspect at most one diff, then leave and report it. Never investigate its provenance or stage, restore, or rewrite unrelated files merely to clean status output.
 - State only what fresh evidence supports; keep unrequested explanation short.
 
@@ -35,12 +36,12 @@ Route only when a present unresolved event blocks the next safe action. If the r
 
 1. An observed failure still lacks an evidenced cause: read `references/debugging.md`.
 2. An open user-owned choice about architecture, dependency, API, data model, or compatibility would change the next action: read `references/decision.md`.
-3. Safe execution requires mapping an unknown cross-boundary contract/invariant, or handling security, irreversible effects, persistence, concurrency, or compatibility risk: read `references/implementation.md`.
+3. Safe execution requires mapping an unknown cross-boundary contract/invariant, handling security, irreversible effects, persistence, concurrency, or compatibility risk, or deciding sufficient evidence for a material claim or risky change: read `references/implementation.md`.
 4. Broad structural navigation is necessary: read `references/navigation.md`, which selects the configured backend.
 
 Read and apply exactly that one module before routing again. Never load candidates together to compare them; route again only if resolving the first event exposes a different blocker.
 
-Do not preload modules. A named option, migration, dependency, or compatibility topic is not a Decision when its material policy is already fixed. Settled choices are inputs to Implementation or Direct execution. A reported symptom is not a diagnosed cause. Known coordinated edits are Direct; Implementation is not a mandatory stage.
+Do not preload modules. A named option, migration, dependency, or compatibility topic is not a Decision when its material policy is already fixed. Risk-related nouns, mechanisms, and file count do not select Implementation. Stay Direct only when repository evidence already establishes the affected boundary, required guarantee, next safe action, and sufficient focused check, with no unresolved migration, compatibility, side-effect, or evidence question; if the boundary or guarantee remains uncertain, use Implementation. A reported symptom is not a diagnosed cause. Known coordinated edits are Direct; Implementation is not a mandatory stage.
 
 Navigation needed to execute a risky change stays inside Implementation; use Navigation when the structural map itself is the current outcome or independently blocks another event.
 

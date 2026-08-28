@@ -13,7 +13,7 @@ Load this module only for an observed or reported failure, regression, incorrect
 
 - Prefer the narrowest fix that corrects the root cause and preserves existing contracts.
 - Do not patch a downstream symptom when an earlier incorrect state is identifiable and fixable.
-- Place an invariant at the narrowest shared state-mutation or parsing boundary that every affected caller passes through. Before editing a named failing caller, inspect the helper it delegates to and the helper's nearest sibling caller; if both can produce the invalid state, repair the shared boundary.
+- Treat universal wording such as "never," "every," or "no X can" as one contract across current mutation paths. Before editing a reported caller, inspect its delegated helper and nearest sibling caller; if both can violate that contract, fix the invariant once in their common state-mutation or parsing helper. Patch only the reported adapter when evidence shows the helper intentionally owns a different lower-level contract. For a shared invariant, the smallest coherent fix means that common boundary, not the fewest edited lines or the named caller.
 - Do not use broad retries, catches, fallbacks, default values, or defensive branches to hide an unexplained failure.
 - Add temporary logging or instrumentation only when it produces evidence needed to distinguish hypotheses.
 
@@ -27,7 +27,6 @@ Judge a fix by the delivered code, not by whether it followed a named debugging 
 
 ## Stay in Scope
 
-- Scope the fix by the violated contract or invariant, not merely by the function named in the report. If the requirement is universal across a resource or state (for example, it must never enter an invalid state), inspect every current mutation path through the nearest shared boundary; a sibling caller that can violate the same invariant is part of the reported defect.
 - Do not expand beyond that contract into a repo-wide search for unrelated defects.
 - Do not write tests merely because debugging occurred or because the repaired logic is non-trivial. Use the cheapest reproduction or focused check that can falsify the fix; add a durable targeted test only when regression risk, project requirements, or the evidence plan in `implementation.md` justifies its lasting value.
 - If diagnosis reveals a material design or dependency decision, load `decision.md` before making that choice.

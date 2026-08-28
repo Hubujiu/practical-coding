@@ -3,7 +3,7 @@
 <p align="center">
   <a href="LICENSE"><img src="https://img.shields.io/badge/License-MIT-yellow.svg" alt="License: MIT"></a>
   <a href="https://agentskills.io"><img src="https://img.shields.io/badge/Agent_Skills-Compliant-success.svg" alt="Agent Skills Compliant"></a>
-  <img src="https://img.shields.io/badge/Version-1.0-blue.svg" alt="Version 1.0">
+  <img src="https://img.shields.io/badge/Version-1.1-blue.svg" alt="Version 1.1">
   <img src="https://img.shields.io/badge/Claude_Code_|_Cursor_|_Copilot_|_Gemini_|_Antigravity_|_Codex_|_Goose-supported-purple.svg" alt="Compatible Agents">
 </p>
 
@@ -82,9 +82,7 @@ Practical Coding 做了一个“同时安装两者”不会自然得到的控制
 
 ### 证据边界
 
-v1.0 benchmark 当前分别把 Ponytail 和 Superpowers 作为专项 comparator，**还没有测试 `Ponytail + Superpowers` 双装 arm**。因此项目现在不会声称“双装已经被实验证明不如 Practical Coding”。
-
-下一轮验证已经把这个组合加入正式计划。在数据出来之前，上面的优势属于**架构差异**；下面的 benchmark 结论只覆盖真正测过的 head-to-head 场景。
+v1.1 证据包含 15 个 prompt-inline 共装 arm，覆盖 Practical、Ponytail、Superpowers、grill-me 的全部非空组合。它可以观察 Skill 间干扰，但仍不等于真实插件生命周期下的同时安装，因此项目不会把结果扩大成对所有宿主环境的普遍优越性声明。
 
 ---
 
@@ -148,22 +146,22 @@ flowchart TB
 
 ---
 
-## v1.0 Benchmark
+## v1.1 Benchmark
 
-公开 v1.0 矩阵使用 `gpt-5.6-luna`、`medium` reasoning、隔离工作区、固定 comparator commit、尽可能机械化的 grader，并对每个 cell 重复 3 次。
+v1.1 证据使用 `gpt-5.6-luna`、`medium` reasoning、隔离工作区、固定 comparator commit、尽可能机械化的 grader，并对每个 cell 重复 3 次。当前 Practical 补测覆盖旧 Cursor 全面报告中的 Practical 数据；旧 comparator/combo 数据只作为跨运行历史对照，不冒充新的 paired scorecard。
 
 | Suite | Practical | Comparator | 当前证据支持什么 |
 |---|---:|---:|---|
-| **Debug** | **90.0%** | Superpowers 83.3% | 在该 harness 下 Practical 通过 quality gate，并达到 `2.311×` 相对效率 |
-| **Explicit security** | **100% safe** | Superpowers 100% safe | 观察到的安全性相同，Practical 的输入/输出/时间/tool calls 明显更低 |
-| **Decision** | **100%** | grilling 94.4% | Practical 在质量上领先，成本仍是 trade-off |
-| **Delivery** | 96.3% | **Ponytail 100%** | Ponytail 保持 build 与 LOC 优势；Practical 更便宜，但未通过保守质量门槛 |
-| **Router** | 95.2% | expected route | 路由分类公开回归证据 |
-| **Native behavior** | 96.7% | route/load contract | 验证真实 Skill 发现和按需 reference 加载 |
+| **Delivery** | **100%（27/27）** | Ponytail 历史 arm 96.3% | 当前 Practical 的 correct/safe/build 全部通过；跨运行对比不是新 paired scorecard |
+| **Decision** | **100%（18/18）** | 角色相关 | 当前 Decision 路由与两轮收敛全部通过 |
+| **Debug** | **96.7%（29/30）** | Ponytail 历史 arm 93.3% | correct 100%；一次漏修 sibling caller，因此不宣称安全轴完美 |
+| **Router** | **100%（114/114）** | expected route | 扩展后的五路由回归矩阵 |
+| **Native behavior** | **100%（54/54）** | route/load contract | 原生发现与精确 reference 加载回归 |
+| **适用总计** | **99.6%（242/243）** | — | 来自三组受影响面补测，不是单一 243-cell manifest |
 
 这些结果是**按角色划分的专项比较**，不是把不同任务合成一个“宇宙总榜”。
 
-查看 [v1.0 数据](benchmarks/results/v1.0/README.md)、[复现指南](benchmarks/REPRODUCING.md) 和 [发布评估](docs/evaluations/2026-08-26-practical-v1-release.md)。
+查看 [v1.1 数据](benchmarks/results/v1.1/README.md)、[中文完整报告](benchmarks/results/v1.1/REPORT_ZH.md) 和 [复现指南](benchmarks/REPRODUCING.md)。[v1.0 数据](benchmarks/results/v1.0/README.md) 继续作为历史证据保留。
 
 ---
 
@@ -235,7 +233,7 @@ practical-coding/
 │   ├── run.ps1
 │   ├── run_benchmarks.py
 │   ├── REPRODUCING.md
-│   └── results/v1.0/
+│   └── results/{v1.0,v1.1}/
 ├── examples/
 ├── agents/
 └── docs/evaluations/

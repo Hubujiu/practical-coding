@@ -1,6 +1,8 @@
+import subprocess
 import tempfile
 import unittest
 from pathlib import Path
+from unittest import mock
 
 from benchmarks import run_benchmarks as bench
 
@@ -172,6 +174,31 @@ class BenchmarkHarnessTests(unittest.TestCase):
             "frontend build exhausted memory",
         )
         self.assertIsNone(bench.build_infrastructure_error("error TS2345: bad argument"))
+
+    def test_frontend_dependencies_are_prepared_before_agent_verification(self):
+        with tempfile.TemporaryDirectory() as tmp:
+            frontend = Path(tmp) / "frontend"
+            frontend.mkdir()
+            completed = subprocess.CompletedProcess(["bun", "install"], 0, "installed", "")
+            with mock.patch.object(bench.shutil, "which", return_value="bun"), mock.patch.object(
+                bench, "run_command", return_value=completed
+            ) as run:
+                setup = bench.prepare_frontend_dependencies("tmpl-fe-command", Path(tmp), 60)
+        self.assertIsNotNone(setup)
+        self.assertIn("installed", setup["output_tail"])
+        run.assert_called_once_with(["bun", "install", "--frozen-lockfile"], frontend, 60)
+
+    def test_post_build_reuses_prepared_frontend_dependencies(self):
+        with tempfile.TemporaryDirectory() as tmp:
+            frontend = Path(tmp) / "frontend"
+            (frontend / "node_modules").mkdir(parents=True)
+            completed = subprocess.CompletedProcess(["bun", "run", "build"], 0, "built", "")
+            with mock.patch.object(bench.shutil, "which", return_value="bun"), mock.patch.object(
+                bench, "run_command", return_value=completed
+            ) as run:
+                build = bench.post_build("tmpl-fe-command", Path(tmp), 60)
+        self.assertTrue(build["passed"])
+        run.assert_called_once_with(["bun", "run", "build"], frontend, 60)
 
 
 if __name__ == "__main__":

@@ -26,13 +26,14 @@ from pathlib import Path
 from typing import Any, Callable
 
 
-VERSION = "1.6"
+VERSION = "1.9"
 MODEL = "gpt-5.6-luna"
 REASONING = "medium"
 ROOT = Path(__file__).resolve().parents[1]
 HERE = Path(__file__).resolve().parent
 
 COMPARATORS = {"delivery": "ponytail", "decision": "grilling", "debug": "superpowers"}
+COMBO_COMPONENTS = ("practical-current", "ponytail", "superpowers", "grill-me")
 PASS_NONINFERIORITY_MARGIN = 0.03
 COST_WEIGHTS = {
     "uncached_input_tokens_median": 0.35,
@@ -93,7 +94,7 @@ DECISION_CASES = {
 
 CUSTOM_DEBUG = {
     "trace-config-bool": {
-        "prompt": "feature_enabled() in config.py is reported wrong when FEATURE contains surrounding whitespace, such as ' false '. Fix the bug without breaking other settings.",
+        "prompt": "feature_enabled() in config.py is wrong when FEATURE contains surrounding whitespace, such as ' false '. FEATURE and AUDIT use the same whitespace-tolerant boolean format; fix their shared parsing behavior without breaking other settings.",
         "files": {"config.py": """def parse_bool(value):\n    return value.lower() in {\"1\", \"true\", \"yes\"}\n\ndef feature_enabled(env):\n    return parse_bool(env.get(\"FEATURE\", \"false\"))\n\ndef audit_enabled(env):\n    return parse_bool(env.get(\"AUDIT\", \"false\"))\n"""},
         "score": "config",
     },
@@ -266,7 +267,11 @@ def default_sources_root() -> Path:
 def ensure_checkout(root: Path, name: str) -> Path:
     url, commit = SOURCES[name]
     path = root / name
-    if not path.exists():
+    head = run_command(["git", "rev-parse", "HEAD"], path) if path.exists() else None
+    needs_materialize = head is None or head.returncode or head.stdout.strip() != commit
+    if needs_materialize:
+        if path.exists():
+            shutil.rmtree(path)
         path.parent.mkdir(parents=True, exist_ok=True)
         result = run_command(["git", "clone", "--filter=blob:none", "--no-checkout", url, str(path)], root.parent)
         if result.returncode:
@@ -410,7 +415,23 @@ def parse_transcript(path: Path) -> dict[str, Any]:
     return {"answer": answer, "thread_id": thread_id, "usage": usage, "tool_calls": tool_calls, "tool_commands": tool_commands, "tool_outputs": tool_outputs}
 
 
+def combo_arms() -> list[str]:
+    """All non-empty co-install subsets of Practical, Ponytail, Superpowers, and grill-me."""
+    from itertools import combinations
+
+    arms: list[str] = []
+    for width in range(1, len(COMBO_COMPONENTS) + 1):
+        for combo in combinations(COMBO_COMPONENTS, width):
+            arms.append("+".join(combo))
+    return arms
+
+
 def skill_text(arm: str, sources: dict[str, Path], previous: Path | None, suite: str | None = None) -> str:
+    if "+" in arm:
+        parts = [part for part in arm.split("+") if part]
+        if not parts or any("+" in part for part in parts):
+            raise ValueError(arm)
+        return "\n\n".join(skill_text(part, sources, previous, suite) for part in parts)
     if arm in {"baseline", "practical-native", "practical-native-previous"}:
         return ""
     if arm in {"practical-current", "practical-previous"}:
@@ -430,6 +451,14 @@ def skill_text(arm: str, sources: dict[str, Path], previous: Path | None, suite:
     if arm == "grilling":
         value = (sources["mattpocock-skills"] / "skills/productivity/grilling/SKILL.md").read_text(encoding="utf-8")
         return f'<loaded-skill name="grilling">\n{value}\n</loaded-skill>'
+    if arm == "grill-me":
+        root = sources["mattpocock-skills"] / "skills/productivity"
+        grill_me = (root / "grill-me/SKILL.md").read_text(encoding="utf-8")
+        grilling = (root / "grilling/SKILL.md").read_text(encoding="utf-8")
+        return (
+            f'<loaded-skill name="grill-me">\n{grill_me}\n</loaded-skill>\n'
+            f'<loaded-skill name="grilling">\n{grilling}\n</loaded-skill>'
+        )
     if arm == "superpowers":
         root = sources["superpowers"] / "skills"
         value = (root / "using-superpowers/SKILL.md").read_text(encoding="utf-8")
@@ -555,11 +584,32 @@ def post_build(task_id: str, workspace: Path, timeout: float) -> dict[str, Any] 
         launcher = [shutil.which("pwsh") or "pwsh", "-NoProfile", "-File", bun]
     elif os.name == "nt" and Path(bun).suffix.lower() in {".cmd", ".bat"}:
         launcher = [os.environ.get("COMSPEC", "cmd.exe"), "/d", "/c", bun]
-    install = run_command([*launcher, "install", "--frozen-lockfile"], frontend, timeout)
-    build = run_command([*launcher, "run", "build"], frontend, timeout) if install.returncode == 0 else None
-    output = install.stdout + install.stderr + ((build.stdout + build.stderr) if build else "")
+    install = None if (frontend / "node_modules").is_dir() else run_command([*launcher, "install", "--frozen-lockfile"], frontend, timeout)
+    build = run_command([*launcher, "run", "build"], frontend, timeout) if install is None or install.returncode == 0 else None
+    output = ((install.stdout + install.stderr) if install else "") + ((build.stdout + build.stderr) if build else "")
     infrastructure_error = build_infrastructure_error(output)
     return {"passed": bool(build and build.returncode == 0), "duration_seconds": time.monotonic() - started, "output_tail": output[-4000:], "infrastructure_error": infrastructure_error}
+
+
+def prepare_frontend_dependencies(task_id: str, workspace: Path, timeout: float) -> dict[str, Any] | None:
+    """Make declared frontend dependencies available before the agent chooses its verification."""
+    if not task_id.startswith("tmpl-fe-"):
+        return None
+    frontend = workspace / "frontend"
+    bun = shutil.which("bun")
+    if not bun:
+        raise RuntimeError("bun was not found")
+    launcher = [bun]
+    if os.name == "nt" and Path(bun).suffix.lower() == ".ps1":
+        launcher = [shutil.which("pwsh") or "pwsh", "-NoProfile", "-File", bun]
+    elif os.name == "nt" and Path(bun).suffix.lower() in {".cmd", ".bat"}:
+        launcher = [os.environ.get("COMSPEC", "cmd.exe"), "/d", "/c", bun]
+    started = time.monotonic()
+    install = run_command([*launcher, "install", "--frozen-lockfile"], frontend, timeout)
+    output = install.stdout + install.stderr
+    if install.returncode:
+        raise RuntimeError(f"frontend dependency setup failed: {output[-2000:]}")
+    return {"duration_seconds": time.monotonic() - started, "output_tail": output[-2000:]}
 
 
 def build_infrastructure_error(output: str) -> str | None:
@@ -598,6 +648,10 @@ def run_cell(spec: tuple[str, str, str, int], args: argparse.Namespace, sources:
         request = behavior["prompt"]
     else:
         request = DECISION_CASES[case]["prompt"]
+
+    dependency_setup = None
+    if suite == "delivery" and not args.no_builds:
+        dependency_setup = prepare_frontend_dependencies(case, workspace, args.build_timeout)
 
     loaded = skill_text(arm, sources, previous, suite=suite)
     if suite == "router":
@@ -638,7 +692,8 @@ def run_cell(spec: tuple[str, str, str, int], args: argparse.Namespace, sources:
 
     usage = {key: sum(round_["usage"].get(key, 0) for round_ in rounds) for key in rounds[0]["usage"]}
     tool_calls = sum(round_["tool_calls"] for round_ in rounds)
-    record: dict[str, Any] = {"suite": suite, "case": case, "arm": arm, "repetition": repetition, "exit_status": code, "timed_out": timed_out, "forced_after_completion": forced, "duration_seconds": duration, "tool_calls": tool_calls, **usage, "workspace": str(workspace), "answers": answers}
+    setup_duration = dependency_setup["duration_seconds"] if dependency_setup else 0.0
+    record: dict[str, Any] = {"suite": suite, "case": case, "arm": arm, "repetition": repetition, "exit_status": code, "timed_out": timed_out, "forced_after_completion": forced, "duration_seconds": duration, "setup_duration_seconds": setup_duration, "dependency_setup": dependency_setup, "tool_calls": tool_calls, **usage, "workspace": str(workspace), "answers": answers}
     infrastructure_error = "timeout" if timed_out else (f"codex exit status {code}" if code and not forced else None)
     if infrastructure_error:
         record.update({"passed": None, "verdict": "indeterminate", "error": infrastructure_error})
@@ -671,7 +726,7 @@ def run_cell(spec: tuple[str, str, str, int], args: argparse.Namespace, sources:
         build_indeterminate = bool(build and build.get("infrastructure_error"))
         passed = None if build_indeterminate else scored.get("correct") == 1 and scored.get("safe") == 1 and (build is None or build["passed"])
         record.update(scored)
-        record.update({"build": build, "build_duration_seconds": build["duration_seconds"] if build else 0.0, "end_to_end_duration_seconds": duration + (build["duration_seconds"] if build else 0.0), "passed": passed})
+        record.update({"build": build, "build_duration_seconds": build["duration_seconds"] if build else 0.0, "end_to_end_duration_seconds": setup_duration + duration + (build["duration_seconds"] if build else 0.0), "passed": passed})
         if build_indeterminate:
             record["indeterminate_reason"] = build["infrastructure_error"]
     record["verdict"] = "indeterminate" if record.get("passed") is None else ("pass" if record["passed"] else "fail")
@@ -696,7 +751,7 @@ def aggregate(records: list[dict[str, Any]]) -> list[dict[str, Any]]:
             "indeterminate_n": len(cells) - len(determinate),
             "pass_rate": (sum(bool(cell.get("passed")) for cell in determinate) / len(determinate)) if determinate else None,
         }
-        for key in ("total_loc", "input_tokens", "cached_input_tokens", "uncached_input_tokens", "output_tokens", "reasoning_output_tokens", "total_tokens", "duration_seconds", "build_duration_seconds", "end_to_end_duration_seconds", "tool_calls"):
+        for key in ("total_loc", "input_tokens", "cached_input_tokens", "uncached_input_tokens", "output_tokens", "reasoning_output_tokens", "total_tokens", "duration_seconds", "setup_duration_seconds", "build_duration_seconds", "end_to_end_duration_seconds", "tool_calls"):
             values = [float(cell[key]) for cell in determinate if cell.get(key) is not None]
             if values:
                 row[f"{key}_median"] = statistics.median(values)
@@ -711,14 +766,27 @@ def aggregate(records: list[dict[str, Any]]) -> list[dict[str, Any]]:
     return rows
 
 
+def _comparator_arms_for(summary: list[dict[str, Any]], suite: str, case: str | None = None) -> list[str]:
+    arms = {
+        row["arm"]
+        for row in summary
+        if row["suite"] == suite
+        and row["arm"] not in {"practical-current", "practical-native", "practical-native-previous"}
+        and (case is None or row["case"] == case)
+    }
+    preferred = [COMPARATORS.get(suite), "practical-previous", "grilling", "grill-me", "baseline"]
+    ordered = [arm for arm in preferred if arm in arms]
+    ordered.extend(sorted(arm for arm in arms if arm not in ordered))
+    return ordered
+
+
 def comparisons(summary: list[dict[str, Any]]) -> list[dict[str, Any]]:
     by_key = {(row["suite"], row["case"], row["arm"]): row for row in summary}
     rows = []
     for current in summary:
         if current["arm"] != "practical-current":
             continue
-        arms = [COMPARATORS.get(current["suite"]), "practical-previous"]
-        for arm in filter(None, arms):
+        for arm in _comparator_arms_for(summary, current["suite"], current["case"]):
             other = by_key.get((current["suite"], current["case"], arm))
             if not other:
                 continue
@@ -786,70 +854,74 @@ def scorecards(summary: list[dict[str, Any]], rollups: list[dict[str, Any]]) -> 
     summary_by_key = {(row["suite"], row["case"], row["arm"]): row for row in summary}
     rollup_by_key = {(row["suite"], row["arm"]): row for row in rollups}
     cards: list[dict[str, Any]] = []
-    for suite, comparator_arm in COMPARATORS.items():
+    suites = sorted({row["suite"] for row in rollups if row["arm"] == "practical-current"})
+    for suite in suites:
         current = rollup_by_key.get((suite, "practical-current"))
-        comparator = rollup_by_key.get((suite, comparator_arm))
-        if not current or not comparator:
+        if not current:
             continue
-        case_names = sorted({case for row_suite, case, arm in summary_by_key if row_suite == suite and arm == "practical-current"})
-        sample_reasons: list[str] = []
-        quality_reasons: list[str] = []
-        for case in case_names:
-            current_case = summary_by_key[(suite, case, "practical-current")]
-            comparator_case = summary_by_key.get((suite, case, comparator_arm))
-            if not comparator_case:
-                sample_reasons.append(f"{case}: comparator cell missing")
+        for comparator_arm in _comparator_arms_for(rollups, suite):
+            comparator = rollup_by_key.get((suite, comparator_arm))
+            if not comparator:
                 continue
-            for arm_name, case_row in (("practical", current_case), (comparator_arm, comparator_case)):
-                if case_row.get("n", 0) < 3:
-                    sample_reasons.append(f"{case}/{arm_name}: n={case_row.get('n', 0)} < 3")
-                if case_row.get("indeterminate_n", 0):
-                    sample_reasons.append(f"{case}/{arm_name}: indeterminate={case_row['indeterminate_n']}")
-            if case in STRICT_SAFETY_CASES:
-                current_safe = current_case.get("safe_rate")
-                comparator_safe = comparator_case.get("safe_rate")
-                if current_safe is not None and comparator_safe is not None and current_safe < comparator_safe:
-                    quality_reasons.append(f"{case}: safety {current_safe:.3f} < {comparator_safe:.3f}")
+            case_names = sorted({case for row_suite, case, arm in summary_by_key if row_suite == suite and arm == "practical-current"})
+            sample_reasons: list[str] = []
+            quality_reasons: list[str] = []
+            for case in case_names:
+                current_case = summary_by_key[(suite, case, "practical-current")]
+                comparator_case = summary_by_key.get((suite, case, comparator_arm))
+                if not comparator_case:
+                    sample_reasons.append(f"{case}: comparator cell missing")
+                    continue
+                for arm_name, case_row in (("practical", current_case), (comparator_arm, comparator_case)):
+                    if case_row.get("n", 0) < 3:
+                        sample_reasons.append(f"{case}/{arm_name}: n={case_row.get('n', 0)} < 3")
+                    if case_row.get("indeterminate_n", 0):
+                        sample_reasons.append(f"{case}/{arm_name}: indeterminate={case_row['indeterminate_n']}")
+                if case in STRICT_SAFETY_CASES:
+                    current_safe = current_case.get("safe_rate")
+                    comparator_safe = comparator_case.get("safe_rate")
+                    if current_safe is not None and comparator_safe is not None and current_safe < comparator_safe:
+                        quality_reasons.append(f"{case}: safety {current_safe:.3f} < {comparator_safe:.3f}")
 
-        current_pass = current.get("pass_rate")
-        comparator_pass = comparator.get("pass_rate")
-        if current_pass is None or comparator_pass is None:
-            quality_reasons.append("suite pass rate unavailable")
-        elif current_pass < comparator_pass - PASS_NONINFERIORITY_MARGIN:
-            quality_reasons.append(
-                f"pass rate {current_pass:.3f} is more than {PASS_NONINFERIORITY_MARGIN:.3f} below {comparator_pass:.3f}"
+            current_pass = current.get("pass_rate")
+            comparator_pass = comparator.get("pass_rate")
+            if current_pass is None or comparator_pass is None:
+                quality_reasons.append("suite pass rate unavailable")
+            elif current_pass < comparator_pass - PASS_NONINFERIORITY_MARGIN:
+                quality_reasons.append(
+                    f"pass rate {current_pass:.3f} is more than {PASS_NONINFERIORITY_MARGIN:.3f} below {comparator_pass:.3f}"
+                )
+            for metric in ("safe_rate", "build_rate"):
+                current_value = current.get(metric)
+                comparator_value = comparator.get(metric)
+                if current_value is not None and comparator_value is not None and current_value < comparator_value:
+                    quality_reasons.append(f"{metric} {current_value:.3f} < {comparator_value:.3f}")
+
+            efficiency, cost_ratios = _geometric_ratio(current, comparator, COST_WEIGHTS)
+            quality_ratio = None
+            utility = None
+            if current_pass is not None and comparator_pass is not None:
+                quality_ratio = (float(current_pass) + 0.01) / (float(comparator_pass) + 0.01)
+                if not quality_reasons and efficiency is not None:
+                    utility = (quality_ratio**2) * efficiency
+            cards.append(
+                {
+                    "suite": suite,
+                    "current": "practical-current",
+                    "comparator": comparator_arm,
+                    "sample_qualified": not sample_reasons,
+                    "quality_qualified": not quality_reasons,
+                    "status": "qualified" if not sample_reasons and not quality_reasons else "provisional" if not quality_reasons else "not-qualified",
+                    "pareto": _pareto_status(current, comparator),
+                    "pass_noninferiority_margin": PASS_NONINFERIORITY_MARGIN,
+                    "quality_ratio": quality_ratio,
+                    "cost_efficiency_index": efficiency,
+                    "qualified_utility_index": utility,
+                    "cost_ratios": cost_ratios,
+                    "sample_reasons": sample_reasons,
+                    "quality_reasons": quality_reasons,
+                }
             )
-        for metric in ("safe_rate", "build_rate"):
-            current_value = current.get(metric)
-            comparator_value = comparator.get(metric)
-            if current_value is not None and comparator_value is not None and current_value < comparator_value:
-                quality_reasons.append(f"{metric} {current_value:.3f} < {comparator_value:.3f}")
-
-        efficiency, cost_ratios = _geometric_ratio(current, comparator, COST_WEIGHTS)
-        quality_ratio = None
-        utility = None
-        if current_pass is not None and comparator_pass is not None:
-            quality_ratio = (float(current_pass) + 0.01) / (float(comparator_pass) + 0.01)
-            if not quality_reasons and efficiency is not None:
-                utility = (quality_ratio**2) * efficiency
-        cards.append(
-            {
-                "suite": suite,
-                "current": "practical-current",
-                "comparator": comparator_arm,
-                "sample_qualified": not sample_reasons,
-                "quality_qualified": not quality_reasons,
-                "status": "qualified" if not sample_reasons and not quality_reasons else "provisional" if not quality_reasons else "not-qualified",
-                "pareto": _pareto_status(current, comparator),
-                "pass_noninferiority_margin": PASS_NONINFERIORITY_MARGIN,
-                "quality_ratio": quality_ratio,
-                "cost_efficiency_index": efficiency,
-                "qualified_utility_index": utility,
-                "cost_ratios": cost_ratios,
-                "sample_reasons": sample_reasons,
-                "quality_reasons": quality_reasons,
-            }
-        )
     return cards
 
 
@@ -1006,6 +1078,7 @@ def parse_args() -> argparse.Namespace:
     parser.add_argument("--baseline-skill", type=Path)
     parser.add_argument("--baseline-ref", help="materialize the previous Practical arm from a Git revision")
     parser.add_argument("--include-baseline", action="store_true")
+    parser.add_argument("--combo-matrix", action="store_true", help="run all co-install subsets of practical/ponytail/superpowers/grill-me on delivery/decision/debug")
     parser.add_argument("--no-builds", action="store_true")
     parser.add_argument("--self-test", action="store_true")
     parser.add_argument("--rescore", type=Path, help="reapply current mechanical graders to an existing run without model calls")
@@ -1069,7 +1142,17 @@ def main() -> int:
     (output / "manifest.json").write_text(json.dumps(manifest, indent=2) + "\n", encoding="utf-8")
     specs = []
     previous_arm = ["practical-previous"] if previous else []
-    delivery_arms = ["practical-current", "ponytail", *previous_arm, *(["baseline"] if args.include_baseline else [])]
+    if args.combo_matrix:
+        matrix_arms = combo_arms()
+        delivery_arms = [*matrix_arms, *previous_arm, *(["baseline"] if args.include_baseline else [])]
+        decision_arms = [*matrix_arms, *previous_arm]
+        debug_arms = [*matrix_arms, *previous_arm]
+        manifest["combo_matrix"] = matrix_arms
+        (output / "manifest.json").write_text(json.dumps(manifest, indent=2) + "\n", encoding="utf-8")
+    else:
+        delivery_arms = ["practical-current", "ponytail", *previous_arm, *(["baseline"] if args.include_baseline else [])]
+        decision_arms = ["practical-current", "grilling", *previous_arm]
+        debug_arms = ["practical-current", "superpowers", *previous_arm]
     for case in profile["delivery"]:
         for repetition in range(1, runs + 1):
             for arm in delivery_arms:
@@ -1080,11 +1163,11 @@ def main() -> int:
                 specs.append(("router", case, arm, repetition))
     for case in profile["decision"]:
         for repetition in range(1, runs + 1):
-            for arm in ["practical-current", "grilling", *previous_arm]:
+            for arm in decision_arms:
                 specs.append(("decision", case, arm, repetition))
     for case in profile["debug"]:
         for repetition in range(1, runs + 1):
-            for arm in ["practical-current", "superpowers", *previous_arm]:
+            for arm in debug_arms:
                 specs.append(("debug", case, arm, repetition))
     for case in profile["behavior"]:
         for repetition in range(1, runs + 1):

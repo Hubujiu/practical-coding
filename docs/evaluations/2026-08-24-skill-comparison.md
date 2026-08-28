@@ -13,32 +13,24 @@ Practical Coding is a generalist integration Skill. Its public benchmark therefo
 - Decision convergence: Matt Pocock `grilling`;
 - Routing/native loading: Practical-owned integration regressions.
 
-The current public release is **v1.0**. Compact release aggregates are in [`../../benchmarks/results/v1.0/`](../../benchmarks/results/v1.0/).
+The current public release is **v1.1**. Compact release aggregates and the updated comprehensive report are in [`../../benchmarks/results/v1.1/`](../../benchmarks/results/v1.1/). The v1.0 directory remains historical evidence.
 
 ## Current headline results
 
 | Capability | Practical | Comparator | Interpretation |
 |---|---:|---:|---|
-| Delivery | 96.3% | Ponytail 100% | Ponytail retains build/LOC advantage; Practical is cheaper but not quality-gate qualified |
-| Debug | 90.0% | Superpowers 83.3% | Practical quality-qualified and materially more efficient in this harness |
-| Explicit security | 100% safe | Superpowers 100% safe | Equal observed safety; Practical uses less measured compute/process cost |
-| Decision | 100% | grilling 94.4% | Practical leads quality; cost is a trade-off |
-| Router | 95.2% | expected route | Public regression evidence |
-| Native behavior | 96.7% | route/load contract | Confirms selective reference loading in real Skill execution |
+| Delivery | 100% (27/27) | Ponytail 96.3% historical arm | Current Practical passed correctness, safety, and build; cross-run rather than a new paired scorecard |
+| Debug | 96.7% (29/30) | Ponytail 93.3% historical arm | Correctness 100%; one localized repair missed a sibling caller |
+| Decision | 100% (18/18) | role-dependent | Current two-turn convergence regression passed |
+| Router | 100% (114/114) | expected route | Expanded five-route public regression evidence |
+| Native behavior | 100% (54/54) | route/load contract | Confirms exact selective loading in real Skill execution |
+| Applicable total | 99.6% (242/243) | — | Three affected-surface reruns, not one atomic manifest |
 
-## Why individual specialist comparisons are not enough
+## Combined-Skill evidence
 
-These results answer whether Practical can retain useful specialist behavior. They do not by themselves prove the project's integration hypothesis.
+The historical Cursor matrix ran all 15 non-empty prompt-inlined subsets of Practical, Ponytail, Superpowers, and grill-me. It found useful interference signals: Practical + Ponytail reached 100% Delivery, adding Superpowers often hurt Delivery, and all four reached 100% Debug at higher cost. Current v1.1 Practical figures supersede that matrix's Practical-current rows.
 
-The missing comparison is:
-
-```text
-Ponytail + Superpowers installed simultaneously
-```
-
-This matters because both Skills have broad activation semantics. The question is not whether either project is good in isolation; the question is whether two independent general coding/process policies create extra context/process cost or ambiguous arbitration compared with Practical's single event router.
-
-The combined arm is explicitly required by [`../../benchmarks/NEXT_VALIDATION.md`](../../benchmarks/NEXT_VALIDATION.md). Until that run exists, statements about Practical versus the combined stack must be presented as architecture/hypothesis, not measured superiority.
+This still does not prove universal behavior for actual plugin installation. The comparator arms used runner v1.6, current Practical used v1.8/v1.9, and prompt inlining is not every host's plugin lifecycle. The exact real-install comparison remains in [`../../benchmarks/NEXT_VALIDATION.md`](../../benchmarks/NEXT_VALIDATION.md).
 
 ## Evidence discipline
 
@@ -48,4 +40,5 @@ Use these rules when citing the results:
 - do not turn a one-cell difference into a universal claim;
 - report correctness/safety/build before efficiency;
 - public regression cases that influenced Skill wording are not held-out generalization evidence;
-- never merge specialist suites into one universal score.
+- never merge specialist suites into one universal score;
+- do not turn the cross-run comparator rows into a paired v1.9 scorecard.
