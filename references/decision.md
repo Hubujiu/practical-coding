@@ -1,8 +1,8 @@
 # Decision
 
-Load this module only when a material choice about architecture, dependencies, APIs, data models, compatibility, or multiple plausible implementations remains open—including whether or which package, library, service, or mature external implementation to adopt. Core does not independently make those external choices. Its output is a resolved choice that changes the next action, not a design essay or an option dump.
+Load this module only when a material choice about architecture, dependencies, APIs, data models, compatibility, or multiple plausible implementations remains open—including whether or which package, library, service, or mature external implementation to adopt. Its output is a resolved choice that changes the next action, not a design essay or an option dump.
 
-Do not load this module when a Core rung already meets the stated success, or when the request already selected and authorized an external dependency/surface and the integration path is clear. The existence of a popular uninstalled library is not by itself a Decision event.
+Do not load this module when the request or repository has already settled the material choice. The existence of a popular alternative is not by itself a Decision event.
 
 ## Decision Frontier
 
