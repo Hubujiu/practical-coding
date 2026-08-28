@@ -157,7 +157,7 @@ v1.1 证据使用 `gpt-5.6-luna`、`medium` reasoning、隔离工作区、固定
 |---|---:|---:|---|
 | **Delivery** | **100%（27/27）** | Ponytail 历史 arm 96.3% | 当前 Practical 的 correct/safe/build 全部通过；跨运行对比不是新 paired scorecard |
 | **Decision** | **100%（18/18）** | 角色相关 | 当前 Decision 路由与两轮收敛全部通过 |
-| **Debug** | **96.7%（29/30）** | Ponytail 93.3% 历史 arm | correct 100%；一次漏修 sibling caller，因此不宣称安全轴完美 |
+| **Debug** | **96.7%（29/30）** | Ponytail 历史 arm 93.3% | correct 100%；一次漏修 sibling caller，因此不宣称安全轴完美 |
 | **Router** | **100%（114/114）** | expected route | 扩展后的五路由回归矩阵 |
 | **Native behavior** | **100%（54/54）** | route/load contract | 原生发现与精确 reference 加载回归 |
 | **适用总计** | **99.6%（242/243）** | — | 来自三组受影响面补测，不是单一 243-cell manifest |
@@ -204,7 +204,7 @@ git clone https://github.com/Hubujiu/practical-coding.git .github/skills/practic
 
 ## 可选 Codebase Memory
 
-Practical Coding 不依赖额外配置即可工作。只有当仓库确实值得测试图谱式结构导航时，才创建 `.practical-coding.yaml`：
+默认零配置即可使用。只有希望测试图谱导航的大型/复杂仓库才需要 `.practical-coding.yaml`：
 
 ```yaml
 version: 1
@@ -212,9 +212,9 @@ codebase_memory:
   enabled: true
 ```
 
-启用后，Navigation 可以按需调用上游 `codebase-memory-mcp` CLI。若无法启动，则回退到普通源码搜索，并明确报告本次任务未使用 Codebase Memory。
+启用后，Navigation 可以按需调用上游 `codebase-memory-mcp` CLI。如果无法启动，会回退普通源码检索并明确报告没有使用 Codebase Memory。
 
-它故意保持 opt-in：当前 navigation ablation **并没有**证明存在一个对所有仓库都成立的“超过多少文件就一定该开图谱”的阈值。
+当前导航 ablation **没有证明一个通用的“多少文件以上图谱一定更好”的阈值**，因此保持 opt-in。
 
 ---
 
@@ -244,6 +244,6 @@ practical-coding/
 
 ## 贡献
 
-如果真实任务暴露出过度工程化、漏升级、无必要模块加载或不安全的极简化，请用最小可复现 case 提 issue/PR。贡献规则见 [CONTRIBUTING.md](CONTRIBUTING.md)。
+如果真实任务暴露出过度工程、漏升级、无意义模块加载或不安全的极简化，欢迎提交最小可复现 issue/PR。详见 [CONTRIBUTING.md](CONTRIBUTING.md)。
 
-MIT License。上游归属见 [THIRD_PARTY_NOTICES.md](THIRD_PARTY_NOTICES.md)。
+MIT License。第三方致谢见 [THIRD_PARTY_NOTICES.md](THIRD_PARTY_NOTICES.md)。
