@@ -1,14 +1,14 @@
 # Decision
 
-Load this module only when a material choice about architecture, dependencies, APIs, data models, compatibility, or multiple plausible implementations remains open—including introducing a package, library, or service not already in the project, or surveying/comparing mature external implementations. Core never makes those choices. Its output is a resolved choice that changes the next action, not a design essay or an option dump.
+Load this module only when a material choice about architecture, dependencies, APIs, data models, compatibility, or multiple plausible implementations remains open—including whether or which package, library, service, or mature external implementation to adopt. Core does not independently make those external choices. Its output is a resolved choice that changes the next action, not a design essay or an option dump.
 
-Do not load this module when a Core rung already meets the stated success (project primitive, stdlib, native/environment feature, or already-installed package). The existence of a popular uninstalled library is not by itself a Decision event.
+Do not load this module when a Core rung already meets the stated success, or when the request already selected and authorized an external dependency/surface and the integration path is clear. The existence of a popular uninstalled library is not by itself a Decision event.
 
 ## Decision Frontier
 
 Resolve discoverable facts from the repository and authoritative sources before asking the user. Keep a compact ledger of verified facts, constraints, assumptions, decisions, and unresolved choices. Work only on the current frontier: choices whose prerequisites are already known. Do not ask about a downstream choice while an upstream answer could invalidate it.
 
-Ask only about user-owned scope, compatibility, risk tolerance, cost, or preference when at least two plausible answers lead to materially different next actions and choosing the wrong default costs more than one interaction. Ask every independent user-owned decision on the current frontier in the same round; dependent questions wait for a later round. For every question:
+Research is part of resolving an open Decision. Compare viable mature implementations when external evidence is necessary; do not ask the user merely for permission to research. Ask only about user-owned scope, compatibility, risk tolerance, cost, or preference when at least two plausible answers lead to materially different next actions and choosing the wrong default costs more than one interaction. Ask every independent user-owned decision on the current frontier in the same round; dependent questions wait for a later round. For every question:
 
 - explain briefly why the decision matters now;
 - recommend one option and give the reason;
@@ -28,7 +28,7 @@ End the round with the smallest answer format, then wait. If the task is already
 ## Resolve
 
 1. State the exact decision and constraints that distinguish acceptable options.
-2. Check, in order: established project pattern, standard library, platform/framework, installed dependency, then mature maintained external implementation. Research a new external dependency or mature implementation only in this module after the user-owned choice is on the frontier; do not install it from Core.
+2. Check, in order: established project pattern, standard library, platform/framework, installed dependency, then mature maintained external implementation. Research external options only when the open choice cannot be resolved from local evidence; do not install or vendor an option merely to compare it.
 3. Keep at most three viable options. Compare only material fit, correctness, compatibility, operational, maintenance, and migration differences.
 4. Select the smallest option that fully satisfies current requirements. Do not create an abstraction, dependency, wrapper, or extension point without a present need.
 
