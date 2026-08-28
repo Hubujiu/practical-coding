@@ -35,11 +35,12 @@ Practical Coding 的核心是：**工程严谨度按需启用。**
 |---|---|
 | 改名、CSS、小范围且已有项目模式 | **Direct Path**：直接修改，不加载模块，不启 worker |
 | Bug，但根因未知 | 只加载 **Debugging** |
-| 真正存在未决架构/依赖选择 | 只加载 **Decision** |
+| 真正存在未决架构/依赖选择，包括是否或选择哪一个新外部依赖/成熟实现 | 只加载 **Decision** |
+| 用户已经明确选择并授权某个外部依赖，且集成路径清楚 | **Direct Path**：把它视为已确定输入 |
 | 安全、迁移、持久化、并发、兼容性风险 | 只加载 **Implementation** |
 | 大范围代码结构导航本身成为阻塞 | 只加载 **Navigation** |
 
-核心不变量：**默认 Direct，只有 unresolved event 让 Direct 变得不安全时才升级。**
+核心不变量：**默认 Direct，只有 unresolved event 让 Direct 变得不安全时才升级。已经由用户确定并授权的依赖/实现不是新的 Decision。**
 
 ---
 
@@ -113,7 +114,9 @@ flowchart TB
 常驻 `SKILL.md` 保持很短，只放所有编码任务都应该遵守的规则：
 
 - 修改前先读真正被影响的代码；
-- 按阶梯停止：不做 → 复用已有代码 → 标准库 → 原生平台能力 → 已安装依赖 → 一行代码 → 最少自定义代码；
+- 按阶梯停止：不做 → 复用已有代码 → 标准库 → 原生平台/环境能力 → 已安装依赖 → 一行代码 → 最少本地代码；
+- 用户已经明确选择并授权的外部依赖，在集成路径清楚时视为已确定输入；
+- Core 不自行选择新依赖，也不为了“可能更成熟”而主动调研外部替代；真正未决的外部选择才进入 Decision；
 - 不添加推测性的抽象、配置、wrapper、测试、fallback 或注释；
 - 不碰无关文件和用户已有修改；
 - 删除优于新增，普通代码优于聪明代码；
@@ -124,7 +127,7 @@ flowchart TB
 
 | 模块 | 触发条件 | 目的 |
 |---|---|---|
-| [`decision.md`](references/decision.md) | 一个实质未决选择会改变下一步 | 比较少量可行方案并收敛 |
+| [`decision.md`](references/decision.md) | 一个实质未决选择会改变下一步，包括是否/选择哪一个新外部依赖或成熟实现 | 只在需要时调研，比较少量可行方案，并收敛真正属于用户的未决选择 |
 | [`implementation.md`](references/implementation.md) | 安全、不可逆操作、持久化、并发、兼容性或未知跨边界 invariant | 映射风险边界并证伪关键假设 |
 | [`debugging.md`](references/debugging.md) | 已观察故障仍缺少证据化根因 | 复现 → 最早破坏状态 → 单一假设 → 根因修复 |
 | [`navigation.md`](references/navigation.md) | 大范围结构导航本身阻塞任务 | 在普通源码搜索和可选图谱导航之间选择 |
@@ -201,7 +204,7 @@ git clone https://github.com/Hubujiu/practical-coding.git .github/skills/practic
 
 ## 可选 Codebase Memory
 
-默认零配置即可使用。只有希望测试图谱导航的大型/复杂仓库才需要 `.practical-coding.yaml`：
+Practical Coding 不依赖额外配置即可工作。只有当仓库确实值得测试图谱式结构导航时，才创建 `.practical-coding.yaml`：
 
 ```yaml
 version: 1
@@ -209,9 +212,9 @@ codebase_memory:
   enabled: true
 ```
 
-启用后，Navigation 可以按需调用上游 `codebase-memory-mcp` CLI。如果无法启动，会回退普通源码检索并明确报告没有使用 Codebase Memory。
+启用后，Navigation 可以按需调用上游 `codebase-memory-mcp` CLI。若无法启动，则回退到普通源码搜索，并明确报告本次任务未使用 Codebase Memory。
 
-当前导航 ablation **没有证明一个通用的“多少文件以上图谱一定更好”的阈值**，因此保持 opt-in。
+它故意保持 opt-in：当前 navigation ablation **并没有**证明存在一个对所有仓库都成立的“超过多少文件就一定该开图谱”的阈值。
 
 ---
 
@@ -241,6 +244,6 @@ practical-coding/
 
 ## 贡献
 
-如果真实任务暴露出过度工程、漏升级、无意义模块加载或不安全的极简化，欢迎提交最小可复现 issue/PR。详见 [CONTRIBUTING.md](CONTRIBUTING.md)。
+如果真实任务暴露出过度工程化、漏升级、无必要模块加载或不安全的极简化，请用最小可复现 case 提 issue/PR。贡献规则见 [CONTRIBUTING.md](CONTRIBUTING.md)。
 
-MIT License。第三方致谢见 [THIRD_PARTY_NOTICES.md](THIRD_PARTY_NOTICES.md)。
+MIT License。上游归属见 [THIRD_PARTY_NOTICES.md](THIRD_PARTY_NOTICES.md)。
