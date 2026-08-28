@@ -13,8 +13,6 @@ One short, route-agnostic core for every coding task, with optional modules load
 
 ## Core
 
-The Core is universal and route-agnostic. It defines how to make a change, not when to load a module.
-
 - Read the request and the code it actually touches; define the smallest observable success before editing.
 - Stop at the first rung that works: do nothing; reuse the nearest existing project primitive; use the standard library; use a native platform or environment feature; use an already-available dependency; one line; otherwise write the minimum local code.
 - Reuse existing APIs and contracts instead of restating them. When an artifact only specializes an existing primitive, make the thinnest adapter that satisfies the request.
