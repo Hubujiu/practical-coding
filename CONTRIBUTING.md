@@ -2,7 +2,8 @@
 
 Contributions should preserve Practical Coding as one compact skill with independently loadable modules.
 
-- Keep `SKILL.md` as a small shortest-path core plus event router. Task complexity determines escalation; do not add routing intensity modes unless a mature cross-agent mechanism exists and materially improves evidence.
+- Keep `SKILL.md` as a small route-agnostic shortest-path Core plus an Event Router. The Core defines universal coding behavior; it must not contain module triggers, risk taxonomies, dependency-choice policy, debugging procedure, navigation behavior, or other module-specific logic.
+- Keep the Event Router narrow: it decides whether and which one reference to load. Do not copy module procedures into the Router.
 - Do not retune Core or module wording from a failed benchmark cell, and do not add case-specific bans named after Delivery or Debug tasks.
 - Put conditional behavior in focused files under `references/` and state an exact trigger for loading each file.
 - Keep modules independent; do not create a mandatory chain where loading one module automatically requires the others.
@@ -41,4 +42,4 @@ Structured Codebase Memory is backed directly by [`DeusData/codebase-memory-mcp`
 - Remove the shim after upstream fixes the defect.
 - Keep attribution and license notices when upstream code or substantial implementation material is ever vendored or copied; see `THIRD_PARTY_NOTICES.md`.
 
-A change is moving in the wrong direction if a trivial local edit must load or execute more process after the change than before it, or if Practical Coding starts maintaining a weaker duplicate of a mature subsystem.
+A change is moving in the wrong direction if a trivial local edit must load or execute more process after the change than before it, if Core starts absorbing module-specific logic, or if Practical Coding starts maintaining a weaker duplicate of a mature subsystem.
