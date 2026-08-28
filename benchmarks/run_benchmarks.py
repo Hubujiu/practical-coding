@@ -29,6 +29,7 @@ from typing import Any, Callable
 VERSION = "1.9"
 MODEL = "gpt-5.6-luna"
 REASONING = "medium"
+PROVIDER: str | None = None
 ROOT = Path(__file__).resolve().parents[1]
 HERE = Path(__file__).resolve().parent
 
@@ -305,10 +306,11 @@ def prepare_eval_home(output: Path) -> Path:
     home.mkdir(parents=True, exist_ok=True)
     source = Path.home() / ".codex" / "auth.json"
     target = home / "auth.json"
-    if not source.is_file():
-        raise FileNotFoundError("Codex auth.json is unavailable")
-    if not target.exists():
-        os.link(source, target)
+    if source.is_file():
+        if not target.exists():
+            os.link(source, target)
+    elif not any(os.environ.get(key) for key in ("OPENAI_API_KEY", "CODEX_API_KEY", "XAI_API_KEY")):
+        raise FileNotFoundError("Codex auth.json is unavailable and no API key env var is set")
     return home
 
 
@@ -334,7 +336,12 @@ def codex_command(codex: str, cwd: Path, *, resume: str | None = None) -> list[s
     command = [codex, "exec"]
     if resume:
         command += ["resume"]
-    command += ["--json", "--ignore-user-config", "--disable", "plugins", "--disable", "skill_search", "--disable", "memories", "--disable", "apps", "--disable", "multi_agent", "--model", MODEL, "--config", f"model_reasoning_effort={REASONING}", "--config", disabled_skill_config(), "--dangerously-bypass-approvals-and-sandbox"]
+    command += ["--json", "--ignore-user-config", "--disable", "plugins", "--disable", "skill_search", "--disable", "memories", "--disable", "apps", "--disable", "multi_agent", "--model", MODEL]
+    if PROVIDER:
+        command += ["--provider", PROVIDER]
+    if REASONING:
+        command += ["--config", f"model_reasoning_effort={REASONING}"]
+    command += ["--config", disabled_skill_config(), "--dangerously-bypass-approvals-and-sandbox"]
     if resume:
         command += [resume, "-"]
     else:
@@ -1084,13 +1091,20 @@ def parse_args() -> argparse.Namespace:
     parser.add_argument("--rescore", type=Path, help="reapply current mechanical graders to an existing run without model calls")
     parser.add_argument("--fail-on-cell-failure", action="store_true")
     parser.add_argument("--codex", default=os.environ.get("CODEX_BIN", "codex"))
+    parser.add_argument("--model", default=os.environ.get("BENCHMARK_MODEL", MODEL), help="Codex model id, e.g. gpt-5.6-luna, auto, grok-4.5")
+    parser.add_argument("--provider", default=os.environ.get("BENCHMARK_PROVIDER") or None, help="Codex provider override, e.g. openai or xai")
+    parser.add_argument("--reasoning", default=os.environ.get("BENCHMARK_REASONING", REASONING), help="Reasoning effort for supported models; use empty string to omit")
     parser.add_argument("--timeout", type=float, default=600)
     parser.add_argument("--build-timeout", type=float, default=600)
     return parser.parse_args()
 
 
 def main() -> int:
+    global MODEL, REASONING, PROVIDER
     args = parse_args()
+    MODEL = args.model
+    REASONING = args.reasoning
+    PROVIDER = args.provider or None
     if args.runs < 0 or args.workers < 1:
         raise SystemExit("runs must be non-negative and workers positive")
     if args.baseline_skill and args.baseline_ref:
@@ -1138,7 +1152,7 @@ def main() -> int:
         native_previous_skill = install_native_skill(eval_homes["native-previous"], previous)
     codex_path = resolve_codex(args.codex)
     codex_version = run_command([codex_path, "--version"], ROOT)
-    manifest = {"runner_version": VERSION, "runner_sha256": sha256(Path(__file__)), "model": MODEL, "reasoning": REASONING, "profile": args.profile, "runs": runs, "workers": args.workers, "started_at": dt.datetime.now(dt.timezone.utc).isoformat(), "environment": {"platform": platform.platform(), "python": sys.version, "codex": codex_version.stdout.strip(), "codex_path": codex_path}, "skill": {"current_entrypoint_sha256": sha256(ROOT / "SKILL.md"), "current_bundle_sha256": bundle_sha256(ROOT), "native_install": str(native_skill), "native_previous_install": str(native_previous_skill) if native_previous_skill else None, "previous_ref": args.baseline_ref, "previous_entrypoint_sha256": sha256(previous / "SKILL.md") if previous else None, "previous_bundle_sha256": bundle_sha256(previous) if previous else None}, "sources": {name: {"url": SOURCES[name][0], "commit": SOURCES[name][1], "path": str(sources[name])} for name in SOURCES}, "cases": profile}
+    manifest = {"runner_version": VERSION, "runner_sha256": sha256(Path(__file__)), "model": MODEL, "provider": PROVIDER, "reasoning": REASONING, "profile": args.profile, "runs": runs, "workers": args.workers, "started_at": dt.datetime.now(dt.timezone.utc).isoformat(), "environment": {"platform": platform.platform(), "python": sys.version, "codex": codex_version.stdout.strip(), "codex_path": codex_path}, "skill": {"current_entrypoint_sha256": sha256(ROOT / "SKILL.md"), "current_bundle_sha256": bundle_sha256(ROOT), "native_install": str(native_skill), "native_previous_install": str(native_previous_skill) if native_previous_skill else None, "previous_ref": args.baseline_ref, "previous_entrypoint_sha256": sha256(previous / "SKILL.md") if previous else None, "previous_bundle_sha256": bundle_sha256(previous) if previous else None}, "sources": {name: {"url": SOURCES[name][0], "commit": SOURCES[name][1], "path": str(sources[name])} for name in SOURCES}, "cases": profile}
     (output / "manifest.json").write_text(json.dumps(manifest, indent=2) + "\n", encoding="utf-8")
     specs = []
     previous_arm = ["practical-previous"] if previous else []

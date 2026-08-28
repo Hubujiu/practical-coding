@@ -17,7 +17,10 @@ param(
     [switch]$SelfTest,
     [switch]$FailOnCellFailure,
     [switch]$RequireStableRanking,
-    [string]$Rescore = ""
+    [string]$Rescore = "",
+    [string]$Model = "",
+    [string]$Provider = "",
+    [string]$Reasoning = ""
 )
 
 $ErrorActionPreference = "Stop"
@@ -83,6 +86,9 @@ if ($NoBuilds) { $arguments += "--no-builds" }
 if ($SelfTest) { $arguments += "--self-test" }
 if ($FailOnCellFailure) { $arguments += "--fail-on-cell-failure" }
 if ($Rescore) { $arguments += @("--rescore", $Rescore) }
+if ($Model) { $arguments += @("--model", $Model) }
+if ($Provider) { $arguments += @("--provider", $Provider) }
+if ($Reasoning) { $arguments += @("--reasoning", $Reasoning) }
 
 & python @arguments
 $benchmarkExit = $LASTEXITCODE
