@@ -85,20 +85,31 @@ class BenchmarkHarnessTests(unittest.TestCase):
             {"DIRECT", "DECISION", "DEBUGGING", "IMPLEMENTATION", "EXPLORATION"},
         )
 
-    def test_core_dependency_policy_distinguishes_open_choice_from_settled_input(self):
+    def test_core_is_route_agnostic_and_router_owns_escalation(self):
         skill = (bench.ROOT / "SKILL.md").read_text(encoding="utf-8")
-        decision = (bench.ROOT / "references" / "decision.md").read_text(encoding="utf-8")
+        core = skill.split("## Core", 1)[1].split("## Direct Path", 1)[0]
+        router = skill.split("## Event Router", 1)[1].split("## Isolation Gate", 1)[0]
 
-        self.assertIn("no unresolved user-owned choice", skill)
-        self.assertIn("selected and authorized", skill)
-        self.assertIn("whether or which new external dependency", skill)
-        self.assertIn("existing contracts, and the chosen check", skill)
-        self.assertNotIn("controlled/uncontrolled", skill)
-        self.assertNotIn("picker library", skill)
+        self.assertIn("minimum local code", core)
+        self.assertIn("already-established contracts", core)
+        for module_specific in (
+            "references/",
+            "user-owned",
+            "security/permissions",
+            "persistence/migration",
+            "Decision",
+            "Debugging",
+            "Implementation",
+            "Navigation",
+        ):
+            self.assertNotIn(module_specific, core)
 
-        self.assertIn("whether or which package, library, service", decision)
-        self.assertIn("already selected and authorized", decision)
-        self.assertIn("do not ask the user merely for permission to research", decision)
+        self.assertIn("observed failure", router)
+        self.assertIn("whether or which external dependency", router)
+        self.assertIn("specified and authorized", router)
+        self.assertIn("security/permissions", router)
+        self.assertIn("persistence/migration", router)
+        self.assertIn("structural mapping", router)
 
     def test_decision_suite_inlines_decision_module(self):
         with tempfile.TemporaryDirectory() as tmp:
