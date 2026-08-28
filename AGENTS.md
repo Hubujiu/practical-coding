@@ -6,7 +6,7 @@ Read [`SKILL.md`](SKILL.md) for the shortest-path core and event router. Local, 
 
 | Trigger | Module |
 |---|---|
-| A material choice about architecture, introducing a new external dependency, surveying a mature external implementation, APIs, data models, compatibility, or multiple plausible implementations | [`references/decision.md`](references/decision.md) |
+| A material unresolved choice about architecture, whether or which new external dependency/mature implementation to adopt, APIs, data models, compatibility, or multiple plausible implementations | [`references/decision.md`](references/decision.md) |
 | An unmapped contract/invariant, a material risk boundary (security/permissions, irreversible side effects, persistence/migration, concurrency/transactions, compatibility), or unresolved sufficient evidence for a risky change | [`references/implementation.md`](references/implementation.md) |
 | An observed failure, regression, incorrect behavior, or failed verification needs diagnosis | [`references/debugging.md`](references/debugging.md) |
 | Broad navigation of a large or structurally complex codebase; project configuration selects ordinary search or Codebase Memory | [`references/navigation.md`](references/navigation.md) |
@@ -15,7 +15,7 @@ Modules are independent and imply no execution order.
 
 The root agent owns user intent, authorization, repository state, routing, integration, and the final completion claim. A selected module worker reads [`references/delegation.md`](references/delegation.md) plus exactly one assigned module and returns a compact capsule. Workers are read-only by default; an implementation worker may write only when its assignment includes implementation, must have explicit scope, and must be the sole writer there. Treat a capsule as stale after relevant repository changes.
 
-Core stays on project code, stdlib, native/environment features, and already-installed packages. Adopting a new external dependency or surveying a mature external implementation is a Decision event and waits for the user; do not do that work on the Direct Path.
+Core does not independently choose, add, vendor, or survey a new external dependency. If the request already selects and authorizes an external dependency/surface and the integration path is clear, that choice is settled input and may remain Direct. If whether or which external capability to adopt is still material and unresolved, route Decision; research needed to resolve that choice happens there before asking the user for any genuinely user-owned constraint or preference.
 
 Structured Codebase Memory is a Navigation-selected opt-in backend backed directly by the mature `DeusData/codebase-memory-mcp` implementation. It is used only when `.practical-coding.yaml` explicitly sets `codebase_memory.enabled: true`; false or missing configuration uses ordinary source search without prompting.
 
