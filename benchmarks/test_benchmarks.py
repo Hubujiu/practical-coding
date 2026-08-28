@@ -85,11 +85,20 @@ class BenchmarkHarnessTests(unittest.TestCase):
             {"DIRECT", "DECISION", "DEBUGGING", "IMPLEMENTATION", "EXPLORATION"},
         )
 
-    def test_core_routes_new_dependency_to_decision(self):
+    def test_core_dependency_policy_distinguishes_open_choice_from_settled_input(self):
         skill = (bench.ROOT / "SKILL.md").read_text(encoding="utf-8")
-        self.assertIn("already-installed", skill)
-        self.assertIn("route Decision", skill)
-        self.assertNotIn("Prefer mature maintained implementations only when integrating", skill)
+        decision = (bench.ROOT / "references" / "decision.md").read_text(encoding="utf-8")
+
+        self.assertIn("no unresolved user-owned choice", skill)
+        self.assertIn("selected and authorized", skill)
+        self.assertIn("whether or which new external dependency", skill)
+        self.assertIn("existing contracts, and the chosen check", skill)
+        self.assertNotIn("controlled/uncontrolled", skill)
+        self.assertNotIn("picker library", skill)
+
+        self.assertIn("whether or which package, library, service", decision)
+        self.assertIn("already selected and authorized", decision)
+        self.assertIn("do not ask the user merely for permission to research", decision)
 
     def test_decision_suite_inlines_decision_module(self):
         with tempfile.TemporaryDirectory() as tmp:
