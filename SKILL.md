@@ -4,7 +4,7 @@ description: "Use for implementing, fixing, refactoring, or reviewing code with 
 license: MIT
 metadata:
   author: Hubujiu
-  version: "1.1"
+  version: "1.2"
 ---
 
 # Practical Coding
@@ -14,14 +14,16 @@ One short core for every coding task, with optional modules only for unresolved 
 ## Core
 
 - Read the request and the code it actually touches; define the smallest observable success before editing.
-- Stop at the first rung that works: do nothing; reuse the nearest existing primitive; use the standard library; use a native platform feature; use an installed dependency; use one line; otherwise write the minimum custom code.
+- Stop at the first rung that works: do nothing; reuse the nearest existing primitive; use the standard library; use a native platform feature; use an already-installed dependency; one line; otherwise the minimum new code. Do not add a new dependency, file, or abstraction when a higher rung already satisfies the stated success.
 - Reuse current APIs as they are. When an artifact only specializes an existing primitive, make the thinnest adapter and inherit its contract; do not restate its styles, types, refs, events, or value semantics without a requirement.
-- Build only behavior a current requirement or caller needs. Names and common conventions are not requirements; when the request is underspecified, preserve the platform representation and nearest existing contract instead of inventing a richer domain model.
+- Build only behavior a current requirement or caller needs. Names, common conventions, repository aesthetics, and sibling-component richness are not requirements. When the request is underspecified, preserve the platform representation and nearest existing contract instead of inventing a richer domain model, API surface, or UX.
+- When the request names an artifact but not its UX, API surface, or integration, default to the thinnest adapter on the nearest existing primitive that meets the stated success. Do not add controlled/uncontrolled modes, extra props, helper components, or new packages unless the request or an existing caller requires them.
 - Add no speculative options, wrappers, aliases, configuration, scaffolding, or one-implementation interfaces.
 - Make the smallest coherent reachable change. A standalone artifact needs no demo or new caller unless requested; a user-facing feature is incomplete until the existing application can reach it.
-- Prefer deletion, boring code, repository defaults, and mature maintained implementations. Keep unrelated code and existing user changes untouched.
+- Prefer deletion and boring code. Prefer mature maintained implementations only when integrating a non-trivial external capability (auth, graph navigation, protocol client)—not when choosing among native, stdlib, already-installed, or few-line local options for a single artifact. Keep unrelated code and existing user changes untouched.
+- Mechanism examples (not task names): platform-native control before a picker library when only basic selection is requested; one shared guard in the function all callers use before patching a single reported caller.
 - Add validation, fallback, retry, documentation, comments, or tests only for a current contract, concrete boundary, observed risk, project rule, or necessary evidence.
-- Before finishing, remove every added line, file, option, or explanation that does not directly support the requested behavior, a preserved contract, or the chosen check; keep the smallest version that still works.
+- Before finishing, delete every new dependency, file, prop, wrapper, and comment that the chosen check still passes without; keep the smallest version that still works.
 - After the final edit, run the cheapest focused check once. Never repeat an unchanged check or substitute diff inspection for a required compile, type, or build gate. In an isolated workspace, a lockfile-preserving routine dependency install is allowed when it is the bounded prerequisite for that gate; otherwise report missing dependencies instead of installing them solely for verification.
 - If a check creates unrelated generated churn, inspect at most one diff, then leave and report it. Never investigate its provenance or stage, restore, or rewrite unrelated files merely to clean status output.
 - State only what fresh evidence supports; keep unrequested explanation short.
