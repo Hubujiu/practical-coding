@@ -85,6 +85,12 @@ class BenchmarkHarnessTests(unittest.TestCase):
             {"DIRECT", "DECISION", "DEBUGGING", "IMPLEMENTATION", "EXPLORATION"},
         )
 
+    def test_core_routes_new_dependency_to_decision(self):
+        skill = (bench.ROOT / "SKILL.md").read_text(encoding="utf-8")
+        self.assertIn("already-installed", skill)
+        self.assertIn("route Decision", skill)
+        self.assertNotIn("Prefer mature maintained implementations only when integrating", skill)
+
     def test_decision_suite_inlines_decision_module(self):
         with tempfile.TemporaryDirectory() as tmp:
             root = Path(tmp)

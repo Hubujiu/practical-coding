@@ -113,7 +113,8 @@ flowchart TB
 The resident `SKILL.md` is intentionally small. It enforces the common rules that should hold regardless of route:
 
 - read the real code touched before editing;
-- stop at the first rung that works: do nothing → reuse → stdlib → native platform → installed dependency → one line → minimum custom code;
+- stop at the first rung that works: do nothing → reuse project primitive → stdlib → native/environment → already-installed dependency → one line → minimum local code;
+- never add a new dependency or survey mature external implementations on Core; that is a Decision event;
 - add no speculative abstractions, options, wrappers, config, tests, fallbacks, or comments;
 - preserve unrelated code and existing user changes;
 - prefer deletion and boring code;
@@ -124,7 +125,7 @@ The resident `SKILL.md` is intentionally small. It enforces the common rules tha
 
 | Module | Trigger | Purpose |
 |---|---|---|
-| [`decision.md`](references/decision.md) | A material unresolved choice changes the next action | Compare a small set of viable options and converge |
+| [`decision.md`](references/decision.md) | A material unresolved choice changes the next action, including a new external dependency or surveying a mature external implementation | Compare a small set of viable options and converge with the user |
 | [`implementation.md`](references/implementation.md) | Security, irreversible effects, persistence, concurrency, compatibility, or unknown cross-boundary invariant | Map the boundary and falsify the risky assumptions |
 | [`debugging.md`](references/debugging.md) | An observed failure still lacks an evidenced cause | Reproduce → earliest broken state → one hypothesis → root-cause fix |
 | [`navigation.md`](references/navigation.md) | Broad structural navigation independently blocks progress | Choose ordinary source search or optional graph-backed navigation |

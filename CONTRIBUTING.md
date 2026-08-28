@@ -12,11 +12,13 @@ Contributions should preserve Practical Coding as one compact skill with indepen
 - Prefer strengthening an existing module over adding a new module. Verification is not a separate module: choosing sufficient evidence for a risky change is Implementation. Do not restore `verification.md` as a sixth route.
 - Add a new module only when it represents a distinct, reusable decision surface that would otherwise pollute unrelated tasks.
 - Do not introduce mandatory plans, execution documents, Git workflows, tests, reviews, documentation, or tool-specific ceremony as universal gates.
-- Preserve reuse-before-invention, mature-implementation-first, risk-proportional verification, evidence-driven debugging, and resistance to speculative code and defensive bloat.
+- Preserve reuse-before-invention, risk-proportional verification, evidence-driven debugging, and resistance to speculative code and defensive bloat. Mature-implementation-first belongs in Decision, not Core: Core does not survey or adopt new external implementations.
 - Keep optional heavy capabilities outside the default Agent context; optional package size or disk use is acceptable when the capability materially reduces token use, repeated work, or correctness risk.
 - Avoid scripts, dependencies, configuration, and generated project files unless they solve a demonstrated need.
 
 ## Mature implementation first
+
+This policy applies after Decision has selected an external implementation, and when contributing to Practical Coding itself. It is not a Core/Direct-Path obligation.
 
 For any non-trivial capability with credible prior art:
 

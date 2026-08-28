@@ -1,6 +1,8 @@
 # Decision
 
-Load this module only when a material choice about architecture, dependencies, APIs, data models, compatibility, or multiple plausible implementations remains open. Its output is a resolved choice that changes the next action, not a design essay or an option dump.
+Load this module only when a material choice about architecture, dependencies, APIs, data models, compatibility, or multiple plausible implementations remains open—including introducing a package, library, or service not already in the project, or surveying/comparing mature external implementations. Core never makes those choices. Its output is a resolved choice that changes the next action, not a design essay or an option dump.
+
+Do not load this module when a Core rung already meets the stated success (project primitive, stdlib, native/environment feature, or already-installed package). The existence of a popular uninstalled library is not by itself a Decision event.
 
 ## Decision Frontier
 
@@ -26,7 +28,7 @@ End the round with the smallest answer format, then wait. If the task is already
 ## Resolve
 
 1. State the exact decision and constraints that distinguish acceptable options.
-2. Check, in order: established project pattern, standard library, platform/framework, installed dependency, then mature maintained external implementation.
+2. Check, in order: established project pattern, standard library, platform/framework, installed dependency, then mature maintained external implementation. Research a new external dependency or mature implementation only in this module after the user-owned choice is on the frontier; do not install it from Core.
 3. Keep at most three viable options. Compare only material fit, correctness, compatibility, operational, maintenance, and migration differences.
 4. Select the smallest option that fully satisfies current requirements. Do not create an abstraction, dependency, wrapper, or extension point without a present need.
 
