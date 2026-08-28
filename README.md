@@ -39,7 +39,7 @@ Practical Coding makes **rigor conditional**.
 | Security, migration, persistence, concurrency, compatibility risk | Load **Implementation** only |
 | Broad structural navigation is itself the blocker | Load **Navigation** only |
 
-The invariant is simple: **stay Direct until an unresolved event makes Direct unsafe. A dependency or implementation the user already selected and authorized is settled input, not automatically a Decision.**
+The invariant is simple: **stay Direct until an unresolved event makes Direct unsafe. Settled facts and choices are inputs, not routing events.**
 
 ---
 
@@ -90,45 +90,46 @@ The v1.1 evidence includes a 15-arm prompt-inlined interference matrix covering 
 
 ```mermaid
 flowchart TB
-    T[User coding task] --> C[Always-On Core]
-    C --> Q{Is the next safe action already clear?}
-    Q -->|Yes| D[Direct Path]
-    Q -->|No: observed failure lacks cause| G[Debugging]
-    Q -->|No: material user-owned choice| A[Decision]
-    Q -->|No: risky or unknown boundary| I[Implementation]
-    Q -->|No: broad structure blocks progress| N[Navigation]
+    T[User coding task] --> R{Event Router}
+    R -->|No unresolved event| C[Route-agnostic Core / Direct Path]
+    R -->|Observed failure lacks cause| G[Debugging]
+    R -->|Material user-owned choice| A[Decision]
+    R -->|Risky or unknown boundary| I[Implementation]
+    R -->|Broad structure blocks progress| N[Navigation]
 
-    G --> R{New blocker exposed?}
-    A --> R
-    I --> R
-    N --> R
-    R -->|No| V[Cheapest focused verification]
-    R -->|Yes| C
-    D --> V
+    G --> B{Different blocker exposed?}
+    A --> B
+    I --> B
+    N --> B
+    B -->|Yes| R
+    B -->|No| C
+    C --> V[Cheapest focused verification]
     V --> O[Evidence-based completion]
 ```
 
 ### Always-On Core
 
-The resident `SKILL.md` is intentionally small. It enforces the common rules that should hold regardless of route:
+The resident Core is intentionally short and **route-agnostic**. It contains only coding rules that remain useful regardless of which route was selected:
 
 - read the real code touched before editing;
-- stop at the first rung that works: do nothing → reuse project primitive → stdlib → native/environment → already-installed dependency → one line → minimum local code;
-- treat an explicitly selected and authorized external dependency as settled input when its integration path is clear;
-- never independently choose a new dependency or survey external alternatives on Core; an unresolved external choice is a Decision event;
-- add no speculative abstractions, options, wrappers, config, tests, fallbacks, or comments;
+- stop at the first rung that works: do nothing → reuse project primitive → stdlib → native/environment → already-available dependency → one line → minimum local code;
+- reuse established APIs/contracts instead of restating them;
+- add no speculative abstractions, options, wrappers, config, scaffolding, or helper layers;
 - preserve unrelated code and existing user changes;
 - prefer deletion and boring code;
+- remove additions that are unnecessary for the stated success, already-established contracts, and chosen check;
 - run the cheapest focused check once;
 - claim only what fresh evidence supports.
+
+The Core does **not** decide when to load Debugging, Decision, Implementation, or Navigation. That belongs entirely to the Event Router; the selected reference owns the module-specific procedure.
 
 ### Four on-demand modules
 
 | Module | Trigger | Purpose |
 |---|---|---|
-| [`decision.md`](references/decision.md) | A material unresolved choice changes the next action, including whether or which new external dependency/mature implementation to adopt | Research only as needed, compare a small set of viable options, and converge on the remaining user-owned choice |
-| [`implementation.md`](references/implementation.md) | Security, irreversible effects, persistence, concurrency, compatibility, or unknown cross-boundary invariant | Map the boundary and falsify the risky assumptions |
 | [`debugging.md`](references/debugging.md) | An observed failure still lacks an evidenced cause | Reproduce → earliest broken state → one hypothesis → root-cause fix |
+| [`decision.md`](references/decision.md) | A material unresolved user-owned choice changes the next action, including whether or which external dependency/implementation to adopt | Research only as needed, compare a small set of viable options, and converge on the remaining user-owned choice |
+| [`implementation.md`](references/implementation.md) | Security, irreversible effects, persistence, concurrency, compatibility, or unknown cross-boundary invariant blocks safe execution | Map the boundary and falsify the risky assumptions |
 | [`navigation.md`](references/navigation.md) | Broad structural navigation independently blocks progress | Choose ordinary source search or optional graph-backed navigation |
 
 ### Economic Isolation Gate
