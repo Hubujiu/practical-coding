@@ -157,7 +157,7 @@ v1.1 证据使用 `gpt-5.6-luna`、`medium` reasoning、隔离工作区、固定
 |---|---:|---:|---|
 | **Delivery** | **100%（27/27）** | Ponytail 历史 arm 96.3% | 当前 Practical 的 correct/safe/build 全部通过；跨运行对比不是新 paired scorecard |
 | **Decision** | **100%（18/18）** | 角色相关 | 当前 Decision 路由与两轮收敛全部通过 |
-| **Debug** | **96.7%（29/30）** | Ponytail 历史 arm 93.3% | correct 100%；一次漏修 sibling caller，因此不宣称安全轴完美 |
+| **Debug** | **96.7%（29/30）** | Ponytail 93.3% historical arm | correct 100%；一次漏修 sibling caller，因此不宣称安全轴完美 |
 | **Router** | **100%（114/114）** | expected route | 扩展后的五路由回归矩阵 |
 | **Native behavior** | **100%（54/54）** | route/load contract | 原生发现与精确 reference 加载回归 |
 | **适用总计** | **99.6%（242/243）** | — | 来自三组受影响面补测，不是单一 243-cell manifest |
