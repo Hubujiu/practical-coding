@@ -25,18 +25,18 @@ One short, route-agnostic core for every coding task, with optional modules load
 
 ## Direct Path
 
-If no Event Router condition matches, apply the Core immediately: read no reference and dispatch no worker.
+The Core always applies. If no Event Router condition matches, proceed immediately with the Core alone: read no reference and dispatch no worker.
 
 ## Event Router
 
-The Router only selects whether one module must be loaded; it does not add implementation rules. Route only on a present unresolved blocker. Settled facts and choices are inputs, not events. Use this first-match ladder:
+The Router only selects whether one additional module must be loaded; it does not add implementation rules. Route only on a present unresolved blocker. Settled facts and choices are inputs, not events. Use this first-match ladder:
 
 1. An observed failure, regression, or incorrect behavior still lacks an evidenced cause: read `references/debugging.md`. A symptom or named failing function is not a diagnosed cause.
 2. A material user-owned choice about architecture, whether or which external dependency or implementation to adopt, API, data model, or compatibility remains unresolved and would change the next action: read `references/decision.md`. A choice already specified and authorized by the user is settled input; research needed to resolve an open choice belongs inside Decision.
 3. Safe execution requires mapping an unknown contract or invariant, a material risk boundary such as security/permissions, irreversible effects, persistence/migration, concurrency/transactions, or compatibility, or sufficient evidence for a risky material claim: read `references/implementation.md`.
 4. Broad structural mapping is itself necessary before another safe action is known: read `references/navigation.md`, which selects the configured backend.
 
-Read exactly that one module. Resolve the blocker, then route again only if a different blocker appears. Do not preload modules or load candidates together to compare them. Task nouns, file count, and the mere existence of an alternative library do not select a module.
+Read exactly that one module in addition to the Core. Resolve the blocker, then route again only if a different blocker appears. Do not preload modules or load candidates together to compare them. Task nouns, file count, and the mere existence of an alternative library do not select a module.
 
 ## Isolation Gate
 
