@@ -1,6 +1,6 @@
 # Navigation
 
-Navigation is the detailed runtime retrieval procedure, not an Event Router branch. Load it only when broad code discovery or structural mapping is substantial enough that the short Retrieval Policy in `SKILL.md` is insufficient. Produce the smallest bounded context that answers the current need; do not tour the repository.
+Navigation is the detailed runtime retrieval procedure, not a Decision or execution-rigor state. Load it only when broad code discovery or structural mapping is substantial enough that the short Retrieval Policy in `SKILL.md` is insufficient. Produce the smallest bounded context that answers the current need; do not tour the repository.
 
 Use already-available capabilities only. Do not install a backend, add a persistent integration, or change project configuration solely to obtain retrieval for the current task. An already-available backend may build or refresh its normal index when that is part of using the existing integration. Missing capabilities fall back to the next cheaper available path.
 
@@ -51,4 +51,4 @@ A clean index or coverage result means no recorded gap, not proof of semantic co
 
 Navigation controls what enters model context; it does not create a new reasoning state. Returning from a search does not unload anything already read.
 
-For routine targeted lookup, do not load this reference at all. When another reasoning reference is already resident and broad mapping would create substantial search context, prefer a read-only isolated Navigation worker if the saved context clearly exceeds handoff cost. The worker returns exact paths, symbols, relationships, constraints, gaps, and evidence limits — not raw search or graph transcripts.
+For routine targeted lookup, do not load this reference at all. When Decision, Debugging, or Implementation is already resident and broad mapping would create substantial search context, prefer a read-only isolated Navigation worker if the saved context clearly exceeds handoff cost. The worker returns exact paths, symbols, relationships, constraints, gaps, and evidence limits — not raw search or graph transcripts.

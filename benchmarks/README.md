@@ -1,23 +1,66 @@
 # Practical Coding benchmark chain
 
-This directory contains the reproducible evaluation harness for **Practical Coding v1.2**. The v1.2 runner uses a two-dimensional routing contract; committed v1.1 results remain historical evidence for the former five-way classifier.
+This directory contains the reproducible evaluation harness for the **Practical Coding v1.3 adaptive-rigor candidate**. The last committed validated baseline is v1.2 under [`results/v1.2/`](results/v1.2/); v1.0/v1.1/v1.2 result directories remain historical evidence for their tested contracts.
 
-The benchmark design intentionally avoids a single manufactured leaderboard. Each capability is compared with the most relevant specialist behavior, while Practical-owned routing suites test the integration layer that specialists do not provide by themselves.
+The benchmark design intentionally avoids a single manufactured leaderboard. Each specialist capability is compared with the most relevant behavior, while the Practical-owned control suite tests the integration policy itself.
 
-For exact commands, pinned upstream commits, evidence boundaries, and reproduction requirements, see [`REPRODUCING.md`](REPRODUCING.md). Current compact evidence lives in [`results/v1.2/`](results/v1.2/); [`results/v1.1/`](results/v1.1/) and [`results/v1.0/`](results/v1.0/) are retained as historical evidence.
+For exact commands, pinned upstream commits, evidence boundaries, and release gates, see [`REPRODUCING.md`](REPRODUCING.md) and [`NEXT_VALIDATION.md`](NEXT_VALIDATION.md).
 
 ## What is measured
 
 | Suite | Compared arms | What it measures |
 |---|---|---|
 | Delivery | Practical vs Ponytail | Correctness, safety, build reachability, LOC, tokens, time, tool calls |
-| Decision | Practical vs Matt Pocock `grilling` | Whether a material unresolved choice is surfaced and converged without premature implementation |
+| Decision | Practical vs Matt Pocock `grilling` | Whether a blocking material choice is surfaced and converged without premature implementation |
 | Debug | Practical vs Superpowers | Root-cause repair, sibling callers, delivered invariant, safety, efficiency |
-| Router | Practical vs expected two-dimensional contract | Reasoning (`NONE` plus Decision / Debugging / Implementation) and independent Retrieval (`NONE` / Targeted / Bounded / Structural) |
-| Native behavior | Practical only | Real Skill discovery, reasoning-reference isolation, and independent Retrieval/reference/backend behavior without prompt injection |
-| Navigation ablation | Source search vs optional graph backend | Whether AST/LSP graph navigation pays for itself on real repositories |
+| `router` *(legacy suite id)* | Practical vs adaptive-rigor contract | Decision Gate state, current execution rigor, and Retrieval minimum/maximum cost bounds |
+| Native behavior | Practical only | Real Skill discovery, selective reference loading, transition behavior, Retrieval/backend use, and context isolation without prompt injection |
+| Navigation ablation | Source search vs optional graph backend | Whether structural retrieval pays for itself on real repositories |
 
 The Decision and Debug comparisons are controlled project comparisons; they are not official upstream benchmark claims.
+
+## v1.3 control contract
+
+The old v1.2 exact classifier is no longer the architecture being tested. The v1.3 control state is:
+
+```text
+DECISION  = CLEAR | REQUIRED
+EXECUTION = BLOCKED | DIRECT | DEBUGGING | IMPLEMENTATION
+RETRIEVAL = minimum sufficient .. maximum reasonable
+```
+
+Required invariant:
+
+```text
+DECISION=REQUIRED  => EXECUTION=BLOCKED
+DECISION=CLEAR     => EXECUTION in DIRECT | DEBUGGING | IMPLEMENTATION
+```
+
+Meaning:
+
+- `DECISION=REQUIRED`: a material unresolved choice blocks or materially changes the next safe action;
+- `DIRECT`: the Core is sufficient now;
+- `DEBUGGING`: an observed failure exists and its cause is not evidenced;
+- `IMPLEMENTATION`: safe execution is blocked by an unknown contract/invariant, unresolved material risk boundary, or insufficient evidence for a risky claim;
+- Retrieval is not required to have one unique exact label when two neighboring cheap strategies are both reasonable.
+
+Four explicit transition regressions prevent the profiles from becoming task categories or a mandatory pipeline:
+
+- Decision → Direct;
+- Decision → Implementation;
+- Debugging → Direct after diagnosis;
+- Debugging → Implementation only when an unresolved material execution boundary remains.
+
+## Runner architecture
+
+The benchmark runtime is intentionally layered:
+
+- `run_benchmarks.py`: stable v2.0 execution/scoring core retained for historical interpretability;
+- `case_catalog.py`: extended public regression corpus;
+- `adaptive_rigor.py`: v1.3 state contract, retrieval-bound scoring, and transition cases;
+- `run_catalog.py`: canonical v2.1 entrypoint that installs both adapters before execution.
+
+Use `benchmarks/run.ps1`, which invokes the canonical runner. Do not run the v2.0 core directly when evaluating v1.3.
 
 ## Run the harness
 
@@ -27,7 +70,7 @@ Self-test without model calls:
 pwsh -NoProfile -File benchmarks/run.ps1 -SelfTest
 ```
 
-Normal release-quality matrix:
+Normal candidate matrix:
 
 ```powershell
 pwsh -NoProfile -File benchmarks/run.ps1 -Profile standard -Runs 3 -Workers 3 -RequireStableRanking
@@ -39,35 +82,41 @@ Complete public regression matrix:
 pwsh -NoProfile -File benchmarks/run.ps1 -Profile full -Runs 3 -Workers 3 -RequireStableRanking
 ```
 
-Focused examples:
+Focused adaptive-rigor examples:
 
 ```powershell
 pwsh -NoProfile -File benchmarks/run.ps1 -Profile standard -Suite router -Runs 3 -RequireStableRanking
-pwsh -NoProfile -File benchmarks/run.ps1 -Profile standard -Suite debug -Runs 3 -RequireStableRanking
-pwsh -NoProfile -File benchmarks/run.ps1 -Profile smoke -Suite router -Case direct-artifact -Arm practical-current
+pwsh -NoProfile -File benchmarks/run.ps1 -Profile standard -Suite behavior -Runs 3 -RequireStableRanking
+pwsh -NoProfile -File benchmarks/run.ps1 -Profile smoke -Suite router -Case transition-debug-to-direct -Arm practical-current
 ```
 
-Candidate before/after gate:
+Candidate against accepted v1.2:
 
 ```powershell
 pwsh -NoProfile -File benchmarks/run.ps1 `
   -Profile full `
   -Runs 3 `
   -Workers 3 `
-  -BaselineRef <accepted-previous-commit> `
+  -BaselineRef 88382d2b0c00fa278067a5933bbcacc86f46b56e `
   -IncludeBaseline `
   -RequireStableRanking
 ```
 
+The v1.2 and v1.3 classification schemas are not score-comparable. Before/after claims should be made only on unchanged task/scorer surfaces such as Delivery, Decision, and Debug, plus qualitative transition/reference-loading evidence.
+
 ## Profiles
 
-| Profile | Delivery | Router | Decision | Debug | Native behavior | Default runs |
-|---|---:|---:|---:|---:|---:|---:|
-| `smoke` | 3 | 4 | 1 | 1 | 3 | 1 |
-| `standard` | 9 | 38 | 6 | 10 | 18 | 3 |
-| `full` | 18 | 38 | 10 | 14 | 18 | 3 |
+After installing `case_catalog.py` and `adaptive_rigor.py` through the canonical runner:
 
-`standard` is the normal public release gate. `full` carries the broader complete public regression matrix. Router cases cover all four reasoning outputs (`NONE` plus three reasoning routes), all four Retrieval modes, and cross-products such as `NONE+STRUCTURAL` and `IMPLEMENTATION+STRUCTURAL`. Native behavior repeats Direct/Implementation boundaries without injected Skill text, adds Decision/Debug precedence cases, and scores Navigation/backend use independently from reasoning-reference selection. The expanded Debug set covers fourteen cases across parsing, normalization, tenant isolation, pagination, units, row handling, state invariants, TTL semantics, URL handling, and the upstream transfer/amount tasks. Decision grows from six to ten two-turn decisions in `full`. A stable published ranking requires at least three determinate repetitions per selected case/arm.
+| Profile | Delivery | Adaptive-rigor (`router`) | Decision | Debug | Native behavior | Default runs |
+|---|---:|---:|---:|---:|---:|---:|
+| `smoke` | 3 | 5 | 1 | 1 | 3 | 1 |
+| `standard` | 9 | 42 | 6 | 10 | 22 | 3 |
+| `full` | 18 | 42 | 10 | 14 | 22 | 3 |
+
+`standard` is the normal bounded candidate gate. `full` carries the complete public regression matrix. A stable published comparison requires at least three determinate repetitions per selected case/arm.
+
+The public task catalog is a **regression corpus**, not a private generalization set. Once a case has influenced Skill wording or scoring design, its future score is evidence against regression, not independent evidence that the same behavior generalizes everywhere.
 
 ## Acceptance order
 
@@ -75,26 +124,47 @@ Interpret results in this order:
 
 1. correctness and safety;
 2. build/reachability;
-3. only then LOC, tokens, model time, and tool calls.
+3. control correctness and missed escalation;
+4. Retrieval sufficiency before Retrieval efficiency;
+5. only then LOC, tokens, model time, and tool calls.
 
-A cheap failure cannot beat a correct safe result. The scorecard first applies a conservative quality gate and only computes relative efficiency after that gate is satisfied. See [`../docs/evaluations/2026-08-26-quality-gated-scorecard.md`](../docs/evaluations/2026-08-26-quality-gated-scorecard.md).
+A cheap failure cannot beat a correct safe result. Cost cannot rescue insufficient retrieval or a wrong execution state.
 
-The public task catalog is a **regression corpus**, not a private generalization set. Once a case has influenced Skill wording, its future score is evidence against regression, not independent evidence that the same behavior generalizes everywhere.
+## Why adaptive-rigor classification matters
 
-## Why the router matters
+Practical Coding's architectural claim cannot be established only by Delivery vs Ponytail or Debug vs Superpowers. The control suite measures whether the system pays for stricter process only when a blocker exists:
 
-Practical Coding's main architectural claim cannot be established by comparing only against Ponytail or only against Superpowers. The project also measures whether the integration policy itself behaves as intended:
+- settled or cheap reversible choices do not block execution;
+- an unresolved material choice blocks execution rather than competing with Debugging/Implementation as a peer route;
+- ordinary execution starts Direct;
+- an unknown-cause failure adds Debugging rigor;
+- an unresolved material execution boundary adds Implementation rigor;
+- diagnosed failures return to Direct unless a different blocker remains;
+- Retrieval is independent and bounded by sufficiency and reasonable cost;
+- broad structural exploration does not become a reasoning state;
+- only the required reasoning reference is read in a root context;
+- workers are an economic isolation mechanism, not a mandatory stage.
 
-- ordinary work selects no reasoning route;
-- an unresolved bug loads Debugging, not every engineering module;
-- a material choice loads Decision;
-- risky boundaries load Implementation;
-- Retrieval is classified independently as none, targeted, bounded, or structural;
-- broad structural exploration may load Navigation without becoming a fourth reasoning route;
-- only the selected reasoning reference is read;
-- workers are not a mandatory stage.
+The next validation cycle also requires a **Ponytail + Superpowers combined-install arm** before any claim of experimental superiority over installing both together. See [`NEXT_VALIDATION.md`](NEXT_VALIDATION.md).
 
-The next validation cycle also includes a **Ponytail + Superpowers combined-install arm**. That test is required before claiming that Practical is experimentally superior to installing both together. See [`NEXT_VALIDATION.md`](NEXT_VALIDATION.md).
+## Retrieval scoring
+
+The v1.3 classifier stores each case with:
+
+```text
+retrieval_min
+retrieval_max
+```
+
+A result is:
+
+- **insufficient** when actual retrieval is below `retrieval_min`;
+- **efficient enough** when actual retrieval is at or below `retrieval_max`;
+- **passed** on Retrieval only when both conditions hold.
+
+This avoids treating `TARGETED` vs a still-cheap `BOUNDED` search as necessarily semantically wrong while continuing to reject missing context and unnecessary structural exploration.
+
+The bounds are part of the benchmark contract and must be frozen before a validation cycle. Do not widen them after seeing failures simply to improve the score.
 
 ## Output artifacts
 
@@ -112,28 +182,29 @@ report.md
 cells/
 ```
 
-The committed release directory contains only compact aggregates suitable for public review. Raw transcripts/workspaces stay local because they are large and may contain machine-specific paths.
+The committed result directories contain compact aggregates suitable for public review. Raw transcripts/workspaces stay local because they are large and may contain machine-specific paths.
 
 ## Suites and scoring
 
-- `delivery`: Ponytail's published agentic tasks and deterministic scorer. For frontend template cases, the runner installs the pinned lockfile dependencies before the agent starts, so the agent and the runner-owned production build use the same executable type/build environment. Reports correctness, safety, production LOC, test LOC, files, tokens, time, tool calls, setup time, and optional frontend build result.
-- `router`: exact two-field classification. `REASONING` is `NONE`, `DECISION`, `DEBUGGING`, or `IMPLEMENTATION`; only the latter three are reasoning routes. `RETRIEVAL` is independently `NONE`, `TARGETED`, `BOUNDED`, or `STRUCTURAL`. A cell passes only when both fields match. The former Verification route remains folded into Implementation, while former Exploration cases now expect `REASONING=NONE; RETRIEVAL=STRUCTURAL`; results are therefore not comparable with the v1.1 five-way classifier.
-- `decision`: Practical versus Matt Pocock `grilling`. Uses a real resumed second turn and gates on frontier questions, one recommendation per question, no premature implementation, and convergence after scripted user decisions. Trade-off language is reported diagnostically but is not a declared grilling contract gate.
-- `debug`: shared-root-cause tasks scored on the repaired invariant and sibling callers. Tests/TDD process receives no bonus. Each Practical-owned Debug seed is required to fail its deterministic scorer, and a separate oracle fixture must pass it before the case is accepted into the catalog.
-- `behavior`: installs Practical Coding into an isolated native `CODEX_HOME`, does not inject its text into the prompt, and mechanically inspects command traces for `SKILL.md` discovery. Reasoning references are scored separately from Retrieval: Direct reads no reasoning reference; Decision, Debugging, and Implementation read only their expected reasoning reference; structural Retrieval may read `navigation.md` and is separately checked against the expected source/graph backend. Infrastructure, timeout, transcript-capture, missing-runtime, and build OOM failures are reported as `indeterminate`, not Skill failures. Comparisons omit pairs containing indeterminate cells instead of rewarding the unaffected arm.
+- `delivery`: Ponytail's published agentic tasks and deterministic scorer. Frontend cases prepare pinned dependencies before the agent starts and use the same environment for runner-owned production build evidence.
+- `router`: retained as a CLI suite name for compatibility. Under canonical runner v2.1 it scores the three-field adaptive-rigor state and Retrieval interval, not the v1.2 `REASONING/RETRIEVAL` classifier.
+- `decision`: Practical versus Matt Pocock `grilling`. Uses a real resumed second turn and gates on frontier questions, recommendations, no premature implementation, and convergence after scripted user constraints.
+- `debug`: shared-root-cause tasks scored on the repaired invariant and sibling callers. Named TDD/process rituals receive no bonus; delivered behavior and safety are what count.
+- `behavior`: installs Practical Coding into an isolated native `CODEX_HOME`, does not inject Skill text into the prompt, and inspects tool traces for Skill discovery and reference isolation. Transition cases ensure settled decisions and diagnosed failures do not reload obsolete profiles. Structural Retrieval/backend use is scored independently.
 
-`total_tokens` includes cached input because that is how Codex reports turn input. The report therefore also separates cached input, uncached input, output, and reasoning tokens. `duration_seconds` is per-cell process duration; suite elapsed time is recorded separately and is not obtained by summing concurrent cell durations.
+Infrastructure, timeout, transcript-capture, missing-runtime, and build-OOM failures are `indeterminate`, not Skill failures. Comparisons omit pairs containing indeterminate cells instead of rewarding the unaffected arm.
 
-## Acceptance
+`total_tokens` includes cached input because that is how Codex reports usage. Reports also separate cached input, uncached input, output, and reasoning tokens. `duration_seconds` is per-cell process duration; suite elapsed time is recorded separately.
 
-Use repeated paired results. A candidate is not accepted merely because its prose matches a Skill contract. Require no correctness/build regression, then compare delivered code and behavior. Treat LOC, tokens, and time as secondary within equally correct artifacts. `n=1` is a smoke result, not a stable ranking.
+## Evidence status
 
-The machine-readable scorecard makes that order explicit. A comparison first has to stay within a 3 percentage-point suite pass-rate non-inferiority margin, with no lower suite build/safety rate and no case-level safety regression. Cost cannot rescue a failed quality gate. For a quality-qualified comparison, relative efficiency is the weighted geometric mean
+No v1.3 model result is committed yet. The last validated evidence is v1.2:
 
-`E = exp(sum(w_i * ln(cost_comparator_i / cost_practical_i)))`
+- reasoning classification: 114/114;
+- exact Retrieval classification: 106/114;
+- Native Behavior: 54/54;
+- Practical-only Delivery/Decision/Debug regression: 75/75.
 
-over uncached input tokens (0.35), output tokens (0.15), model time (0.35), and tool calls (0.15), renormalized when a metric is unavailable. The diagnostic utility is `U = ((Q_practical + 0.01) / (Q_comparator + 0.01))^2 * E`. It is a relative sensitivity summary, not an absolute leaderboard score. The report also preserves the Pareto result, so users can see when one arm dominates and when the result is a real quality/cost trade-off. `qualified` additionally requires at least three determinate repetitions in every paired case; otherwise a quality-passing score remains `provisional`.
+Those values are historical baseline evidence, not v1.3 scores.
 
-A published internal stable ranking must pass `benchmarks/check_stability.py` with the default minimum `n=3`. The gate checks distinct repetition IDs, complete-run metadata, and infrastructure errors. Behavioral or build failures remain valid benchmark observations and therefore do not invalidate the sample by themselves.
-
-The public catalog is a **regression suite**, not a hidden generalization test. Once a case has influenced Skill wording, its future 100% score should be treated as a ceiling check. A private held-out set is still required for the strongest generalization claims.
+Use repeated paired results. `n=1` is a smoke result, not a stable ranking. The strongest generalization claims still require the private held-out protocol in [`NEXT_VALIDATION.md`](NEXT_VALIDATION.md).

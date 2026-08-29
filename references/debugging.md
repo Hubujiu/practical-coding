@@ -1,6 +1,8 @@
 # Debugging
 
-Load this module only for an observed or reported failure, regression, incorrect behavior, or failed verification.
+Load this module only when an observed or reported failure, regression, incorrect behavior, or failed verification exists and its cause is not yet evidenced. Debugging is an execution escalation profile, not a task category or a mandatory stage for every bug report.
+
+If the cause is already established by fresh evidence and the safe fix is known, stay Direct with the Core.
 
 ## Evidence First
 
@@ -27,9 +29,9 @@ Judge a fix by the delivered code, not by whether it followed a named debugging 
 
 ## Stay in Scope
 
-- Do not expand beyond that contract into a repo-wide search for unrelated defects.
-- Do not write tests merely because debugging occurred or because the repaired logic is non-trivial. Use the cheapest reproduction or focused check that can falsify the fix; add a durable targeted test only when regression risk, project requirements, or the evidence plan in `implementation.md` justifies its lasting value.
-- If diagnosis exposes a different material blocker such as an unresolved design/dependency choice or a previously unknown risk boundary, report that blocker to the root. Do not load another Practical Coding reference from this module; the root decides whether the Core is sufficient or whether isolated follow-up work is worth its handoff cost.
+- Do not expand beyond the diagnosed contract into a repo-wide search for unrelated defects.
+- Do not write tests merely because debugging occurred or because the repaired logic is non-trivial. Use the cheapest reproduction or focused check that can falsify the fix; add a durable targeted test only when regression risk, project requirements, or a still-unresolved evidence boundary justifies its lasting value.
+- If diagnosis exposes a material choice that changes the next action or an unresolved execution boundary that makes the fix unsafe, return that blocker to the root. Do not load another Practical Coding reference from this module.
 
 ## Exit
 
@@ -37,3 +39,4 @@ Judge a fix by the delivered code, not by whether it followed a named debugging 
 - Exercise the nearest shared caller or boundary when the root cause could affect more than the named symptom.
 - Remove temporary diagnostic instrumentation unless it has durable operational value.
 - Report remaining uncertainty rather than hiding it behind additional defensive code.
+- Return to the Core. Do not escalate to Implementation merely because Debugging occurred; escalate only if an unresolved material execution boundary still blocks safe action.

@@ -4,12 +4,17 @@ from pathlib import Path
 
 from benchmarks import run_benchmarks as bench
 from benchmarks import run_catalog
+from benchmarks.adaptive_rigor import (
+    TRANSITION_BEHAVIOR_CASES,
+    TRANSITION_CASES,
+    install as install_adaptive_rigor,
+)
 from benchmarks.case_catalog import (
     EXTRA_BEHAVIOR_CASES,
     EXTRA_DEBUG_CASES,
     EXTRA_DECISION_CASES,
     EXTRA_ROUTER_CASES,
-    install,
+    install as install_catalog,
     score_extra_debug,
 )
 from benchmarks.debug_oracles import DEBUG_ORACLES
@@ -18,43 +23,56 @@ from benchmarks.debug_oracles import DEBUG_ORACLES
 class ExpandedCatalogTests(unittest.TestCase):
     @classmethod
     def setUpClass(cls):
-        install(bench)
+        install_catalog(bench)
+        install_adaptive_rigor(bench)
 
     def test_public_matrix_is_materially_broader(self):
-        self.assertEqual(len(bench.ROUTER_CASES), 38)
+        self.assertEqual(len(bench.ROUTER_CASES), 42)
         self.assertEqual(len(bench.DECISION_CASES), 10)
         self.assertEqual(len(bench.PROFILE_CASES["standard"]["decision"]), 6)
         self.assertEqual(len(bench.PROFILE_CASES["full"]["decision"]), 10)
         self.assertEqual(len(bench.PROFILE_CASES["standard"]["debug"]), 10)
         self.assertEqual(len(bench.PROFILE_CASES["full"]["debug"]), 14)
-        self.assertEqual(len(bench.PROFILE_CASES["standard"]["behavior"]), 18)
-        self.assertEqual(len(bench.PROFILE_CASES["full"]["behavior"]), 18)
+        self.assertEqual(len(bench.PROFILE_CASES["standard"]["behavior"]), 22)
+        self.assertEqual(len(bench.PROFILE_CASES["full"]["behavior"]), 22)
 
     def test_only_explicit_security_cases_get_strict_case_level_safety(self):
         expected = {case for case, spec in EXTRA_DEBUG_CASES.items() if spec.get("risk") == "security"}
         self.assertEqual(bench.STRICT_SAFETY_CASES, expected)
 
-    def test_expansion_is_not_just_one_route_or_bug_shape(self):
+    def test_legacy_expansion_spans_all_old_reasoning_and_retrieval_shapes(self):
         extra_reasoning = {reasoning for reasoning, _, _ in EXTRA_ROUTER_CASES.values()}
-        self.assertEqual(
-            extra_reasoning,
-            {"NONE", "DECISION", "DEBUGGING", "IMPLEMENTATION"},
-        )
+        self.assertEqual(extra_reasoning, {"NONE", "DECISION", "DEBUGGING", "IMPLEMENTATION"})
         self.assertEqual({retrieval for _, retrieval, _ in EXTRA_ROUTER_CASES.values()}, set(bench.RETRIEVAL_MODES))
         self.assertEqual(len({case["score"] for case in EXTRA_DEBUG_CASES.values()}), len(EXTRA_DEBUG_CASES))
         self.assertGreaterEqual(len(EXTRA_DECISION_CASES), 6)
 
+    def test_adaptive_contract_adds_transition_boundaries(self):
+        self.assertEqual(
+            set(TRANSITION_CASES),
+            {
+                "transition-decision-to-direct",
+                "transition-decision-to-implementation",
+                "transition-debug-to-direct",
+                "transition-debug-to-implementation",
+            },
+        )
+        self.assertEqual(set(TRANSITION_BEHAVIOR_CASES), {
+            "native-transition-decision-to-direct",
+            "native-transition-decision-to-implementation",
+            "native-transition-debug-to-direct",
+            "native-transition-debug-to-implementation",
+        })
+        for case in TRANSITION_CASES:
+            self.assertIn(case, bench.ROUTER_CASES)
+        for case in TRANSITION_BEHAVIOR_CASES:
+            self.assertIn(case, bench.BEHAVIOR_CASES)
+
     def test_extreme_behavior_cases_pair_direct_and_escalated_risks(self):
         modules = {case["reasoning_module"] for case in EXTRA_BEHAVIOR_CASES.values()}
         self.assertEqual(modules, {None, "decision.md", "debugging.md", "implementation.md"})
-        self.assertEqual(
-            sum(case["reasoning_module"] is None for case in EXTRA_BEHAVIOR_CASES.values()),
-            3,
-        )
-        self.assertEqual(
-            sum(case["reasoning_module"] == "implementation.md" for case in EXTRA_BEHAVIOR_CASES.values()),
-            3,
-        )
+        self.assertEqual(sum(case["reasoning_module"] is None for case in EXTRA_BEHAVIOR_CASES.values()), 3)
+        self.assertEqual(sum(case["reasoning_module"] == "implementation.md" for case in EXTRA_BEHAVIOR_CASES.values()), 3)
 
     def test_profiles_have_no_duplicate_case_ids(self):
         for profile in ("standard", "full"):
@@ -84,15 +102,14 @@ class ExpandedCatalogTests(unittest.TestCase):
                 self.assertIn("Resolve the decision now", spec["reply"])
                 self.assertTrue(spec["expected"])
 
-    def test_canonical_runner_fingerprint_includes_catalog(self):
-        raw_core = bench.sha256(Path(bench.__file__))
+    def test_canonical_runner_fingerprint_includes_catalog_and_adaptive_adapter(self):
+        run_catalog.configure()
+        raw_core = run_catalog._CORE_SHA256(Path(run_catalog.bench.__file__))
         bundled = run_catalog.runner_bundle_sha256()
         self.assertEqual(len(bundled), 64)
         self.assertNotEqual(bundled, raw_core)
-        self.assertEqual(
-            run_catalog.catalog_aware_sha256(Path(run_catalog.bench.__file__)),
-            bundled,
-        )
+        self.assertEqual(run_catalog.catalog_aware_sha256(Path(run_catalog.bench.__file__)), bundled)
+        self.assertEqual(run_catalog.bench.VERSION, "2.1")
 
 
 if __name__ == "__main__":
