@@ -5,6 +5,9 @@ from pathlib import Path
 from unittest import mock
 
 from benchmarks import run_benchmarks as bench
+from benchmarks import run_catalog
+
+run_catalog.configure()
 
 
 class BenchmarkHarnessTests(unittest.TestCase):
@@ -79,32 +82,39 @@ class BenchmarkHarnessTests(unittest.TestCase):
         self.assertEqual(head.returncode, 0, head.stderr)
         self.assertEqual(longpaths.stdout.strip(), "true")
 
-    def test_router_matrix_covers_three_reasoning_routes_plus_no_route(self):
-        self.assertEqual(
-            {reasoning for reasoning, _, _ in bench.ROUTER_CASES.values()},
-            {"NONE", "DECISION", "DEBUGGING", "IMPLEMENTATION"},
-        )
-        self.assertEqual(len(set(bench.REASONING_ROUTES) - {"NONE"}), 3)
+    def test_rigor_matrix_covers_decision_gate_and_execution_states(self):
+        decisions = {case["decision"] for case in bench.ROUTER_CASES.values()}
+        executions = {case["execution"] for case in bench.ROUTER_CASES.values()}
+        self.assertEqual(decisions, set(bench.DECISION_STATES))
+        self.assertEqual(executions, set(bench.EXECUTION_STATES))
+        for case in bench.ROUTER_CASES.values():
+            if case["decision"] == "REQUIRED":
+                self.assertEqual(case["execution"], "BLOCKED")
+            else:
+                self.assertNotEqual(case["execution"], "BLOCKED")
 
-    def test_router_matrix_covers_independent_retrieval_dimension(self):
-        self.assertEqual(
-            {retrieval for _, retrieval, _ in bench.ROUTER_CASES.values()},
-            set(bench.RETRIEVAL_MODES),
-        )
-        self.assertIn(("NONE", "STRUCTURAL"), {(reasoning, retrieval) for reasoning, retrieval, _ in bench.ROUTER_CASES.values()})
-        self.assertIn(("IMPLEMENTATION", "STRUCTURAL"), {(reasoning, retrieval) for reasoning, retrieval, _ in bench.ROUTER_CASES.values()})
+    def test_retrieval_matrix_uses_cost_intervals(self):
+        for case in bench.ROUTER_CASES.values():
+            self.assertIn(case["retrieval_min"], bench.RETRIEVAL_MODES)
+            self.assertIn(case["retrieval_max"], bench.RETRIEVAL_MODES)
+            self.assertLessEqual(
+                bench.RETRIEVAL_MODES.index(case["retrieval_min"]),
+                bench.RETRIEVAL_MODES.index(case["retrieval_max"]),
+            )
+        self.assertTrue(any(case["retrieval_min"] != case["retrieval_max"] for case in bench.ROUTER_CASES.values()))
 
-    def test_router_answer_parser_requires_both_dimensions(self):
+    def test_rigor_answer_parser_requires_all_dimensions(self):
         self.assertEqual(
-            bench.parse_router_answer("REASONING=DEBUGGING; RETRIEVAL=BOUNDED"),
-            ("DEBUGGING", "BOUNDED"),
+            bench.parse_router_answer("DECISION=CLEAR; EXECUTION=DEBUGGING; RETRIEVAL=BOUNDED"),
+            ("CLEAR", "DEBUGGING", "BOUNDED"),
         )
-        self.assertEqual(bench.parse_router_answer("DEBUGGING"), ("", ""))
+        self.assertEqual(bench.parse_router_answer("DEBUGGING"), ("", "", ""))
 
-    def test_core_is_route_agnostic_and_router_owns_escalation(self):
+    def test_core_is_route_agnostic_and_escalation_sections_own_rigor(self):
         skill = (bench.ROOT / "SKILL.md").read_text(encoding="utf-8")
-        core = skill.split("## Core", 1)[1].split("## Direct Path", 1)[0]
-        router = skill.split("## Event Router", 1)[1].split("## Retrieval Policy", 1)[0]
+        core = skill.split("## Core", 1)[1].split("## Decision Gate", 1)[0]
+        decision = skill.split("## Decision Gate", 1)[1].split("## Execution Escalation", 1)[0]
+        execution = skill.split("## Execution Escalation", 1)[1].split("## Retrieval Policy", 1)[0]
         retrieval = skill.split("## Retrieval Policy", 1)[1].split("## Isolation Gate", 1)[0]
 
         self.assertIn("minimum local code", core)
@@ -112,8 +122,8 @@ class BenchmarkHarnessTests(unittest.TestCase):
         for module_specific in (
             "references/",
             "user-owned",
-            "security/permissions",
-            "persistence/migration",
+            "security or permissions",
+            "persistence or migration",
             "Decision",
             "Debugging",
             "Implementation",
@@ -121,14 +131,15 @@ class BenchmarkHarnessTests(unittest.TestCase):
         ):
             self.assertNotIn(module_specific, core)
 
-        self.assertIn("observed failure", router)
-        self.assertIn("whether or which external dependency", router)
-        self.assertIn("specified and authorized", router)
-        self.assertIn("security/permissions", router)
-        self.assertIn("persistence/migration", router)
-        self.assertNotIn("navigation.md", router.lower())
+        self.assertIn("material unresolved choice", decision)
+        self.assertIn("genuinely user-owned", decision)
+        self.assertIn("Start Direct", execution)
+        self.assertIn("observed failure", execution)
+        self.assertIn("material risk boundary", execution)
+        self.assertIn("not sequential stages", execution)
         self.assertIn("structural code index", retrieval)
         self.assertIn("references/navigation.md", retrieval)
+        self.assertIn("cost bounds", retrieval)
 
     def test_decision_suite_inlines_decision_module(self):
         with tempfile.TemporaryDirectory() as tmp:
@@ -174,7 +185,7 @@ class BenchmarkHarnessTests(unittest.TestCase):
             {None, "decision.md", "debugging.md", "implementation.md"},
         )
 
-    def test_navigation_backend_is_scored_separately_from_reasoning_route(self):
+    def test_navigation_backend_is_scored_separately_from_execution_rigor(self):
         commands = [
             "Get-Content C:/eval/skills/practical-coding/SKILL.md",
             "Get-Content C:/eval/skills/practical-coding/references/navigation.md",
@@ -201,7 +212,7 @@ class BenchmarkHarnessTests(unittest.TestCase):
         self.assertTrue(score["passed"])
         self.assertEqual(score["module_reads"], ["decision.md"])
 
-    def test_behavior_direct_path_rejects_reference_preload(self):
+    def test_behavior_direct_rejects_reference_preload(self):
         trigger = ["Get-Content C:/eval/skills/practical-coding/SKILL.md"]
         self.assertTrue(bench.behavior_score(trigger, None)["passed"])
         self.assertFalse(
