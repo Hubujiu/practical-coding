@@ -2,16 +2,16 @@
 
 ## DeusData/codebase-memory-mcp
 
-Practical Coding uses `DeusData/codebase-memory-mcp` as the optional Codebase Memory backend.
+Practical Coding recognizes `DeusData/codebase-memory-mcp` as one optional mature structural-retrieval backend when it is already available in the host environment.
 
 - Project: `DeusData/codebase-memory-mcp`
 - Source: https://github.com/DeusData/codebase-memory-mcp
 - License: MIT
 - Upstream revision reviewed when the direct-backend policy was established: `010569fa6ce1bc5d6430f858129243ea1a2e3fd5`
 
-Practical Coding does not vendor the upstream source tree or release binaries. When Codebase Memory is enabled, the Skill invokes an existing upstream executable or an official package launcher such as `npx --yes codebase-memory-mcp@latest` in CLI mode.
+Practical Coding does not vendor the upstream source tree or release binaries, and it does not require Codebase Memory for normal operation. The Skill does not automatically install or persist the backend solely for retrieval; if no structural index is already available, retrieval falls back to bounded source search.
 
-This choice is intentional: parser accuracy, Tree-sitter grammars, Hybrid LSP resolution, semantic search, indexing, coverage reporting, concurrency, and graph queries stay owned and maintained upstream instead of being copied into a divergent Practical Coding implementation.
+This choice keeps parser accuracy, Tree-sitter grammars, Hybrid LSP resolution, semantic search, indexing, coverage reporting, concurrency, and graph queries owned and maintained upstream instead of being copied into a divergent Practical Coding implementation.
 
 If Practical Coding later vendors upstream code or carries a source patch, retain the upstream copyright and MIT license terms with the copied/substantial portions.
 
