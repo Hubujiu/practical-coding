@@ -1,5 +1,5 @@
 #!/usr/bin/env python3
-"""Canonical benchmark entrypoint with the extended public case catalog installed."""
+"""Canonical benchmark entrypoint with the public catalog and v1.3 adaptive-rigor contract installed."""
 
 from __future__ import annotations
 
@@ -12,13 +12,15 @@ if str(HERE) not in sys.path:
     sys.path.insert(0, str(HERE))
 
 import run_benchmarks as bench
-from case_catalog import install
+from adaptive_rigor import install as install_adaptive_rigor
+from case_catalog import install as install_catalog
 
 
 _CORE_SHA256 = bench.sha256
 _RUNTIME_FILES = (
     Path(bench.__file__).resolve(),
     (HERE / "case_catalog.py").resolve(),
+    (HERE / "adaptive_rigor.py").resolve(),
     Path(__file__).resolve(),
 )
 
@@ -41,8 +43,9 @@ def catalog_aware_sha256(path: Path) -> str:
 
 
 def configure() -> None:
-    install(bench)
-    bench.VERSION = "2.0"
+    install_catalog(bench)
+    install_adaptive_rigor(bench)
+    bench.VERSION = "2.1"
     bench.sha256 = catalog_aware_sha256
 
 
