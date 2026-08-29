@@ -1,6 +1,6 @@
 interface:
   display_name: "Practical Coding"
-  short_description: "Direct coding with event-routed modules and scoped subagents"
-  default_prompt: "Use $practical-coding. Keep simple work on the Direct Path and isolate only the modules whose unresolved events are actually triggered."
+  short_description: "Small correct changes with adaptive code retrieval"
+  default_prompt: "Use $practical-coding. Keep well-specified work on the Direct Path, load at most one reasoning reference for an unresolved blocker, and retrieve code through the cheapest sufficient available capability."
 policy:
   allow_implicit_invocation: true

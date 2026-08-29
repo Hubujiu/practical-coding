@@ -29,7 +29,7 @@ Judge a fix by the delivered code, not by whether it followed a named debugging 
 
 - Do not expand beyond that contract into a repo-wide search for unrelated defects.
 - Do not write tests merely because debugging occurred or because the repaired logic is non-trivial. Use the cheapest reproduction or focused check that can falsify the fix; add a durable targeted test only when regression risk, project requirements, or the evidence plan in `implementation.md` justifies its lasting value.
-- If diagnosis reveals a material design or dependency decision, load `decision.md` before making that choice.
+- If diagnosis exposes a different material blocker such as an unresolved design/dependency choice or a previously unknown risk boundary, report that blocker to the root. Do not load another Practical Coding reference from this module; the root decides whether the Core is sufficient or whether isolated follow-up work is worth its handoff cost.
 
 ## Exit
 
