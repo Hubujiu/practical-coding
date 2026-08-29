@@ -1,23 +1,50 @@
 # Practical Coding
 
-This repository is an Agent Skill. If you are a coding agent reading this file from a checkout, apply the skill as follows.
+This repository is an Agent Skill. If you are a coding agent reading this file from a checkout, apply the Skill from [`SKILL.md`](SKILL.md).
 
-Read [`SKILL.md`](SKILL.md) for the route-agnostic shortest-path Core, the three-branch Event Router, and the Retrieval Policy. The Core always applies. Ordinary well-specified work stays Direct with no reasoning reference and no worker.
+Practical Coding is an adaptive-rigor system, not a task classifier. The Core always applies. Start from the cheapest sufficient action and add stricter reasoning only when a present blocker requires it.
 
-The Event Router handles only unresolved blockers that change how the task must be reasoned about:
+## 1. Decision Gate
 
-| Trigger | Reasoning module |
+Before execution, determine whether a material unresolved choice blocks or materially changes the next safe action.
+
+- If no, continue to execution.
+- If yes, read [`references/decision.md`](references/decision.md) and resolve only that decision frontier.
+
+A request-, repository-, or authority-settled choice is input, not a Decision. Cheap reversible choices use the project or platform default. Resolve discoverable facts before asking the user; only genuinely user-owned scope, compatibility, cost, preference, or risk choices should remain as questions.
+
+After the choice is settled, continue with the Core. Do not assume the logical end of Decision removes `decision.md` from model context.
+
+## 2. Execution Escalation
+
+Direct is the default execution state: Core only.
+
+| Present blocker | Extra rigor |
 |---|---|
-| An observed failure, regression, or incorrect behavior still lacks an evidenced cause | [`references/debugging.md`](references/debugging.md) |
-| A material unresolved user-owned choice about architecture, whether or which external dependency/implementation to adopt, APIs, data models, or compatibility would change the next action | [`references/decision.md`](references/decision.md) |
-| An unknown contract/invariant, an unresolved material risk boundary (security/permissions, irreversible side effects, persistence/migration, concurrency/transactions, compatibility), or insufficient evidence for a risky material claim blocks safe execution | [`references/implementation.md`](references/implementation.md) |
+| Observed failure or regression still lacks an evidenced cause | [`references/debugging.md`](references/debugging.md) |
+| Safe execution is blocked by an unknown contract/invariant, unresolved material risk boundary, or unresolved sufficient evidence for a risky claim | [`references/implementation.md`](references/implementation.md) |
 
-Load exactly one first-match reasoning module in addition to the Core. A choice already settled by the request or repository is input, not a Decision event. A security, persistence, migration, concurrency, or compatibility noun is not itself an Implementation event when the governing boundary, affected surface, and sufficient check are already established. Do not treat file count, task nouns, search needs, or the existence of another library as routing evidence. If a different blocker appears later, reassess it without accumulating another reasoning reference in the root; use the Core when sufficient or isolate substantial follow-up work when the saved context exceeds handoff cost.
+Debugging and Implementation are escalation profiles, not sequential stages. Do not classify by task nouns, file count, code size, or apparent difficulty. A diagnosed bug can be Direct. A security, persistence, migration, concurrency, or compatibility edit can be Direct when the governing boundary, affected surface, and sufficient check are already established.
 
-Navigation is not a fourth Event Router branch. Code retrieval follows the cheapest sufficient available path: known source first, then bounded/ranked source discovery, then an already-available structural index only when relationship queries materially reduce exploration, followed by current-source verification for material claims. Routine targeted lookup needs no Navigation reference.
+If one loaded profile resolves its blocker and a materially different blocker later appears, reassess from the Core. Do not accumulate another large reasoning reference in the root merely because the task continued; isolate substantial follow-up work when the context saved exceeds handoff cost.
 
-Read [`references/navigation.md`](references/navigation.md) only when broad retrieval itself is substantial enough to need the detailed procedure. Host-native ranked search, FFF-style retrieval, and `DeusData/codebase-memory-mcp` are optional capabilities, not project requirements. Use them only when already available; otherwise fall back to ordinary source search without installing tooling or changing project configuration solely for retrieval. An already-integrated structural backend may maintain or refresh its own index as part of normal use.
+## 3. Retrieval Policy
 
-For a substantial triggered event, prefer an isolated no-history worker only when its context savings exceed handoff cost; otherwise load the one selected reasoning reference in the root agent. Keep the root to the Core plus at most one loaded reasoning reference for the task. If broad mapping becomes expensive while another reasoning reference is already resident, prefer a read-only Navigation worker rather than loading a second large reference into the root.
+Retrieval is independent from Decision and execution rigor. Use the cheapest sufficient available path:
 
-The root agent owns user intent, authorization, repository state, routing, integration, and the final completion claim. A worker reads [`references/delegation.md`](references/delegation.md) plus exactly one assigned reference and returns a compact capsule. Decision, Debugging, and Navigation workers are read-only. An Implementation worker may write only when its assignment explicitly includes implementation, must have a bounded scope, and must be the sole writer there. Treat a capsule as stale after relevant repository changes.
+1. current context / known path / known symbol;
+2. bounded or ranked source discovery, falling back to ordinary filename/text/symbol search;
+3. an already-available structural index only for relationship-heavy questions where it materially reduces exploration;
+4. current-source verification for material conclusions.
+
+Read [`references/navigation.md`](references/navigation.md) only when broad retrieval itself is substantial enough to need the detailed procedure. Host-native ranked search, FFF-style retrieval, and `DeusData/codebase-memory-mcp` are optional capabilities, not project requirements. Missing capabilities fall back without installing tooling or changing project configuration solely for retrieval.
+
+Retrieval levels are cost bounds rather than exact semantic labels. A cheap bounded search may be acceptable where a targeted read would also suffice; an unnecessary structural exploration is not.
+
+## 4. Isolation Gate
+
+The root owns user intent, authorization, repository state, integration, and the final completion claim. Keep the root to the Core plus at most one loaded reasoning reference at a time.
+
+The root never reads [`references/delegation.md`](references/delegation.md). When isolation clearly saves more context than its handoff cost, dispatch one worker with `delegation.md` plus exactly one assigned reference and a compact capsule of settled choices, verified facts, scope, repository state, and success conditions.
+
+Decision, Debugging, and Navigation workers are read-only. An Implementation worker may write only when explicitly assigned a bounded implementation scope and must be the sole writer there. Never use overlapping writers or worker pipelines. Treat a worker capsule as stale after relevant repository changes.
