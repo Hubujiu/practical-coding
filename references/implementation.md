@@ -1,4 +1,4 @@
-# Implementation Rigor
+# Implementation
 
 Load this module only when safe execution is blocked by an unknown contract or invariant, an unresolved material risk boundary, or insufficient evidence for a risky material claim. Implementation is an execution escalation profile, not a synonym for "coding" and not a mandatory stage after Debugging.
 
