@@ -14,91 +14,113 @@ from typing import Any
 
 EXTRA_ROUTER_CASES = {
     "direct-existing-prop": (
-        "DIRECT",
+        "NONE",
+        "TARGETED",
         "The existing Button already has a loading prop. Make CheckoutButton use it while submit is pending and run its existing component test.",
     ),
     "direct-private-dto": (
-        "DIRECT",
-        "All three known internal consumers already accept user_id. Rename the private DTO field and update those known callers.",
+        "NONE",
+        "BOUNDED",
+        "All three internal consumers already accept user_id, but their paths or symbols are not listed. Locate them, rename the private DTO field, and update those callers.",
     ),
     "decision-job-runner": (
         "DECISION",
+        "NONE",
         "We need scheduled jobs in this service. Pick a separate queue worker or the database-backed scheduler; operational ownership and latency needs have not been decided.",
     ),
     "decision-webhook-compat": (
         "DECISION",
+        "NONE",
         "We need to change a public webhook payload shape, but we do not know whether external consumers can migrate together or need a compatibility window.",
     ),
     "debug-flaky-retry": (
         "DEBUGGING",
+        "BOUNDED",
         "The retry test fails about one run in twenty with an assertion mismatch. We have not established which state first becomes wrong.",
     ),
     "debug-performance-regression": (
         "DEBUGGING",
+        "BOUNDED",
         "Opening the analytics dashboard became roughly five times slower after last week's change; no hotspot has been profiled yet.",
     ),
     "implementation-event-tenant": (
         "IMPLEMENTATION",
+        "STRUCTURAL",
         "Add tenant_id to a versioned event across its producer, schema, consumers, and replay path; the exact coordinated contract surface has not been mapped yet.",
     ),
     "implementation-known-callers": (
-        "DIRECT",
+        "NONE",
+        "TARGETED",
         "The new helper signature is already decided and the four affected callers are known. Update those callers and run their focused tests.",
     ),
     "exploration-auth-context": (
-        "EXPLORATION",
-        "Before changing AuthContext in this monorepo, identify every package that creates it, transforms it, or depends on the transformed shape.",
+        "NONE",
+        "STRUCTURAL",
+        "Report only: identify every package in this monorepo that creates AuthContext, transforms it, or depends on the transformed shape. No code change is planned yet.",
     ),
     "exploration-plugin-loading": (
-        "EXPLORATION",
+        "NONE",
+        "STRUCTURAL",
         "Find which payment adapter implementations can be loaded at runtime and where their registration and dispatch happen across this large repository.",
     ),
     "verification-payment-retry": (
         "IMPLEMENTATION",
+        "STRUCTURAL",
         "The retry-policy patch is complete. Decide what evidence is sufficient to support the claim that it cannot create duplicate charges.",
     ),
     "verification-performance-claim": (
         "IMPLEMENTATION",
+        "NONE",
         "The optimization is implemented. Decide whether unit timings, a benchmark, or a load test is sufficient evidence for the performance claim.",
     ),
     "direct-persistence-known-helper": (
-        "DIRECT",
+        "NONE",
+        "TARGETED",
         "Repository evidence confirms append_audit_event() is the authoritative transactional persistence boundary and its focused test is sufficient. Call it from the one known handler and run that test.",
     ),
     "direct-security-known-guard": (
-        "DIRECT",
+        "NONE",
+        "TARGETED",
         "The permission policy, require_admin() guard, rejection-before-side-effect invariant, affected route, and focused tests are already established. Apply that guard to the known route and run those tests.",
     ),
     "direct-compat-known-adapter": (
-        "DIRECT",
+        "NONE",
+        "TARGETED",
         "The approved one-release compatibility alias and its sole public serialization adapter are already identified. Add the alias there and run the existing old/new-client contract test.",
     ),
     "implementation-single-file-persistence": (
         "IMPLEMENTATION",
+        "STRUCTURAL",
         "Change the persisted status encoding in serializer.py from integer codes to strings. The edit appears confined to one file, but existing on-disk data, readers, rollback, and compatibility guarantees have not been mapped.",
     ),
     "implementation-sqlite-transaction-unknown": (
         "IMPLEMENTATION",
+        "TARGETED",
         "Implement the body of save_history() with sqlite3. The function and dependency are fixed, but atomicity, concurrent callers, restart behavior, and the authoritative transaction boundary are unknown.",
     ),
     "implementation-one-line-irreversible": (
         "IMPLEMENTATION",
+        "TARGETED",
         "Flip purge_after_sync from false to true in one configuration file. The flag permanently deletes local records, and retry, rollback, idempotency, and ownership of that guarantee are not mapped.",
     ),
     "implementation-security-local-boundary": (
         "IMPLEMENTATION",
+        "STRUCTURAL",
         "Add one authorization check to download(). The code edit is local, but tenant ownership, rejection-before-read behavior, indirect callers, and the authoritative permission boundary are unknown.",
     ),
     "decision-migration-policy-open": (
         "DECISION",
+        "NONE",
         "Choose an offline rewrite or a dual-read rolling migration for persisted session records. Downtime tolerance and cross-version compatibility policy are unresolved and would change the implementation surface.",
     ),
     "debug-persistence-corruption": (
         "DEBUGGING",
+        "TARGETED",
         "Some command-history rows disappear after two CLI processes exit at nearly the same time. The sqlite write path is named, but the earliest incorrect state and cause are not diagnosed.",
     ),
     "debug-security-symptom": (
         "DEBUGGING",
+        "STRUCTURAL",
         "A user sometimes downloads another tenant's invoice through download(). The permission boundary may be involved, but the failing execution path and cause have not been traced.",
     ),
 }
@@ -110,52 +132,60 @@ EXTRA_BEHAVIOR_CASES = {
         "files": {
             "audit.py": "def append_audit_event(connection, event):\n    with connection:\n        connection.execute('insert into audit(event) values (?)', (event,))\n\ndef handle_login(connection):\n    pass\n",
         },
-        "module": None,
+        "reasoning_module": None,
+        "retrieval": "TARGETED",
     },
     "native-direct-known-permission": {
         "prompt": "The repository's settled policy requires require_admin() on administrative routes, its rejection-before-side-effect contract is already tested, and delete_report() is the only missing known caller. Add the existing guard there and run the focused test.",
         "files": {
             "reports.py": "def require_admin(user):\n    if not user.get('admin'):\n        raise PermissionError\n\ndef delete_report(user, store, report_id):\n    store.delete(report_id)\n",
         },
-        "module": None,
+        "reasoning_module": None,
+        "retrieval": "TARGETED",
     },
     "native-direct-known-compatibility": {
         "prompt": "Compatibility policy is settled: emit old_name beside new_name for one release. serialize_user() is the sole public adapter, all affected callers are mapped, and its existing contract test is sufficient. Make that local edit and run the test.",
         "files": {
             "users.py": "def serialize_user(user):\n    return {'new_name': user['name']}\n",
         },
-        "module": None,
+        "reasoning_module": None,
+        "retrieval": "TARGETED",
     },
     "native-implementation-local-persistence": {
         "prompt": "Change serializer.py so persisted account status uses strings instead of integer codes. It looks like a one-file edit, but existing data, every reader, mixed-version compatibility, rollback, and the authoritative storage contract have not been mapped. Determine the safe implementation surface before editing.",
         "files": {
             "serializer.py": "def encode_status(status):\n    return 1 if status == 'active' else 2\n",
         },
-        "module": "implementation.md",
+        "reasoning_module": "implementation.md",
+        "retrieval": "STRUCTURAL",
     },
     "native-implementation-local-transaction": {
         "prompt": "Python sqlite3 is already mandated and save_history() is the named function. Implementing it is locally small, but atomicity, concurrent writers, restart guarantees, and transaction ownership are unknown. Map those guarantees and sufficient evidence before editing.",
         "files": {
             "history.py": "import sqlite3\n\ndef save_history(connection, command):\n    pass\n",
         },
-        "module": "implementation.md",
+        "reasoning_module": "implementation.md",
+        "retrieval": "STRUCTURAL",
     },
     "native-implementation-one-line-irreversible": {
         "prompt": "Set purge_after_sync=true in settings.py. Although this is one line, it permanently deletes local records, and retry, rollback, idempotency, affected callers, and ownership of the deletion guarantee are unknown. Determine the safe change and evidence first.",
         "files": {"settings.py": "purge_after_sync = False\n"},
-        "module": "implementation.md",
+        "reasoning_module": "implementation.md",
+        "retrieval": "BOUNDED",
     },
     "native-decision-migration-policy": {
         "prompt": "Choose an offline rewrite or a dual-read rolling migration for persisted session records. Downtime tolerance and mixed-version compatibility policy are unresolved and the choice changes the next implementation action. Resolve the choice before implementation.",
         "files": {"sessions.py": "def decode_session(raw):\n    return raw\n"},
-        "module": "decision.md",
+        "reasoning_module": "decision.md",
+        "retrieval": "NONE",
     },
     "native-debug-persistent-corruption": {
         "prompt": "Some sqlite command-history rows disappear when two CLI processes exit at nearly the same time. save_history() is named, but no trace has established the earliest incorrect state or cause. Diagnose the observed failure before deciding the fix.",
         "files": {
             "history.py": "def save_history(connection, command):\n    connection.execute('insert into history(command) values (?)', (command,))\n",
         },
-        "module": "debugging.md",
+        "reasoning_module": "debugging.md",
+        "retrieval": "BOUNDED",
     },
 }
 

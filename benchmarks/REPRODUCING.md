@@ -1,15 +1,15 @@
-# Reproducing the Practical Coding v1.1 Luna benchmarks
+# Reproducing the Practical Coding v1.2 Luna benchmarks
 
-This document reproduces the public Practical Coding v1.1 benchmark chain. The runner invokes `gpt-5.6-luna` directly through `codex exec`, uses isolated workspaces, and records deterministic evidence where possible.
+This document reproduces the Practical Coding v1.2 benchmark chain. Runner v2.0 invokes `gpt-5.6-luna` directly through `codex exec`, uses isolated workspaces, and records deterministic evidence where possible.
 
-Published compact aggregates and the full Chinese report are in [`results/v1.1/`](results/v1.1/). Historical v1.0 evidence remains in [`results/v1.0/`](results/v1.0/).
+Current compact v1.2 evidence is in [`results/v1.2/`](results/v1.2/). The committed [`results/v1.1/`](results/v1.1/) and [`results/v1.0/`](results/v1.0/) directories are historical evidence; their five-way Router scores do not validate the v1.2 two-dimensional contract.
 
 ## Evidence types
 
 | Suite | Tasks / grader | Compared arms | Evidence status |
 |---|---|---|---|
 | Delivery | Ponytail's published agentic tasks and deterministic scorer through a Codex adapter | Practical, Ponytail | Upstream task content with project execution adapter |
-| Router | Practical-owned exact routing corpus | Practical | Public project regression corpus |
+| Router | Practical-owned exact two-dimensional reasoning + Retrieval corpus | Practical | Public project regression corpus |
 | Decision | Practical-owned two-turn scenarios and mechanical contract grader | Practical, Matt Pocock `grilling` | Controlled comparative benchmark |
 | Debug | Upstream and Practical-owned shared-boundary cases with deterministic invariant grading | Practical, Superpowers | Controlled comparative benchmark |
 | Native behavior | Native Skill installation/discovery traces | Practical | Integration regression evidence |
@@ -56,7 +56,7 @@ pwsh -NoProfile -File benchmarks/run.ps1 -SelfTest
 
 The self-test makes no model calls. It validates the harness, profiles, source pins, seed failures, oracle passes, and scorer mechanics.
 
-## 2. Reproduce the published v1.1 capability suites
+## 2. Run the v1.2 capability suites
 
 Delivery + Decision + Debug:
 
@@ -71,7 +71,7 @@ pwsh -NoProfile -File benchmarks/run.ps1 `
   -RequireStableRanking
 ```
 
-Router regression matrix (114 cells):
+Reasoning + Retrieval regression matrix (114 cells):
 
 ```powershell
 pwsh -NoProfile -File benchmarks/run.ps1 `
@@ -81,7 +81,7 @@ pwsh -NoProfile -File benchmarks/run.ps1 `
   -RequireStableRanking
 ```
 
-Native Skill discovery and on-demand routing (54 cells):
+Native Skill discovery, reasoning isolation, and Retrieval behavior (54 cells):
 
 ```powershell
 pwsh -NoProfile -File benchmarks/run.ps1 `
@@ -103,7 +103,7 @@ pwsh -NoProfile -File benchmarks/run.ps1 `
   -RequireStableRanking
 ```
 
-Published v1.1 aggregates are split by affected surface in [`results/v1.1/`](results/v1.1/). Delivery/Decision and Router/Behavior used runner v1.8; the final Debug rerun and current harness use v1.9. The report does not present those split runs as one atomic manifest.
+Published v1.1 aggregates are split by affected surface in [`results/v1.1/`](results/v1.1/). Delivery/Decision and Router/Behavior used runner v1.8; the final Debug rerun used v1.9. Current runner v2.0 changes the Router result schema and must publish v1.2 evidence separately rather than rescoring v1.1 transcripts as comparable results.
 
 ## 3. Complete public matrix
 

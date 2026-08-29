@@ -26,7 +26,7 @@ from pathlib import Path
 from typing import Any, Callable
 
 
-VERSION = "1.9"
+VERSION = "2.0"
 MODEL = "gpt-5.6-luna"
 REASONING = "medium"
 ROOT = Path(__file__).resolve().parents[1]
@@ -50,23 +50,26 @@ SOURCES = {
     "full-stack-fastapi-template": ("https://github.com/fastapi/full-stack-fastapi-template.git", "cd83fc10ca20393e9ee50e3005e170c6929e047e"),
 }
 
+REASONING_ROUTES = ("NONE", "DECISION", "DEBUGGING", "IMPLEMENTATION")
+RETRIEVAL_MODES = ("NONE", "TARGETED", "BOUNDED", "STRUCTURAL")
+
 ROUTER_CASES = {
-    "direct-known-local": ("DIRECT", "Change the known label in src/Header.tsx and run its known component check."),
-    "direct-artifact": ("DIRECT", "Add a DatePicker component beside existing UI primitives; no integration was requested."),
-    "direct-default": ("DIRECT", "Add a local timestamp formatter; the repository already uses the platform default."),
-    "direct-multifile-known": ("DIRECT", "Rename the known internal field in these two known private files and run the known focused test."),
-    "decision-auth": ("DECISION", "Choose API keys or OAuth for a public B2B API; customer compatibility needs are unresolved."),
-    "decision-schema": ("DECISION", "Choose rename versus alias for a public JSON field; client compatibility policy is unknown."),
-    "decision-dependency": ("DECISION", "Choose whether to adopt Redis or keep the installed database cache; operational ownership is unresolved."),
-    "debug-symptom": ("DEBUGGING", "Invoice totals fail on comma-formatted amounts; the cause has not been traced."),
-    "debug-named-function": ("DEBUGGING", "Fix transfer(), which sometimes allows a negative balance; only the reported function is known."),
-    "debug-over-decision": ("DEBUGGING", "A new queue client intermittently loses messages. Choose retry semantics and fix it, but no cause is diagnosed."),
-    "implementation-contract": ("IMPLEMENTATION", "A versioned event contract must change across producers and consumers, but the coordinated surface is unknown."),
-    "implementation-not-files": ("DIRECT", "Update three already-known callers to the already-decided function signature."),
-    "exploration-broad": ("EXPLORATION", "In this monorepo, map every service calling the billing client and where responses are transformed."),
-    "exploration-cbm-off": ("EXPLORATION", "Map the complete call chain in this large repository; Codebase Memory is not enabled."),
-    "verification-risk": ("IMPLEMENTATION", "The change is complete; choose the cheapest sufficient evidence for a risky zero-downtime migration."),
-    "verification-known": ("DIRECT", "The local change is complete and its existing focused unit test is the sufficient check; run it."),
+    "direct-known-local": ("NONE", "TARGETED", "Change the known label in src/Header.tsx and run its known component check."),
+    "direct-artifact": ("NONE", "BOUNDED", "Add a DatePicker component beside existing UI primitives; their exact location is not given and no integration was requested."),
+    "direct-default": ("NONE", "BOUNDED", "Add a local timestamp formatter; the repository already uses the platform default, but no target path or symbol is given."),
+    "direct-multifile-known": ("NONE", "TARGETED", "Rename the known internal field in these two known private files and run the known focused test."),
+    "decision-auth": ("DECISION", "NONE", "Choose API keys or OAuth for a public B2B API; customer compatibility needs are unresolved."),
+    "decision-schema": ("DECISION", "NONE", "Choose rename versus alias for a public JSON field; client compatibility policy is unknown."),
+    "decision-dependency": ("DECISION", "NONE", "Choose whether to adopt Redis or keep the installed database cache; operational ownership is unresolved."),
+    "debug-symptom": ("DEBUGGING", "BOUNDED", "Invoice totals fail on comma-formatted amounts; the cause has not been traced."),
+    "debug-named-function": ("DEBUGGING", "TARGETED", "Fix transfer(), which sometimes allows a negative balance; only the reported function is known."),
+    "debug-over-decision": ("DEBUGGING", "BOUNDED", "A new queue client intermittently loses messages. Choose retry semantics and fix it, but no cause is diagnosed."),
+    "implementation-contract": ("IMPLEMENTATION", "STRUCTURAL", "A versioned event contract must change across producers and consumers, but the coordinated surface is unknown."),
+    "implementation-not-files": ("NONE", "TARGETED", "Update three already-known callers to the already-decided function signature."),
+    "exploration-broad": ("NONE", "STRUCTURAL", "In this monorepo, map every service calling the billing client and where responses are transformed."),
+    "exploration-cbm-off": ("NONE", "BOUNDED", "Map the complete call chain in this large repository; no structural index is available, so use bounded source search as the fallback."),
+    "verification-risk": ("IMPLEMENTATION", "BOUNDED", "The change is complete, but its existing checks have not been identified; choose the cheapest sufficient evidence for a risky zero-downtime migration."),
+    "verification-known": ("NONE", "BOUNDED", "The local change is complete and an existing focused unit test is sufficient, but its path or symbol is not given; locate and run it."),
 }
 
 DECISION_CASES = {
@@ -109,58 +112,66 @@ BEHAVIOR_CASES = {
     "native-direct": {
         "prompt": "Change the greeting in app.py from 'hello' to 'hello world' and run the file once.",
         "files": {"app.py": "print('hello')\n"},
-        "module": None,
+        "reasoning_module": None,
+        "retrieval": "TARGETED",
     },
     "native-direct-settled-choice": {
         "prompt": "Repository policy already requires Python's sqlite3 for durable command history. Implement save_history() in cli.py using that settled choice.",
         "files": {"cli.py": "import sqlite3\n\ndef save_history(connection, command):\n    pass\n"},
-        "module": None,
+        "reasoning_module": None,
+        "retrieval": "TARGETED",
     },
     "native-direct-diagnosed": {
         "prompt": "The failing test and trace already establish the cause: parse_bool() does not strip surrounding whitespace. Fix that shared function and run a focused check.",
         "files": {"config.py": "def parse_bool(value):\n    return value.lower() in {'1', 'true', 'yes'}\n\ndef feature_enabled(env):\n    return parse_bool(env.get('FEATURE', 'false'))\n"},
-        "module": None,
+        "reasoning_module": None,
+        "retrieval": "TARGETED",
     },
     "native-decision": {
         "prompt": "Choose SQLite or a JSON file for durable command history in this small public CLI. Compatibility and operational constraints are not specified. Make the decision only; do not implement it yet.",
         "files": {"cli.py": "def main():\n    pass\n"},
-        "module": "decision.md",
+        "reasoning_module": "decision.md",
+        "retrieval": "NONE",
     },
     "native-debugging": {
         "prompt": "feature_enabled() is wrong for FEATURE=' false '. Fix the reported bug without breaking other settings.",
         "files": {"config.py": "def parse_bool(value):\n    return value.lower() in {'1', 'true', 'yes'}\n\ndef feature_enabled(env):\n    return parse_bool(env.get('FEATURE', 'false'))\n\ndef audit_enabled(env):\n    return parse_bool(env.get('AUDIT', 'false'))\n"},
-        "module": "debugging.md",
+        "reasoning_module": "debugging.md",
+        "retrieval": "TARGETED",
     },
     "native-debug-over-decision": {
         "prompt": "The new queue client intermittently loses messages. Choose retry semantics and fix it, but no cause has been diagnosed. Start with the unresolved event that must be handled first.",
         "files": {"queue.py": "def publish(client, message):\n    client.send(message)\n"},
-        "module": "debugging.md",
+        "reasoning_module": "debugging.md",
+        "retrieval": "TARGETED",
     },
     "native-implementation": {
         "prompt": "Change the persisted account status field from integer codes 1/2 to public strings 'active'/'disabled' with a zero-downtime migration. Keep integer readers compatible for one release, then remove them; rollback restores integer writes. The producers and consumers are not mapped yet.",
         "files": {"models.py": "ACCOUNT_ACTIVE = 1\nACCOUNT_DISABLED = 2\n"},
-        "module": "implementation.md",
+        "reasoning_module": "implementation.md",
+        "retrieval": "STRUCTURAL",
     },
     "native-implementation-security": {
         "prompt": "Add API-token rotation, but the permission boundary, durable secret storage, revocation invariant, and affected callers are not mapped. Determine the safe implementation surface before editing.",
         "files": {"tokens.py": "def issue_token(user_id):\n    raise NotImplementedError\n"},
-        "module": "implementation.md",
+        "reasoning_module": "implementation.md",
+        "retrieval": "STRUCTURAL",
     },
     "native-exploration": {
         "prompt": "Map every service in this monorepo that calls the billing client and where each response is transformed. Report the complete call chain; do not change code.",
         "files": {"services/api.py": "from shared.billing import charge\n", "services/jobs.py": "from shared.billing import charge\n", "shared/billing.py": "def charge():\n    pass\n"},
-        "module": "navigation.md",
+        "reasoning_module": None,
+        "retrieval": "STRUCTURAL",
         "backend": "source",
     },
-    "native-codebase-memory": {
-        "prompt": "Map the complete call chain from API handlers through billing transformations in this repository. Codebase Memory is explicitly enabled in project configuration. Report only; do not edit code.",
+    "native-structural-capability-fallback": {
+        "prompt": "Map the complete call chain from API handlers through billing transformations in this repository. Use an already-available structural index only if the host actually exposes one; otherwise use bounded source search. Report only; do not edit code.",
         "files": {
-            ".practical-coding.yaml": "codebase_memory:\n  enabled: true\n",
             "api.py": "from billing import charge\n",
             "billing.py": "def charge():\n    pass\n",
         },
-        "module": "navigation.md",
-        "backend": "graph",
+        "reasoning_module": None,
+        "retrieval": "STRUCTURAL",
     },
 }
 
@@ -466,7 +477,22 @@ def skill_text(arm: str, sources: dict[str, Path], previous: Path | None, suite:
     raise ValueError(arm)
 
 
-def behavior_score(commands: list[str], expected_module: str | None, outputs: list[str] | None = None, expected_backend: str | None = None) -> dict[str, Any]:
+def parse_router_answer(answer: str) -> tuple[str, str]:
+    match = re.fullmatch(
+        r"\s*`?\s*REASONING\s*=\s*(NONE|DECISION|DEBUGGING|IMPLEMENTATION)\s*;\s*"
+        r"RETRIEVAL\s*=\s*(NONE|TARGETED|BOUNDED|STRUCTURAL)\s*`?\s*[.]?\s*",
+        answer.upper(),
+    )
+    return match.groups() if match else ("", "")
+
+
+def behavior_score(
+    commands: list[str],
+    expected_reasoning_module: str | None,
+    outputs: list[str] | None = None,
+    expected_retrieval: str = "TARGETED",
+    expected_backend: str | None = None,
+) -> dict[str, Any]:
     normalized = [command.replace("\\", "/").lower() for command in commands]
     combined_output = "\n".join(outputs or [])
     triggered = bool(re.search(r"(?m)^# Practical Coding\s*$", combined_output)) or any("practical-coding" in command and "skill.md" in command for command in normalized)
@@ -496,22 +522,48 @@ def behavior_score(commands: list[str], expected_module: str | None, outputs: li
                 batches.append(batch)
     module_sequence = [module for batch in batches for module in batch]
     module_reads = sorted(set(module_sequence))
-    expected_reads = [] if expected_module is None else [expected_module]
-    first_batch = batches[0] if batches else []
-    routing_ok = not batches if expected_module is None else first_batch == expected_reads
+    reasoning_modules = {"decision.md", "debugging.md", "implementation.md"}
+    reasoning_batches = [[module for module in batch if module in reasoning_modules] for batch in batches]
+    reasoning_batches = [batch for batch in reasoning_batches if batch]
+    reasoning_sequence = [module for batch in reasoning_batches for module in batch]
+    reasoning_reads = sorted(set(reasoning_sequence))
+    expected_reads = [] if expected_reasoning_module is None else [expected_reasoning_module]
+    first_reasoning_batch = reasoning_batches[0] if reasoning_batches else []
+    reasoning_ok = reasoning_reads == expected_reads and (
+        not reasoning_batches if expected_reasoning_module is None else first_reasoning_batch == expected_reads
+    )
     graph_used = any("codebase-memory-mcp" in command for command in normalized)
+    source_search_used = any(
+        re.search(r"(^|[\s;&|])(?:rg|grep|find|fd)(?:\.exe)?(?:[\s;&|]|$)", command)
+        or "get-childitem" in command
+        or "git grep" in command
+        for command in normalized
+    )
+    navigation_used = "navigation.md" in module_reads
+    if expected_retrieval == "STRUCTURAL":
+        retrieval_ok = graph_used or source_search_used
+    elif expected_retrieval == "BOUNDED":
+        retrieval_ok = source_search_used and not navigation_used and not graph_used
+    else:
+        retrieval_ok = not navigation_used and not graph_used
     backend_ok = expected_backend is None or graph_used == (expected_backend == "graph")
     return {
         "triggered": triggered,
-        "expected_module": expected_module,
+        "expected_reasoning_module": expected_reasoning_module,
+        "reasoning_reads": reasoning_reads,
+        "reasoning_sequence": reasoning_sequence,
+        "first_reasoning_batch": first_reasoning_batch,
+        "reasoning_ok": reasoning_ok,
+        "expected_retrieval": expected_retrieval,
+        "source_search_used": source_search_used,
+        "navigation_used": navigation_used,
+        "retrieval_ok": retrieval_ok,
         "module_reads": module_reads,
         "module_sequence": module_sequence,
-        "first_module_batch": first_batch,
-        "routing_ok": routing_ok,
         "expected_backend": expected_backend,
         "graph_backend_used": graph_used,
         "backend_ok": backend_ok,
-        "passed": triggered and routing_ok and backend_ok,
+        "passed": triggered and reasoning_ok and retrieval_ok and backend_ok,
     }
 
 
@@ -637,7 +689,7 @@ def run_cell(spec: tuple[str, str, str, int], args: argparse.Namespace, sources:
         snapshot_workspace(workspace)
         request = custom["prompt"]
     elif suite == "router":
-        request = ROUTER_CASES[case][1]
+        request = ROUTER_CASES[case][2]
     elif suite == "behavior":
         behavior = BEHAVIOR_CASES[case]
         for name, content in behavior["files"].items():
@@ -655,7 +707,15 @@ def run_cell(spec: tuple[str, str, str, int], args: argparse.Namespace, sources:
 
     loaded = skill_text(arm, sources, previous, suite=suite)
     if suite == "router":
-        prompt = "Classify the unresolved event. Return exactly one token: DIRECT, DECISION, DEBUGGING, IMPLEMENTATION, or EXPLORATION. Do not use tools or solve it.\n\nRequest: " + request + "\n\n" + loaded
+        prompt = (
+            "Classify two independent dimensions. Return exactly: "
+            "REASONING=<NONE|DECISION|DEBUGGING|IMPLEMENTATION>; "
+            "RETRIEVAL=<NONE|TARGETED|BOUNDED|STRUCTURAL>. "
+            "NONE means no reasoning module or no repository context is needed. "
+            "TARGETED means a known path or symbol is enough; BOUNDED means location is unknown but bounded/ranked/text search is enough; "
+            "STRUCTURAL means callers, callees, implementations, dependencies, or broad cross-file flow are the main retrieval need. "
+            "Classify only; do not use tools or solve it.\n\nRequest: " + request + "\n\n" + loaded
+        )
     elif suite == "decision":
         prompt = request + "\n\nReturn only the first decision round, then wait. Do not use tools or implement.\n" + loaded
     elif suite in {"delivery", "debug"}:
@@ -701,9 +761,19 @@ def run_cell(spec: tuple[str, str, str, int], args: argparse.Namespace, sources:
         (cell / "result.json").write_text(json.dumps(record, ensure_ascii=False, indent=2) + "\n", encoding="utf-8")
         return record
     if suite == "router":
-        expected = ROUTER_CASES[case][0]
-        actual = answers[0].upper().strip("` .\r\n\t")
-        record.update({"expected": expected, "actual": actual, "passed": actual == expected})
+        expected_reasoning, expected_retrieval, _ = ROUTER_CASES[case]
+        actual_reasoning, actual_retrieval = parse_router_answer(answers[0])
+        reasoning_ok = actual_reasoning == expected_reasoning
+        retrieval_ok = actual_retrieval == expected_retrieval
+        record.update({
+            "expected_reasoning": expected_reasoning,
+            "actual_reasoning": actual_reasoning,
+            "reasoning_ok": reasoning_ok,
+            "expected_retrieval": expected_retrieval,
+            "actual_retrieval": actual_retrieval,
+            "retrieval_ok": retrieval_ok,
+            "passed": reasoning_ok and retrieval_ok,
+        })
     elif suite == "decision":
         first = decision_metrics(answers[0])
         second = decision_metrics(answers[1]) if len(answers) > 1 else {"questions": 999, "recommendations": 0, "has_tradeoff": False, "attempted_implementation": False}
@@ -715,7 +785,7 @@ def run_cell(spec: tuple[str, str, str, int], args: argparse.Namespace, sources:
         commands = [command for round_ in rounds for command in round_["tool_commands"]]
         outputs = [output for round_ in rounds for output in round_["tool_outputs"]]
         behavior = BEHAVIOR_CASES[case]
-        record.update(behavior_score(commands, behavior["module"], outputs, behavior.get("backend")))
+        record.update(behavior_score(commands, behavior["reasoning_module"], outputs, behavior["retrieval"], behavior.get("backend")))
     else:
         if case in ponytail.TASKS:
             scored = ponytail.score_workspace(case, arm, MODEL, workspace)
@@ -934,9 +1004,19 @@ def rescore_run(run_dir: Path, ponytail: Any) -> None:
         suite, case = record["suite"], record["case"]
         answers = record.get("answers") or []
         if suite == "router":
-            expected = ROUTER_CASES[case][0]
-            actual = answers[0].upper().strip("` .\r\n\t") if answers else ""
-            record.update({"expected": expected, "actual": actual, "passed": actual == expected})
+            expected_reasoning, expected_retrieval, _ = ROUTER_CASES[case]
+            actual_reasoning, actual_retrieval = parse_router_answer(answers[0] if answers else "")
+            reasoning_ok = actual_reasoning == expected_reasoning
+            retrieval_ok = actual_retrieval == expected_retrieval
+            record.update({
+                "expected_reasoning": expected_reasoning,
+                "actual_reasoning": actual_reasoning,
+                "reasoning_ok": reasoning_ok,
+                "expected_retrieval": expected_retrieval,
+                "actual_retrieval": actual_retrieval,
+                "retrieval_ok": retrieval_ok,
+                "passed": reasoning_ok and retrieval_ok,
+            })
         elif suite == "decision":
             first = decision_metrics(answers[0]) if answers else decision_metrics("")
             second = decision_metrics(answers[1]) if len(answers) > 1 else {"questions": 999, "recommendations": 0, "has_tradeoff": False, "attempted_implementation": False}
@@ -951,7 +1031,7 @@ def rescore_run(run_dir: Path, ponytail: Any) -> None:
                 commands.extend(parsed["tool_commands"])
                 outputs.extend(parsed["tool_outputs"])
             behavior = BEHAVIOR_CASES[case]
-            record.update(behavior_score(commands, behavior["module"], outputs, behavior.get("backend")))
+            record.update(behavior_score(commands, behavior["reasoning_module"], outputs, behavior["retrieval"], behavior.get("backend")))
         elif "workspace" in record:
             workspace = Path(record["workspace"])
             scored = ponytail.score_workspace(case, record["arm"], MODEL, workspace) if case in ponytail.TASKS else custom_debug_score(case, workspace)

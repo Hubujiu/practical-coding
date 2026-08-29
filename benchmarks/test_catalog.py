@@ -35,23 +35,24 @@ class ExpandedCatalogTests(unittest.TestCase):
         self.assertEqual(bench.STRICT_SAFETY_CASES, expected)
 
     def test_expansion_is_not_just_one_route_or_bug_shape(self):
-        extra_routes = {expected for expected, _ in EXTRA_ROUTER_CASES.values()}
+        extra_reasoning = {reasoning for reasoning, _, _ in EXTRA_ROUTER_CASES.values()}
         self.assertEqual(
-            extra_routes,
-            {"DIRECT", "DECISION", "DEBUGGING", "IMPLEMENTATION", "EXPLORATION"},
+            extra_reasoning,
+            {"NONE", "DECISION", "DEBUGGING", "IMPLEMENTATION"},
         )
+        self.assertEqual({retrieval for _, retrieval, _ in EXTRA_ROUTER_CASES.values()}, set(bench.RETRIEVAL_MODES))
         self.assertEqual(len({case["score"] for case in EXTRA_DEBUG_CASES.values()}), len(EXTRA_DEBUG_CASES))
         self.assertGreaterEqual(len(EXTRA_DECISION_CASES), 6)
 
     def test_extreme_behavior_cases_pair_direct_and_escalated_risks(self):
-        modules = {case["module"] for case in EXTRA_BEHAVIOR_CASES.values()}
+        modules = {case["reasoning_module"] for case in EXTRA_BEHAVIOR_CASES.values()}
         self.assertEqual(modules, {None, "decision.md", "debugging.md", "implementation.md"})
         self.assertEqual(
-            sum(case["module"] is None for case in EXTRA_BEHAVIOR_CASES.values()),
+            sum(case["reasoning_module"] is None for case in EXTRA_BEHAVIOR_CASES.values()),
             3,
         )
         self.assertEqual(
-            sum(case["module"] == "implementation.md" for case in EXTRA_BEHAVIOR_CASES.values()),
+            sum(case["reasoning_module"] == "implementation.md" for case in EXTRA_BEHAVIOR_CASES.values()),
             3,
         )
 

@@ -1,10 +1,10 @@
 # Practical Coding benchmark chain
 
-This directory contains the reproducible evaluation harness for the public **Practical Coding v1.1** release.
+This directory contains the reproducible evaluation harness for **Practical Coding v1.2**. The v1.2 runner uses a two-dimensional routing contract; committed v1.1 results remain historical evidence for the former five-way classifier.
 
 The benchmark design intentionally avoids a single manufactured leaderboard. Each capability is compared with the most relevant specialist behavior, while Practical-owned routing suites test the integration layer that specialists do not provide by themselves.
 
-For exact commands, pinned upstream commits, evidence boundaries, and reproduction requirements, see [`REPRODUCING.md`](REPRODUCING.md). Current compact aggregates live in [`results/v1.1/`](results/v1.1/); [`results/v1.0/`](results/v1.0/) is retained as historical evidence.
+For exact commands, pinned upstream commits, evidence boundaries, and reproduction requirements, see [`REPRODUCING.md`](REPRODUCING.md). Current compact evidence lives in [`results/v1.2/`](results/v1.2/); [`results/v1.1/`](results/v1.1/) and [`results/v1.0/`](results/v1.0/) are retained as historical evidence.
 
 ## What is measured
 
@@ -13,8 +13,8 @@ For exact commands, pinned upstream commits, evidence boundaries, and reproducti
 | Delivery | Practical vs Ponytail | Correctness, safety, build reachability, LOC, tokens, time, tool calls |
 | Decision | Practical vs Matt Pocock `grilling` | Whether a material unresolved choice is surfaced and converged without premature implementation |
 | Debug | Practical vs Superpowers | Root-cause repair, sibling callers, delivered invariant, safety, efficiency |
-| Router | Practical vs expected route | Direct / Decision / Debugging / Implementation / Navigation classification |
-| Native behavior | Practical only | Real Skill discovery and selective reference loading without prompt injection |
+| Router | Practical vs expected two-dimensional contract | Reasoning (`NONE` plus Decision / Debugging / Implementation) and independent Retrieval (`NONE` / Targeted / Bounded / Structural) |
+| Native behavior | Practical only | Real Skill discovery, reasoning-reference isolation, and independent Retrieval/reference/backend behavior without prompt injection |
 | Navigation ablation | Source search vs optional graph backend | Whether AST/LSP graph navigation pays for itself on real repositories |
 
 The Decision and Debug comparisons are controlled project comparisons; they are not official upstream benchmark claims.
@@ -67,7 +67,7 @@ pwsh -NoProfile -File benchmarks/run.ps1 `
 | `standard` | 9 | 38 | 6 | 10 | 18 | 3 |
 | `full` | 18 | 38 | 10 | 14 | 18 | 3 |
 
-`standard` is the normal public release gate. `full` carries the broader complete public regression matrix. The extra Router cases span all five routes and pair settled persistence, permission, and compatibility edits with deceptively local unresolved-risk cases. Native behavior repeats those Direct/Implementation boundaries without injected Skill text and adds Decision/Debug precedence cases. The expanded Debug set covers fourteen cases across parsing, normalization, tenant isolation, pagination, units, row handling, state invariants, TTL semantics, URL handling, and the upstream transfer/amount tasks. Decision grows from six to ten two-turn decisions in `full`. A stable published ranking requires at least three determinate repetitions per selected case/arm.
+`standard` is the normal public release gate. `full` carries the broader complete public regression matrix. Router cases cover all four reasoning outputs (`NONE` plus three reasoning routes), all four Retrieval modes, and cross-products such as `NONE+STRUCTURAL` and `IMPLEMENTATION+STRUCTURAL`. Native behavior repeats Direct/Implementation boundaries without injected Skill text, adds Decision/Debug precedence cases, and scores Navigation/backend use independently from reasoning-reference selection. The expanded Debug set covers fourteen cases across parsing, normalization, tenant isolation, pagination, units, row handling, state invariants, TTL semantics, URL handling, and the upstream transfer/amount tasks. Decision grows from six to ten two-turn decisions in `full`. A stable published ranking requires at least three determinate repetitions per selected case/arm.
 
 ## Acceptance order
 
@@ -85,12 +85,13 @@ The public task catalog is a **regression corpus**, not a private generalization
 
 Practical Coding's main architectural claim cannot be established by comparing only against Ponytail or only against Superpowers. The project also measures whether the integration policy itself behaves as intended:
 
-- ordinary work remains Direct;
+- ordinary work selects no reasoning route;
 - an unresolved bug loads Debugging, not every engineering module;
 - a material choice loads Decision;
 - risky boundaries load Implementation;
-- broad structural exploration loads Navigation;
-- only the selected reference is read;
+- Retrieval is classified independently as none, targeted, bounded, or structural;
+- broad structural exploration may load Navigation without becoming a fourth reasoning route;
+- only the selected reasoning reference is read;
 - workers are not a mandatory stage.
 
 The next validation cycle also includes a **Ponytail + Superpowers combined-install arm**. That test is required before claiming that Practical is experimentally superior to installing both together. See [`NEXT_VALIDATION.md`](NEXT_VALIDATION.md).
@@ -116,10 +117,10 @@ The committed release directory contains only compact aggregates suitable for pu
 ## Suites and scoring
 
 - `delivery`: Ponytail's published agentic tasks and deterministic scorer. For frontend template cases, the runner installs the pinned lockfile dependencies before the agent starts, so the agent and the runner-owned production build use the same executable type/build environment. Reports correctness, safety, production LOC, test LOC, files, tokens, time, tool calls, setup time, and optional frontend build result.
-- `router`: exact classification across Direct, Decision, Debugging, Implementation, and Exploration, including overlap and negative-boundary cases. The former Verification route is folded into Implementation; the `verification-*` case ids keep their names but expect `IMPLEMENTATION`, so router accuracy on those cells is not comparable with runs from before that routing change.
+- `router`: exact two-field classification. `REASONING` is `NONE`, `DECISION`, `DEBUGGING`, or `IMPLEMENTATION`; only the latter three are reasoning routes. `RETRIEVAL` is independently `NONE`, `TARGETED`, `BOUNDED`, or `STRUCTURAL`. A cell passes only when both fields match. The former Verification route remains folded into Implementation, while former Exploration cases now expect `REASONING=NONE; RETRIEVAL=STRUCTURAL`; results are therefore not comparable with the v1.1 five-way classifier.
 - `decision`: Practical versus Matt Pocock `grilling`. Uses a real resumed second turn and gates on frontier questions, one recommendation per question, no premature implementation, and convergence after scripted user decisions. Trade-off language is reported diagnostically but is not a declared grilling contract gate.
 - `debug`: shared-root-cause tasks scored on the repaired invariant and sibling callers. Tests/TDD process receives no bonus. Each Practical-owned Debug seed is required to fail its deterministic scorer, and a separate oracle fixture must pass it before the case is accepted into the catalog.
-- `behavior`: installs Practical Coding into an isolated native `CODEX_HOME`, does not inject its text into the prompt, and mechanically inspects command traces for `SKILL.md` discovery plus exactly the event-required reference set. Direct Path must read no reference; Decision, Debugging, Implementation, and Exploration must read only their expected module. Infrastructure, timeout, transcript-capture, missing-runtime, and build OOM failures are reported as `indeterminate`, not Skill failures. Comparisons omit pairs containing indeterminate cells instead of rewarding the unaffected arm.
+- `behavior`: installs Practical Coding into an isolated native `CODEX_HOME`, does not inject its text into the prompt, and mechanically inspects command traces for `SKILL.md` discovery. Reasoning references are scored separately from Retrieval: Direct reads no reasoning reference; Decision, Debugging, and Implementation read only their expected reasoning reference; structural Retrieval may read `navigation.md` and is separately checked against the expected source/graph backend. Infrastructure, timeout, transcript-capture, missing-runtime, and build OOM failures are reported as `indeterminate`, not Skill failures. Comparisons omit pairs containing indeterminate cells instead of rewarding the unaffected arm.
 
 `total_tokens` includes cached input because that is how Codex reports turn input. The report therefore also separates cached input, uncached input, output, and reasoning tokens. `duration_seconds` is per-cell process duration; suite elapsed time is recorded separately and is not obtained by summing concurrent cell durations.
 

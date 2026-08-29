@@ -79,16 +79,33 @@ class BenchmarkHarnessTests(unittest.TestCase):
         self.assertEqual(head.returncode, 0, head.stderr)
         self.assertEqual(longpaths.stdout.strip(), "true")
 
-    def test_router_matrix_covers_every_route(self):
+    def test_router_matrix_covers_three_reasoning_routes_plus_no_route(self):
         self.assertEqual(
-            {expected for expected, _ in bench.ROUTER_CASES.values()},
-            {"DIRECT", "DECISION", "DEBUGGING", "IMPLEMENTATION", "EXPLORATION"},
+            {reasoning for reasoning, _, _ in bench.ROUTER_CASES.values()},
+            {"NONE", "DECISION", "DEBUGGING", "IMPLEMENTATION"},
         )
+        self.assertEqual(len(set(bench.REASONING_ROUTES) - {"NONE"}), 3)
+
+    def test_router_matrix_covers_independent_retrieval_dimension(self):
+        self.assertEqual(
+            {retrieval for _, retrieval, _ in bench.ROUTER_CASES.values()},
+            set(bench.RETRIEVAL_MODES),
+        )
+        self.assertIn(("NONE", "STRUCTURAL"), {(reasoning, retrieval) for reasoning, retrieval, _ in bench.ROUTER_CASES.values()})
+        self.assertIn(("IMPLEMENTATION", "STRUCTURAL"), {(reasoning, retrieval) for reasoning, retrieval, _ in bench.ROUTER_CASES.values()})
+
+    def test_router_answer_parser_requires_both_dimensions(self):
+        self.assertEqual(
+            bench.parse_router_answer("REASONING=DEBUGGING; RETRIEVAL=BOUNDED"),
+            ("DEBUGGING", "BOUNDED"),
+        )
+        self.assertEqual(bench.parse_router_answer("DEBUGGING"), ("", ""))
 
     def test_core_is_route_agnostic_and_router_owns_escalation(self):
         skill = (bench.ROOT / "SKILL.md").read_text(encoding="utf-8")
         core = skill.split("## Core", 1)[1].split("## Direct Path", 1)[0]
-        router = skill.split("## Event Router", 1)[1].split("## Isolation Gate", 1)[0]
+        router = skill.split("## Event Router", 1)[1].split("## Retrieval Policy", 1)[0]
+        retrieval = skill.split("## Retrieval Policy", 1)[1].split("## Isolation Gate", 1)[0]
 
         self.assertIn("minimum local code", core)
         self.assertIn("already-established contracts", core)
@@ -109,7 +126,9 @@ class BenchmarkHarnessTests(unittest.TestCase):
         self.assertIn("specified and authorized", router)
         self.assertIn("security/permissions", router)
         self.assertIn("persistence/migration", router)
-        self.assertIn("structural mapping", router)
+        self.assertNotIn("navigation.md", router.lower())
+        self.assertIn("structural code index", retrieval)
+        self.assertIn("references/navigation.md", retrieval)
 
     def test_decision_suite_inlines_decision_module(self):
         with tempfile.TemporaryDirectory() as tmp:
@@ -140,29 +159,40 @@ class BenchmarkHarnessTests(unittest.TestCase):
             [commands[0], "Get-Content C:/eval/skills/practical-coding/references/debugging.md, C:/eval/skills/practical-coding/references/implementation.md"],
             "debugging.md",
         )
-        self.assertFalse(eager["routing_ok"])
+        self.assertFalse(eager["reasoning_ok"])
 
         sequential = bench.behavior_score(
             [*commands, "Get-Content C:/eval/skills/practical-coding/references/decision.md"],
             "debugging.md",
         )
-        self.assertTrue(sequential["routing_ok"])
-        self.assertEqual(sequential["module_sequence"], ["debugging.md", "decision.md"])
+        self.assertFalse(sequential["reasoning_ok"])
+        self.assertEqual(sequential["reasoning_sequence"], ["debugging.md", "decision.md"])
 
     def test_native_behavior_matrix_covers_direct_and_every_module(self):
         self.assertEqual(
-            {case["module"] for case in bench.BEHAVIOR_CASES.values()},
-            {None, "decision.md", "debugging.md", "implementation.md", "navigation.md"},
+            {case["reasoning_module"] for case in bench.BEHAVIOR_CASES.values()},
+            {None, "decision.md", "debugging.md", "implementation.md"},
         )
 
-    def test_navigation_backend_is_scored_separately_from_module_route(self):
+    def test_navigation_backend_is_scored_separately_from_reasoning_route(self):
         commands = [
             "Get-Content C:/eval/skills/practical-coding/SKILL.md",
             "Get-Content C:/eval/skills/practical-coding/references/navigation.md",
             "codebase-memory-mcp cli search_graph '{}'",
         ]
-        self.assertTrue(bench.behavior_score(commands, "navigation.md", expected_backend="graph")["passed"])
-        self.assertFalse(bench.behavior_score(commands[:2], "navigation.md", expected_backend="graph")["backend_ok"])
+        self.assertTrue(bench.behavior_score(commands, None, expected_retrieval="STRUCTURAL", expected_backend="graph")["passed"])
+        self.assertFalse(bench.behavior_score(commands[:2], None, expected_retrieval="STRUCTURAL", expected_backend="graph")["backend_ok"])
+
+    def test_structural_retrieval_allows_source_fallback_without_navigation_reference(self):
+        commands = [
+            "Get-Content C:/eval/skills/practical-coding/SKILL.md",
+            "Get-Content C:/eval/skills/practical-coding/references/implementation.md",
+            "rg -n 'account_status' .",
+        ]
+        score = bench.behavior_score(commands, "implementation.md", expected_retrieval="STRUCTURAL")
+        self.assertTrue(score["passed"])
+        self.assertFalse(score["navigation_used"])
+        self.assertTrue(score["source_search_used"])
 
     def test_behavior_score_uses_loaded_content_not_recursive_filename_listing(self):
         commands = ["Get-ChildItem C:/eval/skills/practical-coding -Recurse; Get-Content $decision"]

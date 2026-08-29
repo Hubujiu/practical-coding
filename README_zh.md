@@ -33,13 +33,13 @@ Navigation 不再是 Event Router 的第四条互斥分支，而变成 Direct �
 | 改名、CSS、已知局部修改 | **Direct Path**：只用 Core |
 | 已观察到 Bug，但根因未知 | Core + **Debugging** |
 | 架构/API/依赖等实质选择仍未确定 | Core + **Decision** |
-| 契约、安全、迁移、权限、持久化、并发、兼容性等重要边界未知 | Core + **Implementation** |
+| 未知契约或尚未解决的安全、迁移、权限、持久化、并发、兼容性等重要边界阻塞安全执行 | Core + **Implementation** |
 | 只是需要找到相关代码 | 走最便宜的充分检索路径；“需要搜索”本身不会选择 reasoning module |
 | 需要大范围调用链/依赖关系映射 | 已有结构化索引能明显减少探索时才使用；没有就直接回退 bounded source search |
 
 新的核心不变量：
 
-> **Core + 最多一个 reasoning module；Retrieval 与 Event Router 正交。**
+> **Core + 最多一个 reasoning module；Retrieval 与 Event Router 正交。** 当 governing boundary、affected surface 和 sufficient check 已经确定时，仅仅出现安全、持久化、迁移、并发或兼容性名词并不会触发 Implementation。
 
 v1.1 遗留的 `.practical-coding.yaml` 不再被 Skill 读取，可以直接删除。Retrieval 能力改为根据当前宿主/环境中已经存在的工具动态选择，而不是保存为项目级偏好。
 
@@ -161,7 +161,7 @@ Practical Coding 的差异不在于“拥有更多规则”，而在控制策略
 
 ## Benchmark 证据
 
-仓库中 [`benchmarks/results/v1.1/`](benchmarks/results/v1.1/) 的结果验证的是旧版 v1.1 **五路由设计**。这些结果继续作为历史证据保留，但在用新契约重新跑受影响的 Router / Native behavior suite 之前，**不能把它们当成 v1.2 Retrieval 重构的验证结果。**
+最终 v1.2 证据已发布到 [`benchmarks/results/v1.2/`](benchmarks/results/v1.2/)：reasoning 分类 114/114、独立 Retrieval 分类 106/114、Native Behavior 54/54，Practical-only 的 Delivery/Decision/Debug 回归 75/75。v1.1 五路由结果继续作为历史证据保留，但不能与 v1.2 双维 Router schema 直接比较分数。
 
 当前公开的 v1.1 结果仍为：
 

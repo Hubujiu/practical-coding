@@ -1,0 +1,63 @@
+{
+  "product_version": "1.2",
+  "runner_version": "2.0",
+  "model": "gpt-5.6-luna",
+  "reasoning": "medium",
+  "identities": {
+    "runner_bundle_sha256": "55207e23d849e86c473ebdb539cf383d21acf9479fe4f4d9713a4ddc7117b7c7",
+    "skill_entrypoint_sha256": "1c875b62c0c4c058c79bca9e60bc22f421daa04326b15eafa6eb6426753767f6",
+    "skill_bundle_sha256": "caeb72a10ab88501a3a64d8c93eb9d868cbde8d50254924044dbc80d35339031",
+    "router_behavior_summary_sha256": "1c9ca83265389ecb3061c645c00214f3dcb4b381ad7581cb95813c085e6b085e",
+    "capability_regression_summary_sha256": "f2855e86f429f883ccfec60f7ca6bd659436834cefcb0f7863c8f81b5dd220bc"
+  },
+  "runs": {
+    "router_behavior": {
+      "atomic": true,
+      "profile": "standard",
+      "runs_per_case": 3,
+      "cells": 168,
+      "indeterminate": 0,
+      "elapsed_seconds": 1176.8,
+      "router": {
+        "cells": 114,
+        "reasoning_correct": 114,
+        "retrieval_correct": 106,
+        "both_correct": 106
+      },
+      "native_behavior": {
+        "cells": 54,
+        "passed": 54
+      }
+    },
+    "capability_regression": {
+      "atomic": true,
+      "profile": "standard",
+      "runs_per_case": 3,
+      "cells": 75,
+      "passed": 75,
+      "indeterminate": 0,
+      "elapsed_seconds": 1258.9,
+      "suites": {
+        "delivery": {"passed": 27, "cells": 27},
+        "decision": {"passed": 18, "cells": 18},
+        "debug": {"passed": 30, "cells": 30}
+      }
+    }
+  },
+  "router_failures": [
+    {"case": "debug-performance-regression", "repetition": 2, "expected_retrieval": "BOUNDED", "actual_retrieval": "NONE"},
+    {"case": "decision-dependency", "repetition": 2, "expected_retrieval": "NONE", "actual_retrieval": "BOUNDED"},
+    {"case": "decision-job-runner", "repetition": 1, "expected_retrieval": "NONE", "actual_retrieval": "BOUNDED"},
+    {"case": "direct-existing-prop", "repetition": 1, "expected_retrieval": "TARGETED", "actual_retrieval": "BOUNDED"},
+    {"case": "direct-existing-prop", "repetition": 3, "expected_retrieval": "TARGETED", "actual_retrieval": "BOUNDED"},
+    {"case": "implementation-one-line-irreversible", "repetition": 2, "expected_retrieval": "TARGETED", "actual_retrieval": "BOUNDED"},
+    {"case": "implementation-one-line-irreversible", "repetition": 3, "expected_retrieval": "TARGETED", "actual_retrieval": "BOUNDED"},
+    {"case": "implementation-sqlite-transaction-unknown", "repetition": 3, "expected_retrieval": "TARGETED", "actual_retrieval": "STRUCTURAL"}
+  ],
+  "evidence_limits": [
+    "The v1.2 two-dimensional Router schema is not score-comparable with the v1.1 five-way classifier.",
+    "The capability regression contains only the current Practical arm and is not a paired comparator scorecard.",
+    "Structural source fallback was validated; graph-specific cost and quality still require a separately provisioned Navigation ablation.",
+    "Raw transcripts and workspaces are intentionally not published because they contain machine-specific paths."
+  ]
+}

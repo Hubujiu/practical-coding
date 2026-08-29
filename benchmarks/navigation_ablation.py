@@ -195,8 +195,9 @@ def main() -> int:
             answer = parsed["answer"]
             behavior = bench.behavior_score(
                 parsed["tool_commands"],
-                "navigation.md",
+                None,
                 parsed["tool_outputs"],
+                expected_retrieval="STRUCTURAL",
                 expected_backend=arm,
             )
             required_ok = all(evidence_present(answer, term) for term in args.required)
@@ -206,7 +207,7 @@ def main() -> int:
                 "arm": arm,
                 "repetition": repetition,
                 "passed": bool(not infrastructure_error and behavior["passed"] and required_ok and unchanged),
-                "route_ok": behavior["routing_ok"],
+                "route_ok": behavior["reasoning_ok"],
                 "backend_ok": behavior["backend_ok"],
                 "required_ok": required_ok,
                 "unchanged": unchanged,

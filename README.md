@@ -33,13 +33,13 @@ Navigation is no longer a fourth Event Router branch. It is a retrieval policy s
 | Rename, CSS tweak, known local edit | **Direct Path** — Core only |
 | Observed bug with unknown cause | Core + **Debugging** |
 | Material unresolved architecture/API/dependency choice | Core + **Decision** |
-| Unknown contract, migration, permission, persistence, concurrency, compatibility, or other material risk boundary | Core + **Implementation** |
+| Unknown contract or unresolved migration, permission, persistence, concurrency, compatibility, or other material risk boundary blocks safe work | Core + **Implementation** |
 | Need to locate code | Use the cheapest sufficient retrieval capability; no reasoning route is selected merely because search is needed |
 | Broad relationship-heavy mapping | Prefer an already-available structural index when it saves exploration; otherwise fall back to bounded source search |
 
 The main invariant is now:
 
-> **Core + at most one reasoning module; retrieval is orthogonal and capability-based.**
+> **Core + at most one reasoning module; retrieval is orthogonal and capability-based.** Risk-related nouns do not trigger Implementation after the governing boundary, affected surface, and sufficient check are already established.
 
 Legacy `.practical-coding.yaml` files from v1.1 are no longer read by the Skill and can be removed. Retrieval capability is discovered from the current host/environment instead of stored as a project preference.
 
@@ -161,7 +161,7 @@ Practical Coding is therefore not `ponytail.md + superpowers.md`. It is an adapt
 
 ## Benchmark evidence
 
-The committed benchmark results under [`benchmarks/results/v1.1/`](benchmarks/results/v1.1/) validate the previous v1.1 five-route design. They are retained as historical evidence and must **not** be read as validation of the v1.2 Retrieval refactor until the affected Router and Native behavior suites are rerun with the new contract.
+The final v1.2 evidence is published under [`benchmarks/results/v1.2/`](benchmarks/results/v1.2/): reasoning classification passed 114/114, independent Retrieval classification passed 106/114, Native Behavior passed 54/54, and the Practical-only Delivery/Decision/Debug regression passed 75/75. The v1.1 five-route results remain historical evidence and are not score-comparable with the v1.2 two-dimensional Router schema.
 
 The published v1.1 results remain:
 
