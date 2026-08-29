@@ -3,7 +3,7 @@
 <p align="center">
   <a href="LICENSE"><img src="https://img.shields.io/badge/License-MIT-yellow.svg" alt="License: MIT"></a>
   <a href="https://agentskills.io"><img src="https://img.shields.io/badge/Agent_Skills-Compliant-success.svg" alt="Agent Skills Compliant"></a>
-  <img src="https://img.shields.io/badge/Version-1.2-blue.svg" alt="Version 1.2">
+  <img src="https://img.shields.io/badge/Skill-1.3_candidate-blue.svg" alt="Skill 1.3 candidate">
   <img src="https://img.shields.io/badge/Claude_Code_|_Cursor_|_Copilot_|_Gemini_|_Antigravity_|_Codex_|_Goose-supported-purple.svg" alt="Compatible Agents">
 </p>
 
@@ -11,170 +11,192 @@
   <b>English</b> · <a href="README_zh.md">简体中文</a>
 </p>
 
-> ## The right amount of engineering and context for every coding task.
+> ## The smallest sufficient engineering rigor for every coding task.
 >
-> **Simple work stays direct. Unknown bugs get root-cause debugging. Risky changes get rigor. Code retrieval stops at the cheapest sufficient path.**
+> **Start cheap. Resolve only choices that block the next action. Add debugging or implementation rigor only when evidence says Direct is insufficient. Retrieve only the context worth paying for.**
 
-Practical Coding is a lean Agent Skill for coding assistants. It controls two costs independently:
+Practical Coding is a lean Agent Skill for coding assistants. It is not a four-way task classifier. It is an **adaptive engineering-rigor system** built around four independent controls:
 
-1. **Reasoning cost:** only unresolved blockers may load Debugging, Decision, or Implementation.
-2. **Context cost:** code discovery progresses from known source to bounded/ranked search to structural indexes only when each stronger rung is actually needed.
+1. **Core** — the minimum rules every coding task needs.
+2. **Decision Gate** — resolve a material choice only when it blocks or changes the next safe action.
+3. **Execution Escalation** — start Direct; add Debugging or Implementation rigor only for the blocker actually present.
+4. **Retrieval + Isolation** — pay only for repository context and extra contexts that materially help.
 
 ```bash
 npx skills@latest add Hubujiu/practical-coding
 ```
 
-## What changes with v1.2
-
-Navigation is no longer a fourth Event Router branch. It is a retrieval policy shared by Direct work and every routed event.
-
-| Situation | Practical Coding behavior |
-|---|---|
-| Rename, CSS tweak, known local edit | **Direct Path** — Core only |
-| Observed bug with unknown cause | Core + **Debugging** |
-| Material unresolved architecture/API/dependency choice | Core + **Decision** |
-| Unknown contract or unresolved migration, permission, persistence, concurrency, compatibility, or other material risk boundary blocks safe work | Core + **Implementation** |
-| Need to locate code | Use the cheapest sufficient retrieval capability; no reasoning route is selected merely because search is needed |
-| Broad relationship-heavy mapping | Prefer an already-available structural index when it saves exploration; otherwise fall back to bounded source search |
-
-The main invariant is now:
-
-> **Core + at most one reasoning module; retrieval is orthogonal and capability-based.** Risk-related nouns do not trigger Implementation after the governing boundary, affected surface, and sufficient check are already established.
-
-Legacy `.practical-coding.yaml` files from v1.1 are no longer read by the Skill and can be removed. Retrieval capability is discovered from the current host/environment instead of stored as a project preference.
-
----
-
-## Architecture
+## v1.3 architecture
 
 ```mermaid
 flowchart TB
-    T[User coding task] --> C[Always-On Core]
-    C --> E{Present unresolved reasoning blocker?}
-    E -->|No| D[Direct Path]
-    E -->|Observed failure lacks cause| G[Debugging]
-    E -->|Material user-owned choice| A[Decision]
-    E -->|Unknown contract / risk boundary| I[Implementation]
+    T[User coding task] --> C[Core]
+    C --> D{Material unresolved choice blocks next action?}
+    D -->|Yes| Q[Decision Gate]
+    Q --> C2[Choice settled / compact execution capsule]
+    D -->|No| C2
 
-    D --> R{Need more code context?}
+    C2 --> E[Start Direct]
+    E --> S{Core sufficient now?}
+    S -->|Yes| V[Cheapest sufficient verification]
+    S -->|No: failure cause unknown| G[Debugging rigor]
+    S -->|No: safe boundary unknown| I[Implementation rigor]
+    G --> V
+    I --> V
+
+    C --> R[Retrieval Policy]
+    C2 --> R
     G --> R
-    A --> R
     I --> R
+    R --> K[Known source / bounded search / structural retrieval]
 
-    R -->|No| V[Cheapest focused verification]
-    R -->|Known path/symbol| K[Targeted read]
-    R -->|Location unknown| S[Bounded / ranked source search]
-    R -->|Structural relationship needed| X[Available structural index]
-
-    K --> V
-    S --> V
-    X --> Q[Verify material claims in current source]
-    Q --> V
-    V --> O[Evidence-based completion]
+    C2 --> X{Another large reference later?}
+    X -->|No| E
+    X -->|Yes and context savings exceed handoff| W[Isolated worker]
 ```
 
-### Always-On Core
+The important distinction is:
 
-The resident `SKILL.md` stays short and route-agnostic:
+> **Decision determines what the next action is. Execution rigor determines how much discipline that known action needs. Retrieval determines what code context is worth loading.**
+
+### Core
+
+The resident `SKILL.md` stays route-agnostic:
 
 - define the smallest observable success;
-- stop at the first implementation rung that works;
-- reuse established project primitives and contracts;
-- add no speculative abstractions, options, wrappers, configuration, or scaffolding;
+- reuse the nearest established primitive or contract;
+- avoid speculative abstractions, options, wrappers, configuration, and scaffolding;
 - make the smallest coherent reachable change;
-- prefer deletion and boring code;
-- add tests, fallback, validation, comments, or documentation only when a current requirement, contract, project rule, or necessary verification requires them;
-- run the cheapest focused check once;
+- add tests, validation, fallback, comments, or documentation only for a current requirement, established contract, project rule, or necessary verification;
+- run the cheapest focused check once after the final edit;
 - claim only what fresh evidence supports.
 
-### Three reasoning modules
+### Decision Gate
 
-| Module | Trigger | Purpose |
+Decision is no longer a peer of Debugging and Implementation.
+
+Ask first:
+
+> **Does a material unresolved choice block or materially change the next safe action?**
+
+If yes, load [`decision.md`](references/decision.md). Resolve repository facts and authoritative constraints before asking the user. Only genuinely user-owned scope, compatibility, cost, preference, or risk choices remain as questions.
+
+If the request, repository, authoritative evidence, or a cheap reversible default already settles the choice, execution starts immediately.
+
+### Execution Escalation
+
+Direct is the default state, not a module.
+
+| Current blocker | Rigor |
+|---|---|
+| The next safe action is already known | **Direct — Core only** |
+| An observed failure exists but its cause is not evidenced | Core + [`debugging.md`](references/debugging.md) |
+| Safe execution is blocked by an unknown contract/invariant, unresolved material risk boundary, or insufficient evidence for a risky claim | Core + [`implementation.md`](references/implementation.md) |
+
+Debugging and Implementation are **alternative escalation profiles**, not `Direct → Debugging → Implementation` stages.
+
+A diagnosed bug may be Direct. A one-line persistence or permission edit may need Implementation rigor. A large multi-file edit may still be Direct when the contract, affected surface, and sufficient check are already established.
+
+### Retrieval Policy
+
+Retrieval remains orthogonal to reasoning rigor:
+
+1. current context / known source;
+2. bounded or ranked source discovery;
+3. structural index only when relationship-heavy exploration materially benefits;
+4. current-source verification for material claims.
+
+Host-native search, FFF-style ranked retrieval, ordinary `rg`/filename/symbol search, and [`DeusData/codebase-memory-mcp`](https://github.com/DeusData/codebase-memory-mcp) are capabilities, not project requirements. Missing stronger tooling falls back without changing project configuration solely for retrieval.
+
+`references/navigation.md` is loaded only for substantial broad retrieval.
+
+### Retrieval is scored as a cost interval
+
+v1.2 exposed an important benchmark flaw: an exact label can punish a reasonable search that is only one cheap rung broader. The v1.3 benchmark therefore separates:
+
+- **minimum sufficient retrieval**, and
+- **maximum reasonable retrieval cost**.
+
+For example, a known concept whose exact file is not available may reasonably use either a targeted read or bounded search. Structural exploration remains excessive unless the task actually needs relationships.
+
+### Context isolation
+
+A prompt cannot unload a reference that is already in model context. Therefore "return to Direct" is a logical state transition, not a context reset.
+
+The root keeps the Core plus at most one large reasoning reference at a time. If Decision is already resident and execution later needs a different substantial profile, or broad mapping would add large context, use an isolated worker only when the saved context exceeds handoff cost. Workers receive a compact capsule of settled choices, verified facts, scope, repository state, and success conditions.
+
+---
+
+## Benchmark contract in v1.3
+
+The old v1.2 classifier:
+
+```text
+REASONING = NONE | DECISION | DEBUGGING | IMPLEMENTATION
+RETRIEVAL = NONE | TARGETED | BOUNDED | STRUCTURAL
+```
+
+is replaced by:
+
+```text
+DECISION  = CLEAR | REQUIRED
+EXECUTION = BLOCKED | DIRECT | DEBUGGING | IMPLEMENTATION
+RETRIEVAL = minimum sufficient .. maximum reasonable
+```
+
+Invariant:
+
+```text
+DECISION=REQUIRED  => EXECUTION=BLOCKED
+DECISION=CLEAR     => EXECUTION in DIRECT | DEBUGGING | IMPLEMENTATION
+```
+
+Four explicit transition regressions are added:
+
+- Decision → Direct
+- Decision → Implementation
+- Debugging → Direct after diagnosis
+- Debugging → Implementation only when diagnosis exposes a still-unresolved material boundary
+
+Native behavior cases also verify that a settled Decision is not reopened and a diagnosed bug does not reload Debugging unnecessarily.
+
+The canonical benchmark runner is now v2.1. `run_benchmarks.py` remains the stable execution core; `case_catalog.py` adds the public case corpus and `adaptive_rigor.py` installs the v1.3 contract. This preserves the ability to interpret the committed v1.2 evidence without pretending the schemas are score-comparable.
+
+---
+
+## Evidence status
+
+No v1.3 model result is claimed before a fresh run.
+
+The last committed validated baseline is v1.2 under [`benchmarks/results/v1.2/`](benchmarks/results/v1.2/):
+
+- reasoning classification: **114/114**;
+- Retrieval exact classification: **106/114**;
+- Native Behavior: **54/54**;
+- Practical-only Delivery/Decision/Debug regression: **75/75**.
+
+Those results validate the v1.2 contract, not the v1.3 adaptive-rigor schema. The v1.3 candidate must rerun the affected Router/Behavior matrix and the current-vs-previous regression before release claims are updated.
+
+The GitHub Releases page currently has the tagged `v1.0.0` release; repository benchmark/Skill versions have advanced independently. The next tagged release should be created only after the v1.3 validation gate is complete.
+
+See [`benchmarks/REPRODUCING.md`](benchmarks/REPRODUCING.md) and [`benchmarks/NEXT_VALIDATION.md`](benchmarks/NEXT_VALIDATION.md).
+
+---
+
+## Why not just install Ponytail + Superpowers?
+
+Practical Coding is influenced by both, but its target is the **control policy** around specialist rigor.
+
+| Situation | Broad co-installed skills | Practical Coding |
 |---|---|---|
-| [`debugging.md`](references/debugging.md) | An observed failure still lacks an evidenced cause | Reproduce → earliest broken state → supported cause → root-cause fix |
-| [`decision.md`](references/decision.md) | A material user-owned choice remains open and changes the next action | Resolve the smallest real decision frontier |
-| [`implementation.md`](references/implementation.md) | Safe execution is blocked by an unknown contract/invariant, material risk boundary, or insufficient evidence for a risky claim | Map the boundary, preserve guarantees, and choose sufficient evidence |
+| Tiny obvious edit | Multiple broad policies may remain applicable | **Core only** |
+| Unknown bug | Host/model chooses among overlapping process rules | **Debugging rigor only while cause is unknown** |
+| Risky change | Strong engineering rules exist but may be activated broadly | **Implementation rigor only while a material boundary is unresolved** |
+| Architecture choice | Can mix implementation reasoning with choice resolution | **Decision blocks execution only when the choice actually changes the next action** |
+| Repository discovery | Depends on host behavior | **Explicit cheapest-sufficient retrieval policy** |
+| Context growth | Independent references may accumulate | **Core + at most one large reasoning reference at a time** |
 
-The Event Router chooses only among these three. File count, task nouns, search needs, or the mere existence of another library do not select a reasoning module.
-
----
-
-## Retrieval: context selection instead of another workflow
-
-Retrieval answers a different question from the Event Router:
-
-> **What is the cheapest way to obtain the code context needed for the current task?**
-
-The ladder is deliberately progressive:
-
-1. **Current context / known target** → read only the known source.
-2. **Unknown location** → use an already-available bounded or ranked source-search primitive.
-3. **No ranked primitive** → fall back to ordinary filename, text, and symbol search such as host search, `rg`, `grep`, or `find`.
-4. **Relationship-heavy question** → use an already-available structural index only when it materially reduces repeated exploration.
-5. **Material conclusion** → verify against current source; source is authoritative.
-
-Stop at the first sufficient rung.
-
-### FFF-style retrieval and Codebase Memory are complementary
-
-| Capability | Best at | Role in Practical Coding |
-|---|---|---|
-| Host-native / FFF-style ranked retrieval | Finding likely files and text candidates with bounded output and ranking signals | Cheap candidate discovery when already available |
-| Ordinary `rg` / filename / symbol search | Exact text, names, small repositories, universal fallback | Zero-special-backend fallback |
-| [`DeusData/codebase-memory-mcp`](https://github.com/DeusData/codebase-memory-mcp) or another structural index | Callers, callees, imports, implementations, dependency edges, cross-file flow | Optional structural retrieval when already available |
-
-Practical Coding does **not** require `@ff-labs/pi-fff`, FFF, Codebase Memory, `.practical-coding.yaml`, or any persistent graph service. It also does not automatically install retrieval tooling merely because a stronger backend would be convenient. Missing capabilities degrade to the next available rung.
-
-`references/navigation.md` contains the detailed broad-retrieval procedure. Routine targeted lookup does not load it.
-
----
-
-## Context isolation
-
-A textual instruction such as “return to Direct” cannot remove a reference that is already in the model context. Practical Coding therefore treats context isolation as a real resource decision:
-
-- Direct work and small routed events use no worker.
-- The root should normally carry the Core plus at most one reasoning reference.
-- Routine source search uses host tools directly without loading Navigation.
-- If broad mapping becomes expensive while Debugging, Decision, or Implementation is already resident, a read-only Navigation worker is preferred only when the context saved exceeds handoff cost.
-- Workers return compact evidence capsules, not raw search transcripts or graph dumps.
-
-This is how progressive disclosure remains a context optimization rather than only a file-organization convention.
-
----
-
-## Why not just install Ponytail + Superpowers together?
-
-Practical Coding is influenced by both projects, but its differentiator is the control policy.
-
-| Question | Ponytail + Superpowers | Practical Coding |
-|---|---|---|
-| Tiny obvious edit | Two broad philosophies remain available to the host/model | **Core only** |
-| Unknown bug | Multiple applicable process rules may coexist | **Debugging only** |
-| High-risk change | Rigor exists, but selection belongs to separate systems | **Implementation only when the risk boundary is unresolved** |
-| Code discovery | Depends on host/tool behavior | **Explicit cheapest-sufficient retrieval ladder** |
-| Context footprint | Independent systems may accumulate | **Core + at most one reasoning reference; broad retrieval isolated only when worth it** |
-
-Practical Coding is therefore not `ponytail.md + superpowers.md`. It is an adaptive policy for deciding **how much engineering reasoning and how much repository context are worth paying for now**.
-
----
-
-## Benchmark evidence
-
-The final v1.2 evidence is published under [`benchmarks/results/v1.2/`](benchmarks/results/v1.2/): reasoning classification passed 114/114, independent Retrieval classification passed 106/114, Native Behavior passed 54/54, and the Practical-only Delivery/Decision/Debug regression passed 75/75. The v1.1 five-route results remain historical evidence and are not score-comparable with the v1.2 two-dimensional Router schema.
-
-The published v1.1 results remain:
-
-| Suite | Practical v1.1 |
-|---|---:|
-| Delivery | **100% (27/27)** |
-| Decision | **100% (18/18)** |
-| Debug | **96.7% (29/30)** |
-| Router | **100% (114/114)** |
-| Native behavior | **100% (54/54)** |
-| Applicable total | **99.6% (242/243)** |
-
-See the [v1.1 data](benchmarks/results/v1.1/README.md), [Chinese report](benchmarks/results/v1.1/REPORT_ZH.md), and [reproduction guide](benchmarks/REPRODUCING.md). A fresh v1.2 run is required before publishing new comparative claims.
+This is still a hypothesis about integrated-stack efficiency until the planned combined-install benchmark is run. The repository does not claim universal superiority from specialist pairwise comparisons alone.
 
 ---
 
@@ -210,8 +232,6 @@ Project-local:
 git clone https://github.com/Hubujiu/practical-coding.git .github/skills/practical-coding
 ```
 
----
-
 ## Repository structure
 
 ```text
@@ -221,12 +241,16 @@ practical-coding/
 ├── README.md
 ├── README_zh.md
 ├── references/
-│   ├── debugging.md
 │   ├── decision.md
+│   ├── debugging.md
 │   ├── implementation.md
 │   ├── navigation.md
 │   └── delegation.md
 ├── benchmarks/
+│   ├── run_benchmarks.py
+│   ├── case_catalog.py
+│   ├── adaptive_rigor.py
+│   └── run_catalog.py
 ├── examples/
 ├── agents/
 └── docs/evaluations/
@@ -237,10 +261,10 @@ practical-coding/
 - [DietrichGebert/ponytail](https://github.com/DietrichGebert/ponytail): YAGNI, native/stdlib-first thinking, deletion over addition.
 - [obra/superpowers](https://github.com/obra/superpowers): systematic debugging, engineering rigor, verification, isolation.
 - [mattpocock/skills](https://github.com/mattpocock/skills) / [Agent Skills Spec](https://agentskills.io): progressive disclosure and composable Skill structure.
-- [dmtrKovalenko/fff](https://github.com/dmtrKovalenko/fff): bounded/ranked code retrieval ideas such as frecency-aware candidate discovery.
+- [dmtrKovalenko/fff](https://github.com/dmtrKovalenko/fff): bounded/ranked code retrieval ideas.
 - [DeusData/codebase-memory-mcp](https://github.com/DeusData/codebase-memory-mcp): structural code intelligence and graph-backed relationship queries.
 
-The differentiator is not ownership of those ideas. It is the policy that decides **when each capability is worth its implementation, retrieval, and context cost**.
+The differentiator is the policy that decides **how much engineering rigor, retrieval, and context are worth paying for now**.
 
 ## Contributing
 
