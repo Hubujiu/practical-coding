@@ -41,6 +41,8 @@ The main invariant is now:
 
 > **Core + at most one reasoning module; retrieval is orthogonal and capability-based.**
 
+Legacy `.practical-coding.yaml` files from v1.1 are no longer read by the Skill and can be removed. Retrieval capability is discovered from the current host/environment instead of stored as a project preference.
+
 ---
 
 ## Architecture
@@ -121,7 +123,7 @@ Stop at the first sufficient rung.
 | Ordinary `rg` / filename / symbol search | Exact text, names, small repositories, universal fallback | Zero-special-backend fallback |
 | [`DeusData/codebase-memory-mcp`](https://github.com/DeusData/codebase-memory-mcp) or another structural index | Callers, callees, imports, implementations, dependency edges, cross-file flow | Optional structural retrieval when already available |
 
-Practical Coding does **not** require `@ff-labs/pi-fff`, FFF, Codebase Memory, a `.practical-coding.yaml`, or any persistent graph service. It also does not automatically install retrieval tooling merely because a stronger backend would be convenient. Missing capabilities degrade to the next available rung.
+Practical Coding does **not** require `@ff-labs/pi-fff`, FFF, Codebase Memory, `.practical-coding.yaml`, or any persistent graph service. It also does not automatically install retrieval tooling merely because a stronger backend would be convenient. Missing capabilities degrade to the next available rung.
 
 `references/navigation.md` contains the detailed broad-retrieval procedure. Routine targeted lookup does not load it.
 

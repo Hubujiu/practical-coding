@@ -41,6 +41,8 @@ Navigation 不再是 Event Router 的第四条互斥分支，而变成 Direct �
 
 > **Core + 最多一个 reasoning module；Retrieval 与 Event Router 正交。**
 
+v1.1 遗留的 `.practical-coding.yaml` 不再被 Skill 读取，可以直接删除。Retrieval 能力改为根据当前宿主/环境中已经存在的工具动态选择，而不是保存为项目级偏好。
+
 ---
 
 ## 架构
