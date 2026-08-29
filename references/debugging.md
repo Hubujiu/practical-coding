@@ -1,4 +1,4 @@
-# Debugging Rigor
+# Debugging
 
 Load this module only when an observed or reported failure, regression, incorrect behavior, or failed verification exists and its cause is not yet evidenced. Debugging is an execution escalation profile, not a task category or a mandatory stage for every bug report.
 
