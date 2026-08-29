@@ -1,45 +1,40 @@
 # Contributing
 
-Contributions should preserve Practical Coding as one compact skill with independently loadable modules.
+Contributions should preserve Practical Coding as one compact Skill with a small route-agnostic Core, three independently loadable reasoning modules, and a retrieval policy that does not become a permanent prompt tax.
 
-- Keep `SKILL.md` as a small route-agnostic shortest-path Core plus an Event Router. The Core defines universal coding behavior; it must not contain module triggers, risk taxonomies, dependency-choice policy, debugging procedure, navigation behavior, or other module-specific logic.
-- Keep the Event Router narrow: it decides whether and which one reference to load. Do not copy module procedures into the Router.
-- Do not retune Core or module wording from a failed benchmark cell, and do not add case-specific bans named after Delivery or Debug tasks.
-- Put conditional behavior in focused files under `references/` and state an exact trigger for loading each file.
-- Keep modules independent; do not create a mandatory chain where loading one module automatically requires the others.
-- Preserve the Direct Path: simple, well-specified work must not require a reference or subagent.
-- Preserve event-driven isolation: a module worker reads only its assigned reference, receives bounded context, and returns a compact capsule. Subagents are an optimization for substantial context, not a mandatory stage.
-- Keep shared-workspace workers read-only by default. An Implementation worker may write only when the assignment includes implementation, and there must be one explicit writer per bounded implementation scope.
-- Prefer strengthening an existing module over adding a new module. Verification is not a separate module: choosing sufficient evidence for a risky change is Implementation. Do not restore `verification.md` as a sixth route.
-- Add a new module only when it represents a distinct, reusable decision surface that would otherwise pollute unrelated tasks.
+- Keep `SKILL.md` as a small shortest-path Core plus Event Router and compact Retrieval Policy. Do not add routing intensity modes unless a mature cross-agent mechanism materially improves evidence.
+- The Event Router owns only unresolved reasoning blockers: Debugging, Decision, and Implementation. Navigation is retrieval, not a fourth reasoning route.
+- Do not retune Core or module wording from a single failed benchmark cell, and do not add case-specific bans named after benchmark tasks.
+- Keep the Direct Path real: simple, well-specified work must not require a reference, broad repository scan, or worker.
+- Routine targeted source lookup must not require `references/navigation.md`. Load that reference only when broad retrieval itself is substantial enough to justify the prompt cost.
+- Preserve context isolation. The root should normally carry the Core plus at most one reasoning reference. If broad mapping becomes expensive while another reference is resident, prefer a read-only Navigation worker when saved context exceeds handoff cost.
+- Workers read `references/delegation.md` plus exactly one assigned reference and return compact evidence capsules, not transcripts.
+- Keep shared-workspace workers read-only by default. An Implementation worker may write only when its assignment explicitly includes implementation, with one bounded writer scope.
+- Prefer strengthening an existing module or retrieval primitive over adding another module. Verification remains part of Core or Implementation; do not create a mandatory Verification route.
 - Do not introduce mandatory plans, execution documents, Git workflows, tests, reviews, documentation, or tool-specific ceremony as universal gates.
-- Preserve reuse-before-invention, risk-proportional verification, evidence-driven debugging, and resistance to speculative code and defensive bloat. External-implementation research belongs in Decision only when an unresolved external choice is material; Core must not survey alternatives merely because prior art exists.
-- Keep optional heavy capabilities outside the default Agent context; optional package size or disk use is acceptable when the capability materially reduces token use, repeated work, or correctness risk.
-- Avoid scripts, dependencies, configuration, and generated project files unless they solve a demonstrated need.
+- Preserve reuse-before-invention, mature-implementation-first, risk-proportional verification, evidence-driven debugging, and resistance to speculative code and defensive bloat.
+- Avoid new scripts, dependencies, configuration, generated project files, or persistent services unless they solve a demonstrated project need rather than merely making retrieval possible.
+
+## Retrieval backends
+
+Practical Coding manages retrieval cost, not ownership of a particular search engine.
+
+1. Prefer already-known source and narrow direct reads.
+2. Prefer an already-available bounded/ranked source-search primitive over unbounded output. Host-native ranked search and FFF-style retrieval are examples, not requirements.
+3. Prefer an already-available structural index only for relationship-heavy questions where it materially reduces repeated source exploration. `DeusData/codebase-memory-mcp` is one mature example.
+4. If a stronger capability is unavailable, fall back to ordinary source search without changing repository configuration or installing/persisting tooling solely for retrieval.
+5. Material conclusions must still be checked against current source.
+
+Do not reimplement mature retrieval engines inside Practical Coding merely to avoid an optional external capability. Conversely, do not turn an optional capability into a hard dependency or automatic installation side effect.
 
 ## Mature implementation first
 
-This policy applies when Decision is resolving a material external choice, and when contributing to Practical Coding itself. It is not a Core/Direct-Path obligation, and it does not override an external dependency or implementation the user has already selected and authorized.
-
 For any non-trivial capability with credible prior art:
 
-1. Inspect maintained mature implementations first when an external implementation is actually under consideration.
-2. Prefer the mature project's supported public integration surface — API, CLI, protocol, package, library, or binary — over copying internals or rebuilding the same subsystem.
+1. Inspect maintained mature implementations first.
+2. Prefer supported public integration surfaces — API, CLI, protocol, package, library, binary, or host-native tool — over copying internals or rebuilding the subsystem.
 3. Verify fit, maintenance state, known issues, release activity, operational constraints, and license.
 4. Add local code only for concrete gaps or confirmed upstream defects.
 5. Keep local patches narrow, attributable, and removable when upstream fixes the issue.
 
-A local implementation should not exist merely because it is smaller, simpler to own, or avoids an optional dependency once Decision has established that an external implementation is warranted. Correctness, token efficiency, reliability, and maintenance can justify a larger optional dependency.
-
-## Codebase Memory
-
-Structured Codebase Memory is backed directly by [`DeusData/codebase-memory-mcp`](https://github.com/DeusData/codebase-memory-mcp).
-
-- Do not reintroduce a Practical Coding parser, graph database, call resolver, language grammar set, incremental indexer, project lock, semantic engine, or other parallel code-intelligence implementation when upstream already provides it.
-- Prefer upstream CLI mode for Practical Coding because it exposes the mature engine on demand without automatically installing a second persistent MCP/Skill integration into the agent.
-- Before adding any Codebase Memory compatibility code, check the latest stable upstream release and existing upstream issues/fixes.
-- If upstream has a blocking defect without a released fix, add only the narrowest compatibility shim needed and record the affected version/issue.
-- Remove the shim after upstream fixes the defect.
-- Keep attribution and license notices when upstream code or substantial implementation material is ever vendored or copied; see `THIRD_PARTY_NOTICES.md`.
-
-A change is moving in the wrong direction if a trivial local edit must load or execute more process after the change than before it, if Core starts absorbing module-specific logic, or if Practical Coding starts maintaining a weaker duplicate of a mature subsystem.
+A change is moving in the wrong direction if a trivial local edit must load or execute more process after the change than before it, if retrieval dumps more irrelevant context into the model, or if Practical Coding starts maintaining a weaker duplicate of a mature subsystem.

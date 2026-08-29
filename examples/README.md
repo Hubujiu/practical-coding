@@ -1,8 +1,8 @@
 # Examples
 
-每个例子都是同一个请求的两种产出：典型的过度工程结果，对比 Practical Coding 引导下的结果。对照组展示的是常见的过度工程模式，而不是任何特定 agent 的必然行为。
+每个例子展示 Practical Coding 如何同时控制实现成本与上下文成本。示例描述的是策略，不代表任何特定 agent 的固定行为。
 
-Each example shows two outcomes of the same request: a typical over-engineered result versus the outcome guided by Practical Coding. The baseline illustrates a common over-engineering pattern, not the guaranteed behavior of any particular agent.
+Each example shows how Practical Coding controls both implementation cost and context cost. These are policy examples, not guaranteed behavior of any particular agent.
 
 ---
 
@@ -13,17 +13,19 @@ Each example shows two outcomes of the same request: a typical over-engineered r
 **Typical over-engineered outcome:**
 
 ```text
-+ package.json          (new dependency: a date-picker library)
-+ src/components/DatePicker.tsx   (wrapper component, 60 lines)
++ package.json                    (new dependency)
++ src/components/DatePicker.tsx   (wrapper component)
 + src/components/DatePicker.css
 + src/utils/dateFormat.ts         (timezone helpers "for later")
 ```
 
-**With the skill** (Direct Path / Core ladder: native platform feature beats a new dependency):
+**With the skill** — Direct Path / Core ladder:
 
 ```html
 <input type="date" name="birthdate" required>
 ```
+
+The native platform feature satisfies the current requirement, so the ladder stops there.
 
 ---
 
@@ -48,9 +50,7 @@ function getApiBaseUrl(): string {
 }
 ```
 
-Retries for a local file read, a fallback chain nobody asked for, and a broad catch that hides a malformed config instead of reporting it.
-
-**With the skill** (Core: every failure path corresponds to a real boundary):
+**With the skill** — use the established contract unless a real failure boundary requires more:
 
 ```ts
 function getApiBaseUrl(): string {
@@ -59,7 +59,7 @@ function getApiBaseUrl(): string {
 }
 ```
 
-A missing or malformed config file is a startup error the operator must see, not a condition to silently paper over. If a demonstrated failure mode appears later, handle that specific one and name it.
+Retries, fallback chains, and broad catches are not added speculatively.
 
 ---
 
@@ -70,19 +70,76 @@ A missing or malformed config file is a startup error the operator must see, not
 **With a fixed-pipeline workflow:**
 
 ```text
-1. Brainstorming session about button copy
-2. PLAN.md written and confirmed
-3. New branch + worktree created
-4. Unit test asserting the button label
-5. The one-line change
-6. Two review passes, checkpoint commit, execution log updated
+1. Brainstorming
+2. PLAN.md
+3. New branch/worktree
+4. New unit test for the literal label
+5. One-line change
+6. Review/checkpoint ceremony
 ```
 
-**With the skill** (Direct Path: evidence = the diff):
+**With the skill** — Direct Path:
 
 ```diff
 - <button>Submit</button>
 + <button>Save</button>
 ```
 
-One file changed, verified by reading the diff. Necessary gates the project itself defines (CI, required reviews) still apply; the skill only removes ceremony no one required.
+Run only the cheapest focused check actually required by the repository or the requested success condition.
+
+---
+
+## 4. Routine code lookup does not load Navigation
+
+**Request:** "Where is `normalize_header()` defined, and which nearby caller uses it for Authorization?"
+
+The location can be established with a narrow symbol/text lookup and two targeted reads:
+
+```text
+symbol/text search: normalize_header
+  -> headers.py::normalize_header
+  -> headers.py::get_header
+  -> headers.py::auth_header
+```
+
+No reasoning module is selected, `references/navigation.md` is not loaded, and no graph backend is required. Search is ordinary Direct work because the next action is already clear.
+
+---
+
+## 5. Ranked retrieval is an optional accelerator
+
+**Request:** "Find the likely authentication implementation in this unfamiliar repository."
+
+If the host already exposes bounded/ranked retrieval — for example a native ranked code search or FFF-style search — use it to return a small candidate set:
+
+```text
+1. src/auth/JwtService.ts
+2. src/middleware/AuthMiddleware.ts
+3. src/routes/login.ts
+```
+
+Then read only the material candidates. If no ranked capability exists, fall back to narrow filename/text/symbol search such as `rg`, `grep`, or the host equivalent. Practical Coding does not install FFF or another search engine merely for this task.
+
+---
+
+## 6. Structural retrieval is used for structural questions
+
+**Request:** "Map every service that calls the billing client and where each response is transformed."
+
+This is relationship-heavy. If an already-integrated structural index such as Codebase Memory is available and materially reduces repeated source exploration, query the graph for the relevant callers/paths and then verify the material files in current source.
+
+If no structural backend is available, continue with bounded source search. Do not create `.practical-coding.yaml`, install Codebase Memory, or add a persistent MCP/service solely to complete the lookup.
+
+The desired output is a compact evidence map such as:
+
+```text
+services/api.py::checkout
+  -> shared/billing.py::charge
+  -> services/api.py::to_checkout_response
+
+services/jobs.py::retry_invoice
+  -> shared/billing.py::charge
+  -> services/jobs.py::to_retry_record
+```
+
+not a raw repository tour, grep dump, or graph transcript.

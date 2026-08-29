@@ -1,8 +1,0 @@
-version: 1
-
-# Persistent project-level preference read by the Practical Coding Skill.
-
-# Store either true or false after the user makes the project-level choice.
-# Local launcher/runtime availability is environment state and must not rewrite this preference.
-codebase_memory:
-  enabled: true
