@@ -35,11 +35,12 @@ Practical Coding 的核心是：**工程严谨度按需启用。**
 |---|---|
 | 改名、CSS、小范围且已有项目模式 | **Direct Path**：直接修改，不加载模块，不启 worker |
 | Bug，但根因未知 | 只加载 **Debugging** |
-| 真正存在未决架构/依赖选择 | 只加载 **Decision** |
+| 真正存在未决架构/依赖选择，包括是否或选择哪一个新外部依赖/成熟实现 | 只加载 **Decision** |
+| 用户已经明确选择并授权某个外部依赖，且集成路径清楚 | **Direct Path**：把它视为已确定输入 |
 | 安全、迁移、持久化、并发、兼容性风险 | 只加载 **Implementation** |
 | 大范围代码结构导航本身成为阻塞 | 只加载 **Navigation** |
 
-核心不变量：**默认 Direct，只有 unresolved event 让 Direct 变得不安全时才升级。**
+核心不变量：**默认 Direct，只有 unresolved event 让 Direct 变得不安全时才升级。已经确定的事实与选择只是输入，不是新的路由事件。**
 
 ---
 
@@ -90,43 +91,46 @@ v1.1 证据包含 15 个 prompt-inline 共装 arm，覆盖 Practical、Ponytail�
 
 ```mermaid
 flowchart TB
-    T[用户编码任务] --> C[Always-On Core]
-    C --> Q{下一步安全动作是否已经明确?}
-    Q -->|是| D[Direct Path]
-    Q -->|否: 故障无已证实根因| G[Debugging]
-    Q -->|否: 存在实质未决选择| A[Decision]
-    Q -->|否: 风险或未知边界| I[Implementation]
-    Q -->|否: 大范围结构导航阻塞| N[Navigation]
+    T[用户编码任务] --> R{Event Router}
+    R -->|没有 unresolved event| C[通用 Core / Direct Path]
+    R -->|故障仍无已证实根因| G[Debugging]
+    R -->|存在实质 user-owned choice| A[Decision]
+    R -->|风险或未知边界| I[Implementation]
+    R -->|大范围结构导航阻塞| N[Navigation]
 
-    G --> R{是否暴露新的 blocker?}
-    A --> R
-    I --> R
-    N --> R
-    R -->|否| V[执行最便宜的聚焦验证]
-    R -->|是| C
-    D --> V
+    G --> B{是否暴露不同 blocker?}
+    A --> B
+    I --> B
+    N --> B
+    B -->|是| R
+    B -->|否| C
+    C --> V[执行最便宜的聚焦验证]
     V --> O[只基于新证据交付]
 ```
 
 ### Always-On Core
 
-常驻 `SKILL.md` 保持很短，只放所有编码任务都应该遵守的规则：
+常驻 Core 刻意保持很短，而且**与路由无关**。这里只放无论最终走哪条路径都成立的通用编码规则：
 
 - 修改前先读真正被影响的代码；
-- 按阶梯停止：不做 → 复用已有代码 → 标准库 → 原生平台能力 → 已安装依赖 → 一行代码 → 最少自定义代码；
-- 不添加推测性的抽象、配置、wrapper、测试、fallback 或注释；
-- 不碰无关文件和用户已有修改；
+- 按阶梯停止：不做 → 复用已有代码 → 标准库 → 原生平台/环境能力 → 已可用依赖 → 一行代码 → 最少本地代码；
+- 复用已经确定的 API/contract，不重复描述已有契约；
+- 不添加推测性的抽象、配置、wrapper、scaffolding 或 helper layer；
+- 不碰无关代码和用户已有修改；
 - 删除优于新增，普通代码优于聪明代码；
+- 删除对 stated success、已经确定的 contract 和 chosen check 都不必要的新增内容；
 - 最终只运行一次最便宜、最聚焦的检查；
 - 只声明新鲜证据真正支持的内容。
+
+Core **不负责判断**什么时候应该加载 Debugging、Decision、Implementation 或 Navigation。是否挂载模块完全由 Event Router 决定；进入模块后，具体流程由对应 reference 自己负责。
 
 ### 四个按需模块
 
 | 模块 | 触发条件 | 目的 |
 |---|---|---|
-| [`decision.md`](references/decision.md) | 一个实质未决选择会改变下一步 | 比较少量可行方案并收敛 |
-| [`implementation.md`](references/implementation.md) | 安全、不可逆操作、持久化、并发、兼容性或未知跨边界 invariant | 映射风险边界并证伪关键假设 |
 | [`debugging.md`](references/debugging.md) | 已观察故障仍缺少证据化根因 | 复现 → 最早破坏状态 → 单一假设 → 根因修复 |
+| [`decision.md`](references/decision.md) | 一个实质未决的 user-owned choice 会改变下一步，包括是否/选择哪一个外部依赖或成熟实现 | 只在需要时调研，比较少量可行方案，并收敛真正属于用户的未决选择 |
+| [`implementation.md`](references/implementation.md) | 安全、不可逆操作、持久化、并发、兼容性或未知跨边界 invariant 阻塞安全执行 | 映射风险边界并证伪关键假设 |
 | [`navigation.md`](references/navigation.md) | 大范围结构导航本身阻塞任务 | 在普通源码搜索和可选图谱导航之间选择 |
 
 ### Economic Isolation Gate
