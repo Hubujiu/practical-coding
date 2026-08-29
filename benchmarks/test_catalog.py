@@ -4,12 +4,17 @@ from pathlib import Path
 
 from benchmarks import run_benchmarks as bench
 from benchmarks import run_catalog
-from benchmarks.adaptive_rigor import TRANSITION_BEHAVIOR_CASES, TRANSITION_CASES
+from benchmarks.adaptive_rigor import (
+    TRANSITION_BEHAVIOR_CASES,
+    TRANSITION_CASES,
+    install as install_adaptive_rigor,
+)
 from benchmarks.case_catalog import (
     EXTRA_BEHAVIOR_CASES,
     EXTRA_DEBUG_CASES,
     EXTRA_DECISION_CASES,
     EXTRA_ROUTER_CASES,
+    install as install_catalog,
     score_extra_debug,
 )
 from benchmarks.debug_oracles import DEBUG_ORACLES
@@ -18,7 +23,8 @@ from benchmarks.debug_oracles import DEBUG_ORACLES
 class ExpandedCatalogTests(unittest.TestCase):
     @classmethod
     def setUpClass(cls):
-        run_catalog.configure()
+        install_catalog(bench)
+        install_adaptive_rigor(bench)
 
     def test_public_matrix_is_materially_broader(self):
         self.assertEqual(len(bench.ROUTER_CASES), 42)
@@ -97,7 +103,8 @@ class ExpandedCatalogTests(unittest.TestCase):
                 self.assertTrue(spec["expected"])
 
     def test_canonical_runner_fingerprint_includes_catalog_and_adaptive_adapter(self):
-        raw_core = run_catalog._CORE_SHA256(Path(bench.__file__))
+        run_catalog.configure()
+        raw_core = run_catalog._CORE_SHA256(Path(run_catalog.bench.__file__))
         bundled = run_catalog.runner_bundle_sha256()
         self.assertEqual(len(bundled), 64)
         self.assertNotEqual(bundled, raw_core)
