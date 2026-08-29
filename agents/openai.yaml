@@ -1,6 +1,6 @@
 interface:
   display_name: "Practical Coding"
-  short_description: "Choose the smallest reliable coding solution"
-  default_prompt: "Use $practical-coding for this coding task."
+  short_description: "Direct coding with event-routed modules and scoped subagents"
+  default_prompt: "Use $practical-coding. Keep simple work on the Direct Path and isolate only the modules whose unresolved events are actually triggered."
 policy:
   allow_implicit_invocation: true

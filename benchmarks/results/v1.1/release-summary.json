@@ -1,0 +1,112 @@
+{
+  "schema_version": 1,
+  "release": "1.1",
+  "date": "2026-08-28",
+  "model": "gpt-5.6-luna",
+  "reasoning": "medium",
+  "runs_per_standard_case": 3,
+  "evidence_shape": "split_affected_surface_reruns",
+  "runner_versions": [
+    "1.8",
+    "1.9"
+  ],
+  "runner_identities": {
+    "v1.8_tested_sha256": "650c5593c195de0faa1144dadf40b6eb7a32403249a22bbab9dda527ad8dd277",
+    "v1.9_debug_tested_sha256": "0bb9c2d836466d6220f94190362927781c0cffdf264f54d91d9abedd3eec839c",
+    "v1.9_released_sha256": "9e6a45021ce4eff3b2f2a22a5e5e1493bb2c92af6a8e2c158d5dcee06d01c390"
+  },
+  "tested_skill_identities": {
+    "entrypoint_sha256_before_release_metadata_bump": "23641a17a94b7e2b995f6acf7b5acfc0399e24a7fb253551271bdb6c88e62aef",
+    "delivery_decision_router_behavior_bundle_sha256": "623876ed8a4b596f5d07666fea89db64165a413f7204093c20ab4185f352c7db",
+    "final_debug_and_transfer_bundle_sha256": "446b4e8e05f379c80302d3705e9a261ede0a774dafe21c5bcea0a61abbdae84a",
+    "note": "The v1.1 metadata bump followed the behavioral runs; the released routing/reference behavior is the measured candidate."
+  },
+  "released_skill_identity": {
+    "entrypoint_sha256": "c791fdcf74efb62018c3c386a2e74b4ffa05b338b3e4535973d261e6eb32d489",
+    "bundle_sha256": "590160d2e558412bc32bc88b91d91728752ee04dc244216318a11f2abeee8ff0",
+    "difference_from_final_tested_bundle": "No routing/reference text change after newline normalization; SKILL metadata changed from 1.0 to 1.1 and debugging.md line endings were normalized"
+  },
+  "upstream_pins": {
+    "ponytail": "2ed6c52c9d7e5e56942508591085fd45dea277d3",
+    "mattpocock_skills": "5b15a47f2d7150f545fbcacbfe381787fc0230dc",
+    "superpowers": "b36e0829c6d0140e93cfef2ca599b1b07d4a7797",
+    "full_stack_fastapi_template": "cd83fc10ca20393e9ee50e3005e170c6929e047e"
+  },
+  "current_practical": {
+    "delivery": {
+      "cells": 27,
+      "passed": 27,
+      "pass_rate": 1.0,
+      "correct_rate": 1.0,
+      "safe_rate": 1.0,
+      "build_rate": 1.0,
+      "runner_version": "1.8"
+    },
+    "decision": {
+      "cells": 18,
+      "passed": 18,
+      "pass_rate": 1.0,
+      "runner_version": "1.8"
+    },
+    "debug": {
+      "cells": 30,
+      "passed": 29,
+      "pass_rate": 0.9666666667,
+      "correct_rate": 1.0,
+      "safe_rate": 0.9666666667,
+      "runner_version": "1.9",
+      "failed_cell": "trace-page-window/r2",
+      "failure": "localized repair missed the sibling caller"
+    },
+    "router": {
+      "cells": 114,
+      "passed": 114,
+      "pass_rate": 1.0,
+      "runner_version": "1.8"
+    },
+    "native_behavior": {
+      "cells": 54,
+      "passed": 54,
+      "pass_rate": 1.0,
+      "runner_version": "1.8"
+    },
+    "applicable_total": {
+      "cells": 243,
+      "passed": 242,
+      "pass_rate": 0.9958847737,
+      "atomic_manifest": false
+    }
+  },
+  "stress_evidence": {
+    "transfer_shared_invariant": {
+      "cells": 10,
+      "passed": 9,
+      "pass_rate": 0.9,
+      "runner_version": "1.9"
+    }
+  },
+  "historical_ponytail_only_observation": {
+    "runner_version": "1.6",
+    "delivery": {
+      "cells": 27,
+      "passed": 26,
+      "pass_rate": 0.962962963,
+      "build_rate": 0.8888888889
+    },
+    "debug": {
+      "cells": 30,
+      "passed": 28,
+      "pass_rate": 0.9333333333,
+      "correct_rate": 1.0,
+      "safe_rate": 0.9333333333
+    },
+    "comparison_status": "cross_run_observation_not_paired_scorecard"
+  },
+  "limitations": [
+    "The 243 current-Practical cells come from three affected-surface reruns rather than one atomic manifest.",
+    "Historical comparator/combo arms used runner v1.6; current Practical used runner v1.8/v1.9.",
+    "The 15-arm combo matrix prompt-inlined Skills and does not exactly reproduce every host plugin lifecycle.",
+    "The public catalog is a regression corpus, not a private held-out generalization set.",
+    "One Debug sample and one of ten transfer stress samples still showed a localized sibling-caller repair."
+  ]
+}

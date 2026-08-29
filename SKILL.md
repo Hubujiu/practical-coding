@@ -1,59 +1,50 @@
 ---
 name: practical-coding
-description: Use when implementing, modifying, debugging, refactoring, or reviewing code, or making architecture and dependency decisions in a software project.
+description: "Use for implementing, fixing, refactoring, or reviewing code with the smallest correct change; routes only unresolved architecture, debugging, exploration, or risk-boundary blockers while ordinary well-specified work stays direct."
+license: MIT
+metadata:
+  author: Hubujiu
+  version: "1.1"
 ---
 
 # Practical Coding
 
-## Boundaries
+One short core for every coding task, with optional modules only for unresolved blockers. Simple work does not enter a workflow.
 
-- Understand the current requirement and inspect the relevant code and real execution flow before designing a solution.
-- Do not build capabilities that the current requirement does not need.
-- Choose the simplest implementation that fully satisfies the current requirement.
-- Prefer existing code, standard libraries, platform-native capabilities, and installed dependencies before adding code or packages.
-- Research established solutions before adding a dependency or implementing a non-trivial capability.
-- Compare proven solutions instead of copying the first implementation you find.
-- Add a dependency only when its reliability or complexity benefit justifies its maintenance cost.
-- Keep components focused and concerns separated without speculative abstractions, configuration, or indirection.
-- Grow the system from the smallest working end-to-end version without replacing working simplicity with unfinished complexity.
-- Preserve existing APIs, data formats, and compatibility contracts unless the user explicitly authorizes changing them.
-- Make architectural decisions that can last instead of introducing stopgaps intended for later replacement.
-- Never remove necessary validation, security, data-integrity, accessibility, or permission boundaries in the name of simplicity.
-- Never write backend test cases or proactively test backend behavior after implementation.
-- Trust backend code logic unless the user explicitly reports a bug.
-- When diagnosing a user-reported backend bug, use targeted logging and log analysis instead of writing tests.
-- Frontend work may add Mock.js to provide representative data for layout inspection.
+## Core
 
-## Decision Flow
+- Read the request and the code it actually touches; define the smallest observable success before editing.
+- Stop at the first rung that works: do nothing; reuse the nearest existing primitive; use the standard library; use a native platform feature; use an installed dependency; use one line; otherwise write the minimum custom code.
+- Reuse current APIs as they are. When an artifact only specializes an existing primitive, make the thinnest adapter and inherit its contract; do not restate its styles, types, refs, events, or value semantics without a requirement.
+- Build only behavior a current requirement or caller needs. Names and common conventions are not requirements; when the request is underspecified, preserve the platform representation and nearest existing contract instead of inventing a richer domain model.
+- Add no speculative options, wrappers, aliases, configuration, scaffolding, or one-implementation interfaces.
+- Make the smallest coherent reachable change. A standalone artifact needs no demo or new caller unless requested; a user-facing feature is incomplete until the existing application can reach it.
+- Prefer deletion, boring code, repository defaults, and mature maintained implementations. Keep unrelated code and existing user changes untouched.
+- Add validation, fallback, retry, documentation, comments, or tests only for a current contract, concrete boundary, observed risk, project rule, or necessary evidence.
+- Before finishing, remove every added line, file, option, or explanation that does not directly support the requested behavior, a preserved contract, or the chosen check; keep the smallest version that still works.
+- After the final edit, run the cheapest focused check once. Never repeat an unchanged check or substitute diff inspection for a required compile, type, or build gate. In an isolated workspace, a lockfile-preserving routine dependency install is allowed when it is the bounded prerequisite for that gate; otherwise report missing dependencies instead of installing them solely for verification.
+- If a check creates unrelated generated churn, inspect at most one diff, then leave and report it. Never investigate its provenance or stage, restore, or rewrite unrelated files merely to clean status output.
+- State only what fresh evidence supports; keep unrequested explanation short.
 
-```text
-Understand the requirement
-→ Inspect the relevant code and real flow
-→ Does this need to exist?
-  → No: stop
-→ Can existing code solve it?
-  → Yes: reuse or modify it
-→ Can the standard library or platform solve it?
-  → Yes: use it
-→ Can an installed dependency solve it?
-  → Check its documentation and types, then use it
-→ Does this require a new dependency or non-trivial capability?
-  → Research official guidance, mature implementations, established products, and engineering discussions
-→ Does a proven solution fit and justify its cost?
-  → Yes: integrate the smallest suitable solution
-→ Is a new dependency justified?
-  → Yes: add the smallest suitable dependency
-  → No: implement the smallest custom solution informed by the research
-→ Deliver the smallest working end-to-end change
-→ Backend?
-  → Trust the implementation
-  → Do not write tests or proactively search for bugs
-  → User reports a bug?
-    → Add targeted logs
-    → Analyze the logs
-    → Fix the reported bug
-→ Frontend?
-  → Add Mock.js when layout inspection needs representative data
-  → Inspect the rendered layout
-→ Simplify the final diff
-```
+## Direct Path
+
+When the next safe action is clear, apply the Core immediately: read no reference and dispatch no worker. A narrow lookup, reversible default, established project pattern, or known coherent multi-file edit remains Direct. File count and task nouns never select a module. A symptom or named failing function is not a cause; without prior evidence, read `references/debugging.md` before inspecting or editing.
+
+## Event Router
+
+Route only when a present unresolved event blocks the next safe action. If the request or repository already settles it, it is an input, not an event. Use this first-match ladder and stop at the first match:
+
+1. An observed failure still lacks an evidenced cause: read `references/debugging.md`.
+2. An open user-owned choice about architecture, dependency, API, data model, or compatibility would change the next action: read `references/decision.md`.
+3. Safe execution requires mapping an unknown cross-boundary contract/invariant, handling security, irreversible effects, persistence, concurrency, or compatibility risk, or deciding sufficient evidence for a material claim or risky change: read `references/implementation.md`.
+4. Broad structural navigation is necessary: read `references/navigation.md`, which selects the configured backend.
+
+Read and apply exactly that one module before routing again. Never load candidates together to compare them; route again only if resolving the first event exposes a different blocker.
+
+Do not preload modules. A named option, migration, dependency, or compatibility topic is not a Decision when its material policy is already fixed. Risk-related nouns, mechanisms, and file count do not select Implementation. Stay Direct only when repository evidence already establishes the affected boundary, required guarantee, next safe action, and sufficient focused check, with no unresolved migration, compatibility, side-effect, or evidence question; if the boundary or guarantee remains uncertain, use Implementation. A reported symptom is not a diagnosed cause. Known coordinated edits are Direct; Implementation is not a mandatory stage.
+
+Navigation needed to execute a risky change stays inside Implementation; use Navigation when the structural map itself is the current outcome or independently blocks another event.
+
+## Isolation Gate
+
+Direct work and a single routed event in a small context use no worker. The root never reads `references/delegation.md`; when isolation clearly saves more context than its handoff costs, dispatch one worker and tell that worker to read it plus the one assigned module. Never use overlapping writers or worker pipelines.

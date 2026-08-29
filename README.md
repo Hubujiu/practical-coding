@@ -1,145 +1,250 @@
 # Practical Coding
 
-[中文](#中文) · [English](#english)
+<p align="center">
+  <a href="LICENSE"><img src="https://img.shields.io/badge/License-MIT-yellow.svg" alt="License: MIT"></a>
+  <a href="https://agentskills.io"><img src="https://img.shields.io/badge/Agent_Skills-Compliant-success.svg" alt="Agent Skills Compliant"></a>
+  <img src="https://img.shields.io/badge/Version-1.1-blue.svg" alt="Version 1.1">
+  <img src="https://img.shields.io/badge/Claude_Code_|_Cursor_|_Copilot_|_Gemini_|_Antigravity_|_Codex_|_Goose-supported-purple.svg" alt="Compatible Agents">
+</p>
 
-## 中文
+<p align="center">
+  <b>English</b> · <a href="README_zh.md">简体中文</a>
+</p>
 
-Practical Coding 是一个默认应用于编码任务的 Agent Skill，它把 Ponytail 的实现克制、Marcos Hernanz 的工程边界，以及“先寻找成熟实现、减少无收益测试维护”的实践合并成一个决策流程。
+> ## The right amount of engineering for every coding task.
+>
+> **Simple edits stay simple. Unknown bugs get root-cause debugging. Risky changes get rigor. Nothing else gets loaded.**
 
-### 它解决什么问题
+Practical Coding is a lean, event-driven Agent Skill for coding assistants. It is designed for one recurring problem: a coding agent should not choose between **always being lazy** and **always entering a heavyweight engineering workflow**. It should escalate only when the task actually contains uncertainty or risk.
 
-Coding Agent 经常把写代码变成制造代码：为简单需求增加抽象和依赖，为每个后端功能生成测试类，功能修改后继续维护已失效的测试，甚至围绕测试基础设施产生更多测试与修改。
+```bash
+npx skills@latest add Hubujiu/practical-coding
+```
 
-这个 Skill 针对一种常见但低效的工作模式：功能实现只需约 10 分钟，自动生成和反复修正测试却可能耗费约 1 小时。这里的时间比例描述的是本项目要解决的实际体验，不是通用性能统计。
+## Why this exists
 
-它要求 Agent：
+Coding agents tend to fail in two opposite ways:
 
-- 先确认真实需求和代码边界，再决定是否需要新增代码。
-- 按“现有代码 → 标准库 → 平台原生能力 → 已有依赖 → 调研成熟实现 → 新依赖 → 最小自研”选择方案。
-- 在增加依赖或实现非简单能力前，先阅读官方资料并比较成熟项目、现有产品和工程讨论。
-- 避免预测式抽象、无必要配置、重复造轮子和临时架构。
-- 后端默认相信实现逻辑，不新增测试类，也不在完成后主动寻找 bug。
-- 只有用户明确报告后端 bug 时，才通过定向日志和日志分析定位问题。
-- 前端需要代表性数据检查布局时，可以加入 Mock.js。
+- **Over-engineering:** a tiny edit becomes abstractions, wrappers, speculative tests, extra files, and long explanations.
+- **Process overkill:** every task is forced through brainstorming, planning, TDD, reviews, and subagents even when the next safe edit is obvious.
+- **Under-engineering:** forcing minimalism everywhere can be too weak for unknown root causes, migrations, authorization, persistence, concurrency, or compatibility boundaries.
 
-### 为什么去掉后端测试编写
+Practical Coding makes **rigor conditional**.
 
-本项目有意移除 Agent 默认的后端测试编写行为。目标不是声称测试没有价值，而是阻止测试成为与业务代码平行增长的第二套实现：每增加一个功能就增加一个测试类，每修改一个功能又要同步修改测试，最终维护测试的时间超过实现本身。
+| Situation | Practical Coding behavior |
+|---|---|
+| Rename, CSS tweak, established local pattern | **Direct Path** — edit immediately, no module, no worker |
+| Bug with unknown cause | Load **Debugging** only |
+| Real unresolved architecture/dependency choice | Load **Decision** only |
+| Security, migration, persistence, concurrency, compatibility risk | Load **Implementation** only |
+| Broad structural navigation is itself the blocker | Load **Navigation** only |
 
-这是一个明确且有取舍的工作方式。受法规、团队流程或 CI 门禁约束而必须新增测试的项目不适合直接使用这条默认规则。
+The invariant is simple: **stay Direct until an unresolved event makes Direct unsafe.**
 
-### 安装
+---
 
-在 PowerShell 中执行：
+## Why not just install Ponytail + Superpowers together?
+
+Practical Coding is influenced by both projects, but it is **not a concatenation of their prompts**.
+
+Ponytail's current Skill is intentionally broad: it says to use Ponytail on **any coding task**, keeps it active across responses, and optimizes for the laziest solution that actually works. Superpowers is intentionally broad in a different direction: its `using-superpowers` Skill requires relevant skill invocation **before any response or action**, and its documented default workflow moves from brainstorming/specification into planning, TDD, and subagent-driven development.
+
+Installing both gives the agent two useful philosophies, but it does not create a shared control plane that decides which philosophy should dominate a particular moment.
+
+| Question | Ponytail | Superpowers | Ponytail + Superpowers | Practical Coding |
+|---|---|---|---|---|
+| Default stance | Minimize the solution | Follow applicable engineering process skills | Both broad policies may apply | **Direct unless blocked** |
+| Who arbitrates between minimalism and rigor? | Ponytail rules | Superpowers skill priority/workflow | Host/model must reconcile both | **One first-match Event Router** |
+| Tiny obvious edit | Minimal implementation | Still begins with skill/process selection | Both instruction sets remain relevant | **No reference, no worker** |
+| Unknown bug | Root-cause-minded minimal fix | Systematic debugging workflow | Two overlapping policies | **Debugging module only** |
+| High-risk change | Do not simplify away safety | Full engineering rigor | Useful, but separately triggered | **Implementation module only when the risk exists** |
+| Context footprint | One always-active coding philosophy | Multiple composable process skills | Two independent systems | **One short core + at most one routed module** |
+| Delegation | Not the core abstraction | Subagent-driven development is a major workflow | Superpowers still owns delegation behavior | **Worker only when avoided context exceeds handoff cost** |
+
+### The actual difference is orchestration
+
+Practical Coding adds a layer that neither project provides simply by being installed beside the other:
+
+1. **A Direct Path is a first-class route, not a weaker workflow.** If the next safe action is already known, nothing else is loaded.
+2. **Escalation is event-driven.** A bug does not imply architecture work; a migration does not imply a Decision if the policy is already fixed.
+3. **Exactly one module is loaded at a time.** Resolve the current blocker, then route again only if a new blocker appears.
+4. **Rigor is bounded by the reason it was invoked.** Debugging finds an evidenced cause; Implementation maps the risky invariant; Decision resolves a material choice.
+5. **Delegation has an economic gate.** Subagents are used only when isolation saves more context or unlocks enough parallelism to justify startup and handoff cost.
+6. **Optional code intelligence is also routed.** AST/LSP graph tooling is not a permanent prompt tax.
+
+So the product is better described as:
+
+> **Ponytail-like pragmatism + Superpowers-like rigor, governed by a new adaptive routing policy.**
+
+Not:
+
+> `ponytail.md + superpowers.md` pasted together.
+
+### Important evidence boundary
+
+The v1.1 evidence includes a 15-arm prompt-inlined interference matrix covering every non-empty subset of Practical, Ponytail, Superpowers, and grill-me. It is useful evidence about cross-Skill interference, but it is not yet an actual plugin-lifecycle installation test. Therefore the repository still does not claim universal superiority over every host's real combined installation.
+
+---
+
+## How it works
+
+```mermaid
+flowchart TB
+    T[User coding task] --> C[Always-On Core]
+    C --> Q{Is the next safe action already clear?}
+    Q -->|Yes| D[Direct Path]
+    Q -->|No: observed failure lacks cause| G[Debugging]
+    Q -->|No: material user-owned choice| A[Decision]
+    Q -->|No: risky or unknown boundary| I[Implementation]
+    Q -->|No: broad structure blocks progress| N[Navigation]
+
+    G --> R{New blocker exposed?}
+    A --> R
+    I --> R
+    N --> R
+    R -->|No| V[Cheapest focused verification]
+    R -->|Yes| C
+    D --> V
+    V --> O[Evidence-based completion]
+```
+
+### Always-On Core
+
+The resident `SKILL.md` is intentionally small. It enforces the common rules that should hold regardless of route:
+
+- read the real code touched before editing;
+- stop at the first rung that works: do nothing → reuse → stdlib → native platform → installed dependency → one line → minimum custom code;
+- add no speculative abstractions, options, wrappers, config, tests, fallbacks, or comments;
+- preserve unrelated code and existing user changes;
+- prefer deletion and boring code;
+- run the cheapest focused check once;
+- claim only what fresh evidence supports.
+
+### Four on-demand modules
+
+| Module | Trigger | Purpose |
+|---|---|---|
+| [`decision.md`](references/decision.md) | A material unresolved choice changes the next action | Compare a small set of viable options and converge |
+| [`implementation.md`](references/implementation.md) | Security, irreversible effects, persistence, concurrency, compatibility, or unknown cross-boundary invariant | Map the boundary and falsify the risky assumptions |
+| [`debugging.md`](references/debugging.md) | An observed failure still lacks an evidenced cause | Reproduce → earliest broken state → one hypothesis → root-cause fix |
+| [`navigation.md`](references/navigation.md) | Broad structural navigation independently blocks progress | Choose ordinary source search or optional graph-backed navigation |
+
+### Economic Isolation Gate
+
+A routed module does not automatically mean a subagent. A worker is dispatched only when the context it keeps out of the root conversation, or parallel work it unlocks, clearly exceeds startup and handoff cost. Workers return compact evidence capsules rather than raw transcripts.
+
+---
+
+## Inspirations — adopted ideas, different control policy
+
+Practical Coding deliberately builds on mature open-source work:
+
+- **[DietrichGebert/ponytail](https://github.com/DietrichGebert/ponytail):** YAGNI, stdlib/native-first thinking, deletion over addition, shortest working diffs.
+- **[obra/superpowers](https://github.com/obra/superpowers):** systematic root-cause debugging, strong engineering discipline, verification, task isolation.
+- **[mattpocock/skills](https://github.com/mattpocock/skills) / [Agent Skills Spec](https://agentskills.io):** progressive disclosure and composable Skill structure.
+- **[DeusData/codebase-memory-mcp](https://github.com/DeusData/codebase-memory-mcp):** Tree-sitter/LSP-backed code intelligence.
+
+The differentiator is not ownership of those ideas. It is the **routing contract that decides when each kind of rigor is worth paying for**.
+
+---
+
+## Benchmark evidence — v1.1
+
+The v1.1 evidence uses `gpt-5.6-luna`, reasoning `medium`, isolated workspaces, pinned comparator commits, deterministic graders where possible, and three repetitions per cell. Current Practical results replace the older Cursor-matrix Practical rows; historical comparator/combo rows remain clearly marked as cross-run evidence rather than a new paired scorecard.
+
+| Suite | Practical | Comparator | What the result supports |
+|---|---:|---:|---|
+| **Delivery** | **100% (27/27)** | Ponytail 96.3% historical arm | Current Practical passed correctness, safety, and build; cross-run comparison is not a new paired scorecard |
+| **Decision** | **100% (18/18)** | role-dependent | Confirms current Decision routing and two-turn convergence |
+| **Debug** | **96.7% (29/30)** | Ponytail 93.3% historical arm | Correctness was 100%; one run missed a sibling caller, so the safety result is not presented as perfect |
+| **Router** | **100% (114/114)** | expected route | Expanded five-route regression matrix |
+| **Native behavior** | **100% (54/54)** | route/load contract | Native discovery and exact reference-loading regression |
+| **Applicable total** | **99.6% (242/243)** | — | Combined from three affected-surface reruns, not one atomic 243-cell manifest |
+
+These are **role-specific comparisons**, not a universal leaderboard. Delivery uses Ponytail's published task content/scorer through a Codex adapter; Decision and Debug are controlled project comparisons against the relevant behavior of the comparator Skills.
+
+Read the [published v1.1 data](benchmarks/results/v1.1/README.md), the [full Chinese report](benchmarks/results/v1.1/REPORT_ZH.md), and the [reproduction guide](benchmarks/REPRODUCING.md). The [v1.0 data](benchmarks/results/v1.0/README.md) remain available as historical evidence.
+
+---
+
+## Installation
+
+### Recommended
+
+```bash
+npx skills@latest add Hubujiu/practical-coding
+```
+
+### Manual
+
+Claude Code:
+
+```bash
+git clone https://github.com/Hubujiu/practical-coding.git ~/.claude/skills/practical-coding
+```
+
+Cursor / Codex / Copilot CLI / Gemini CLI / Antigravity / Goose on macOS/Linux:
+
+```bash
+git clone https://github.com/Hubujiu/practical-coding.git ~/.agents/skills/practical-coding
+```
+
+Windows PowerShell:
 
 ```powershell
-git clone https://github.com/Hubujiu/practical-coding.git "$env:USERPROFILE\.codex\skills\practical-coding"
+git clone https://github.com/Hubujiu/practical-coding.git "$env:USERPROFILE\.agents\skills\practical-coding"
 ```
 
-然后重新启动 Codex 或新建任务。
+Project-local:
 
-### 调用
-
-Skill 默认应用于编码任务，也可以显式调用：
-
-```text
-$practical-coding
+```bash
+git clone https://github.com/Hubujiu/practical-coding.git .github/skills/practical-coding
 ```
 
-最短自然提示词：
+---
 
-```text
-务实编码
+## Optional Codebase Memory
+
+Practical Coding works without extra configuration. For repositories where graph-backed structural navigation is worth testing, create `.practical-coding.yaml`:
+
+```yaml
+version: 1
+codebase_memory:
+  enabled: true
 ```
 
-不支持 Skill 的 Agent 可以使用这段精简提示词：
+When enabled, Navigation can invoke the upstream `codebase-memory-mcp` CLI on demand. If it cannot be launched, Practical Coding falls back to ordinary source search and reports that Codebase Memory was not used.
 
-```text
-务实编码：先复用和调研，再做最小实现；后端不写测试，只有我报告 bug 后才用日志调试；前端可用 Mock.js 检查布局。
-```
+This is intentionally opt-in: the current navigation ablation does **not** establish a universal repository-size threshold where graphs always win.
 
-### 思想来源
+---
 
-- [Ponytail](https://github.com/DietrichGebert/ponytail)：参考其“先判断是否需要存在，再依次复用现有代码、标准库、平台能力和已有依赖，最后才写最小实现”的决策梯子。
-- [Marcos Hernanz 的 AGENTS.md](https://x.com/marcoshernanz/status/2083954734487212511?s=46)：参考其简单实现、分层成长、模块化、依赖复用、成熟产品调研和长期架构边界。
-
-Practical Coding 是独立融合与扩展，不是上述项目的复制版本；它额外强化了实现前调研，并加入了由本项目作者确定的后端测试与日志调试规则。
-
-### 项目结构
+## Repository structure
 
 ```text
 practical-coding/
-├─ SKILL.md
-├─ agents/
-│  └─ openai.yaml
-├─ CONTRIBUTING.md
-├─ LICENSE
-└─ README.md
+├── SKILL.md
+├── AGENTS.md
+├── README.md
+├── README_zh.md
+├── references/
+│   ├── decision.md
+│   ├── implementation.md
+│   ├── debugging.md
+│   ├── navigation.md
+│   └── delegation.md
+├── benchmarks/
+│   ├── run.ps1
+│   ├── run_benchmarks.py
+│   ├── REPRODUCING.md
+│   └── results/{v1.0,v1.1}/
+├── examples/
+├── agents/
+└── docs/evaluations/
 ```
 
-## English
+## Contributing
 
-Practical Coding is an always-on coding-agent skill that combines Ponytail's implementation restraint, Marcos Hernanz's engineering boundaries, and an explicit preference for researching proven solutions while avoiding low-value backend test maintenance.
+If a real coding task exposes over-engineering, a missed escalation, an unnecessary module load, or an unsafe simplification, open an issue or PR with the smallest reproducible case. See [CONTRIBUTING.md](CONTRIBUTING.md).
 
-### The problem it addresses
-
-Coding agents often turn implementation into code production: speculative abstractions, unnecessary dependencies, a new backend test class for every feature, stale tests after each behavior change, and still more work to maintain the testing machinery itself.
-
-This skill targets a recurring experience where implementation takes roughly ten minutes while generated tests and their repairs consume an hour. That ratio describes the motivating experience behind this project, not a universal benchmark.
-
-The skill directs an agent to:
-
-- Establish the real requirement and code boundary before adding anything.
-- Prefer existing code, the standard library, native platform capabilities, and installed dependencies.
-- Research official guidance and multiple mature implementations before adding a dependency or building a non-trivial capability.
-- Deliver the smallest complete change without speculative abstractions or temporary architecture.
-- Trust backend implementation logic by default and create no backend tests.
-- Diagnose only user-reported backend bugs, using focused logging and log analysis.
-- Use Mock.js when representative frontend data is needed for layout inspection.
-
-### Backend testing stance
-
-This project intentionally removes backend test authoring from the agent's default workflow. It does not claim that testing has no value; it rejects test code becoming a parallel implementation whose maintenance costs exceed the feature itself.
-
-This is an opinionated trade-off. Projects that require new tests for regulatory, team-policy, or CI-gate reasons should not adopt this rule unchanged.
-
-### Installation
-
-Run in PowerShell:
-
-```powershell
-git clone https://github.com/Hubujiu/practical-coding.git "$env:USERPROFILE\.codex\skills\practical-coding"
-```
-
-Restart Codex or start a new task.
-
-### Invocation
-
-The skill is eligible for automatic invocation on coding tasks and can also be called explicitly:
-
-```text
-$practical-coding
-```
-
-Short natural-language prompt:
-
-```text
-Practical coding.
-```
-
-For agents without Skill support:
-
-```text
-Use practical coding: reuse and research first, then make the smallest implementation; write no backend tests, debug only user-reported bugs through logs, and use Mock.js for frontend layout checks when useful.
-```
-
-### Influences
-
-- [Ponytail](https://github.com/DietrichGebert/ponytail): the decision ladder that asks whether a capability needs to exist and prefers reuse, standard libraries, native features, and installed dependencies before custom code.
-- [Marcos Hernanz's AGENTS.md](https://x.com/marcoshernanz/status/2083954734487212511?s=46): simple implementations, layered growth, modularity, dependency reuse, studying established products, and durable architecture decisions.
-
-Practical Coding is an independent synthesis and extension rather than a copy of either source. It strengthens research-before-implementation and adds its own backend testing and logging policy.
-
-## License
-
-[MIT](LICENSE)
+MIT License. See [THIRD_PARTY_NOTICES.md](THIRD_PARTY_NOTICES.md) for upstream attribution.

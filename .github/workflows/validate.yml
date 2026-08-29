@@ -1,0 +1,32 @@
+name: Validate skill
+
+on:
+  push:
+    branches: [main]
+  pull_request:
+
+jobs:
+  validate:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          # The spec requires the skill name to match its directory name.
+          path: practical-coding
+      - uses: actions/setup-python@v5
+        with:
+          python-version: "3.12"
+      - name: Install skills-ref
+        run: pip install "git+https://github.com/agentskills/agentskills.git#subdirectory=skills-ref"
+      - name: Validate SKILL.md
+        run: skills-ref validate ./practical-coding
+      - name: Run benchmark harness tests
+        working-directory: practical-coding
+        run: python -m unittest benchmarks.test_benchmarks benchmarks.test_stability benchmarks.test_catalog
+      - name: Check Codex default_prompt references the skill as $skill-name
+        run: grep -qF '$practical-coding' practical-coding/agents/openai.yaml
+      - name: Ensure legacy local graph runtime is not reintroduced
+        run: |
+          test ! -e practical-coding/runtime/codebase_memory.py
+          test ! -e practical-coding/runtime/_codebase_memory_impl.py
+          ! grep -R "runtime/codebase_memory.py" practical-coding/SKILL.md practical-coding/AGENTS.md practical-coding/README.md practical-coding/references
