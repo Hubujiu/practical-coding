@@ -5,9 +5,11 @@ from pathlib import Path
 from unittest import mock
 
 from benchmarks import run_benchmarks as bench
-from benchmarks import run_catalog
+from benchmarks.adaptive_rigor import install as install_adaptive_rigor
+from benchmarks.case_catalog import install as install_catalog
 
-run_catalog.configure()
+install_catalog(bench)
+install_adaptive_rigor(bench)
 
 
 class BenchmarkHarnessTests(unittest.TestCase):
