@@ -2,7 +2,7 @@
 
 Navigation is the detailed runtime retrieval procedure, not an Event Router branch. Load it only when broad code discovery or structural mapping is substantial enough that the short Retrieval Policy in `SKILL.md` is insufficient. Produce the smallest bounded context that answers the current need; do not tour the repository.
 
-Use already-available capabilities only. Do not install, persist, initialize, or add project configuration solely to obtain a retrieval backend for the current task. Missing capabilities fall back to the next cheaper available path.
+Use already-available capabilities only. Do not install a backend, add a persistent integration, or change project configuration solely to obtain retrieval for the current task. An already-available backend may build or refresh its normal index when that is part of using the existing integration. Missing capabilities fall back to the next cheaper available path.
 
 ## Retrieval Ladder
 
@@ -32,12 +32,12 @@ Use an already-available structural code index only when the unresolved question
 
 When Codebase Memory is available:
 
-1. Confirm project identity and freshness with `list_projects` or `index_status`; index only if the existing integration supports it and the index is absent or materially stale.
+1. Confirm project identity and freshness with `list_projects` or `index_status`; index only when absent or materially stale and the existing integration supports normal indexing.
 2. Use the smallest query set: `search_graph`, then task-relevant `trace_path`, `get_code_snippet`, `get_architecture`, or `query_graph` only as needed.
 3. Once candidate paths are known, call `check_index_coverage` once with all material paths when coverage matters to the claim. Include relevant scopes for negative or exhaustive claims.
 4. Read current source for material snippets and for every partial, skipped, excluded, stale, pending, or unknown coverage range. Source remains authoritative.
 
-If the structural backend is unavailable, stale beyond repair within the existing integration, or does not cover the relevant code, continue with bounded source discovery. Do not change repository preferences or install a replacement solely for retrieval.
+If the structural backend is unavailable, cannot be made current through its already-installed integration, or does not cover the relevant code, continue with bounded source discovery. Do not install a replacement, add a new persistent integration, or change repository preferences solely for retrieval.
 
 ## Evidence Depth
 

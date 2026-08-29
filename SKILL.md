@@ -35,7 +35,7 @@ The Router selects only whether one additional reasoning module must be loaded; 
 2. A material user-owned choice about architecture, whether or which external dependency or implementation to adopt, API, data model, or compatibility remains unresolved and would change the next action: read `references/decision.md`. A choice already specified and authorized by the user is settled input; research needed to resolve an open choice belongs inside Decision.
 3. Safe execution requires mapping an unknown contract or invariant, a material risk boundary such as security/permissions, irreversible effects, persistence/migration, concurrency/transactions, or compatibility, or sufficient evidence for a risky material claim: read `references/implementation.md`.
 
-Read exactly that one reasoning module in addition to the Core. Resolve the blocker, then route again only if a different blocker appears. Do not preload modules or load candidates together to compare them. Task nouns, file count, and the mere existence of an alternative library do not select a module.
+Read exactly that one reasoning module in addition to the Core. Resolve the blocker, then reassess only if a different blocker appears. Reassessment does not justify accumulating another reasoning reference in the root: handle a trivial later blocker with the Core, or isolate a substantial later event in a worker when the saved context exceeds handoff cost. Do not preload modules or load candidates together to compare them. Task nouns, file count, and the mere existence of an alternative library do not select a module.
 
 ## Retrieval Policy
 
@@ -51,6 +51,6 @@ Do not read `references/navigation.md` for routine lookups. Read it only when br
 
 ## Isolation Gate
 
-Direct work and a single routed event in a small context use no worker. The root never reads `references/delegation.md`. Prefer keeping the root to the Core plus at most one loaded reasoning reference; do not build a sequence of references that only accumulates context.
+Direct work and a single routed event in a small context use no worker. The root never reads `references/delegation.md`. Keep the root to the Core plus at most one loaded reasoning reference for the task; do not build a sequence of references that only accumulates context.
 
 When isolation clearly saves more context than its handoff costs, dispatch one worker and tell that worker to read `references/delegation.md` plus exactly one assigned reference. Navigation workers are read-only. Decision and Debugging workers are read-only. An Implementation worker may write only when its assignment explicitly includes implementation, must have a bounded scope, and must be the sole writer there. Never use overlapping writers or worker pipelines.
