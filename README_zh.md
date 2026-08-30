@@ -1,130 +1,122 @@
-# Practical Coding — 渐进式阶梯实验
+# Practical Coding — 渐进式能力树实验
 
-> **实验分支：** `experiment/progressive-ladders`。这里探索的是 v1.3 架构方向，不代表已经获得新的 benchmark 发布结论。
+> **实验分支：** `experiment/progressive-ladders`。当前结构是待验证候选方案，不代表已发布 benchmark 结论。
 
-Practical Coding 现在把核心问题明确成一句话：
+Practical Coding 的核心问题保持不变：
 
-> **当前任务究竟只需要多少工程约束，以及多少代码上下文？**
+> **下一步可靠决策，最少需要多少工程化深度和多少上下文？**
 
-这条分支把它拆成两个互相独立、都可以升降的渐进式阶梯，并明确要求以后通过 benchmark 调边界、合并或拆分层级，而不是凭直觉永久固定结构。
+这次实验把“深度”和“问题类型”彻底分开：默认 Core 尽量小，只有出现明确的未解决事件才继续加载能力。
 
-## 总体结构
+## 结构
 
-```mermaid
-flowchart TB
-    T[用户编码任务] --> D{存在真正未解决的重大选择?}
-    D -->|是| Q[Decision Gate]
-    D -->|否| E0
-    Q --> E0
-
-    subgraph E[执行阶梯]
-      E0[E0 Direct] <--> E1[E1 Guided]
-      E1 <--> E2[E2 Structured]
-      E2 <--> E3[E3 Assurance]
-    end
-
-    subgraph R[检索阶梯]
-      R0[R0 Target] <--> R1[R1 Local]
-      R1 <--> R2[R2 Structural]
-      R2 <--> R3[R3 Repository]
-      R3 <--> R4[R4 External]
-    end
+```text
+Core
+├─ E0 Direct
+└─ E1 Focused
+   └─ E2 根能力
+      ├─ diagnosis      # 已观察到错误但原因未知
+      │  ├─ security
+      │  ├─ state
+      │  ├─ compatibility
+      │  └─ performance
+      └─ engineering    # 行为已知，但契约/不变量/边界未定位
+         ├─ security
+         ├─ state
+         ├─ compatibility
+         ├─ performance
+         ├─ quality
+         └─ interface
 ```
 
-关键不是单向升级，而是：
+正常根上下文最多加载 **一个根能力 + 一个专家叶子**。不是把所有专家规则都当 checklist。
 
-> **从最低层开始；证据不足才升级；一旦定位到边界就立即收缩。**
+## Core：保持 Ponytail 式最小化
 
-## 执行：渐进式约束
+大多数任务应该停在 E0/E1：
 
-| 层级 | 含义 | 额外成本 |
+- 先定义最小可观察成功；
+- 做最小但完整的修改；
+- 优先复用项目已有 primitive；
+- 不添加推测性的抽象、wrapper、fallback、配置、验证、测试或文档；
+- 用最便宜、能证伪关键结论的检查验证；
+- 不碰无关代码和用户已有修改。
+
+因此复杂度不是由“这是 feature / bug / security”这些名词决定，而是由当前证据是否足够决定。
+
+## 执行深度
+
+| 深度 | 含义 | 加载 |
 |---|---|---|
-| **E0 Direct** | 目标、契约和检查都已经足够清楚 | 只用 Core |
-| **E1 Guided** | 只有一个局部不确定点阻塞 Direct | 仍只用 Core，多做一次有边界的取证 |
-| **E2 Structured** | 存在真正的专业阻塞 | Core + Debugging 或 Implementation 中恰好一个能力 |
-| **E3 Assurance** | 同一个专业能力需要更宽的证据才能支撑重大保证 | 不增加模块，只加深证据范围 |
+| **E0** | 目标、契约、验证都清楚 | 仅 Core |
+| **E1** | 一个局部证据步骤即可解决阻塞 | 仅 Core |
+| **E2** | 需要结构化处理一个真实未解决事件 | diagnosis 或 engineering 二选一 |
+| **E3** | 仍存在明确的领域保证 | 根能力 + 一个专家叶子 |
 
-`Debugging` 和 `Implementation` 不再被理解成前后相接的等级，而是按证据触发的**能力模块**。Decision 独立作为 Gate。
+`Implementation` 不再作为笼统能力存在，改成更抽象的 `engineering`：只有契约、不变量、所有权边界或协同修改面无法用 E1 定位时才加载。
 
-### 升级
+`Debugging` 保留，但它只是 `diagnosis` 根能力，因为“从症状定位最早错误状态”确实是一种独立方法；当根因已经知道时，bug 也不应该加载它。
 
-只有当前证据无法回答下一个关键问题，或者无法支撑必须给出的正确性/安全性保证时才升级。
+## 深层横向专家节点
 
-### 降级
+专家叶子吸收专家 Skill 的优点：明确 trigger、可执行过程、退出条件和验证证据，但不会全局常驻。
 
-一旦根因、契约、不变量或风险边界已经确定，就停止更重的流程，缩回最小影响面，完成最小一致修改，再做最便宜且足够的验证。
+- `security`：信任/权限/输入输出/拒绝前副作用边界；
+- `state`：持久化、事务、并发、顺序、重试、幂等、回滚；
+- `compatibility`：API/schema/protocol/version/迁移兼容；
+- `performance`：有测量或明确指标的性能问题；
+- `quality`：真正的代码审查/重构或结构复杂度阻塞修改；
+- `interface`：视觉/交互质量本身是交付目标。
 
-语义上的“降级”不会删除已经读进上下文的文字，它只是要求后续行为不再继续执行更重的流程。
+`interface` 参考 taste-skill 的“先读 brief、再决定设计方向”的思想，但不会把某种固定审美、框架或组件库强加给所有项目。
 
-## 检索：渐进式上下文
+## 检索也从链变成树
 
-| 层级 | 范围 |
-|---|---|
-| **R0 Target** | 已知文件、符号、错误、测试或当前上下文 |
-| **R1 Local** | 最近可能范围内的有界/排序检索 |
-| **R2 Structural** | caller/callee/import/implementation/dependency/flow 等结构关系 |
-| **R3 Repository** | 仓库级搜索，或明确要求的有界穷举结论 |
-| **R4 External** | 仓库无法给出的官方 API、框架、兼容性、许可证等外部事实 |
-
-工具不是阶梯本身。FFF 风格排序检索、普通 `rg`、LSP/AST、Codebase Memory 都只是某一级里可以使用的能力；缺什么就无损 fallback，不为了检索临时改项目配置。
-
-检索的核心动作是：
+外部资料不应该必须经过 repo-wide 搜索之后才允许使用，因此删除原来的 `R4 External` 顺序：
 
 ```text
-expand → localize → contract
-扩大 → 定位 → 收缩
+R0 Target
+└─ R1 Local
+   ├─ R2 Structural       # 调用/依赖/数据流/配置流
+   ├─ R2 External contract# 仓库无法确定的官方 API/协议/许可事实
+   └─ R3 Exhaustive repo  # 明确需要仓库级穷举，或低层无法定位
 ```
 
-例如一次 repo-wide 搜索已经把问题定位到两个文件，就不应该继续维持 repo-wide 探索。
+仍然遵循：**expand → localize → contract**。Codebase Memory 等结构化工具只是可选加速器，不是依赖。
 
-## Decision Gate
+## Benchmark 反向优化
 
-Decision 解决“做什么/选什么”；执行阶梯解决“已经知道做什么之后需要多强的过程”。
+不只比较“用了 skill 后正确率”，还要测路由本身是否值得：
 
-只有真正未解决、会改变下一步动作的重大选择才读取 `references/decision.md`。用户已经指定或仓库已经确定的选择属于输入，不属于 Decision 事件。
+- no-skill；
+- 上一个已接受版本；
+- 当前自适应能力树；
+- 对应任务族上的专家 skill 参考组；
+- 最低充分 E/R 深度；
+- `capability_path`；
+- 不必要 root/leaf、漏加载 leaf、分支混淆；
+- correctness/safety/build 后再比较 token、时间、tool calls、LOC。
 
-## Benchmark 如何调阶梯
+一个叶子如果不能在自己声称覆盖的任务族上稳定优于 parent，就应该收紧、合并、替换或删除。层级数量也同样由数据决定。
 
-阶梯数量和边界都不是常量。
+详见 [`benchmarks/LADDER_EVOLUTION.md`](benchmarks/LADDER_EVOLUTION.md)。
 
-对每个 task，分别做 execution / retrieval cap ablation，找出能够通过 correctness、安全、build 等硬门槛的**最低充分层级**，然后再看自适应 Skill 实际选了哪一级。
+## WikiSkill 式演化闭环
 
-新增核心指标：
-
-- **over-escalation**：自适应运行选得比最低充分层更高；
-- **under-escalation**：选得太低导致失败，而更高 cap 可以通过；
-- 各层成为“最低充分层”的次数分布；
-- 在质量合格前提下的 token、耗时、tool calls、LOC 和 reference load 成本。
-
-因此以后可以基于数据做结构变化：
+运行时不读取 `evolution/`。维护阶段把三层分离：
 
 ```text
-某一级几乎从来不是最低充分层
-→ 测试与相邻层合并/删除
-
-某一级同时大量出现过度升级和升级不足
-→ 测试移动边界，必要时拆层
+benchmark + 真实项目体验
+          ↓
+evolution/wiki 持久知识
+          ↓
+冻结实验假设
+          ↓
+no-skill / prior / depth / path 验证
+       ↙                    ↘
+    accept                 reject
 ```
 
-具体协议见 `benchmarks/LADDER_EVOLUTION.md`，分析工具见 `benchmarks/ladder_analysis.py`。
+真实项目里的用户纠正、错误路由和高成本死路先记录为 experience receipt；只有重复机制经过聚合和验证后才进入 runtime Skill。
 
-## 持久化 evolution 层
-
-`evolution/` **不进入普通 Coding Agent 的运行时上下文**。它只服务 benchmark 和 Skill 维护：
-
-```text
-evolution/
-├── patterns/      # 多个任务重复出现、已有证据支持的机制
-├── experiments/   # 边界/层级/规则修改实验
-└── rejected/      # 被回滚的修改及失败原因
-```
-
-这样即使一次 Skill 修改被回滚，失败经验仍然保留，不会几周后重新讨论、重新尝试同一个方案。
-
-## 当前分支的意义
-
-这一版不再把差异化重点放在“我也有 Debugging / Implementation / Navigation”，而放在控制策略本身：
-
-> **Practical Coding 决定当前任务究竟只需要多少工程；benchmark 持续学习多少才刚刚好。**
-
-历史 v1.0–v1.2 benchmark 结果仍保留在 `benchmarks/results/`，但它们不能直接作为这套新架构的成绩。合并前需要重新跑完整、重复、质量优先的验证矩阵。
+详见 [`evolution/README.md`](evolution/README.md) 与 [`evolution/EXPERIENCE_SCHEMA.md`](evolution/EXPERIENCE_SCHEMA.md)。

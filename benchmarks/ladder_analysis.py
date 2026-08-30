@@ -1,8 +1,9 @@
 #!/usr/bin/env python3
-"""Analyze aggregated progressive-ladder calibration observations.
+"""Analyze aggregated progressive-depth calibration observations.
 
-Input is JSONL with one aggregated row per task/axis/arm/level. See
-benchmarks/LADDER_EVOLUTION.md for the protocol and schema.
+Input is JSONL with one aggregated row per task/axis/arm/level. Optional
+adaptive routing fields are summarized to support capability-tree tuning.
+See benchmarks/LADDER_EVOLUTION.md.
 """
 
 from __future__ import annotations
@@ -16,7 +17,7 @@ from typing import Any, Iterable
 
 LEVELS = {
     "execution": ["E0", "E1", "E2", "E3"],
-    "retrieval": ["R0", "R1", "R2", "R3", "R4"],
+    "retrieval": ["R0", "R1", "R2", "R3"],
 }
 COST_FIELDS = ("tokens", "duration_seconds", "tool_calls")
 
@@ -26,6 +27,18 @@ def _rank(axis: str, level: str) -> int:
         return LEVELS[axis].index(level)
     except (KeyError, ValueError) as exc:
         raise ValueError(f"invalid level {level!r} for axis {axis!r}") from exc
+
+
+def _normalize_path(value: Any) -> tuple[str, ...] | None:
+    if value is None:
+        return None
+    if isinstance(value, str):
+        parts = [part.strip() for part in value.replace("/", ">").split(">") if part.strip()]
+    elif isinstance(value, list) and all(isinstance(part, str) for part in value):
+        parts = [part.strip() for part in value if part.strip()]
+    else:
+        raise ValueError("capability_path must be a string, string list, or null")
+    return tuple(parts) if parts else None
 
 
 def validate_record(record: dict[str, Any]) -> None:
@@ -41,6 +54,10 @@ def validate_record(record: dict[str, Any]) -> None:
         raise ValueError(f"invalid arm: {record['arm']!r}")
     if not isinstance(record["qualified"], bool):
         raise ValueError("qualified must be boolean")
+    _normalize_path(record.get("capability_path"))
+    refs = record.get("references_loaded")
+    if refs is not None and (not isinstance(refs, list) or not all(isinstance(item, str) for item in refs)):
+        raise ValueError("references_loaded must be a string list or null")
 
 
 def load_jsonl(path: Path) -> list[dict[str, Any]]:
@@ -54,7 +71,10 @@ def load_jsonl(path: Path) -> list[dict[str, Any]]:
                 record = json.loads(line)
             except json.JSONDecodeError as exc:
                 raise ValueError(f"{path}:{line_number}: invalid JSON: {exc}") from exc
-            validate_record(record)
+            try:
+                validate_record(record)
+            except ValueError as exc:
+                raise ValueError(f"{path}:{line_number}: {exc}") from exc
             records.append(record)
     return records
 
@@ -81,6 +101,9 @@ def analyze(records: Iterable[dict[str, Any]]) -> dict[str, Any]:
     for axis, levels in LEVELS.items():
         statuses: Counter[str] = Counter()
         minimum_counts: Counter[str] = Counter()
+        adaptive_paths: Counter[str] = Counter()
+        qualified_adaptive_paths: Counter[str] = Counter()
+        reference_loads: Counter[str] = Counter()
         cases: list[dict[str, Any]] = []
 
         for (task_id, case_axis), rows in sorted(grouped.items()):
@@ -89,7 +112,6 @@ def analyze(records: Iterable[dict[str, Any]]) -> dict[str, Any]:
 
             cap_rows = [row for row in rows if row["arm"] == "cap"]
             adaptive_rows = [row for row in rows if row["arm"] == "adaptive"]
-
             passing_caps = sorted(
                 (row for row in cap_rows if row["qualified"]),
                 key=lambda row: _rank(axis, row["level"]),
@@ -97,6 +119,18 @@ def analyze(records: Iterable[dict[str, Any]]) -> dict[str, Any]:
             minimum = passing_caps[0]["level"] if passing_caps else None
             if minimum is not None:
                 minimum_counts[minimum] += 1
+
+            adaptive_path = None
+            refs: list[str] = []
+            if len(adaptive_rows) == 1:
+                path = _normalize_path(adaptive_rows[0].get("capability_path"))
+                if path:
+                    adaptive_path = ">".join(path)
+                    adaptive_paths[adaptive_path] += 1
+                    if adaptive_rows[0]["qualified"]:
+                        qualified_adaptive_paths[adaptive_path] += 1
+                refs = list(adaptive_rows[0].get("references_loaded") or [])
+                reference_loads.update(refs)
 
             if len(adaptive_rows) != 1 or minimum is None:
                 status = "unscored"
@@ -121,26 +155,22 @@ def analyze(records: Iterable[dict[str, Any]]) -> dict[str, Any]:
                     status = "inconsistent"
 
             statuses[status] += 1
-            cases.append(
-                {
-                    "task_id": task_id,
-                    "minimum_sufficient": minimum,
-                    "adaptive_level": adaptive_level,
-                    "adaptive_qualified": adaptive_qualified,
-                    "status": status,
-                }
-            )
+            cases.append({
+                "task_id": task_id,
+                "minimum_sufficient": minimum,
+                "adaptive_level": adaptive_level,
+                "adaptive_qualified": adaptive_qualified,
+                "adaptive_capability_path": adaptive_path,
+                "references_loaded": refs,
+                "status": status,
+            })
 
-        scorable = statuses["exact"] + statuses["over_escalation"] + statuses["under_escalation"] + statuses["quality_failure"] + statuses["inconsistent"]
+        scorable = sum(statuses[name] for name in ("exact", "over_escalation", "under_escalation", "quality_failure", "inconsistent"))
         exact_or_over_under = statuses["exact"] + statuses["over_escalation"] + statuses["under_escalation"]
 
         cost_by_level: dict[str, Any] = {}
         for level in levels:
-            rows = [
-                row
-                for row in all_records
-                if row["axis"] == axis and row["arm"] == "cap" and row["level"] == level and row["qualified"]
-            ]
+            rows = [row for row in all_records if row["axis"] == axis and row["arm"] == "cap" and row["level"] == level and row["qualified"]]
             if rows:
                 cost_by_level[level] = _average_costs(rows)
 
@@ -154,6 +184,9 @@ def analyze(records: Iterable[dict[str, Any]]) -> dict[str, Any]:
             "minimum_sufficient_counts": {level: minimum_counts[level] for level in levels},
             "levels_never_minimum": [level for level in levels if minimum_counts[level] == 0],
             "qualified_cap_cost_by_level": cost_by_level,
+            "adaptive_capability_path_counts": dict(sorted(adaptive_paths.items())),
+            "qualified_adaptive_capability_path_counts": dict(sorted(qualified_adaptive_paths.items())),
+            "adaptive_reference_load_counts": dict(sorted(reference_loads.items())),
             "cases": cases,
         }
 

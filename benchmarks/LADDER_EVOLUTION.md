@@ -1,139 +1,154 @@
-# Progressive ladder evolution protocol
+# Progressive depth and capability-tree evolution protocol
 
-This protocol evaluates whether Practical Coding's execution and retrieval ladders choose the **lowest level that still produces a quality-qualified result**. It is specifically for tuning escalation boundaries and deciding whether levels should be merged, removed, or split.
+This protocol evaluates whether Practical Coding chooses the **lowest quality-qualified depth and the smallest useful capability path**.
 
-The current level names are hypotheses:
+The current architecture is an experiment:
 
-- Execution: `E0 E1 E2 E3`
-- Retrieval: `R0 R1 R2 R3 R4`
+- execution depth: `E0 E1 E2 E3`;
+- retrieval depth: `R0 R1 R2 R3`;
+- E2 roots: `diagnosis`, `engineering`;
+- E3 specialist leaves: `security`, `state`, `compatibility`, `performance`, `quality`, `interface` where valid under the active root.
 
-Do not optimize for preserving these names or counts.
+No level or node is permanent.
 
 ## 1. Quality before cost
 
-A rung is sufficient only if it passes the same hard gates used by the main harness:
+A variant is sufficient only after correctness/safety and build/reachability gates pass. Only then compare tokens, time, tool calls, LOC, and loaded references.
 
-1. correctness and safety;
-2. build/reachability when applicable;
-3. only then efficiency.
+A cheaper failure is not a win.
 
-A cheaper failure is never a sufficient lower rung.
+## 2. Always keep real baselines
 
-## 2. Freeze variants before observing results
+For every candidate architecture, retain at least:
 
-For a calibration cycle, freeze:
+1. **no-skill**;
+2. **accepted prior Practical Coding**;
+3. **candidate adaptive tree**.
 
-- candidate Skill commit;
-- task manifest;
-- scorer/oracle versions;
-- model and harness configuration;
-- capped Skill bundles for every level being tested.
+Use expert skills such as debugging, review, security, or design-oriented skills as informative specialist comparators on task families they actually claim to cover, not as universal baselines.
 
-Do not create a per-case cap after looking at that case's result. Caps must be mechanically generated or otherwise fixed for the complete matrix before the first model run.
+This distinguishes net skill lift from merely moving work between prompt layers.
 
-## 3. Calibrate the axes independently
+## 3. Freeze before observing
 
-Execution and retrieval interact, so estimate each boundary while keeping the other axis permissive enough not to be the bottleneck.
+Freeze candidate commit, task manifest, scorer/oracle, model/harness, depth-capped bundles, capability-path ablations, and repetition count before the first result is inspected.
 
-### Execution calibration
+Do not create a per-case prompt after seeing the answer.
 
-Run variants capped at `E0`, `E1`, `E2`, and `E3` while allowing normal retrieval. For each task, the first level that quality-qualifies is its **minimum sufficient execution level**.
+## 4. Calibrate depth independently
 
-### Retrieval calibration
+### Execution
 
-Run variants capped at `R0`, `R1`, `R2`, `R3`, and `R4` while allowing normal execution. For each task, the first level that quality-qualifies is its **minimum sufficient retrieval level**.
+Run caps at `E0`, `E1`, `E2`, `E3` with retrieval permissive enough not to be the bottleneck. The first stable quality-qualified cap is the minimum sufficient execution depth.
 
-A cap means stronger behavior cannot be used, not that the model is told which answer is expected.
+### Retrieval
 
-## 4. Repetitions
+Run caps at `R0`, `R1`, `R2`, `R3` with execution permissive enough not to be the bottleneck. R2 permits the appropriate specialized branch (structural or external); R3 permits bounded exhaustive repository discovery.
 
-Use at least `n=3` determinate repetitions for boundary claims. A capped cell is quality-qualified only when its hard-gate result is stable under the project's current stability policy. If stochastic disagreement prevents a stable judgment, mark the task/axis indeterminate rather than forcing a minimum rung.
+External evidence is not an `R4` successor to repository search.
 
-Held-out tasks are required before treating a tuned boundary as general rather than regression-specific.
+Use at least `n=3` determinate repetitions for boundary claims. Mark unstable cells indeterminate.
 
-## 5. Adaptive run
+## 5. Calibrate tree nodes by ablation
 
-After the capped matrix is frozen and run, execute the normal adaptive Skill on the same tasks.
+Depth alone cannot tell whether a specialist node earns its context cost.
 
-Record its selected execution/retrieval level through benchmark-only instrumentation. Do not require runtime user-facing answers to expose ladder labels.
+For tasks whose adaptive run selects a capability path, freeze the smallest relevant ablation set before running:
 
-For native behavior, use mechanical evidence where possible: references loaded, retrieval scope/tool traces, files/results inspected, and worker dispatches. If E0 versus E1 cannot be inferred mechanically, use a dedicated classification probe in the benchmark rather than changing production output format.
+```text
+parent-only
+parent + claimed leaf
+candidate adaptive tree
+```
 
-## 6. Required observation format
+When useful, add one plausible sibling as a branch-confusion control. Do not test every leaf on every task.
 
-`benchmarks/ladder_analysis.py` consumes aggregated JSONL observations after repeated cells have already been classified as quality-qualified or not.
+A leaf is justified only when, on the population it claims to cover, it produces stable net quality lift over its parent or preserves quality while materially lowering cost/routing error elsewhere.
 
-Capped row:
+Track:
+
+- **unnecessary root load** — E0/E1 was quality-sufficient but adaptive loaded a root;
+- **unnecessary leaf load** — parent was quality-sufficient but adaptive loaded a leaf;
+- **missed root/leaf** — adaptive failed at a shallower path while the frozen deeper path succeeds;
+- **branch confusion** — the selected sibling fails or costs materially more while another pre-frozen path succeeds;
+- **path exactness** — adaptive selects the lowest quality-qualified frozen path.
+
+Do not infer leaf value from task nouns alone.
+
+## 6. Observation format
+
+`benchmarks/ladder_analysis.py` consumes aggregated JSONL after repetitions are classified.
+
+Capped depth row:
 
 ```json
 {"task_id":"bug-017","axis":"execution","arm":"cap","level":"E2","qualified":true,"tokens":4200,"duration_seconds":31.2,"tool_calls":8}
 ```
 
-Adaptive row:
+Adaptive row with routing instrumentation:
 
 ```json
-{"task_id":"bug-017","axis":"execution","arm":"adaptive","level":"E3","qualified":true,"tokens":6100,"duration_seconds":45.1,"tool_calls":12}
+{"task_id":"bug-017","axis":"execution","arm":"adaptive","level":"E3","qualified":true,"capability_path":["diagnosis","state"],"references_loaded":["references/debugging.md","references/specialists/state.md"],"tokens":6100,"duration_seconds":45.1,"tool_calls":12}
 ```
 
-Use one aggregated row per task/axis/arm/level. Keep raw repetitions in the normal benchmark artifacts.
+The routing fields are benchmark-only instrumentation; runtime answers need not expose labels.
 
-## 7. Boundary metrics
+## 7. Family-level analysis
 
-For every scorable task/axis:
+Report over/under-escalation and path behavior by task family and repository, not only globally. A boundary that looks good in aggregate can systematically fail on one mechanism.
 
-- **minimum sufficient level:** lowest capped level that quality-qualifies;
-- **exact:** adaptive level equals the minimum sufficient level and qualifies;
-- **over-escalation:** adaptive qualifies but selects a higher level than minimum sufficient;
-- **under-escalation:** adaptive selects below the minimum sufficient level and does not qualify while a higher capped level does;
-- **quality failure:** adaptive fails even though it selected at or above a known sufficient cap;
-- **inconsistent:** adaptive qualifies below the observed minimum capped level; investigate stochasticity/instrumentation before changing the Skill.
+Useful families include observed-failure diagnosis, localized feature change, cross-contract change, security boundary, state/concurrency, compatibility/migration, measured performance, structural review/refactor, and material interface work.
 
-Report rates by task family, not only globally. A boundary can be correct overall and still systematically wrong for one family.
+Use mechanism labels only for analysis; do not paste benchmark-specific nouns into runtime triggers.
 
-## 8. Tune boundaries before prose
+## 8. Retrieval-specific calibration
 
-When a pattern appears, classify it before editing:
+Measure more than tool choice:
 
-- **Over-escalation cluster:** tighten the escalation condition or improve de-escalation/contraction.
-- **Under-escalation cluster:** relax the escalation condition or expose the blocker earlier.
-- **Retrieval over-expansion:** tighten scope transition or contraction conditions.
-- **Retrieval under-expansion:** allow the next scope when the current information test fails.
+- candidate results inspected before localization;
+- source lines/files read;
+- structural index/graph use when available;
+- pagination/coverage for exhaustive claims;
+- contraction point after localization;
+- unnecessary external lookup and unnecessary repository-wide expansion.
 
-Do not add task nouns or benchmark-specific phrases merely to turn public cells green.
+A better retrieval path is one that reaches authoritative evidence with less irrelevant context, not one that uses a particular tool.
 
-## 9. Tune the number of levels
+## 9. Real-project experience
 
-A level is a merge/removal candidate when, across a sufficiently varied held-out population:
+Benchmark tasks are necessary but not sufficient. Record real-project successes, routing mistakes, repeated user corrections, and expensive dead ends as **experience receipts** using `evolution/EXPERIENCE_SCHEMA.md`.
 
-- it is rarely or never the minimum sufficient level;
-- moving directly from its lower neighbor to upper neighbor does not create a material quality cliff;
-- its presence adds measurable context/process cost or routing error.
+Do not promote one anecdote directly into `SKILL.md`. Consolidate repeated mechanisms into persistent evolution knowledge first.
 
-A level is a split candidate when it repeatedly contains two separable clusters with different minimum sufficient behavior and a stable observable condition can distinguish them before execution.
+## 10. Evolution loop
 
-Do not split a level merely because task descriptions look different.
+```text
+benchmark runs + real-project receipts
+                ↓
+      evolution wiki knowledge
+                ↓
+     frozen candidate hypothesis
+                ↓
+ depth caps + path ablations + baselines
+                ↓
+       held-out validation
+          ↙             ↘
+       accept           reject
+         ↓                ↓
+ runtime Skill      retain lesson only
+```
 
-## 10. Persistent evolution record
+This mirrors the useful separation from WikiSkill: raw experience, accumulated maintenance knowledge, and executable Skill wording remain distinct.
 
-Every structural change should create an experiment record under `evolution/experiments/` with:
-
-- observed pattern and evidence IDs;
-- hypothesis;
-- exact boundary/level change;
-- expected quality and cost effect;
-- frozen benchmark manifest;
-- result;
-- accept/reject decision.
-
-Rejected changes move or are summarized under `evolution/rejected/`. Their lessons remain available to future maintainers even though runtime Skill text rolls back.
-
-## 11. Acceptance for this experimental branch
+## 11. Acceptance gate for this branch
 
 Before proposing merge to `main`:
 
 1. existing harness self-tests pass;
-2. no public correctness/safety/build regression against the accepted baseline;
-3. ladder calibration has at least three determinate repetitions per claimed cell;
-4. at least one held-out task population tests the new boundaries;
-5. over/under-escalation is reported separately for execution and retrieval;
-6. no level-count change is justified only by prompt aesthetics.
+2. no stable correctness/safety/build regression versus accepted Practical Coding and no-skill reference points;
+3. claimed depth boundaries have at least three determinate repetitions;
+4. changed boundaries are tested on held-out tasks;
+5. new specialist leaves have parent-vs-leaf ablation evidence on their claimed families;
+6. over/under-escalation and unnecessary/missed leaf rates are reported;
+7. real-project evidence is treated as calibration input, not hidden held-out proof;
+8. no node survives only because the tree looks conceptually neat.

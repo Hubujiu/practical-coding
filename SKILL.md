@@ -1,149 +1,188 @@
 ---
 name: practical-coding
-description: "Use for implementing, fixing, refactoring, or reviewing code with the least engineering process and repository context that can still produce a reliable result; execution and retrieval escalate independently only when current evidence is insufficient."
+description: "Use for implementing, fixing, refactoring, reviewing, or navigating code with the least engineering process and repository context that can still produce a reliable result; deepen only when a concrete unresolved event requires it."
 license: MIT
 metadata:
   author: Hubujiu
-  version: "1.3"
+  version: "1.4"
 ---
 
 # Practical Coding
 
-Use the least process and the least context that can still produce a reliable coding result.
+Use the least engineering and the least context that can still produce a reliable coding result.
 
-Two independent ladders control cost:
+Practical Coding has two independent progressive controls:
 
-- **Execution:** how much engineering structure and assurance the task needs.
-- **Retrieval:** how much repository or external context the next decision needs.
+- **Execution depth** — how much reasoning structure and assurance the current unresolved event needs.
+- **Retrieval depth** — how much source/context the next material decision needs.
 
-Start at the lowest rung. Escalate only when fresh evidence shows the current rung is insufficient. As soon as the blocking uncertainty is resolved or the relevant boundary is localized, contract the work again. Escalation changes behavior; it does not imply that already-read context can be unloaded.
+Depth is not a workflow to complete. Start shallow, expand only when evidence says the current depth cannot answer the next material question, then contract immediately after the blocker is localized.
 
 ## Core
 
-The Core applies at every execution level.
+The Core applies everywhere and should remain sufficient for most work.
 
 - Define the smallest observable success before editing.
-- Prefer the smallest coherent reachable change that satisfies the current requirement and established contracts.
-- Stop at the first implementation rung that works: do nothing; reuse the nearest project primitive; use the standard library; use a native platform feature; use an already-available dependency; one line; otherwise write the minimum local code.
-- Add no speculative options, wrappers, aliases, configuration, scaffolding, helper layers, extension points, or one-implementation interfaces.
-- Prefer deletion and boring code. Keep unrelated code and existing user changes untouched.
-- Add validation, fallback, retry, documentation, comments, or tests only when required by stated behavior, an established project rule or contract, or necessary verification.
-- Verify the final state with the cheapest focused check that can falsify the material claim. Do not repeat an unchanged check.
+- Prefer the smallest coherent reachable change that satisfies the requirement and established contracts.
+- Reuse the nearest project primitive before inventing a new abstraction or dependency.
+- Add no speculative wrapper, alias, option, configuration surface, helper layer, extension point, retry, fallback, validation, test, comment, or documentation.
+- Prefer deletion, direct control flow, and boring code. Preserve unrelated behavior and user changes.
+- Put a guarantee at the narrowest authoritative boundary that owns it.
+- Verify with the cheapest focused check that can falsify the material claim. Do not repeat an unchanged check.
 - State only what fresh evidence supports.
-- Do not escalate because a task sounds complex, touches many files, or contains a risk-related noun. Escalate because the current rung cannot answer the next material question or support the required claim.
+- Never escalate because a task sounds difficult, touches many files, or contains a risk-related noun. Escalate because a specific uncertainty remains unresolved.
 
 ## Decision Gate
 
-Decision is a gate before or during execution, not an execution level.
+Decision is not an execution level.
 
-Load `references/decision.md` only when a material choice remains genuinely open, would change the next action, and cannot be settled from the request, repository, established contracts, or cheap reversible defaults. A choice already specified or authorized by the user is settled input.
+Load `references/decision.md` only when a material user-owned choice is genuinely open, would change the next action, and cannot be settled from the request, repository, established contracts, or a cheap reversible default.
 
-Resolve the choice, then continue at the lowest execution and retrieval rungs consistent with the new facts. If a substantial Decision context would otherwise remain resident while later specialist work is likely, prefer an isolated Decision worker when the context saved exceeds handoff cost.
+Resolve the choice, then return to the lowest useful execution and retrieval depths.
 
-## Execution Ladder
+## Execution Depth + Capability Tree
+
+Execution depth answers **how much engineering is needed**. Capability paths answer **what kind of engineering is needed**.
+
+```text
+Core
+ ├─ E0 Direct
+ └─ E1 Focused evidence
+      └─ E2 Capability root
+          ├─ diagnosis
+          │    ├─ security
+          │    ├─ state
+          │    ├─ compatibility
+          │    └─ performance
+          └─ engineering
+               ├─ security
+               ├─ state
+               ├─ compatibility
+               ├─ performance
+               ├─ quality
+               └─ interface
+                    ↓
+                 E3 leaf depth
+```
+
+The tree is sparse and evidence-driven. Do not traverse every node. In the root context, load at most **one capability root and one specialist leaf** for the current unresolved event.
 
 ### E0 — Direct
 
-Default here.
-
-Use E0 when the target behavior, governing contract, and sufficient focused check are already clear enough to make the smallest coherent change.
+Default here. Use Core only when the target behavior, governing contract, and sufficient focused check are already clear.
 
 Do not load a reasoning reference.
 
-### E1 — Guided
+### E1 — Focused
 
-Stay Core-only, but spend one bounded local step to remove a specific uncertainty that blocks Direct work.
-
-Examples:
+Stay Core-only and take one bounded local evidence step to remove a specific blocker:
 
 - inspect the nearest caller, contract, sibling pattern, or focused test;
-- confirm one assumption about current behavior;
+- reproduce or directly exercise one behavior;
 - identify the smallest check that can falsify the change.
 
-Escalate beyond E1 only when that bounded step fails to resolve the blocker. Do not turn ordinary local inspection into a workflow.
+If that resolves the blocker, return to E0 behavior. Do not turn local inspection into a process ritual.
 
-### E2 — Structured
+### E2 — Capability root
 
-Load exactly one specialist reasoning capability when evidence shows Core-only work is insufficient:
+Load exactly one root only when E1 was insufficient.
 
-- **Debugging:** an observed failure, regression, incorrect behavior, or failed verification still lacks an evidenced cause → read `references/debugging.md`.
-- **Implementation:** safe execution is blocked by an unknown contract or invariant, an unresolved material risk boundary, or insufficient evidence for a risky material claim → read `references/implementation.md`.
+- **diagnosis** → `references/debugging.md` when an observed failure, regression, incorrect behavior, or failed verification still lacks an evidenced cause.
+- **engineering** → `references/engineering.md` when the desired behavior is known but safe execution is blocked by an unresolved contract, invariant, ownership boundary, or multi-part change surface.
 
-Use that module at its structured depth. Do not load both in the same root context merely because both could be relevant.
+These are event types, not mandatory phases. A feature does not require engineering depth merely because it is a feature; a bug does not require diagnosis after its cause is already known.
 
-### E3 — Assurance
+### E3 — Specialist leaf
 
-E3 is deeper use of the already-selected specialist capability, not another module.
+Load one specialist leaf only when the active root cannot support a material guarantee without domain-specific reasoning. The trigger must be observable before loading the leaf.
 
-Escalate from E2 only when a material claim still cannot be supported because the relevant boundary spans multiple callers, states, compatibility modes, side-effect phases, or high-impact rejection/rollback/race behavior. Expand evidence only as far as the unresolved guarantee requires.
+- `references/specialists/security.md` — trust, authentication/authorization, untrusted input/output, secret exposure, or rejection-before-side-effect behavior is material.
+- `references/specialists/state.md` — persistence, migration state, transactionality, ordering, retries, idempotency, rollback, restart, or concurrency is material.
+- `references/specialists/compatibility.md` — public API/schema/protocol/version compatibility or old/new coexistence is material.
+- `references/specialists/performance.md` — a measured or explicitly required latency, throughput, memory, query, render, or scale boundary is material.
+- `references/specialists/quality.md` — the task is a substantive review/refactor or structural complexity itself blocks safe change; style preference alone is insufficient.
+- `references/specialists/interface.md` — user-facing visual/interface quality is a material deliverable and repository conventions alone do not settle the design direction.
 
-Security/permissions, irreversible side effects, persistence/migration, concurrency/transactions, and compatibility often justify E3 **only when their material guarantee remains unresolved**. Their presence alone does not.
+A specialist leaf adds a narrow expert procedure, not a general hardening checklist. If its material guarantee becomes localized, stop using it and contract.
+
+Do not stack sibling leaves because several might be relevant. Finish the current unresolved guarantee first. If a second orthogonal guarantee is substantial enough that keeping both contexts would be wasteful, use the Isolation Gate.
 
 ### De-escalation
 
-When the cause, contract, invariant, or evidence boundary becomes clear:
+As soon as the cause, contract, invariant, ownership boundary, or evidence boundary is clear:
 
-1. stop broad diagnosis or assurance work;
+1. stop the broader procedure;
 2. contract to the smallest affected surface;
-3. implement the smallest coherent fix/change;
+3. make the smallest coherent change;
 4. run the cheapest sufficient final check.
 
-Do not continue a higher-level ritual after its blocker is gone.
+Higher-depth context may remain in the model, but higher-depth behavior should stop.
 
-## Retrieval Ladder
+## Retrieval Depth + Retrieval Tree
 
-Retrieval is independent of the Execution Ladder. A simple edit may need broad discovery; a difficult bug may already have a known target.
+Retrieval is independent of execution. A simple edit can need broad discovery; a difficult bug can already have a known target.
+
+```text
+R0 Target
+ └─ R1 Local search
+      ├─ R2 Structural relation
+      ├─ R2 External contract
+      └─ R3 Bounded exhaustive repository claim
+```
+
+External evidence is a branch, not a rung after repository-wide search.
 
 ### R0 — Target
 
-Use current context, a known path, symbol, error, route, test, or configuration. Read only the source needed for the next decision.
+Use current context, a known path, symbol, error, route, test, or configuration. Read only what the next decision needs.
 
 ### R1 — Local
 
-When the target is unknown or one local relation is missing, use bounded/ranked filename, text, symbol, reference, or host-native source search within the nearest plausible scope. Prefer limits, top-k, pagination, and batched narrow queries.
+Use bounded/ranked filename, text, symbol, reference, or host-native source search inside the nearest plausible scope. Prefer top-k, limits, pagination, and batched narrow queries.
 
-### R2 — Structural
+### R2 — Specialized retrieval
 
-When the unresolved question is primarily relational—callers, callees, imports, implementations, inheritance, dependencies, or cross-file flow—use an already-available structural capability when it materially reduces exploration. Otherwise reconstruct only the needed relationship with bounded source search.
+Choose one branch when R1 cannot answer the unresolved question:
 
-### R3 — Repository
+- **Structural relation:** callers, callees, imports, implementations, inheritance, dependency flow, data flow, or configuration flow. Prefer an already-available structural capability when it reduces exploration; otherwise reconstruct only the required relation from source.
+- **External contract:** authoritative current framework/API/license/protocol behavior that the repository cannot establish. Prefer primary maintained sources and return only the contract needed for the code decision.
 
-Expand to repository-wide discovery only when R0–R2 cannot localize the relevant boundary or when the task requires a bounded exhaustive repository claim. Do not dump broad result sets into context; narrow candidates before reading source.
+Read `references/navigation.md` only when structural retrieval itself becomes substantial. Routine R0/R1 work does not need it.
 
-### R4 — External
+### R3 — Bounded exhaustive repository claim
 
-Use authoritative external evidence only when the task depends on behavior not established by the repository itself, such as a current framework/API contract, compatibility fact, license, or maintained external implementation. Prefer primary maintained sources.
+Use repository-wide discovery only when R0–R2 cannot localize the relevant boundary or the task requires an explicit bounded exhaustive repository claim. Narrow results before reading source; do not dump broad matches into context.
 
 ### Retrieval contraction
 
-After any expansion identifies the relevant files, symbols, relationships, or external contract, contract back to that bounded surface. Do not keep searching at the widest scope merely because it was once necessary.
-
-Current source remains authoritative for repository behavior.
-
-Read `references/navigation.md` only when R2/R3 retrieval itself becomes substantial enough to benefit from its detailed procedure. Routine R0/R1 work does not need it.
+After expansion identifies the relevant files, symbols, relationships, or external contract, contract immediately to that surface. Current source remains authoritative for repository behavior.
 
 ## Isolation Gate
 
-Direct work and small E1/E2 work use no worker. Keep the root to the Core plus at most one loaded reasoning reference.
+Do not create workers for ordinary E0/E1 work or merely because parallelism is available.
 
-When a second substantial event or broad Navigation effort would accumulate more context than a handoff costs, dispatch one worker. The worker reads `references/delegation.md` plus exactly one assigned reference and returns a compact evidence capsule.
+When a second substantial event, specialist guarantee, or broad structural mapping would add more root-context cost than a compact handoff, dispatch one worker. The worker reads `references/delegation.md` plus only its assigned capability root/leaf or Navigation reference and returns an evidence capsule.
 
-- Decision, Debugging, and Navigation workers are read-only.
-- An Implementation worker may write only when explicitly assigned implementation, with a bounded non-overlapping scope and no competing writer.
-- Do not build worker pipelines or overlap writers.
+- Decision, Diagnosis, Navigation, and read-only specialist workers do not write.
+- A bounded Engineering worker may write only when explicitly assigned a non-overlapping scope and there is no competing writer.
+- Never build worker pipelines or overlapping writers.
 
 ## Benchmark Contract
 
-The ladder names are operational hypotheses, not permanent architecture. Benchmark them.
+The depths, roots, leaves, and trigger boundaries are hypotheses.
 
-Measure at least:
+Measure against **no-skill** and the accepted prior Practical Coding version, not only against other expert skills. Quality gates come before cost.
+
+Track at least:
 
 - correctness, safety, build/reachability;
-- tokens, time, tool calls, LOC, and references loaded;
-- **over-escalation:** the adaptive run uses a higher rung than the lowest quality-qualified rung;
-- **under-escalation:** a lower selected rung fails while a higher capped rung quality-qualifies;
-- minimum-sufficient rung distribution for both axes.
+- tokens, time, tool calls, LOC, references loaded;
+- execution and retrieval minimum-sufficient depth;
+- selected `capability_path` such as `diagnosis>state` or `engineering>security`;
+- unnecessary root/leaf loads, missed specialist loads, and branch-confusion clusters;
+- over-escalation and under-escalation by task family;
+- transfer across repositories and, when practical, model/harness configurations.
 
-If a rung is rarely or never the minimum sufficient rung, test merging or removing it. If one rung repeatedly contains both under- and over-escalation clusters, test splitting or moving its boundary. Do not preserve the number or names of levels for aesthetic symmetry.
+If a depth is rarely minimum-sufficient, test merging/removing it. If a root or leaf does not deliver stable net lift over its parent on the tasks it claims to cover, tighten, merge, replace, or remove it. Never preserve a node for symmetry.
 
-Runtime agents do not read `evolution/`. Benchmark and Skill-maintenance work may use it to retain patterns, accepted experiments, and rejected changes across iterations.
+Runtime agents do not read `evolution/`. Skill-maintenance work uses benchmark results and real-project experience receipts to update persistent evolution knowledge before proposing changes. See `benchmarks/LADDER_EVOLUTION.md` and `evolution/README.md`.

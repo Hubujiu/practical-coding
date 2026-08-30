@@ -2,54 +2,60 @@
 
 This directory is **maintenance-time knowledge**. Ordinary runtime coding agents must not read it while solving user tasks.
 
-Its purpose is to keep benchmark experience across Skill revisions without permanently injecting that history into `SKILL.md`.
+The architecture separates three things that should not collapse into one prompt:
 
-## Layers
+1. **experience** — benchmark runs and real-project receipts;
+2. **persistent knowledge** — consolidated mechanisms, routing failures, and accepted lessons;
+3. **executable Skill** — the small runtime rules and references that have passed validation.
+
+This follows the useful separation demonstrated by WikiSkill: experience should compound into durable maintenance knowledge, while candidate Skill changes still pass an explicit validation gate.
+
+## Loop
 
 ```text
-benchmark/raw traces and aggregates
-             ↓
-evolution/patterns
-             ↓
-evolution/experiments
-             ↓
-candidate Skill patch
-             ↓
-validation benchmark
-        ↙          ↘
-     accept       reject
-       ↓             ↓
- runtime Skill   evolution/rejected
+benchmarks/results + real-project receipts
+                  ↓
+          evolution/wiki
+                  ↓
+     frozen experiment hypothesis
+                  ↓
+     candidate Skill/tree change
+                  ↓
+ no-skill + prior + depth/path validation
+            ↙              ↘
+         accept            reject
+           ↓                  ↓
+     runtime Skill      evolution/rejected
 ```
 
-A rejected patch rolls back from runtime behavior, but the lesson stays here.
+A rejected patch disappears from runtime behavior, but the learned mechanism remains available to maintainers.
 
-## Rules
+## Evidence rules
 
-- Do not create a global rule from one surprising task.
-- Prefer repeated mechanisms across independent tasks before promoting a pattern.
-- Keep evidence IDs/paths, not copied raw transcripts.
-- Record the exact hypothesis and boundary change before seeing validation results.
-- Public regression cases that influenced wording are regression evidence, not held-out proof.
-- A pattern may justify changing an escalation boundary, changing a retrieval contraction rule, merging levels, splitting a level, or changing module wording.
-- The target is not maximum process. The target is the lowest quality-qualified rung.
+- Do not create a global rule from one surprising task or one user correction.
+- Keep exact evidence pointers; do not copy large raw transcripts into the wiki.
+- Separate benchmark evidence, held-out evidence, and real-project experience explicitly.
+- Record the hypothesis and proposed boundary/tree change before validation results are known.
+- Prefer repeated mechanisms across independent repositories/tasks before promoting a pattern.
+- Treat expert-skill comparisons as family-specific evidence, not proof that Practical Coding should copy their whole workflow.
+- The optimization target is **quality-qualified net lift at the lowest useful depth/path**, not maximum process.
 
-## Promotion ladder
+## Promotion path
 
 ```text
-single case
-  ↓
+single receipt
+   ↓
 candidate lesson
-  ↓
+   ↓
 repeated independent mechanism
-  ↓
-pattern
-  ↓
+   ↓
+evolution/wiki entry
+   ↓
 frozen experiment
-  ↓
-held-out + regression validation
-  ↓
-Skill rule / boundary / level change
+   ↓
+held-out + regression + baseline validation
+   ↓
+Skill node / trigger / depth change
 ```
 
-Use `patterns/`, `experiments/`, and `rejected/` for the durable record. Historical raw benchmark artifacts remain under the benchmark system rather than being duplicated here.
+Use `EXPERIENCE_SCHEMA.md` for receipts, `wiki/` for consolidated knowledge, `experiments/` for frozen hypotheses, and `rejected/` for failed changes. Existing `patterns/` remains valid historical evidence; new work should prefer the wiki layer so mechanisms can be linked across experiments rather than duplicated.
