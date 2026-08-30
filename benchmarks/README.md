@@ -1,68 +1,73 @@
 # Practical Coding benchmark chain
 
-This experimental branch keeps the existing v1.2 public regression harness and adds a second evaluation layer for **progressive execution/retrieval boundaries**.
+This experimental branch keeps the existing public regression harness and adds evaluation for **progressive execution/retrieval depth plus capability-path routing**.
 
-Historical v1.0–v1.2 results remain evidence for the Skill versions that produced them. They are not evidence that the new E0–E3 / R0–R4 architecture is better until fresh runs are completed.
+Historical v1.0–v1.2 results remain evidence for the Skill versions that produced them. They are not evidence that the new capability tree is better until fresh runs are completed.
 
-## Two benchmark questions
-
-The project now separates:
+## Three benchmark questions
 
 1. **Does the Skill produce a correct, safe, reachable result?**
-2. **Did it pay for more process or context than that result required?**
+2. **Did it pay for more process/context than the result required?**
+3. **When it went deep, did it load the right capability root/leaf?**
 
-The existing Delivery, Decision, Debug, Router, Native Behavior, and Navigation ablation suites answer the first question and preserve regression coverage. The new ladder calibration protocol answers the second.
+Existing Delivery, Decision, Debug, Router, Native Behavior, and Navigation ablation suites preserve regression coverage. The new protocol calibrates depth and tree routing.
 
-## Existing suites
+## Candidate depth model
 
-| Suite | Purpose |
-|---|---|
-| Delivery | Correctness, safety, build reachability, LOC, tokens, time, tool calls |
-| Decision | Material-choice behavior and convergence without premature implementation |
-| Debug | Root-cause repair, sibling callers, delivered invariant, safety, efficiency |
-| Router / classification | Whether the Skill recognizes the intended reasoning/retrieval situation |
-| Native behavior | Real Skill/reference discovery and context isolation without prompt injection |
-| Navigation ablation | Whether stronger structural retrieval pays for itself on real repositories |
-
-The v1.2 runner and historical result directories remain intact.
-
-## Progressive ladder calibration
-
-See [`LADDER_EVOLUTION.md`](LADDER_EVOLUTION.md).
-
-Execution candidates:
+Execution:
 
 ```text
 E0 Direct
-E1 Guided
-E2 Structured
-E3 Assurance
+E1 Focused
+E2 Capability root
+E3 Specialist leaf
 ```
 
-Retrieval candidates:
+Retrieval:
 
 ```text
 R0 Target
 R1 Local
-R2 Structural
-R3 Repository
-R4 External
+├─ R2 Structural
+├─ R2 External contract
+└─ R3 Bounded exhaustive repository
 ```
 
-For each task/axis, run frozen capped variants and identify the **lowest quality-qualified rung**. Then compare the normal adaptive Skill with that empirical minimum.
+For each task/axis, run frozen depth caps and identify the **lowest quality-qualified depth**. For deep task families, also run parent-vs-leaf ablations before claiming that a specialist node earns its context cost.
 
-Primary new metrics:
+## Primary metrics
 
-- `over_escalation`: adaptive level is higher than the minimum sufficient level;
-- `under_escalation`: adaptive level is lower and fails while a higher cap passes;
-- `minimum_sufficient_counts`: how often each rung is actually necessary;
+Depth metrics:
+
+- `over_escalation`;
+- `under_escalation`;
+- `minimum_sufficient_counts`;
 - cost at each quality-qualified cap.
 
-The number of levels is itself under test. A rung that is rarely/never minimum sufficient becomes a merge/removal candidate; a rung with separable repeated under/over-escalation clusters becomes a boundary/split candidate.
+Tree metrics from benchmark instrumentation:
 
-## Analyze aggregated calibration observations
+- selected `capability_path`;
+- references loaded;
+- unnecessary root/leaf loads;
+- missed root/leaf;
+- branch confusion;
+- path exactness on frozen ablation sets.
 
-After repeated cells have been reduced to one qualified/not-qualified observation per task/axis/arm/level:
+The node count is itself under test.
+
+## Baselines
+
+Every release-quality cycle should retain:
+
+```text
+no-skill
+accepted prior Practical Coding
+candidate Practical Coding tree
+```
+
+Add Ponytail, Superpowers, Addy-style expert skills, or other specialist skills only where the comparison answers a real family-specific question. A universal pack is not automatically a meaningful comparator for every task.
+
+## Analyze aggregated depth observations
 
 ```bash
 python benchmarks/ladder_analysis.py observations.jsonl
@@ -74,7 +79,7 @@ or:
 python benchmarks/ladder_analysis.py observations.jsonl --output ladder-report.json
 ```
 
-The input format and interpretation rules are documented in `LADDER_EVOLUTION.md`.
+Adaptive rows may include `capability_path` and `references_loaded`; the analyzer summarizes them alongside depth errors. Parent-vs-leaf qualification still follows the frozen ablation protocol in `LADDER_EVOLUTION.md`.
 
 ## Existing harness commands
 
@@ -110,23 +115,15 @@ pwsh -NoProfile -File benchmarks/run.ps1 `
 
 ## Acceptance order
 
-Always interpret results in this order:
-
 1. correctness and safety;
 2. build/reachability;
-3. then routing/retrieval sufficiency;
-4. only then tokens, model time, tool calls, LOC, and reference/context cost.
+3. depth/path sufficiency;
+4. then tokens, model time, tool calls, LOC, and context/reference cost.
 
-A cheap failure cannot beat a correct result. Likewise, a lower rung is not "better" merely because it is cheaper; it must first quality-qualify.
+A cheap failure cannot beat a correct result, and a specialist leaf is not useful merely because it sounds expert.
 
 ## Regression versus evolution evidence
 
-Public tasks that influenced Skill wording are regression tests. They can show that a new boundary did not break known behavior, but they cannot prove generalization of that boundary.
+Public tasks that influenced Skill wording are regression tests. Strong boundary/node claims require held-out tasks and repeated determinate runs.
 
-For boundary or level-count claims, require held-out tasks plus repeated runs. Store the durable maintenance lesson under `evolution/`, not inside runtime Skill text until the experiment passes the acceptance gate.
-
-## Output discipline
-
-Keep raw transcripts/workspaces in normal local benchmark artifacts. Commit compact aggregates and evolution records that identify evidence without duplicating large raw context.
-
-If an instrumentation or oracle defect is found, invalidate the affected run, fix the instrument, document the reason, and rerun the full affected matrix. Do not tune a boundary from a corrupted partial result.
+Real-project experience is valuable calibration evidence but is recorded separately under `evolution/` rather than treated as hidden benchmark proof.

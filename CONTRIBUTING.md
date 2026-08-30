@@ -1,50 +1,52 @@
 # Contributing
 
-Contributions to the progressive-ladders experiment should preserve one invariant:
+Contributions to the progressive-capability-tree experiment should preserve one invariant:
 
-> Practical Coding should use the **lowest quality-sufficient execution process and retrieval scope**, then escalate only from evidence and contract again after localization.
+> Practical Coding should use the **lowest quality-sufficient engineering depth and retrieval scope**, then load only the capability needed by the concrete unresolved event.
 
 ## Runtime architecture
 
 - Keep `SKILL.md` as the compact control policy and Core.
 - Decision is a gate, not an execution level.
-- Execution currently tests `E0 Direct → E1 Guided → E2 Structured → E3 Assurance`.
-- Retrieval currently tests `R0 Target → R1 Local → R2 Structural → R3 Repository → R4 External`.
-- Debugging and Implementation are capabilities loaded at structured/assurance depth, not sequential levels.
-- Navigation is retrieval, not another reasoning branch.
-- E3 must deepen the already-selected capability rather than load a second reasoning module.
-- Keep the root to Core plus at most one reasoning reference; use isolation only when it saves net context.
-- Do not introduce mandatory plans, reviews, Git workflows, tests, documents, workers, or other ceremony as universal stages.
+- Execution depth currently tests `E0 Direct → E1 Focused → E2 Root → E3 Leaf`.
+- E2 selects one root: `diagnosis` or `engineering`.
+- E3 may add one evidence-triggered specialist leaf, not a global checklist.
+- Retrieval currently tests `R0 Target → R1 Local`, then branches to `R2 Structural`, `R2 External contract`, or `R3 bounded exhaustive repository`.
+- External evidence is not downstream of repository-wide search.
+- Navigation is retrieval, not another execution branch.
+- Keep normal root context to Core + at most one capability root + one leaf.
+- Do not introduce mandatory plans, reviews, Git workflows, tests, documents, workers, or lifecycle ceremony as universal stages.
 
-The level names/counts are hypotheses. A contribution may merge, remove, split, or rename them if benchmark evidence supports the change.
+The depth count, root set, leaf set, and trigger boundaries are all hypotheses.
 
-## Escalation changes require evidence
+## Node changes require evidence
 
-Do not retune boundaries from one failed public cell.
+Do not add or retune a node from one failed public case.
 
-A good escalation change identifies:
+A good tree change identifies:
 
 1. a repeated mechanism rather than a task noun;
-2. whether the current behavior is over-escalation or under-escalation;
-3. the lower/higher capped result showing which rung is actually sufficient;
-4. the expected quality and cost effect;
-5. held-out validation when making a general claim.
+2. the observable trigger available before action;
+3. whether current behavior is over-escalation, under-escalation, unnecessary leaf load, missed leaf, or branch confusion;
+4. parent-vs-leaf or depth-cap evidence showing what is sufficient;
+5. expected quality and context/process effect;
+6. held-out validation for general claims.
 
-A change is moving in the wrong direction if trivial local work pays more process/context after the change without a quality benefit.
+A specialist node that does not show stable net lift over its parent on its claimed task family should be tightened, merged, replaced, or removed.
 
 ## Retrieval discipline
 
-Tool choice is subordinate to scope:
+Tool choice is subordinate to the unresolved question:
 
 1. known target/current context first;
-2. bounded local discovery;
-3. structural relationship retrieval when that is the unresolved question;
-4. repo-wide only when narrower scopes cannot localize or a bounded exhaustive claim is required;
-5. external authoritative evidence only for facts the repository cannot establish.
+2. bounded/ranked local discovery;
+3. structural relationship retrieval when relationships are the blocker;
+4. authoritative external evidence when the repository cannot establish a needed contract;
+5. repo-wide discovery only when narrower retrieval cannot localize or an explicit bounded exhaustive claim is required.
 
-FFF-style ranked retrieval, ordinary search, LSP/AST, and Codebase Memory-style graph tools are optional capabilities. Do not make an optional backend a hard dependency or install/persist tooling solely for retrieval.
+FFF-style ranked retrieval, ordinary search, LSP/AST, and Codebase Memory-style graphs are optional capabilities. Do not make an optional backend a hard dependency.
 
-Always contract scope after localization. A broad search that identifies two relevant files should not justify continued broad exploration.
+Always contract after localization.
 
 ## Evolution records
 
@@ -52,28 +54,29 @@ Runtime agents must not read `evolution/` for ordinary coding tasks.
 
 For Skill maintenance:
 
-- repeated evidence-supported mechanisms go to `evolution/patterns/`;
-- proposed changes are frozen under `evolution/experiments/` before validation;
-- rejected/regressive changes remain under `evolution/rejected/` so the project does not repeat them later.
+- record benchmark/real-project observations with `evolution/EXPERIENCE_SCHEMA.md`;
+- consolidate repeated mechanisms under `evolution/wiki/`;
+- freeze proposed changes under `evolution/experiments/` before validation;
+- preserve rejected/regressive changes under `evolution/rejected/`.
 
-Do not copy large raw transcripts into evolution records. Keep task/run IDs and compact evidence.
+Existing `evolution/patterns/` is historical evidence; new mechanisms should prefer the wiki layer so evidence can compound across experiments.
+
+Do not copy large raw transcripts, private code, or sensitive content into evolution records.
 
 ## Benchmark requirements
 
-Use `benchmarks/LADDER_EVOLUTION.md` for boundary/level changes. Correctness, safety, and build/reachability always gate efficiency.
+Use `benchmarks/LADDER_EVOLUTION.md` for depth/tree changes. Quality gates always precede efficiency.
 
-Public cases that influenced wording are regression evidence. Strong generalization claims require held-out tasks and repeated determinate runs.
+Compare no-skill, accepted prior Practical Coding, and the candidate adaptive tree. Use external expert skills only as family-specific comparators where their scope actually matches.
 
-Do not preserve four execution levels or five retrieval levels for symmetry. If a rung is almost never the minimum sufficient rung, test removing or merging it. If one rung contains separable repeated under/over-escalation clusters, test moving or splitting the boundary.
+Do not preserve four execution depths, four retrieval depths, two roots, or six leaves for symmetry. Remove/merge nodes that do not earn their cost; split only when a stable observable condition separates repeated failure clusters.
 
 ## Mature implementation first
 
 For non-trivial capability work with credible prior art:
 
 1. inspect maintained mature implementations first;
-2. prefer supported public integration surfaces over copying internals;
-3. verify fit, maintenance state, known issues, operational constraints, and license;
-4. add local code only for concrete gaps;
-5. keep patches narrow and removable.
-
-Prefer strengthening the control policy or an existing capability over adding another permanent module.
+2. extract principles and supported public integration surfaces rather than copying whole workflows;
+3. verify fit, maintenance state, known constraints, and license;
+4. add local guidance only for concrete gaps;
+5. keep every new node narrow and removable.

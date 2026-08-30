@@ -31,6 +31,7 @@ class LadderAnalysisTests(unittest.TestCase):
         report = analyze(records)["axes"]["retrieval"]
         self.assertIn("R0", report["levels_never_minimum"])
         self.assertNotIn("R1", report["levels_never_minimum"])
+        self.assertIn("R3", report["levels_never_minimum"])
 
     def test_averages_qualified_cap_cost(self):
         records = [
@@ -42,9 +43,43 @@ class LadderAnalysisTests(unittest.TestCase):
         report = analyze(records)["axes"]["execution"]
         self.assertEqual(report["qualified_cap_cost_by_level"]["E0"]["tokens"], 200)
 
+    def test_summarizes_capability_path_and_references(self):
+        records = [
+            {"task_id": "state-bug", "axis": "execution", "arm": "cap", "level": "E3", "qualified": True},
+            {
+                "task_id": "state-bug",
+                "axis": "execution",
+                "arm": "adaptive",
+                "level": "E3",
+                "qualified": True,
+                "capability_path": ["diagnosis", "state"],
+                "references_loaded": ["references/debugging.md", "references/specialists/state.md"],
+            },
+        ]
+        report = analyze(records)["axes"]["execution"]
+        self.assertEqual(report["adaptive_capability_path_counts"]["diagnosis>state"], 1)
+        self.assertEqual(report["qualified_adaptive_capability_path_counts"]["diagnosis>state"], 1)
+        self.assertEqual(report["adaptive_reference_load_counts"]["references/debugging.md"], 1)
+        self.assertEqual(report["cases"][0]["adaptive_capability_path"], "diagnosis>state")
+
     def test_rejects_invalid_level(self):
         with self.assertRaises(ValueError):
             validate_record({"task_id": "x", "axis": "execution", "arm": "cap", "level": "R0", "qualified": True})
+
+    def test_rejects_removed_r4(self):
+        with self.assertRaises(ValueError):
+            validate_record({"task_id": "x", "axis": "retrieval", "arm": "cap", "level": "R4", "qualified": True})
+
+    def test_rejects_invalid_capability_path_type(self):
+        with self.assertRaises(ValueError):
+            validate_record({
+                "task_id": "x",
+                "axis": "execution",
+                "arm": "adaptive",
+                "level": "E2",
+                "qualified": True,
+                "capability_path": {"root": "engineering"},
+            })
 
 
 if __name__ == "__main__":

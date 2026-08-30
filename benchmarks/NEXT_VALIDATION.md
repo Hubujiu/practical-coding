@@ -1,18 +1,14 @@
-# Next validation protocol — progressive ladders experiment
+# Next validation protocol — progressive capability tree
 
-This document freezes the next validation cycle for `experiment/progressive-ladders` before its results are inspected.
+This document freezes the next validation cycle for `experiment/progressive-ladders` before results are inspected.
 
-The objective is not to prove that four execution levels or five retrieval levels are correct. The objective is to test whether progressive constraint/retrieval beats the accepted baseline without quality regression, and to learn the smallest useful number and boundary of levels.
+The objective is to test whether the tree improves quality-qualified routing and context cost—not to prove that the current number of depths or leaves is correct.
 
 ## 1. Freeze before running
 
-Before release-quality model calls:
+Record candidate commit, accepted baseline commit, no-skill configuration, task manifest hashes, scorer/oracle versions, model/harness configuration, comparator pins, depth caps, and capability-path ablations before inspecting partial results.
 
-1. commit the candidate and use a clean working tree;
-2. record candidate commit, accepted baseline commit, task manifest hashes, scorer/oracle versions, model/harness configuration, and comparator pins;
-3. freeze every capped ladder variant before looking at any partial result;
-4. do not change Skill text, tasks, scorers, cap definitions, or acceptance thresholds after partial results from the same cycle are visible;
-5. if instrumentation is defective, invalidate and rerun the complete affected matrix.
+If instrumentation is defective, invalidate and rerun the complete affected matrix.
 
 ## 2. Gate A — harness self-test
 
@@ -20,7 +16,7 @@ Before release-quality model calls:
 pwsh -NoProfile -File benchmarks/run.ps1 -SelfTest
 ```
 
-Also run the ladder analyzer unit tests:
+Also run:
 
 ```bash
 python -m unittest benchmarks.test_ladder_analysis
@@ -28,35 +24,27 @@ python -m unittest benchmarks.test_ladder_analysis
 
 A failing self-test blocks benchmark claims.
 
-## 3. Gate B — public regression against accepted baseline
+## 3. Gate B — public regression
 
-Because `SKILL.md` and `references/` behavior changed, run the complete existing matrix:
+Run the complete existing matrix against the accepted baseline and retain a no-skill reference point.
 
 ```powershell
 pwsh -NoProfile -File benchmarks/run.ps1 `
   -Profile full `
   -Runs 3 `
   -Workers 3 `
-  -BaselineRef <accepted-v1.2-commit> `
+  -BaselineRef <accepted-commit> `
   -IncludeBaseline `
   -RequireStableRanking
 ```
 
-Acceptance order:
-
-1. correctness/safety non-regression;
-2. build/reachability non-regression;
-3. only then efficiency.
+Interpret in order: correctness/safety → build/reachability → routing sufficiency → efficiency.
 
 Historical public cases are regression evidence only.
 
-## 4. Gate C — ladder boundary calibration
+## 4. Gate C — depth calibration
 
-Follow [`LADDER_EVOLUTION.md`](LADDER_EVOLUTION.md).
-
-### Execution axis
-
-Freeze and run caps:
+Execution caps:
 
 ```text
 E0
@@ -66,89 +54,83 @@ E3
 adaptive
 ```
 
-Allow normal retrieval so retrieval is not the intentional bottleneck.
-
-### Retrieval axis
-
-Freeze and run caps:
+Retrieval caps:
 
 ```text
 R0
 R1
 R2
 R3
-R4
 adaptive
 ```
 
-Allow normal execution so execution is not the intentional bottleneck.
+R2 permits the appropriate specialized branch (Structural or External); R3 permits bounded exhaustive repository discovery. External evidence is not an R4 successor.
 
-Use at least `n=3` determinate repetitions for a claimed minimum-sufficient rung. Do not force a minimum for unstable/indeterminate cells.
+Use at least `n=3` determinate repetitions for a claimed minimum-sufficient depth.
 
-Required output per task/axis:
-
-- minimum sufficient level;
-- adaptive level;
-- adaptive quality result;
-- exact / over-escalation / under-escalation / quality-failure / inconsistent classification;
-- tokens, model time, tool calls, references loaded when available.
-
-Aggregate with:
+Aggregate depth observations with:
 
 ```bash
 python benchmarks/ladder_analysis.py observations.jsonl --output ladder-report.json
 ```
 
-## 5. Gate D — held-out boundary evidence
+Adaptive rows should record benchmark-only `capability_path` and `references_loaded` when instrumentation can do so mechanically.
 
-The strongest architecture claim requires tasks not consulted while writing the new Skill.
+## 5. Gate D — capability-path ablation
+
+For each specialist family being claimed, freeze a minimal matrix before running:
+
+```text
+parent-only
+parent + claimed leaf
+candidate adaptive tree
+```
+
+Optionally include one plausible sibling as a routing-confusion control; do not brute-force every leaf.
+
+Initial families:
+
+- diagnosis with security/state/compatibility/performance causes;
+- engineering with security/state/compatibility/performance guarantees;
+- structural review/refactor for `quality`;
+- material visual/interface delivery for `interface`.
+
+Required path metrics:
+
+- unnecessary root load;
+- unnecessary leaf load;
+- missed root/leaf;
+- branch confusion;
+- path exactness;
+- quality and cost delta of claimed leaf vs parent-only.
+
+A leaf is not accepted because its prose is plausible. It must earn its cost on the population it claims to cover.
+
+## 6. Gate E — held-out evidence
 
 Minimum first held-out target:
 
-- at least 20 real coding tasks;
-- include trivial known-target edits;
-- local uncertainty that should stop at E1/R1;
-- unknown-root-cause bugs;
-- risky implementation boundaries;
-- relationship-heavy cross-file navigation;
-- cases where repo-wide or external evidence is genuinely necessary;
+- at least 20 real coding tasks across multiple repositories;
+- trivial known-target edits expected to stop at E0/R0;
+- local uncertainty expected to stop at E1/R1;
+- unexplained failures;
+- unresolved contract/invariant changes;
+- specialist security/state/compatibility/performance cases;
+- substantive quality/refactor and interface cases where those leaves are actually material;
+- structural and external retrieval cases;
+- at least one bounded exhaustive repository claim;
 - executable verification whenever possible;
-- same fixed model/harness for baseline and candidate;
 - at least three paired repetitions for publication-quality claims.
 
-## 6. Boundary acceptance criteria
+## 7. Real-project experience gate
 
-Do not accept a new escalation rule because classification accuracy improved alone. It must preserve delivered quality on real tasks.
+Record routing mistakes, repeated user corrections, and expensive dead ends using `evolution/EXPERIENCE_SCHEMA.md`.
 
-### Tighten a boundary when
+Do not convert one real-project anecdote directly into Skill wording. Consolidate repeated mechanisms into `evolution/wiki/`, then freeze a new experiment.
 
-- repeated over-escalation occurs;
-- the lower rung quality-qualifies on the same mechanism;
-- the higher rung adds material tokens/time/context/process;
-- tightening does not create a held-out quality regression.
+## 8. Combined-stack and specialist comparisons
 
-### Relax a boundary when
-
-- repeated under-escalation occurs;
-- a higher capped rung quality-qualifies;
-- the blocker can be recognized from evidence available before failure;
-- the new trigger generalizes beyond task nouns.
-
-### Merge/remove a level when
-
-- it is rarely or never minimum sufficient across a varied held-out set;
-- bypassing it does not create a material quality cliff;
-- its existence adds routing/context/process cost or confusion.
-
-### Split a level when
-
-- repeated failures form two stable behavior clusters;
-- an observable pre-action condition separates the clusters;
-- the split reduces both under- and over-escalation on held-out tasks.
-
-## 7. Combined-stack benchmark remains required
-
-Before claiming Practical Coding is experimentally superior to installing Ponytail and Superpowers together, keep the arm:
+Keep the broad historical arm when testing the integrated-control hypothesis:
 
 ```text
 no-skill
@@ -158,28 +140,26 @@ Ponytail + Superpowers
 Practical Coding
 ```
 
-Measure quality first, then total/uncached input, output/reasoning tokens, model time, tool calls, module/reference loads, unnecessary process, missed escalation, LOC, and build/reachability.
+For specialist leaves, also consider narrower expert comparators when relevant (for example focused security/review/design skills). Do not interpret a specialist win as a universal architecture win.
 
-The hypothesis remains about integrated control cost, not about either upstream project being intrinsically bad.
-
-## 8. Failure discipline
-
-When a failure appears:
+## 9. Failure discipline
 
 1. save the complete run first;
-2. classify infrastructure vs scorer/oracle defect vs stochastic behavior vs genuine Skill behavior;
-3. record repeated mechanisms under `evolution/patterns/` only after independent evidence;
-4. create the proposed change under `evolution/experiments/` before rerunning validation;
-5. never add case-specific nouns merely to turn a public cell green;
-6. preserve a rejected experiment and its lesson under `evolution/rejected/`.
+2. classify infrastructure, scorer/oracle, stochastic, routing, or genuine capability failure;
+3. create/attach an experience receipt;
+4. consolidate repeated mechanisms in the evolution wiki;
+5. freeze the proposed change under `evolution/experiments/` before rerunning;
+6. never add benchmark-specific nouns merely to turn public cells green;
+7. preserve rejected experiments and lessons.
 
-## 9. Merge gate for this exploration branch
+## 10. Merge gate
 
-Do not merge the progressive architecture into `main` until:
+Do not merge this experiment into `main` until:
 
-- existing regression harness passes the quality gate;
+- existing regression harness passes quality gates;
 - ladder analyzer/tests pass;
-- execution and retrieval over/under-escalation are reported separately;
-- a held-out task population has tested the boundaries;
-- any proposed level merge/split is evidence-backed;
-- README claims are rewritten to match the new evidence rather than carrying forward v1.2 numbers as v1.3 proof.
+- execution/retrieval over- and under-escalation are reported separately;
+- specialist parent-vs-leaf ablations exist for claimed nodes;
+- unnecessary/missed leaf and branch-confusion rates are reported;
+- held-out tasks test changed boundaries;
+- README claims are rewritten to match fresh evidence rather than historical numbers.
