@@ -1,249 +1,130 @@
-# Practical Coding
+# Practical Coding — 渐进式阶梯实验
 
-<p align="center">
-  <a href="LICENSE"><img src="https://img.shields.io/badge/License-MIT-yellow.svg" alt="License: MIT"></a>
-  <a href="https://agentskills.io"><img src="https://img.shields.io/badge/Agent_Skills-Compliant-success.svg" alt="Agent Skills Compliant"></a>
-  <img src="https://img.shields.io/badge/Version-1.2-blue.svg" alt="Version 1.2">
-  <img src="https://img.shields.io/badge/Claude_Code_|_Cursor_|_Copilot_|_Gemini_|_Antigravity_|_Codex_|_Goose-supported-purple.svg" alt="Compatible Agents">
-</p>
+> **实验分支：** `experiment/progressive-ladders`。这里探索的是 v1.3 架构方向，不代表已经获得新的 benchmark 发布结论。
 
-<p align="center">
-  <a href="README.md">English</a> · <b>简体中文</b>
-</p>
+Practical Coding 现在把核心问题明确成一句话：
 
-> ## 每个编码任务，只支付它真正需要的工程强度和上下文成本。
->
-> **简单工作保持 Direct；未知 Bug 才进入根因调试；高风险修改才增加严谨度；代码检索在第一个足够的层级停止。**
+> **当前任务究竟只需要多少工程约束，以及多少代码上下文？**
 
-Practical Coding 是一个轻量的编码 Agent Skill。它把两种成本分开控制：
+这条分支把它拆成两个互相独立、都可以升降的渐进式阶梯，并明确要求以后通过 benchmark 调边界、合并或拆分层级，而不是凭直觉永久固定结构。
 
-1. **推理成本：** 只有真正未解决的 blocker 才允许加载 Debugging、Decision 或 Implementation。
-2. **上下文成本：** 代码检索从已知源码开始，按需升级到 bounded/ranked search，再到结构化索引；只有前一级不足时才继续。
-
-```bash
-npx skills@latest add Hubujiu/practical-coding
-```
-
-## v1.2 的核心变化
-
-Navigation 不再是 Event Router 的第四条互斥分支，而变成 Direct 和所有 routed event 都可使用的 **Retrieval Policy**。
-
-| 当前情况 | Practical Coding 行为 |
-|---|---|
-| 改名、CSS、已知局部修改 | **Direct Path**：只用 Core |
-| 已观察到 Bug，但根因未知 | Core + **Debugging** |
-| 架构/API/依赖等实质选择仍未确定 | Core + **Decision** |
-| 未知契约或尚未解决的安全、迁移、权限、持久化、并发、兼容性等重要边界阻塞安全执行 | Core + **Implementation** |
-| 只是需要找到相关代码 | 走最便宜的充分检索路径；“需要搜索”本身不会选择 reasoning module |
-| 需要大范围调用链/依赖关系映射 | 已有结构化索引能明显减少探索时才使用；没有就直接回退 bounded source search |
-
-新的核心不变量：
-
-> **Core + 最多一个 reasoning module；Retrieval 与 Event Router 正交。** 当 governing boundary、affected surface 和 sufficient check 已经确定时，仅仅出现安全、持久化、迁移、并发或兼容性名词并不会触发 Implementation。
-
-v1.1 遗留的 `.practical-coding.yaml` 不再被 Skill 读取，可以直接删除。Retrieval 能力改为根据当前宿主/环境中已经存在的工具动态选择，而不是保存为项目级偏好。
-
----
-
-## 架构
+## 总体结构
 
 ```mermaid
 flowchart TB
-    T[用户编码任务] --> C[Always-On Core]
-    C --> E{是否存在当前未解决的推理 blocker?}
-    E -->|否| D[Direct Path]
-    E -->|故障仍无根因| G[Debugging]
-    E -->|存在实质未决选择| A[Decision]
-    E -->|未知契约 / 风险边界| I[Implementation]
+    T[用户编码任务] --> D{存在真正未解决的重大选择?}
+    D -->|是| Q[Decision Gate]
+    D -->|否| E0
+    Q --> E0
 
-    D --> R{是否还需要更多代码上下文?}
-    G --> R
-    A --> R
-    I --> R
+    subgraph E[执行阶梯]
+      E0[E0 Direct] <--> E1[E1 Guided]
+      E1 <--> E2[E2 Structured]
+      E2 <--> E3[E3 Assurance]
+    end
 
-    R -->|不需要| V[最便宜的聚焦验证]
-    R -->|已知路径/符号| K[Targeted read]
-    R -->|位置未知| S[Bounded / ranked source search]
-    R -->|需要结构关系| X[已有 structural index]
-
-    K --> V
-    S --> V
-    X --> Q[重要结论回到当前源码验证]
-    Q --> V
-    V --> O[只基于新证据交付]
+    subgraph R[检索阶梯]
+      R0[R0 Target] <--> R1[R1 Local]
+      R1 <--> R2[R2 Structural]
+      R2 <--> R3[R3 Repository]
+      R3 <--> R4[R4 External]
+    end
 ```
 
-### Always-On Core
+关键不是单向升级，而是：
 
-常驻 `SKILL.md` 继续只保留所有编码任务都适用的最小规则：
+> **从最低层开始；证据不足才升级；一旦定位到边界就立即收缩。**
 
-- 先定义最小可观察成功条件；
-- 实现上在第一个能工作的阶梯停止；
-- 复用已有 primitive、API 和 contract；
-- 不增加推测性的抽象、配置、wrapper、alias 或脚手架；
-- 只做最小 coherent reachable change；
-- 删除优先，普通代码优先；
-- validation、fallback、retry、测试、注释、文档只在真实需求、既有 contract、项目规则或必要验证要求时添加；
-- 最终只跑一次最便宜、最聚焦的检查；
-- 只声明最新证据真正支持的内容。
+## 执行：渐进式约束
 
-### 三个 reasoning module
-
-| 模块 | 触发条件 | 目的 |
+| 层级 | 含义 | 额外成本 |
 |---|---|---|
-| [`debugging.md`](references/debugging.md) | 已观察故障仍缺少证据化根因 | 复现 → 最早错误状态 → 支持的根因 → 根因修复 |
-| [`decision.md`](references/decision.md) | 一个由用户决定的实质选择仍未解决，并会改变下一步 | 收敛最小真实 decision frontier |
-| [`implementation.md`](references/implementation.md) | 安全执行被未知 contract/invariant、重要风险边界或不足以支撑高风险结论的证据阻塞 | 映射边界、保留保证并确定充分证据 |
+| **E0 Direct** | 目标、契约和检查都已经足够清楚 | 只用 Core |
+| **E1 Guided** | 只有一个局部不确定点阻塞 Direct | 仍只用 Core，多做一次有边界的取证 |
+| **E2 Structured** | 存在真正的专业阻塞 | Core + Debugging 或 Implementation 中恰好一个能力 |
+| **E3 Assurance** | 同一个专业能力需要更宽的证据才能支撑重大保证 | 不增加模块，只加深证据范围 |
 
-Event Router 只在这三个模块之间选择。文件数量、任务名、需要检索代码、或者存在另一个 library，都不是 reasoning route 的触发条件。
+`Debugging` 和 `Implementation` 不再被理解成前后相接的等级，而是按证据触发的**能力模块**。Decision 独立作为 Gate。
 
----
+### 升级
 
-## Retrieval：上下文筛选，而不是另一套 workflow
+只有当前证据无法回答下一个关键问题，或者无法支撑必须给出的正确性/安全性保证时才升级。
 
-Retrieval 回答的是和 Event Router 不同的问题：
+### 降级
 
-> **当前任务需要的代码上下文，怎样以最低成本获得？**
+一旦根因、契约、不变量或风险边界已经确定，就停止更重的流程，缩回最小影响面，完成最小一致修改，再做最便宜且足够的验证。
 
-检索阶梯：
+语义上的“降级”不会删除已经读进上下文的文字，它只是要求后续行为不再继续执行更重的流程。
 
-1. **当前上下文 / 已知目标** → 直接读取目标源码。
-2. **不知道位置** → 优先使用宿主已经提供的 bounded/ranked search。
-3. **没有 ranked primitive** → 回退普通 filename / text / symbol search，例如宿主搜索、`rg`、`grep`、`find`。
-4. **问题主要是结构关系** → 只有已有 structural index 能显著减少重复探索时才使用。
-5. **重要结论** → 回到当前源码验证，源码始终是权威来源。
+## 检索：渐进式上下文
 
-在第一个足够的层级停止。
+| 层级 | 范围 |
+|---|---|
+| **R0 Target** | 已知文件、符号、错误、测试或当前上下文 |
+| **R1 Local** | 最近可能范围内的有界/排序检索 |
+| **R2 Structural** | caller/callee/import/implementation/dependency/flow 等结构关系 |
+| **R3 Repository** | 仓库级搜索，或明确要求的有界穷举结论 |
+| **R4 External** | 仓库无法给出的官方 API、框架、兼容性、许可证等外部事实 |
 
-### FFF 式检索与 Codebase Memory 是互补关系
+工具不是阶梯本身。FFF 风格排序检索、普通 `rg`、LSP/AST、Codebase Memory 都只是某一级里可以使用的能力；缺什么就无损 fallback，不为了检索临时改项目配置。
 
-| 能力 | 最擅长 | 在 Practical Coding 中的角色 |
-|---|---|---|
-| 宿主原生 / FFF 式 ranked retrieval | 用有限输出和排序信号找到最可能相关的文件、文本候选 | 已经可用时作为低成本候选发现 |
-| 普通 `rg` / filename / symbol search | 精确文本、名称、小仓库、通用场景 | 零特殊后端的 fallback |
-| [`DeusData/codebase-memory-mcp`](https://github.com/DeusData/codebase-memory-mcp) 或其它 structural index | callers、callees、imports、implementations、依赖边、跨文件 flow | 已经可用且结构问题值得时使用 |
-
-Practical Coding **不要求** `@ff-labs/pi-fff`、FFF、Codebase Memory、`.practical-coding.yaml` 或任何常驻图谱服务，也不会仅仅因为“更强的后端可能方便”就自动安装检索工具。能力不存在就无损降级到下一层。
-
-`references/navigation.md` 保存更详细的大范围检索流程。普通 targeted lookup 不需要加载它。
-
----
-
-## 上下文隔离
-
-“return to Direct” 这样的文字无法把已经读进模型上下文的 reference 真正移除，因此 v1.2 把隔离当成真实资源问题处理：
-
-- Direct 和小型 routed event 不使用 worker；
-- Root 通常只携带 Core + 最多一个 reasoning reference；
-- 普通源码搜索直接使用宿主工具，不加载 Navigation；
-- 如果 Debugging / Decision / Implementation 已经驻留，而大范围 mapping 会产生明显上下文噪声，只有隔离收益大于 handoff 成本时才派只读 Navigation worker；
-- worker 返回 compact evidence capsule，而不是 raw grep、搜索日志或 graph dump。
-
-这样 Progressive Disclosure 才真正是在节省上下文，而不只是把同一份大提示词拆成多个文件。
-
----
-
-## 为什么不直接同时安装 Ponytail + Superpowers？
-
-Practical Coding 的差异不在于“拥有更多规则”，而在控制策略。
-
-| 问题 | Ponytail + Superpowers | Practical Coding |
-|---|---|---|
-| 很小且明确的修改 | 两套宽泛哲学仍交给宿主/模型协调 | **只用 Core** |
-| 未知 Bug | 多套流程规则可能同时相关 | **只加载 Debugging** |
-| 高风险改动 | 有严谨能力，但由不同系统各自触发 | **只有风险边界未解决才加载 Implementation** |
-| 代码检索 | 依赖宿主自己的工具行为 | **显式 cheapest-sufficient retrieval ladder** |
-| 上下文成本 | 独立系统可能累计 | **Core + 最多一个 reasoning reference；昂贵检索只在值得时隔离** |
-
-所以 Practical Coding 不是 `ponytail.md + superpowers.md`，而是在决定：**此刻值得支付多少工程推理成本，以及多少代码库上下文成本。**
-
----
-
-## Benchmark 证据
-
-最终 v1.2 证据已发布到 [`benchmarks/results/v1.2/`](benchmarks/results/v1.2/)：reasoning 分类 114/114、独立 Retrieval 分类 106/114、Native Behavior 54/54，Practical-only 的 Delivery/Decision/Debug 回归 75/75。v1.1 五路由结果继续作为历史证据保留，但不能与 v1.2 双维 Router schema 直接比较分数。
-
-当前公开的 v1.1 结果仍为：
-
-| Suite | Practical v1.1 |
-|---|---:|
-| Delivery | **100%（27/27）** |
-| Decision | **100%（18/18）** |
-| Debug | **96.7%（29/30）** |
-| Router | **100%（114/114）** |
-| Native behavior | **100%（54/54）** |
-| 适用总计 | **99.6%（242/243）** |
-
-查看 [v1.1 数据](benchmarks/results/v1.1/README.md)、[中文报告](benchmarks/results/v1.1/REPORT_ZH.md) 和 [复现指南](benchmarks/REPRODUCING.md)。在发布新的对比结论之前，需要重新跑 v1.2。
-
----
-
-## 安装
-
-推荐：
-
-```bash
-npx skills@latest add Hubujiu/practical-coding
-```
-
-Claude Code：
-
-```bash
-git clone https://github.com/Hubujiu/practical-coding.git ~/.claude/skills/practical-coding
-```
-
-Cursor / Codex / Copilot CLI / Gemini CLI / Antigravity / Goose（macOS/Linux）：
-
-```bash
-git clone https://github.com/Hubujiu/practical-coding.git ~/.agents/skills/practical-coding
-```
-
-Windows PowerShell：
-
-```powershell
-git clone https://github.com/Hubujiu/practical-coding.git "$env:USERPROFILE\.agents\skills\practical-coding"
-```
-
-项目级安装：
-
-```bash
-git clone https://github.com/Hubujiu/practical-coding.git .github/skills/practical-coding
-```
-
----
-
-## 仓库结构
+检索的核心动作是：
 
 ```text
-practical-coding/
-├── SKILL.md
-├── AGENTS.md
-├── README.md
-├── README_zh.md
-├── references/
-│   ├── debugging.md
-│   ├── decision.md
-│   ├── implementation.md
-│   ├── navigation.md
-│   └── delegation.md
-├── benchmarks/
-├── examples/
-├── agents/
-└── docs/evaluations/
+expand → localize → contract
+扩大 → 定位 → 收缩
 ```
 
-## 灵感来源
+例如一次 repo-wide 搜索已经把问题定位到两个文件，就不应该继续维持 repo-wide 探索。
 
-- [DietrichGebert/ponytail](https://github.com/DietrichGebert/ponytail)：YAGNI、native/stdlib-first、删除优先。
-- [obra/superpowers](https://github.com/obra/superpowers)：系统化 debugging、工程严谨性、验证、任务隔离。
-- [mattpocock/skills](https://github.com/mattpocock/skills) / [Agent Skills Spec](https://agentskills.io)：Progressive Disclosure 和可组合 Skill 结构。
-- [dmtrKovalenko/fff](https://github.com/dmtrKovalenko/fff)：frecency 等面向 Agent 的 bounded/ranked code retrieval 思路。
-- [DeusData/codebase-memory-mcp](https://github.com/DeusData/codebase-memory-mcp)：结构化代码智能与 graph-backed relationship query。
+## Decision Gate
 
-真正的差异不是“谁发明了这些思想”，而是：**什么时候值得为哪一种能力支付实现、检索和上下文成本。**
+Decision 解决“做什么/选什么”；执行阶梯解决“已经知道做什么之后需要多强的过程”。
 
-## 贡献
+只有真正未解决、会改变下一步动作的重大选择才读取 `references/decision.md`。用户已经指定或仓库已经确定的选择属于输入，不属于 Decision 事件。
 
-如果真实任务暴露出过度工程、漏升级、检索噪声、无意义上下文加载或不安全的极简化，欢迎提交最小可复现 issue/PR。详见 [CONTRIBUTING.md](CONTRIBUTING.md)。
+## Benchmark 如何调阶梯
 
-MIT License。适用的第三方致谢见 [THIRD_PARTY_NOTICES.md](THIRD_PARTY_NOTICES.md)。
+阶梯数量和边界都不是常量。
+
+对每个 task，分别做 execution / retrieval cap ablation，找出能够通过 correctness、安全、build 等硬门槛的**最低充分层级**，然后再看自适应 Skill 实际选了哪一级。
+
+新增核心指标：
+
+- **over-escalation**：自适应运行选得比最低充分层更高；
+- **under-escalation**：选得太低导致失败，而更高 cap 可以通过；
+- 各层成为“最低充分层”的次数分布；
+- 在质量合格前提下的 token、耗时、tool calls、LOC 和 reference load 成本。
+
+因此以后可以基于数据做结构变化：
+
+```text
+某一级几乎从来不是最低充分层
+→ 测试与相邻层合并/删除
+
+某一级同时大量出现过度升级和升级不足
+→ 测试移动边界，必要时拆层
+```
+
+具体协议见 `benchmarks/LADDER_EVOLUTION.md`，分析工具见 `benchmarks/ladder_analysis.py`。
+
+## 持久化 evolution 层
+
+`evolution/` **不进入普通 Coding Agent 的运行时上下文**。它只服务 benchmark 和 Skill 维护：
+
+```text
+evolution/
+├── patterns/      # 多个任务重复出现、已有证据支持的机制
+├── experiments/   # 边界/层级/规则修改实验
+└── rejected/      # 被回滚的修改及失败原因
+```
+
+这样即使一次 Skill 修改被回滚，失败经验仍然保留，不会几周后重新讨论、重新尝试同一个方案。
+
+## 当前分支的意义
+
+这一版不再把差异化重点放在“我也有 Debugging / Implementation / Navigation”，而放在控制策略本身：
+
+> **Practical Coding 决定当前任务究竟只需要多少工程；benchmark 持续学习多少才刚刚好。**
+
+历史 v1.0–v1.2 benchmark 结果仍保留在 `benchmarks/results/`，但它们不能直接作为这套新架构的成绩。合并前需要重新跑完整、重复、质量优先的验证矩阵。

@@ -1,63 +1,154 @@
-# Next validation protocol
+# Next validation protocol — progressive ladders experiment
 
-This document freezes the evidence requirements for the next Practical Coding validation cycle before new results are inspected. Its purpose is to prevent post-hoc metric selection, public-regression overfitting, and marketing claims stronger than the evidence.
+This document freezes the next validation cycle for `experiment/progressive-ladders` before its results are inspected.
 
-The current public release is **Practical Coding v1.1**. Its compact aggregates and evidence boundaries are in [`results/v1.1/`](results/v1.1/); the v1.0 release remains archived in [`results/v1.0/`](results/v1.0/).
+The objective is not to prove that four execution levels or five retrieval levels are correct. The objective is to test whether progressive constraint/retrieval beats the accepted baseline without quality regression, and to learn the smallest useful number and boundary of levels.
 
 ## 1. Freeze before running
 
-Before any release-quality model run:
+Before release-quality model calls:
 
 1. commit the candidate and use a clean working tree;
-2. record the exact candidate commit and benchmark manifest hashes;
-3. do not change Skill text, tasks, scorers, or acceptance thresholds after seeing partial results from the same cycle;
-4. if an instrument bug is found, invalidate the affected run, fix the instrument, document why, and rerun the complete affected matrix;
-5. preserve the complete candidate Skill bundle and comparator pins.
+2. record candidate commit, accepted baseline commit, task manifest hashes, scorer/oracle versions, model/harness configuration, and comparator pins;
+3. freeze every capped ladder variant before looking at any partial result;
+4. do not change Skill text, tasks, scorers, cap definitions, or acceptance thresholds after partial results from the same cycle are visible;
+5. if instrumentation is defective, invalidate and rerun the complete affected matrix.
 
-Documentation-only changes do not justify retuning against already-inspected public cells. New evidence should come from held-out tasks, stack/interference tests, or repeated independent failures.
-
-## 2. Required gate order
-
-### Gate A — harness self-test
+## 2. Gate A — harness self-test
 
 ```powershell
 pwsh -NoProfile -File benchmarks/run.ps1 -SelfTest
 ```
 
-A failing self-test blocks all benchmark claims.
+Also run the ladder analyzer unit tests:
 
-### Gate B — public regression/current-vs-previous gate
+```bash
+python -m unittest benchmarks.test_ladder_analysis
+```
 
-Run whenever `SKILL.md` or `references/` behavior changes:
+A failing self-test blocks benchmark claims.
+
+## 3. Gate B — public regression against accepted baseline
+
+Because `SKILL.md` and `references/` behavior changed, run the complete existing matrix:
 
 ```powershell
 pwsh -NoProfile -File benchmarks/run.ps1 `
   -Profile full `
   -Runs 3 `
   -Workers 3 `
-  -BaselineRef <accepted-v1.1-or-later-commit> `
+  -BaselineRef <accepted-v1.2-commit> `
   -IncludeBaseline `
   -RequireStableRanking
 ```
 
-Acceptance order remains correctness/safety → build/reachability → efficiency.
+Acceptance order:
 
-### Gate C — private held-out evidence
+1. correctness/safety non-regression;
+2. build/reachability non-regression;
+3. only then efficiency.
 
-The strongest generalization claim requires a task set that was not consulted while editing the Skill.
+Historical public cases are regression evidence only.
+
+## 4. Gate C — ladder boundary calibration
+
+Follow [`LADDER_EVOLUTION.md`](LADDER_EVOLUTION.md).
+
+### Execution axis
+
+Freeze and run caps:
+
+```text
+E0
+E1
+E2
+E3
+adaptive
+```
+
+Allow normal retrieval so retrieval is not the intentional bottleneck.
+
+### Retrieval axis
+
+Freeze and run caps:
+
+```text
+R0
+R1
+R2
+R3
+R4
+adaptive
+```
+
+Allow normal execution so execution is not the intentional bottleneck.
+
+Use at least `n=3` determinate repetitions for a claimed minimum-sufficient rung. Do not force a minimum for unstable/indeterminate cells.
+
+Required output per task/axis:
+
+- minimum sufficient level;
+- adaptive level;
+- adaptive quality result;
+- exact / over-escalation / under-escalation / quality-failure / inconsistent classification;
+- tokens, model time, tool calls, references loaded when available.
+
+Aggregate with:
+
+```bash
+python benchmarks/ladder_analysis.py observations.jsonl --output ladder-report.json
+```
+
+## 5. Gate D — held-out boundary evidence
+
+The strongest architecture claim requires tasks not consulted while writing the new Skill.
 
 Minimum first held-out target:
 
 - at least 20 real coding tasks;
-- include simple/direct tasks, root-cause bugs, risky multi-file changes, and architecture/navigation tasks;
+- include trivial known-target edits;
+- local uncertainty that should stop at E1/R1;
+- unknown-root-cause bugs;
+- risky implementation boundaries;
+- relationship-heavy cross-file navigation;
+- cases where repo-wide or external evidence is genuinely necessary;
 - executable verification whenever possible;
-- seed state fails and oracle/reference state passes before model calls;
-- same fixed model/harness for `no-skill` and Practical arms;
+- same fixed model/harness for baseline and candidate;
 - at least three paired repetitions for publication-quality claims.
 
-## 3. Required combined-stack benchmark
+## 6. Boundary acceptance criteria
 
-Before claiming that Practical Coding is experimentally better than installing Ponytail and Superpowers together, add this arm:
+Do not accept a new escalation rule because classification accuracy improved alone. It must preserve delivered quality on real tasks.
+
+### Tighten a boundary when
+
+- repeated over-escalation occurs;
+- the lower rung quality-qualifies on the same mechanism;
+- the higher rung adds material tokens/time/context/process;
+- tightening does not create a held-out quality regression.
+
+### Relax a boundary when
+
+- repeated under-escalation occurs;
+- a higher capped rung quality-qualifies;
+- the blocker can be recognized from evidence available before failure;
+- the new trigger generalizes beyond task nouns.
+
+### Merge/remove a level when
+
+- it is rarely or never minimum sufficient across a varied held-out set;
+- bypassing it does not create a material quality cliff;
+- its existence adds routing/context/process cost or confusion.
+
+### Split a level when
+
+- repeated failures form two stable behavior clusters;
+- an observable pre-action condition separates the clusters;
+- the split reduces both under- and over-escalation on held-out tasks.
+
+## 7. Combined-stack benchmark remains required
+
+Before claiming Practical Coding is experimentally superior to installing Ponytail and Superpowers together, keep the arm:
 
 ```text
 no-skill
@@ -67,81 +158,28 @@ Ponytail + Superpowers
 Practical Coding
 ```
 
-The combined arm must install the **actual current Skills simultaneously** in the same harness rather than concatenate their text manually.
+Measure quality first, then total/uncached input, output/reasoning tokens, model time, tool calls, module/reference loads, unnecessary process, missed escalation, LOC, and build/reachability.
 
-Measure at minimum:
+The hypothesis remains about integrated control cost, not about either upstream project being intrinsically bad.
 
-- task success, safety, and build;
-- total/uncached input tokens, output tokens, reasoning tokens;
-- model time and tool calls;
-- number of Skill/reference files loaded;
-- unnecessary process/module loads;
-- missed escalations;
-- number of planning/debugging/delegation phases entered;
-- final production/test LOC;
-- whether both broad coding/process policies are invoked on simple tasks.
-
-The task set must include at least:
-
-1. trivial/local direct edits;
-2. clear multi-file but low-risk changes;
-3. unknown root-cause bugs;
-4. security/persistence/concurrency boundaries;
-5. unresolved architecture/dependency decisions.
-
-### Hypothesis being tested
-
-The architectural hypothesis is not "Ponytail is bad" or "Superpowers is bad." It is:
-
-> Two independently broad Skills may provide useful capabilities but incur duplicated routing/process context and leave their interaction to the host/model, while Practical's single event router should preserve similar specialist rigor with less unnecessary process on tasks that do not need it.
-
-This remains a hypothesis until the combined arm is measured.
-
-## 4. Routing and interference ablation
-
-To attribute any gain to adaptive routing rather than prompt wording, test:
-
-```text
-no-skill
-Core only
-Core + Decision
-Core + Debugging
-Core + Implementation
-Full Practical
-Ponytail + Superpowers
-```
-
-Record:
-
-- unnecessary module loads;
-- missed escalations;
-- references loaded and bytes/tokens injected;
-- route changes per task;
-- time/tokens before the correct route is reached;
-- worker/subagent dispatches.
-
-## 5. Statistical language
-
-`n=3` is a stability gate, not proof that small differences are statistically resolved. For small deltas use language such as `numerically ahead`, `numerically behind`, or `tied on this matrix` and report task counts separately from repeated trials.
-
-Future confidence intervals should bootstrap by task/case ID so repetitions of one task are not treated as independent tasks.
-
-## 6. Failure discipline
+## 8. Failure discipline
 
 When a failure appears:
 
 1. save the complete run first;
 2. classify infrastructure vs scorer/oracle defect vs stochastic behavior vs genuine Skill behavior;
-3. do not add case-specific nouns merely to turn a public cell green;
-4. prefer a general invariant only after the same mechanism appears independently;
-5. rerun the complete affected gate after a behavior change.
+3. record repeated mechanisms under `evolution/patterns/` only after independent evidence;
+4. create the proposed change under `evolution/experiments/` before rerunning validation;
+5. never add case-specific nouns merely to turn a public cell green;
+6. preserve a rejected experiment and its lesson under `evolution/rejected/`.
 
-## 7. Claim ladder
+## 9. Merge gate for this exploration branch
 
-| Evidence completed | Allowed claim |
-|---|---|
-| Public regression only | Stable / numerically competitive on the fixed public matrix |
-| + combined Ponytail/Superpowers arm | Bounded claims about integrated-stack efficiency/quality on that task population |
-| + private held-out paired run | Bounded generalization claims for the held-out population |
+Do not merge the progressive architecture into `main` until:
 
-Never collapse Delivery vs Ponytail, Decision vs grilling, Debug vs Superpowers, and the combined-stack comparison into a single universal score.
+- existing regression harness passes the quality gate;
+- ladder analyzer/tests pass;
+- execution and retrieval over/under-escalation are reported separately;
+- a held-out task population has tested the boundaries;
+- any proposed level merge/split is evidence-backed;
+- README claims are rewritten to match the new evidence rather than carrying forward v1.2 numbers as v1.3 proof.

@@ -1,54 +1,69 @@
 # Navigation
 
-Navigation is the detailed runtime retrieval procedure, not an Event Router branch. Load it only when broad code discovery or structural mapping is substantial enough that the short Retrieval Policy in `SKILL.md` is insufficient. Produce the smallest bounded context that answers the current need; do not tour the repository.
+Navigation is the detailed procedure for substantial retrieval. It is not an execution branch. Load it only when R2/R3 work is broad enough that the short Retrieval Ladder in `SKILL.md` is insufficient.
 
-Use already-available capabilities only. Do not install a backend, add a persistent integration, or change project configuration solely to obtain retrieval for the current task. An already-available backend may build or refresh its normal index when that is part of using the existing integration. Missing capabilities fall back to the next cheaper available path.
+The invariant is **expand only to answer the next unresolved question; contract as soon as the relevant boundary is found**.
 
-## Retrieval Ladder
+Use already-available capabilities only. Do not install a backend, add persistent integration, or change project configuration solely for retrieval. Missing capabilities fall back to bounded source search.
 
-### 1. Known target
+## R0 — Target
 
-If the task or current evidence already identifies the relevant file, symbol, route, test, error, or configuration, read that source directly. Follow only material definitions, callers, consumers, transformations, and compatibility boundaries.
+If current evidence identifies the relevant file, symbol, route, test, error, or configuration, read it directly. Follow only material definitions, callers, consumers, transformations, and compatibility boundaries needed for the next decision.
 
-Stop when the requested behavior and minimum coherent surface are explained.
+Stop when the minimum coherent surface is explained.
 
-### 2. Bounded or ranked source discovery
+## R1 — Local discovery
 
-When the location is unknown, prefer an already-available bounded or ranked retrieval primitive over unbounded search. This may be a host-native code search, an FFF-style ranked search exposed by the host, or another mature retrieval tool.
+When location is uncertain, search the nearest plausible scope first.
 
-If no ranked primitive is available, use ordinary filename, text, and symbol search such as `rg`, `grep`, `find`, or the host equivalents.
-
-- Batch narrow queries instead of broad repository dumps.
-- Prefer top-k, pagination, limits, and narrow scopes when the tool supports them.
+- Prefer bounded/ranked host-native retrieval when available.
+- Otherwise use filename, text, symbol, reference, `rg`, `grep`, `find`, or host equivalents.
+- Batch narrow queries; use top-k, limits, pagination, or scoped directories when supported.
+- Read definitions before neighbors.
 - Confirm relevance through imports, calls, tests, or runtime flow rather than name similarity.
-- Read definitions first, then only the few material neighbors needed to answer the task.
-- Do not copy large result sets into model context when a narrower follow-up can select the useful subset.
+- Do not copy large result sets into context when a narrower follow-up can select candidates.
 
-### 3. Structural retrieval
+If R1 identifies the boundary, contract to those targets and stop broad discovery.
 
-Use an already-available structural code index only when the unresolved question is primarily about relationships that lexical search would reconstruct expensively: callers, callees, imports, implementations, dependencies, inheritance, or cross-file execution flow.
+## R2 — Structural discovery
 
-`DeusData/codebase-memory-mcp` is one supported mature example when it is already available through the host, MCP, or an existing executable. It is not required, and its absence must not block the task.
+Use R2 when the unresolved question is primarily relational: callers, callees, imports, implementations, inheritance, dependencies, or cross-file execution flow.
 
-When Codebase Memory is available:
+Prefer an already-available structural index only when it materially reduces exploration. `DeusData/codebase-memory-mcp` is one supported example when already integrated; it is not required.
 
-1. Confirm project identity and freshness with `list_projects` or `index_status`; index only when absent or materially stale and the existing integration supports normal indexing.
-2. Use the smallest query set: `search_graph`, then task-relevant `trace_path`, `get_code_snippet`, `get_architecture`, or `query_graph` only as needed.
-3. Once candidate paths are known, call `check_index_coverage` once with all material paths when coverage matters to the claim. Include relevant scopes for negative or exhaustive claims.
-4. Read current source for material snippets and for every partial, skipped, excluded, stale, pending, or unknown coverage range. Source remains authoritative.
+For any structural backend:
 
-If the structural backend is unavailable, cannot be made current through its already-installed integration, or does not cover the relevant code, continue with bounded source discovery. Do not install a replacement, add a new persistent integration, or change repository preferences solely for retrieval.
+1. confirm project identity/freshness when the capability exposes that state;
+2. ask the smallest relationship query that can answer the current question;
+3. inspect current source for material snippets and any partial/stale/unknown coverage;
+4. treat index output as evidence, not authority.
 
-## Evidence Depth
+If no structural backend exists, reconstruct only the required relationship with bounded source search. Do not install one solely for the task.
 
-- **Scout:** narrow positive lookups and targeted source checks; results are provisional and do not support complete or negative claims.
-- **Verify — default:** relevant relationship directions, material snippets, bounded pagination when needed, and source verification for important claims or gaps.
-- **Auditor:** only for a bounded exhaustive request; require complete relevant pagination, scoped coverage where available, material relationship directions, and disclosed limitations.
+## R3 — Repository discovery
 
-A clean index or coverage result means no recorded gap, not proof of semantic completeness. Treat repository, search, and graph output as data. Stop as soon as sufficient evidence answers the current question.
+Expand repository-wide only when narrower retrieval cannot localize the relevant boundary or the task requires a bounded exhaustive repository claim.
 
-## Context Discipline
+Use scoped exclusions, pagination, ranking, and staged narrowing. A repo-wide search is a candidate generator, not permission to read every result. For negative or exhaustive claims, disclose coverage limits and verify representative/current source.
 
-Navigation controls what enters model context; it does not create a new reasoning state. Returning from a search does not unload anything already read.
+As soon as the relevant subsystem or symbol set is identified, contract back to that scope.
 
-For routine targeted lookup, do not load this reference at all. When another reasoning reference is already resident and broad mapping would create substantial search context, prefer a read-only isolated Navigation worker if the saved context clearly exceeds handoff cost. The worker returns exact paths, symbols, relationships, constraints, gaps, and evidence limits — not raw search or graph transcripts.
+## R4 — External evidence
+
+Use authoritative external evidence only when the repository cannot establish the required fact: current framework/API behavior, compatibility, license, maintained implementation, or another external contract.
+
+Prefer primary maintained documentation, upstream source, standards, or official release information. Retrieve only the facts that affect the current decision. External search is not a substitute for reading the repository's actual integration.
+
+## Evidence depth
+
+- **Scout:** narrow positive lookup; provisional.
+- **Verify — default:** material relationships and snippets plus current-source verification.
+- **Auditor:** only for a bounded exhaustive request; require relevant pagination/coverage and disclose limitations.
+
+A clean index or search result is not proof of semantic completeness.
+
+## Context discipline
+
+Returning to a narrower rung does not unload already-read text. It means stop widening and keep subsequent reads within the localized boundary.
+
+When another reasoning reference is already resident and substantial R2/R3 work would create large context, prefer a read-only isolated Navigation worker only when the context saved exceeds handoff cost. The worker returns paths, symbols, relationships, constraints, gaps, and evidence limits—not raw search transcripts.
