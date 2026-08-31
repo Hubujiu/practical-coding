@@ -1,16 +1,16 @@
 # Practical Coding benchmark chain
 
-This experimental branch keeps the existing public regression harness and adds evaluation for **progressive execution/retrieval depth plus capability-path routing**.
+This experimental branch keeps the existing public regression harness and adds evaluation for **progressive execution/retrieval depth plus adaptive capability-path routing**.
 
 Historical v1.0–v1.2 results remain evidence for the Skill versions that produced them. They are not evidence that the new capability tree is better until fresh runs are completed.
 
-## Three benchmark questions
+## Three adaptive benchmark questions
 
 1. **Does the Skill produce a correct, safe, reachable result?**
 2. **Did it pay for more process/context than the result required?**
 3. **When it went deep, did it load the right capability root/leaf?**
 
-Existing Delivery, Decision, Debug, Router, Native Behavior, and Navigation ablation suites preserve regression coverage. The new protocol calibrates depth and tree routing.
+Existing Delivery, Debug, Router, Native Behavior, and Navigation suites preserve adaptive regression coverage. Historical Decision cases may remain for compatibility, but Decision/requirements-interview behavior is now **manual-only** and must not be interpreted as an adaptive routing target.
 
 ## Candidate depth model
 
@@ -35,69 +35,41 @@ R1 Local
 
 For each task/axis, run frozen depth caps and identify the **lowest quality-qualified depth**. For deep task families, also run parent-vs-leaf ablations before claiming that a specialist node earns its context cost.
 
-## Primary metrics
+## Primary adaptive metrics
 
-Depth metrics:
-
-- `over_escalation`;
-- `under_escalation`;
-- `minimum_sufficient_counts`;
+- `over_escalation`, `under_escalation`, `minimum_sufficient_counts`;
+- selected `capability_path` and references loaded;
+- unnecessary/missed root or leaf;
+- branch confusion and path exactness;
 - cost at each quality-qualified cap.
 
-Tree metrics from benchmark instrumentation:
+## Manual-mode metrics
 
-- selected `capability_path`;
-- references loaded;
-- unnecessary root/leaf loads;
-- missed root/leaf;
-- branch confusion;
-- path exactness on frozen ablation sets.
+Manual-only Clarification/Decision are not eligible `capability_path` values. Test them in explicit opt-in cases and add a negative control over ordinary tasks:
 
-The node count is itself under test.
+- explicit-activation quality/cost delta;
+- spontaneous manual-mode activation rate — target **0**.
+
+Do not loosen an adaptive trigger to make a manual-mode benchmark pass.
 
 ## Baselines
 
-Every release-quality cycle should retain:
-
-```text
-no-skill
-accepted prior Practical Coding
-candidate Practical Coding tree
-```
-
-Add Ponytail, Superpowers, Addy-style expert skills, or other specialist skills only where the comparison answers a real family-specific question. A universal pack is not automatically a meaningful comparator for every task.
+Every release-quality cycle should retain `no-skill`, accepted prior Practical Coding, and the candidate Practical Coding tree. Add Ponytail, Superpowers, Addy-style expert skills, or other specialist skills only where the comparison answers a real family-specific question.
 
 ## Analyze aggregated depth observations
 
 ```bash
 python benchmarks/ladder_analysis.py observations.jsonl
-```
-
-or:
-
-```bash
 python benchmarks/ladder_analysis.py observations.jsonl --output ladder-report.json
 ```
 
-Adaptive rows may include `capability_path` and `references_loaded`; the analyzer summarizes them alongside depth errors. Parent-vs-leaf qualification still follows the frozen ablation protocol in `LADDER_EVOLUTION.md`.
+Adaptive rows may include `capability_path` and `references_loaded`; parent-vs-leaf qualification follows `LADDER_EVOLUTION.md`.
 
 ## Existing harness commands
 
-Self-test:
-
 ```powershell
 pwsh -NoProfile -File benchmarks/run.ps1 -SelfTest
-```
-
-Normal public regression matrix:
-
-```powershell
 pwsh -NoProfile -File benchmarks/run.ps1 -Profile standard -Runs 3 -Workers 3 -RequireStableRanking
-```
-
-Complete public regression matrix:
-
-```powershell
 pwsh -NoProfile -File benchmarks/run.ps1 -Profile full -Runs 3 -Workers 3 -RequireStableRanking
 ```
 
@@ -117,13 +89,7 @@ pwsh -NoProfile -File benchmarks/run.ps1 `
 
 1. correctness and safety;
 2. build/reachability;
-3. depth/path sufficiency;
+3. adaptive depth/path sufficiency;
 4. then tokens, model time, tool calls, LOC, and context/reference cost.
 
-A cheap failure cannot beat a correct result, and a specialist leaf is not useful merely because it sounds expert.
-
-## Regression versus evolution evidence
-
-Public tasks that influenced Skill wording are regression tests. Strong boundary/node claims require held-out tasks and repeated determinate runs.
-
-Real-project experience is valuable calibration evidence but is recorded separately under `evolution/` rather than treated as hidden benchmark proof.
+Public tasks that influenced Skill wording are regression tests. Strong boundary/node claims require held-out tasks and repeated determinate runs. Real-project experience is calibration evidence recorded separately under `evolution/`.
