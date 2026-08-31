@@ -1,12 +1,14 @@
 # Implementation
 
-Load this module only when a change must coordinate an unmapped contract or invariant, touches a material risk boundary where direct execution would be unsafe, or when sufficient evidence for a risky change is unresolved. Produce only the change map and evidence plan the task needs; this is not a mandatory coding stage.
+**Tree depth: 1**
+
+Load this node only from its parent when a change must coordinate an unmapped contract or invariant, touches a material risk boundary where direct execution would be unsafe, or when sufficient evidence for a risky material change is unresolved. Produce only the change map, implementation, and evidence the task needs; this is not a mandatory coding stage.
 
 ## Work Locally
 
 - Identify the authoritative contract or invariant and the minimum producers, consumers, adapters, data, and checks that must move together.
-- Read only those paths and their material callers/dependencies; leave nearby cleanup opportunities and unrelated code alone.
-- For a risk boundary, identify the narrowest authoritative point that owns the guarantee before editing. A single-file change can still belong here when the boundary is material.
+- Read only those paths and their material callers or dependencies; leave nearby cleanup opportunities and unrelated code alone.
+- For a risk boundary, identify the narrowest authoritative point that owns the guarantee before editing.
 - Preserve public compatibility unless the requirement authorizes a break. When migration is required, choose one authoritative internal representation and keep compatibility at the narrowest boundary.
 - Match project conventions and make the smallest coherent end-to-end diff.
 
@@ -24,5 +26,14 @@ Map each material claim or risk to the cheapest check that can falsify it: direc
 
 For persistence or concurrency, exercise restart/rollback/race behavior when relevant. For compatibility, exercise materially affected old and new callers. For security or permissions, include one valid case and the smallest representative rejection cases, and verify rejection happens before side effects.
 
-Claim only what fresh evidence supports. If the environment blocks an appropriate check, report the limitation and remaining uncertainty. If implementation exposes another event, return it to the router instead of loading another module here.
+Claim only what fresh evidence supports. If the environment blocks an appropriate check, report the limitation and remaining uncertainty.
 
+## Local Router
+
+**Current status: leaf.** Security, persistence, state, concurrency, compatibility, interface, and similar nouns are not children merely because they are recognizable categories. No specialist descendant is active until benchmark evidence proves that it adds stable value over this node.
+
+Resolve ordinary implementation choices locally by established project convention, platform default, or the smallest sufficient reversible choice. Never route automatically to Decision. If a genuinely user-owned choice blocks safe execution and no default is justified, ask the minimum blocking question without opening a Decision workflow.
+
+A future child may be added here only when failures form a repeatable pre-load cluster, the boundary is observable before loading the child, and parent-versus-child ablation demonstrates quality-qualified net lift across multiple tasks or repositories. When that happens, this file—not Core—owns the child trigger.
+
+If work exposes a genuinely different top-level unexplained failure rather than an Implementation descendant, return that blocker to Core.
