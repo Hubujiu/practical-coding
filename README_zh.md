@@ -52,6 +52,8 @@ Core 始终适用：
 
 被拒绝的 E/R 深度与专家叶子实验保存在 [`evolution/rejected/`](evolution/rejected/)，其 n=3 证据位于 [`benchmarks/results/progressive-tree/`](benchmarks/results/progressive-tree/)。替代实验记录在 [`evolution/experiments/event-router-restoration.md`](evolution/experiments/event-router-restoration.md)。
 
+已接受的 v1.5 发布证据位于 [`benchmarks/results/v1.5/`](benchmarks/results/v1.5/)。冻结的 current-only n=3 矩阵没有 indeterminate：Delivery 54/54、Debug 40/42、Decision 29/30、Native Behavior 52/54，22 个真实任务的 held-out 质量为 61/66。事件推理为 113/114；修正 3 个与当前“结构关系映射”合同矛盾的 Retrieval 期望后，公共 Router 为 107/114（reasoning 113/114、retrieval 108/114）。这些是非配对发布结果，不用于宣称优于其他 Skill。
+
 ## 验证
 
 公共回归与真实仓库 held-out 使用 `gpt-5.6-luna`、medium reasoning。迭代阶段使用 `n=1`；发布结论必须完成 current-only 全矩阵 `n=3`。

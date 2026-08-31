@@ -52,6 +52,8 @@ Runtime agents do not read `evolution/`. Maintainers record experiences, consoli
 
 The rejected E/R depth and specialist-leaf experiment is retained under [`evolution/rejected/`](evolution/rejected/) with its n=3 evidence in [`benchmarks/results/progressive-tree/`](benchmarks/results/progressive-tree/). The replacement event-router experiment is documented in [`evolution/experiments/event-router-restoration.md`](evolution/experiments/event-router-restoration.md).
 
+The accepted v1.5 release evidence is published under [`benchmarks/results/v1.5/`](benchmarks/results/v1.5/). Its frozen current-only n=3 matrix had zero indeterminate cells: Delivery 54/54, Debug 40/42, Decision 29/30, Native Behavior 52/54, and 61/66 held-out quality cells across 22 real tasks. Event reasoning was 113/114; after correcting three retrieval expectations that contradicted the current structural-mapping contract, the public Router result was 107/114 (reasoning 113/114, retrieval 108/114). These are non-paired release results; they do not claim superiority over other skills.
+
 ## Validation
 
 Public regression and real-repository held-out validation use `gpt-5.6-luna` at medium reasoning. Iteration runs use `n=1`; release claims require the complete current-only matrix at `n=3`.

@@ -300,7 +300,7 @@ def parse_args() -> argparse.Namespace:
 def self_test() -> None:
     assert len(CASES) >= 20
     assert set(REPOSITORIES) == {case["repository"] for case in CASES}
-    assert {case["expected_reasoning"] for case in CASES} == {"NONE", "DEBUGGING", "IMPLEMENTATION"}
+    assert {case["expected_reasoning"] for case in CASES} == {"NONE", "DEBUGGING", "DECISION", "IMPLEMENTATION"}
     assert {case["expected_retrieval_mode"] for case in CASES} == {"TARGETED", "BOUNDED", "STRUCTURAL"}
     assert validate_trace(parse_trace("BENCHMARK_TRACE reasoning=DEBUGGING retrieval=BOUNDED refs=references/debugging.md"))
     print("progressive validation self-test: PASS")

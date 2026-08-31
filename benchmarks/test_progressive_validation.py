@@ -11,7 +11,7 @@ class ProgressiveValidationTests(unittest.TestCase):
         self.assertGreaterEqual(len(CASES), 20)
         self.assertEqual(
             {case["expected_reasoning"] for case in CASES},
-            {"NONE", "DEBUGGING", "IMPLEMENTATION"},
+            {"NONE", "DEBUGGING", "DECISION", "IMPLEMENTATION"},
         )
         self.assertEqual(
             {case["expected_retrieval_mode"] for case in CASES},
@@ -67,6 +67,15 @@ class ProgressiveValidationTests(unittest.TestCase):
         specs = progressive.build_specs(["heldout"], 1, current_only=False)
         self.assertEqual(len(specs), len(CASES) * 3)
         self.assertEqual({spec[2] for spec in specs}, {"no-skill", "previous", "adaptive"})
+
+    def test_active_reasoning_does_not_derive_from_rejected_capability_paths(self):
+        by_id = {case["task_id"]: case for case in CASES}
+        self.assertEqual(by_id["pp-removal-state"]["expected_reasoning"], "NONE")
+        self.assertEqual(by_id["sa-sensitive-security"]["expected_reasoning"], "NONE")
+        self.assertEqual(by_id["sa-memory-state"]["expected_reasoning"], "NONE")
+        self.assertEqual(by_id["pp-dispatch-compatibility"]["expected_reasoning"], "DECISION")
+        self.assertEqual(by_id["ca-export-quality"]["expected_reasoning"], "DECISION")
+        self.assertEqual(by_id["pp-operation-failure-diagnosis"]["expected_reasoning"], "DEBUGGING")
 
 
 if __name__ == "__main__":

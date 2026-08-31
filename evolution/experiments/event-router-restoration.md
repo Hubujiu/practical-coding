@@ -77,10 +77,25 @@ This phrase is an incorrect improvement and is removed. Implementation now requi
 
 The runtime wording is frozen. Documentation and dead rejected-runner paths are being cleaned before the complete n=3 release matrix; no further runtime tuning is allowed without returning to a new n=1 experiment.
 
+### Final release matrix — `30ac7e7`, n=3
+
+- Public full current-only: 294/294 determinate; Delivery 54/54, Debug 40/42, Decision 29/30, Native Behavior 52/54.
+- Public event reasoning: 113/114. The only miss was one Direct artifact classification; delivered work was not part of this classifier cell.
+- The recorded public Router score was 99/114 because three frozen Retrieval expectations still treated complete call-chain mapping and unknown ownership/transaction relationships as BOUNDED or TARGETED. That contradicts the active definition of STRUCTURAL. Correcting those case contracts without changing any model output gives reasoning 113/114, retrieval 108/114, and exact 107/114.
+- Held-out: 66/66 determinate across 22 tasks and three repositories; 61/66 quality cells, 18/22 stable tasks, 66/66 valid traces, and zero spontaneous requirements interviewing.
+- Held-out exact routing was 37/66 as recorded and 48/66 after removing the rejected capability-tree inference from active reasoning expectations. It remains diagnostic rather than a quality gate: several diagnosis tasks consistently used STRUCTURAL for cross-file execution-flow tracing where the inherited oracle said BOUNDED.
+- The five held-out quality misses were individually reviewed. Four were evidence-label omissions in otherwise evidence-backed reports; the filename probe correctly reported that the focused test could not start because declared dependencies were absent. No task edited its frozen repository.
+- The two Debug misses came from one ambiguous shared-CSV contract: both fixes corrected the reported invoice behavior but preserved the audit caller's old blank-row behavior. The runtime already contains the general shared-helper rule, so adding case-shaped wording was rejected.
+- The two Native Behavior misses were one correct/safe Debug fix that skipped the required module read and one safe refusal to enable irreversible deletion without its missing callers/ownership/rollback evidence. The single Decision miss retained a recommendation and trade-off but used `Decision:` rather than `Recommendation:` in round two.
+
+The final benchmark-contract correction is maintainer metadata only: active held-out reasoning no longer derives from rejected `capability_path` values, and relationship-mapping Router cases use STRUCTURAL. Raw n=3 artifacts and their hashes remain unchanged.
+
 ## Decision
 
-Pending.
+Accept the compact event-router architecture for v1.5. It restores the supported Debugging/Decision/Implementation boundary, removes unsupported numeric depths and specialist leaves, exceeds the accepted v1.2 public exact Router count after same-contract adjudication (107/114 versus 106/114), retains full Delivery quality, meets the frozen held-out threshold of 18/22 stable tasks, and has zero manual-mode false activations.
+
+The acceptance is not a perfect-score claim. The report preserves the observed mechanism and formatting misses, the ambiguous shared-CSV result, and the non-paired comparison limit. Future work should improve general routing stability only when new real-task evidence repeats one of these mechanisms.
 
 ## Follow-up
 
-If this fails, preserve the failure mechanism here or under `evolution/rejected/` before starting another runtime change.
+Preserve new repeated mechanisms here or under `evolution/rejected/` before starting another runtime change. Do not reopen the rejected numeric tree or specialist leaves without new minimum-sufficient and ablation evidence.

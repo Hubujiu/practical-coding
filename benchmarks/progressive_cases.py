@@ -41,13 +41,9 @@ def _case(
     reasoning: str | None = None,
     calibration: bool = False,
 ) -> dict[str, object]:
-    expected_reasoning = reasoning or (
-        "DEBUGGING"
-        if (capability_path or [None])[0] == "diagnosis"
-        else "IMPLEMENTATION"
-        if (capability_path or [None])[0] == "engineering"
-        else "NONE"
-    )
+    # Active event routing is independent of the rejected capability tree.
+    # capability_path remains frozen experiment metadata only.
+    expected_reasoning = reasoning or "NONE"
     retrieval_mode = {
         "R0": "TARGETED",
         "R1": "BOUNDED",
@@ -121,6 +117,7 @@ CASES = [
         "An operation sometimes remains RUNNING after its worker throws. The cause is not established. Inspect the operation executor and its focused tests, identify the earliest incorrect state transition and the cheapest falsifying test. Diagnose only; do not propose unrelated redesigns or edit files.",
         [["DefaultPluginOperationExecutor"], ["PluginOperationExecutorTest"], ["RUNNING"], ["fail", "exception", "complete"]],
         capability_path=["diagnosis"],
+        reasoning="DEBUGGING",
         calibration=True,
     ),
     _case(
@@ -132,6 +129,7 @@ CASES = [
         "Plan a zero-downtime rotation of the bootstrap admin token. Map the authoritative filter/configuration boundary, all protected platform entry points, rejection-before-side-effect behavior, and the focused evidence needed. Report a bounded change plan only; do not edit files.",
         [["BootstrapAdminTokenFilter"], ["PlatformSecurityConfiguration"], ["401", "unauthorized", "reject"], ["PlatformManagementApiTest", "PluginDispatchApiTest"]],
         capability_path=["engineering", "security"],
+        reasoning="IMPLEMENTATION",
         calibration=True,
     ),
     _case(
@@ -153,6 +151,7 @@ CASES = [
         "A public plugin dispatch response must add a required field while old plugins and clients coexist for one release. Map the HTTP contract, dispatcher, response/view types, and contract tests; propose a compatibility window and rollback evidence. Report only; do not edit files.",
         [["PluginDispatchController"], ["PluginDispatcher"], ["PluginViews", "RegisteredEndpoint"], ["PluginDispatchApiTest", "PluginHttpContractTest"], ["compat", "one release", "rollback"]],
         capability_path=["engineering", "compatibility"],
+        reasoning="DECISION",
     ),
     _case(
         "ca-export-format-target",
@@ -200,6 +199,7 @@ CASES = [
         "Users report that cancelling an export sometimes still downloads a file. The cause is not established. Inspect the cancellation path and focused tests, identify the earliest observable boundary to probe, and name the single cheapest falsifying test. Diagnose only; do not edit files.",
         [["AbortController", "AbortSignal", "signal"], ["EditorShell"], ["exportCover"], ["exportProgress.test.ts", "ExportProgressModal.test.tsx"], ["probe", "test"]],
         capability_path=["diagnosis"],
+        reasoning="DEBUGGING",
     ),
     _case(
         "ca-avif-performance",
@@ -210,6 +210,7 @@ CASES = [
         "Large AVIF exports are reported to stall the UI, but no timing evidence exists. Map the main-thread/worker boundary and propose a bounded measurement that separates encode latency, progress delivery, memory pressure, and cancellation. Diagnose and report only; do not edit files.",
         [["avifEncoder.worker.ts"], ["encodeAvif"], ["performance", "duration", "latency", "measure"], ["memory"], ["cancel", "Abort"]],
         capability_path=["diagnosis", "performance"],
+        reasoning="DEBUGGING",
         calibration=True,
     ),
     _case(
@@ -232,6 +233,7 @@ CASES = [
         "Review the export pipeline for duplicated policy or structural coupling that blocks safe extension with another image format. Map format config, filename, export orchestration, encoder boundary, and tests; recommend the smallest coherent refactor with reachability evidence. Report only; do not edit files.",
         [["exportFormat"], ["exportFilename"], ["exportCover"], ["avifEncoder"], ["test"]],
         capability_path=["engineering", "quality"],
+        reasoning="DECISION",
     ),
     _case(
         "sa-page-util-target",

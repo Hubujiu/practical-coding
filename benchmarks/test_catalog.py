@@ -102,6 +102,15 @@ class ExpandedCatalogTests(unittest.TestCase):
             bundled,
         )
 
+    def test_structural_relationship_prompts_use_structural_retrieval(self):
+        for case in {
+            "exploration-cbm-off",
+            "implementation-one-line-irreversible",
+            "implementation-sqlite-transaction-unknown",
+        }:
+            with self.subTest(case=case):
+                self.assertEqual(bench.ROUTER_CASES[case][1], "STRUCTURAL")
+
 
 if __name__ == "__main__":
     unittest.main()

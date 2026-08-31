@@ -67,7 +67,7 @@ ROUTER_CASES = {
     "implementation-contract": ("IMPLEMENTATION", "STRUCTURAL", "A versioned event contract must change across producers and consumers, but the coordinated surface is unknown."),
     "implementation-not-files": ("NONE", "TARGETED", "Update three already-known callers to the already-decided function signature."),
     "exploration-broad": ("NONE", "STRUCTURAL", "In this monorepo, map every service calling the billing client and where responses are transformed."),
-    "exploration-cbm-off": ("NONE", "BOUNDED", "Map the complete call chain in this large repository; no structural index is available, so use bounded source search as the fallback."),
+    "exploration-cbm-off": ("NONE", "STRUCTURAL", "Map the complete call chain in this large repository; no structural index is available, so reconstruct the structural relationship from bounded source search."),
     "verification-risk": ("IMPLEMENTATION", "BOUNDED", "The change is complete, but its existing checks have not been identified; choose the cheapest sufficient evidence for a risky zero-downtime migration."),
     "verification-known": ("NONE", "BOUNDED", "The local change is complete and an existing focused unit test is sufficient, but its path or symbol is not given; locate and run it."),
 }

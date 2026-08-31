@@ -95,12 +95,12 @@ EXTRA_ROUTER_CASES = {
     ),
     "implementation-sqlite-transaction-unknown": (
         "IMPLEMENTATION",
-        "TARGETED",
+        "STRUCTURAL",
         "Implement the body of save_history() with sqlite3. The function and dependency are fixed, but atomicity, concurrent callers, restart behavior, and the authoritative transaction boundary are unknown.",
     ),
     "implementation-one-line-irreversible": (
         "IMPLEMENTATION",
-        "TARGETED",
+        "STRUCTURAL",
         "Flip purge_after_sync from false to true in one configuration file. The flag permanently deletes local records, and retry, rollback, idempotency, and ownership of that guarantee are not mapped.",
     ),
     "implementation-security-local-boundary": (
