@@ -1,46 +1,68 @@
 # Practical Coding benchmark chain
 
-The active release candidate uses one Core, a Debugging/Decision/Implementation Event Router, and orthogonal retrieval. The rejected E/R depth and specialist-leaf experiment remains historical evidence under [`results/progressive-tree/`](results/progressive-tree/) and [`../evolution/rejected/`](../evolution/rejected/).
+The active experiment uses an evolvable local-router tree. Core is depth 0 and knows only its immediate automatic children. Each loaded node owns only its own next-level router. Decision and requirements interviewing are explicit-only manual modes outside the automatic tree. Retrieval remains orthogonal.
+
+The accepted v1.5 flat Event Router and the rejected fixed E/R ladder remain historical baselines. Do not use their fixed reasoning labels, numeric depths, or gold route expectations as the acceptance oracle for this experiment.
 
 ## Active questions
 
-1. Does the Skill deliver a correct, safe, reachable result?
-2. Does it load the one reasoning module required by the present unresolved event—and no module for Direct work?
-3. Does retrieval stop at the cheapest sufficient capability?
-4. Does requirements interviewing remain at zero spontaneous activation?
+1. Does the candidate deliver a correct, safe, evidence-backed result at least as reliably as the v1.5 baseline and no-skill arm?
+2. Which automatic nodes are actually minimum-sufficient under parent-versus-child capability ceilings?
+3. Does adaptive disclosure stop at a minimum-sufficient node without spontaneous manual Decision or Clarification activation?
+4. Do repeated failures or sibling ambiguity justify growing, splitting, merging, promoting, collapsing, or removing a node?
+5. Does retrieval stop at the cheapest sufficient capability independently of execution depth?
 
-## Iteration versus release
+## Tree experiment
 
-Use `n=1` while changing mechanisms or scorer contracts. Run the complete `n=3` matrices only after focused n=1 evidence supports release.
+The runtime topology is data, not a scorer constant:
 
-```powershell
-pwsh -NoProfile -File benchmarks/run.ps1 -SelfTest
-pwsh -NoProfile -File benchmarks/run.ps1 -ProgressiveSelfTest
-```
+- `tree_topology.json` — current root, nodes, parent/child edges, depth, manual modes, and frozen baseline ref;
+- `tree_cases.py` — topology-neutral real-repository tasks; no expected automatic route or E0-E3 label;
+- `tree_validation.py` — runs no-skill, v1.5 baseline, adaptive candidate, and capability ceilings for every automatic node;
+- `tree_analysis.py` — derives minimum-sufficient node sets, adaptive disclosure diagnostics, node marginal lift, and topology-change candidates;
+- `TREE_EVOLUTION.md` — interpretation and mutation rules.
 
-Current-only public matrix:
-
-```powershell
-python benchmarks/run_catalog.py --profile full --runs 1 --workers 3 `
-  --arm practical-current --arm practical-native `
-  --output benchmark-results/public-n1
-```
-
-Current-only real-repository held-out:
+Iteration uses `n=1` while changing topology, node content, or scorer contracts:
 
 ```powershell
-python benchmarks/progressive_validation.py --phase all --current-only --runs 1 --workers 3 `
-  --output benchmark-results/heldout-n1
+python benchmarks/tree_validation.py --self-test
+python benchmarks/tree_validation.py --current-only --runs 1 --workers 3 `
+  --output benchmark-results/tree-n1
+python benchmarks/tree_analysis.py benchmark-results/tree-n1/results.jsonl `
+  --output benchmark-results/tree-n1/analysis.json
 ```
 
-Change `--runs 1` to `--runs 3` only for the frozen final candidate.
+Only after the topology and runtime wording are frozen should the candidate run `n=3` with baseline/no-skill arms:
+
+```powershell
+python benchmarks/tree_validation.py --runs 3 --workers 3 `
+  --output benchmark-results/tree-final
+python benchmarks/tree_analysis.py benchmark-results/tree-final/results.jsonl `
+  --output benchmark-results/tree-final/analysis.json
+```
 
 ## Interpretation
 
-- Delivery and Debug grade delivered behavior, safety, and build evidence.
-- Decision grades compact two-turn convergence.
-- Router grades reasoning selection and retrieval separately.
-- Native Behavior verifies actual Skill discovery and module isolation.
-- Held-out tasks use frozen commits from three real repositories and mechanically grade evidence coverage, executable probes, clean workspaces, event/retrieval traces, and spontaneous requirements interviewing.
+Delivered quality gates the candidate. Automatic route exactness does not.
 
-Historical reports are version-specific. Offline comparison with v1.2 is non-paired unless old and new arms are rerun together in one frozen matrix.
+For each non-manual task the runner exposes Core and each root-to-node capability ceiling. The analyzer marks every stable passing ceiling, removes qualified descendants whose ancestor already passes, and reports the remaining set as the task's minimum-sufficient set. More than one minimum node is allowed.
+
+Adaptive traces are then compared with that derived set:
+
+- `exact_minimum` — adaptive disclosure stopped on a derived minimum node;
+- `over_disclosure` — it went deeper than a sufficient ancestor;
+- `under_disclosure` — it stopped above a node needed by the ceiling evidence;
+- `alternate_branch` — it selected a different branch;
+- `quality_gap` — no current node ceiling solves the task reliably.
+
+These are topology diagnostics. Persistent disagreement should first trigger a tree-boundary review, not prompt wording patches that force a historical label.
+
+Manual modes have a different contract: ordinary tasks must have zero spontaneous manual activation; explicit Decision or Clarification requests must load the corresponding `references/manual/` mode.
+
+## Historical baselines
+
+- `progressive_validation.py`, `progressive_cases.py`, and `ladder_analysis.py` remain for reproducing the previous fixed E/R and flat Event Router experiments.
+- `results/progressive-tree/` and `../evolution/rejected/` preserve the rejected fixed-depth evidence.
+- `results/v1.5/` preserves the accepted flat-router evidence and is the baseline frozen by `tree_topology.json`.
+
+Do not silently rewrite historical case contracts to make the new tree appear better. New topology changes require a frozen candidate, parent-versus-child ablation, and real-repository evidence.
