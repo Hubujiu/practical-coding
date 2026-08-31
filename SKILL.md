@@ -1,6 +1,6 @@
 ---
 name: practical-coding
-description: "Use for implementing, fixing, refactoring, reviewing, or navigating code with the least engineering process and repository context that can still produce a reliable result; deepen only when a concrete unresolved event requires it."
+description: "Use for clarifying, implementing, fixing, refactoring, reviewing, or navigating code with the least questioning, engineering process, and repository context that can still produce a reliable result; deepen only when a concrete unresolved event requires it."
 license: MIT
 metadata:
   author: Hubujiu
@@ -9,18 +9,45 @@ metadata:
 
 # Practical Coding
 
-Use the least engineering and the least context that can still produce a reliable coding result.
+First understand **what should be delivered**. Then use the least engineering and the least context that can still deliver it reliably.
 
-Practical Coding has two independent progressive controls:
+Practical Coding has three independent controls:
 
+- **Intent clarity** — whether the user's desired outcome is clear enough to act without material rework.
 - **Execution depth** — how much reasoning structure and assurance the current unresolved event needs.
 - **Retrieval depth** — how much source/context the next material decision needs.
 
-Depth is not a workflow to complete. Start shallow, expand only when evidence says the current depth cannot answer the next material question, then contract immediately after the blocker is localized.
+None is a workflow to complete. Skip questioning when intent is clear. Start execution and retrieval shallow, expand only when evidence says the current depth cannot answer the next material question, then contract immediately after the blocker is localized.
+
+## Intent Gate — before Core
+
+Before planning or editing, decide whether the requested outcome is clear enough to act on.
+
+If the observable success, material scope, and user-owned constraints are already clear, **do not interview the user**. Continue directly to the Decision Gate/Core.
+
+Load `references/clarification.md` only when the intended outcome is materially ambiguous and choosing the wrong interpretation could change delivered behavior or cause meaningful rework. This is the focused `grill-me`-style entry capability:
+
+- resolve repository/discoverable facts before asking;
+- ask only user-owned intent questions;
+- ask one consequential question at a time when answers are dependent;
+- include a recommended answer and material trade-off;
+- stop as soon as success, scope, constraints, and non-goals are clear enough for the next action.
+
+An underspecified technical detail is not automatically an intent ambiguity. Prefer project conventions, authoritative contracts, or cheap reversible defaults for implementation details.
+
+## Decision Gate
+
+Decision is also before execution, but it answers a different question.
+
+Intent Clarification resolves **what the user wants**. Decision resolves **which materially different solution should be chosen after the intent is clear**.
+
+Load `references/decision.md` only when a material user-owned or solution choice is genuinely open, would change the next action, and cannot be settled from the request, repository, established contracts, or a cheap reversible default.
+
+Resolve the choice, then enter the lowest useful execution and retrieval depths.
 
 ## Core
 
-The Core applies everywhere and should remain sufficient for most work.
+The Core applies everywhere after intent is sufficiently clear and should remain sufficient for most work.
 
 - Define the smallest observable success before editing.
 - Prefer the smallest coherent reachable change that satisfies the requirement and established contracts.
@@ -32,19 +59,15 @@ The Core applies everywhere and should remain sufficient for most work.
 - State only what fresh evidence supports.
 - Never escalate because a task sounds difficult, touches many files, or contains a risk-related noun. Escalate because a specific uncertainty remains unresolved.
 
-## Decision Gate
-
-Decision is not an execution level.
-
-Load `references/decision.md` only when a material user-owned choice is genuinely open, would change the next action, and cannot be settled from the request, repository, established contracts, or a cheap reversible default.
-
-Resolve the choice, then return to the lowest useful execution and retrieval depths.
-
 ## Execution Depth + Capability Tree
 
 Execution depth answers **how much engineering is needed**. Capability paths answer **what kind of engineering is needed**.
 
 ```text
+Intent Gate
+   ↓
+Decision Gate (only if a material choice remains)
+   ↓
 Core
  ├─ E0 Direct
  └─ E1 Focused evidence
@@ -159,23 +182,24 @@ After expansion identifies the relevant files, symbols, relationships, or extern
 
 ## Isolation Gate
 
-Do not create workers for ordinary E0/E1 work or merely because parallelism is available.
+Do not create workers for ordinary clarification, E0/E1 work, or merely because parallelism is available.
 
 When a second substantial event, specialist guarantee, or broad structural mapping would add more root-context cost than a compact handoff, dispatch one worker. The worker reads `references/delegation.md` plus only its assigned capability root/leaf or Navigation reference and returns an evidence capsule.
 
-- Decision, Diagnosis, Navigation, and read-only specialist workers do not write.
+- Clarification, Decision, Diagnosis, Navigation, and read-only specialist workers do not write.
 - A bounded Engineering worker may write only when explicitly assigned a non-overlapping scope and there is no competing writer.
 - Never build worker pipelines or overlapping writers.
 
 ## Benchmark Contract
 
-The depths, roots, leaves, and trigger boundaries are hypotheses.
+The gates, depths, roots, leaves, and trigger boundaries are hypotheses.
 
 Measure against **no-skill** and the accepted prior Practical Coding version, not only against other expert skills. Quality gates come before cost.
 
 Track at least:
 
 - correctness, safety, build/reachability;
+- unnecessary clarification turns and missed material ambiguities;
 - tokens, time, tool calls, LOC, references loaded;
 - execution and retrieval minimum-sufficient depth;
 - selected `capability_path` such as `diagnosis>state` or `engineering>security`;
@@ -183,6 +207,6 @@ Track at least:
 - over-escalation and under-escalation by task family;
 - transfer across repositories and, when practical, model/harness configurations.
 
-If a depth is rarely minimum-sufficient, test merging/removing it. If a root or leaf does not deliver stable net lift over its parent on the tasks it claims to cover, tighten, merge, replace, or remove it. Never preserve a node for symmetry.
+If clarification adds turns without preventing material rework, tighten its trigger. If ambiguous tasks repeatedly fail because execution starts too early, relax the gate. If a depth is rarely minimum-sufficient, test merging/removing it. If a root or leaf does not deliver stable net lift over its parent on the tasks it claims to cover, tighten, merge, replace, or remove it. Never preserve a node for symmetry.
 
 Runtime agents do not read `evolution/`. Skill-maintenance work uses benchmark results and real-project experience receipts to update persistent evolution knowledge before proposing changes. See `benchmarks/LADDER_EVOLUTION.md` and `evolution/README.md`.
