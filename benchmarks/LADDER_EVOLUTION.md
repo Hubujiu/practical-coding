@@ -4,7 +4,7 @@ This protocol evaluates whether Practical Coding chooses the **lowest quality-qu
 
 The current architecture is an experiment:
 
-- execution depth: `E0 E1 E2 E3`;
+- execution depth: `E0 E1 E2 E3` where E1 is **Probe**;
 - retrieval depth: `R0 R1 R2 R3`;
 - E2 roots: `diagnosis`, `engineering`;
 - E3 specialist leaves: `security`, `state`, `compatibility`, `performance`, `quality`, `interface` where valid under the active root.
@@ -35,11 +35,26 @@ Freeze candidate commit, task manifest, scorer/oracle, model/harness, depth-capp
 
 Do not create a per-case prompt after seeing the answer.
 
-## 4. Calibrate depth independently
+## 4. Keep execution and retrieval orthogonal
+
+The axes answer different questions and must not be inferred from the same action:
+
+- **Retrieval:** how much source/context had to be acquired before the next material decision was supported?
+- **Execution:** after relevant evidence was available, how much structured engineering reasoning was required?
+
+Source discovery alone never raises execution depth. Finding/reading callers, references, siblings, contracts, implementations, or configuration belongs to R0–R3. A task may legitimately be `E0/R1` or `E0/R2`.
+
+E1 requires a **cheap executable probe**: reproduce one behavior, exercise one path, falsify one concrete hypothesis, or run one focused check whose result determines the next action. If a case definition cannot point to such a probe, do not label retrieval activity as E1.
+
+This boundary is part of the experiment. If E1 rarely earns a distinct minimum-sufficient role after retrieval is separated, test merging/removing it rather than broadening it back into source inspection.
+
+## 5. Calibrate depth independently
 
 ### Execution
 
 Run caps at `E0`, `E1`, `E2`, `E3` with retrieval permissive enough not to be the bottleneck. The first stable quality-qualified cap is the minimum sufficient execution depth.
+
+For E1-specific cases, freeze the executable probe allowed by the cap. Retrieval-only expansion must remain available independently and must not be counted as E1 behavior.
 
 ### Retrieval
 
@@ -49,7 +64,7 @@ External evidence is not an `R4` successor to repository search.
 
 Use at least `n=3` determinate repetitions for boundary claims. Mark unstable cells indeterminate.
 
-## 5. Calibrate tree nodes by ablation
+## 6. Calibrate tree nodes by ablation
 
 Depth alone cannot tell whether a specialist node earns its context cost.
 
@@ -75,7 +90,7 @@ Track:
 
 Do not infer leaf value from task nouns alone.
 
-## 6. Observation format
+## 7. Observation format
 
 `benchmarks/ladder_analysis.py` consumes aggregated JSONL after repetitions are classified.
 
@@ -93,15 +108,15 @@ Adaptive row with routing instrumentation:
 
 The routing fields are benchmark-only instrumentation; runtime answers need not expose labels.
 
-## 7. Family-level analysis
+## 8. Family-level analysis
 
 Report over/under-escalation and path behavior by task family and repository, not only globally. A boundary that looks good in aggregate can systematically fail on one mechanism.
 
-Useful families include observed-failure diagnosis, localized feature change, cross-contract change, security boundary, state/concurrency, compatibility/migration, measured performance, structural review/refactor, and material interface work.
+Useful families include known-target edits, retrieval-only local/structural discovery, one-probe execution uncertainty, observed-failure diagnosis, unresolved contract/invariant changes, security boundary, state/concurrency, compatibility/migration, measured performance, structural review/refactor, and material interface work.
 
 Use mechanism labels only for analysis; do not paste benchmark-specific nouns into runtime triggers.
 
-## 8. Retrieval-specific calibration
+## 9. Retrieval-specific calibration
 
 Measure more than tool choice:
 
@@ -114,13 +129,15 @@ Measure more than tool choice:
 
 A better retrieval path is one that reaches authoritative evidence with less irrelevant context, not one that uses a particular tool.
 
-## 9. Real-project experience
+`references/navigation.md` is evaluated as the deeper R2 Structural/R3 coverage procedure inside this axis; do not score Navigation as a third independent depth.
+
+## 10. Real-project experience
 
 Benchmark tasks are necessary but not sufficient. Record real-project successes, routing mistakes, repeated user corrections, and expensive dead ends as **experience receipts** using `evolution/EXPERIENCE_SCHEMA.md`.
 
 Do not promote one anecdote directly into `SKILL.md`. Consolidate repeated mechanisms into persistent evolution knowledge first.
 
-## 10. Evolution loop
+## 11. Evolution loop
 
 ```text
 benchmark runs + real-project receipts
@@ -140,15 +157,16 @@ benchmark runs + real-project receipts
 
 This mirrors the useful separation from WikiSkill: raw experience, accumulated maintenance knowledge, and executable Skill wording remain distinct.
 
-## 11. Acceptance gate for this branch
+## 12. Acceptance gate for this branch
 
 Before proposing merge to `main`:
 
 1. existing harness self-tests pass;
 2. no stable correctness/safety/build regression versus accepted Practical Coding and no-skill reference points;
 3. claimed depth boundaries have at least three determinate repetitions;
-4. changed boundaries are tested on held-out tasks;
-5. new specialist leaves have parent-vs-leaf ablation evidence on their claimed families;
-6. over/under-escalation and unnecessary/missed leaf rates are reported;
-7. real-project evidence is treated as calibration input, not hidden held-out proof;
-8. no node survives only because the tree looks conceptually neat.
+4. execution/retrieval labeling demonstrates the E1 Probe vs R-depth boundary rather than conflating source inspection with execution;
+5. changed boundaries are tested on held-out tasks;
+6. new specialist leaves have parent-vs-leaf ablation evidence on their claimed families;
+7. over/under-escalation and unnecessary/missed leaf rates are reported;
+8. real-project evidence is treated as calibration input, not hidden held-out proof;
+9. no node survives only because the tree looks conceptually neat.

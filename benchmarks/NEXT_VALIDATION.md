@@ -6,7 +6,7 @@ The objective is to test whether the tree improves quality-qualified routing and
 
 ## 1. Freeze before running
 
-Record candidate commit, accepted baseline commit, no-skill configuration, task manifest hashes, scorer/oracle versions, model/harness configuration, comparator pins, depth caps, and capability-path ablations before inspecting partial results.
+Record candidate commit, accepted baseline commit, no-skill configuration, task manifest hashes, scorer/oracle versions, model/harness configuration, comparator pins, depth caps, capability-path ablations, and repetition count before inspecting partial results.
 
 If instrumentation is defective, invalidate and rerun the complete affected matrix.
 
@@ -47,24 +47,33 @@ Historical public cases are regression evidence only.
 Execution caps:
 
 ```text
-E0
-E1
-E2
-E3
+E0 Direct
+E1 Probe
+E2 Root
+E3 Leaf
 adaptive
 ```
 
 Retrieval caps:
 
 ```text
-R0
-R1
-R2
-R3
+R0 Target
+R1 Local
+R2 Specialized
+R3 Bounded exhaustive
 adaptive
 ```
 
 R2 permits the appropriate specialized branch (Structural or External); R3 permits bounded exhaustive repository discovery. External evidence is not an R4 successor.
+
+### Axis-labeling rule
+
+Retrieval and execution must be calibrated independently:
+
+- finding/reading source, caller, reference, sibling, contract, implementation, or configuration changes R-depth only;
+- E1 requires a cheap executable probe: reproduce one behavior, exercise one path, falsify one concrete hypothesis, or run one focused check that determines the next action.
+
+A case that needs structural discovery but no extra execution reasoning should be allowed to settle at `E0/R2`. Do not manufacture an E1 step merely because retrieval expanded.
 
 Use at least `n=3` determinate repetitions for a claimed minimum-sufficient depth.
 
@@ -111,8 +120,10 @@ A leaf is not accepted because its prose is plausible. It must earn its cost on 
 Minimum first held-out target:
 
 - at least 20 real coding tasks across multiple repositories;
-- trivial known-target edits expected to stop at E0/R0;
-- local uncertainty expected to stop at E1/R1;
+- trivial known-target edits expected to stop at `E0/R0`;
+- retrieval-only local discovery expected to stop at `E0/R1`;
+- retrieval-only structural mapping expected to permit `E0/R2` when execution remains simple;
+- one-probe execution uncertainty expected to require E1 without automatically requiring deeper retrieval;
 - unexplained failures;
 - unresolved contract/invariant changes;
 - specialist security/state/compatibility/performance cases;
@@ -159,6 +170,7 @@ Do not merge this experiment into `main` until:
 - existing regression harness passes quality gates;
 - ladder analyzer/tests pass;
 - execution/retrieval over- and under-escalation are reported separately;
+- E1 Probe is demonstrably separated from R1/R2 source discovery in case labeling and adaptive traces;
 - specialist parent-vs-leaf ablations exist for claimed nodes;
 - unnecessary/missed leaf and branch-confusion rates are reported;
 - held-out tasks test changed boundaries;

@@ -10,7 +10,7 @@ Historical v1.0–v1.2 results remain evidence for the Skill versions that produ
 2. **Did it pay for more process/context than the result required?**
 3. **When it went deep, did it load the right capability root/leaf?**
 
-Existing Delivery, Debug, Router, Native Behavior, and Navigation suites preserve adaptive regression coverage. Historical Decision cases may remain for compatibility, but Decision/requirements-interview behavior is now **manual-only** and must not be interpreted as an adaptive routing target.
+Existing Delivery, Debug, Router, Native Behavior, and Navigation suites preserve adaptive regression coverage. The historical Navigation suite should now be interpreted as **Retrieval behavior**, not a third runtime axis. Historical Decision cases may remain for compatibility, but Decision/requirements-interview behavior is now **manual-only** and must not be interpreted as an adaptive routing target.
 
 ## Candidate depth model
 
@@ -18,7 +18,7 @@ Execution:
 
 ```text
 E0 Direct
-E1 Focused
+E1 Probe
 E2 Capability root
 E3 Specialist leaf
 ```
@@ -32,6 +32,8 @@ R1 Local
 ├─ R2 External contract
 └─ R3 Bounded exhaustive repository
 ```
+
+The axes must be labeled independently. **Source discovery alone never raises execution depth.** Finding/reading a caller, sibling, contract, implementation, or configuration can produce `E0/R1` or `E0/R2`. E1 requires a cheap executable probe such as reproducing behavior, exercising one path, or falsifying one concrete hypothesis.
 
 For each task/axis, run frozen depth caps and identify the **lowest quality-qualified depth**. For deep task families, also run parent-vs-leaf ablations before claiming that a specialist node earns its context cost.
 
