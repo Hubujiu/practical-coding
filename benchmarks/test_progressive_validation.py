@@ -67,6 +67,12 @@ class ProgressiveValidationTests(unittest.TestCase):
         expected = len(CASES) * 3 * 3 + len(CALIBRATION_IDS) * 2 * 5 * 3 + len(ABLATION_IDS) * 3 * 3
         self.assertEqual(len(specs), expected)
 
+    def test_current_only_omits_external_comparison_arms(self):
+        specs = progressive.build_specs(["all"], 3, current_only=True)
+        heldout = [spec for spec in specs if spec[0] == "heldout"]
+        self.assertEqual(len(heldout), len(CASES) * 3)
+        self.assertEqual({spec[2] for spec in heldout}, {"adaptive"})
+
 
 if __name__ == "__main__":
     unittest.main()

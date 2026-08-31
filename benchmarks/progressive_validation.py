@@ -242,14 +242,15 @@ def _cell_key(spec: tuple[str, str, str, int]) -> tuple[str, str, str, int]:
     return spec
 
 
-def build_specs(phases: list[str], runs: int) -> list[tuple[str, str, str, int]]:
+def build_specs(phases: list[str], runs: int, *, current_only: bool = False) -> list[tuple[str, str, str, int]]:
     specs: list[tuple[str, str, str, int]] = []
     selected = set(phases)
     if "all" in selected:
         selected = {"heldout", "axes", "ablation"}
     if "heldout" in selected:
         for case in CASES:
-            for variant in ("no-skill", "previous", "adaptive"):
+            variants = ("adaptive",) if current_only else ("no-skill", "previous", "adaptive")
+            for variant in variants:
                 for repetition in range(1, runs + 1):
                     specs.append(("heldout", case["task_id"], variant, repetition))
     if "axes" in selected:
@@ -274,7 +275,7 @@ def run_cell(
     spec: tuple[str, str, str, int],
     args: argparse.Namespace,
     repositories: dict[str, Path],
-    previous: Path,
+    previous: Path | None,
     eval_home: Path,
     output: Path,
 ) -> dict[str, Any]:
@@ -294,6 +295,8 @@ def run_cell(
         if variant == "no-skill":
             loaded = ""
         elif variant == "previous":
+            if previous is None:
+                raise RuntimeError("previous Skill is unavailable")
             loaded = bench.skill_text("practical-previous", {}, previous)
         else:
             loaded = bench.skill_text("practical-current", {}, None)
@@ -366,7 +369,7 @@ def _mean(records: list[dict[str, Any]], key: str) -> float | None:
 def heldout_report(records: list[dict[str, Any]], runs: int) -> dict[str, Any]:
     rows = [record for record in records if record["phase"] == "heldout"]
     arms: dict[str, Any] = {}
-    for variant in ("no-skill", "previous", "adaptive"):
+    for variant in sorted({record["variant"] for record in rows}):
         selected = [record for record in rows if record["variant"] == variant]
         determinate = [record for record in selected if record["passed"] is not None]
         arms[variant] = {
@@ -500,6 +503,7 @@ def parse_args() -> argparse.Namespace:
     parser.add_argument("--codex", default=os.environ.get("CODEX_BIN", "codex"))
     parser.add_argument("--timeout", type=float, default=600)
     parser.add_argument("--case", action="append", default=[])
+    parser.add_argument("--current-only", action="store_true", help="run only the current adaptive arm for held-out tasks")
     parser.add_argument("--self-test", action="store_true")
     return parser.parse_args()
 
@@ -531,11 +535,13 @@ def main() -> int:
     stamp = dt.datetime.now().strftime("%Y%m%d-%H%M%S")
     output = (args.output or ROOT / "benchmark-results" / f"progressive-{stamp}").resolve()
     output.mkdir(parents=True, exist_ok=True)
-    previous_dir = output / "baseline-skill"
-    if not (previous_dir / "SKILL.md").is_file():
-        previous_dir = bench.materialize_git_skill(args.baseline_ref, previous_dir)
+    previous_dir: Path | None = None
+    if not args.current_only:
+        previous_dir = output / "baseline-skill"
+        if not (previous_dir / "SKILL.md").is_file():
+            previous_dir = bench.materialize_git_skill(args.baseline_ref, previous_dir)
     eval_home = bench.prepare_eval_home(output / "eval-home")
-    specs = build_specs(phases, args.runs)
+    specs = build_specs(phases, args.runs, current_only=args.current_only)
     if args.case:
         unknown = set(args.case) - {case["task_id"] for case in CASES}
         if unknown:
@@ -554,6 +560,7 @@ def main() -> int:
         "candidate_commit": bench.run_command(["git", "rev-parse", "HEAD"], ROOT).stdout.strip(),
         "candidate_bundle_sha256": bench.bundle_sha256(ROOT),
         "baseline_ref": args.baseline_ref,
+        "current_only": args.current_only,
         "repositories": {name: {"url": data["url"], "commit": data["commit"]} for name, data in REPOSITORIES.items()},
         "task_ids": sorted({spec[1] for spec in specs}),
         "started_at": dt.datetime.now(dt.timezone.utc).isoformat(),
@@ -561,7 +568,7 @@ def main() -> int:
     manifest_path = output / "manifest.json"
     if manifest_path.is_file():
         frozen = json.loads(manifest_path.read_text(encoding="utf-8"))
-        for key in ("runner_sha256", "cases_sha256", "candidate_bundle_sha256", "baseline_ref", "runs"):
+        for key in ("runner_sha256", "cases_sha256", "candidate_bundle_sha256", "baseline_ref", "runs", "current_only"):
             if frozen.get(key) != manifest.get(key):
                 raise RuntimeError(f"resume manifest mismatch for {key}")
         manifest = frozen
