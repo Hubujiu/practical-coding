@@ -1,8 +1,8 @@
 # Isolated Reference Delegation
 
-Load only inside a worker selected by the Isolation Gate. The root assigns one bounded adaptive event and the minimum references needed for it: one capability root, optionally one specialist leaf, or Navigation.
+Load only inside a worker selected by the Isolation Gate. The root assigns one bounded adaptive event and the minimum references needed for it: one capability root, optionally one specialist leaf, or the structural-retrieval procedure from `references/navigation.md`.
 
-Manual-only interaction modes are never selected or delegated by the adaptive Isolation Gate.
+The structural-retrieval procedure belongs to the Retrieval axis; it is not an independent Navigation capability. Manual-only interaction modes are never selected or delegated by the adaptive Isolation Gate.
 
 ## Worker contract
 
