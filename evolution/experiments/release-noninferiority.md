@@ -53,9 +53,3 @@ Across the accepted n=1 candidates, `fb69a9c` had the strongest quality-qualifie
 The strict gate failed. Decision and Router passed; Delivery failed only LOC; Debug improved quality to 40/42 but retained uncached, duration, and LOC cost gaps; Behavior fell to 52/54 versus the prior 53/54. Held-out was not started.
 
 One Behavior miss never loaded the candidate because Codex declared a shared eval-root Skill path while the runner installed only hash-local aliases. Add a current-only shared alias and record it in the manifest; never use that alias for a simultaneous historical native arm. The other miss loaded Debugging after an Implementation candidate check failed, accumulating two roots. The two Debug safety misses left a shared invariant inconsistent by patching or parameterizing the named caller path. These support two general corrections: a failed candidate check remains in the active event, and shared behavior is repaired once at its authoritative primitive unless a real caller contract requires divergence.
-
-## n=1 candidate 138c321 and entrypoint compression
-
-The infrastructure/shared-boundary candidate restored perfect Delivery, Debug, Decision, and Behavior quality. Behavior passed every quality/cost gate and Delivery LOC tied the prior median. Remaining n=1 gaps were Delivery tool count (+0.5), Debug uncached input (+1551) and LOC (+0.5), and Decision duration (+0.62 seconds).
-
-The always-loaded entrypoint remained 7,112 bytes versus roughly 6.8 KB for the prior version. Because the full prompt is carried across tool turns, repeated prose amplifies uncached input even when tool count falls. Mechanically consolidate duplicate Core, routing, retrieval, manual, isolation, and evolution wording while preserving every tested boundary and the newly validated shared-invariant rules. Target materially below the prior entrypoint size before another n=1 run.
