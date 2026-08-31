@@ -17,6 +17,7 @@ param(
     [switch]$SelfTest,
     [switch]$FailOnCellFailure,
     [switch]$RequireStableRanking,
+    [switch]$ProgressiveSelfTest,
     [string]$Rescore = ""
 )
 
@@ -30,6 +31,19 @@ if ($SelfTest) {
     try {
         & python -m unittest benchmarks.test_benchmarks benchmarks.test_stability benchmarks.test_catalog
         if ($LASTEXITCODE -ne 0) { exit $LASTEXITCODE }
+    }
+    finally {
+        Pop-Location
+    }
+}
+
+if ($ProgressiveSelfTest) {
+    Push-Location $repoRoot
+    try {
+        & python benchmarks/progressive_validation.py --self-test
+        if ($LASTEXITCODE -ne 0) { exit $LASTEXITCODE }
+        & python -m unittest benchmarks.test_progressive_validation
+        exit $LASTEXITCODE
     }
     finally {
         Pop-Location
