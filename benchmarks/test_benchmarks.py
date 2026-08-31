@@ -116,30 +116,34 @@ class BenchmarkHarnessTests(unittest.TestCase):
         )
         self.assertEqual(bench.parse_router_answer("DEBUGGING"), ("", ""))
 
-    def test_core_is_route_agnostic_and_event_router_owns_escalation(self):
+    def test_core_is_local_tree_root_and_manual_modes_are_separate(self):
         skill = (bench.ROOT / "SKILL.md").read_text(encoding="utf-8")
-        core = skill.split("## Core", 1)[1].split("## Direct Path", 1)[0]
-        router = skill.split("## Event Router", 1)[1].split("## Explicit-only requirements interview", 1)[0]
+        core = skill.split("## Core", 1)[1].split("## Root Router", 1)[0]
+        router = skill.split("## Root Router", 1)[1].split("## Convergence Rule", 1)[0]
+        convergence = skill.split("## Convergence Rule", 1)[1].split("## Manual Modes", 1)[0]
+        manual = skill.split("## Manual Modes", 1)[1].split("## Retrieval Policy", 1)[0]
         retrieval = skill.split("## Retrieval Policy", 1)[1].split("## Isolation Gate", 1)[0]
 
         self.assertIn("smallest coherent reachable change", core)
-        self.assertIn("established contracts", core)
+        self.assertIn("established APIs and contracts", core)
         for module_specific in (
             "references/",
             "diagnosis",
-            "engineering",
             "specialist",
             "navigation.md",
         ):
             self.assertNotIn(module_specific.lower(), core.lower())
 
         self.assertIn("observed failure", router)
-        self.assertIn("material user-owned choice", router)
         self.assertIn("unknown contract or invariant", router)
         self.assertIn("references/debugging.md", router)
-        self.assertIn("references/decision.md", router)
         self.assertIn("references/implementation.md", router)
-        self.assertNotIn("specialists/", router)
+        self.assertNotIn("references/manual/decision.md", router)
+        self.assertNotIn("references/decision.md", router)
+        self.assertIn("must not reopen deliberation", convergence)
+        self.assertIn("Do not automatically load Decision", convergence)
+        self.assertIn("references/manual/decision.md", manual)
+        self.assertIn("references/manual/clarification.md", manual)
         self.assertIn("structural code index", retrieval)
         self.assertIn("references/navigation.md", retrieval)
 
