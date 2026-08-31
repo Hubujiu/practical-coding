@@ -40,7 +40,7 @@ Use this first-match ladder:
 
 Read exactly that reference plus the Core. Resolve the blocker, then contract. Do not preload candidates. Reassess only for a different later blocker; handle a trivial one with the Core or isolate a substantial one when the saved context exceeds handoff cost.
 
-Stay Direct when the cause, choice, governing boundary, affected surface, and sufficient check are already established. A named target with settled behavior remains Direct even when it concerns risk. Unknown locations, file count, callers, consumers, and data flow are Retrieval questions, not Implementation events. Read-only source mapping is never an Implementation event.
+Stay Direct when the cause, choice, governing boundary, affected surface, and sufficient check are already established. A named target with settled behavior remains Direct even when it concerns risk; a requested standalone artifact with no integration remains Direct. Unknown locations, file count, callers, consumers, and data flow are Retrieval questions, not Implementation events. Read-only source mapping is never an Implementation event. Choosing evidence sufficient to support a material risk or performance claim is an Implementation boundary, not a user-owned product Decision.
 
 ## Explicit-only requirements interview
 
@@ -52,9 +52,9 @@ Retrieval is orthogonal to execution. Stop at the first sufficient rung:
 
 1. Read a known path or symbol when current context identifies it.
 2. Otherwise use an available bounded/ranked source search, falling back to filename, text, or symbol search.
-3. For structural questions—callers, callees, imports, implementations, dependencies, or cross-file flow—prefer an available structural code index when it materially reduces exploration.
+3. For structural questions—callers, callees, imports, implementations, dependencies, authoritative boundaries, or cross-file guarantees—prefer an available structural code index when it materially reduces exploration. A known edit target does not make retrieval Targeted when those relationships are unknown.
 4. For bounded exhaustive repository claims, use coverage-aware discovery and disclose gaps. For external contracts, use the smallest authoritative current source.
-5. If a stronger capability is unavailable, fall back without installing or persisting retrieval tooling. Verify material conclusions against current source.
+5. If a stronger capability is unavailable, fall back without installing or persisting retrieval tooling. Verify material conclusions against current source. Do not retrieve merely to decide an unresolved user-owned policy; retrieve only facts required to resolve it.
 
 Routine lookup stays here; do not load `references/navigation.md`. Load it only for substantial broad structural mapping or bounded exhaustive discovery. Do not add Navigation beside a reasoning reference merely to search; use this policy or isolate the mapping when worthwhile.
 

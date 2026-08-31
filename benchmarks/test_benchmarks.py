@@ -8,6 +8,20 @@ from benchmarks import run_benchmarks as bench
 
 
 class BenchmarkHarnessTests(unittest.TestCase):
+    def test_native_install_populates_declared_system_alias(self):
+        with tempfile.TemporaryDirectory() as tmp:
+            root = Path(tmp)
+            source = root / "source"
+            source.mkdir()
+            (source / "SKILL.md").write_text("# Current skill\n", encoding="utf-8")
+            (source / "references").mkdir()
+            (source / "references" / "debugging.md").write_text("# Debugging\n", encoding="utf-8")
+            installed = bench.install_native_skill(root / "home", source)
+
+            self.assertEqual(installed, root / "home" / "skills" / ".system" / "practical-coding")
+            self.assertEqual((installed / "SKILL.md").read_text(encoding="utf-8"), "# Current skill\n")
+            self.assertTrue((root / "home" / "skills" / "practical-coding" / "references" / "debugging.md").is_file())
+
     def test_decision_labels_override_question_marks_inside_one_item(self):
         answer = "❓ **Q1 — Boundary**: Must it deploy alone? Conversely, can one team own it?\n\n➡️ **Recommendation:** Keep it together because separation adds complexity."
         metrics = bench.decision_metrics(answer)

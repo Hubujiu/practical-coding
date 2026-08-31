@@ -324,15 +324,19 @@ def prepare_eval_home(output: Path) -> Path:
 
 
 def install_native_skill(eval_home: Path, source: Path) -> Path:
-    destination = eval_home / "skills" / "practical-coding"
-    if destination.exists():
-        shutil.rmtree(destination)
-    destination.mkdir(parents=True)
-    shutil.copy2(source / "SKILL.md", destination / "SKILL.md")
-    references = source / "references"
-    if references.is_dir():
-        shutil.copytree(references, destination / "references")
-    return destination
+    destinations = [
+        eval_home / "skills" / "practical-coding",
+        eval_home / "skills" / ".system" / "practical-coding",
+    ]
+    for destination in destinations:
+        if destination.exists():
+            shutil.rmtree(destination)
+        destination.mkdir(parents=True)
+        shutil.copy2(source / "SKILL.md", destination / "SKILL.md")
+        references = source / "references"
+        if references.is_dir():
+            shutil.copytree(references, destination / "references")
+    return destinations[-1]
 
 
 def disabled_skill_config() -> str:
