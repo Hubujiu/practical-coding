@@ -19,10 +19,10 @@ Before the first diagnostic, decision-research, or change-mapping source command
 - Stop at the first rung that works: do nothing; reuse the nearest project primitive; standard library; platform feature; available dependency; one line; otherwise minimum local code.
 - Reuse established APIs and established contracts. Build only behavior required by a current caller or requirement; nearby richness is not a requirement.
 - Add no speculative options, wrappers, aliases, configuration, scaffolding, helper layers, or one-implementation interfaces.
-- Make the smallest coherent reachable change. Do not reformat untouched code. A standalone artifact needs no demo; a user-facing feature must be reachable. Preserve unrelated code and user changes.
+- Make the smallest coherent reachable change. A standalone artifact needs no demo; a user-facing feature must be reachable. Preserve unrelated code and user changes.
 - Prefer deletion. Remove each new dependency, file, option, wrapper, comment, fallback, retry, test, or document not required by behavior, project contract, or verification.
 - Run the cheapest focused check once after the final edit. If no repository test exists, run one focused executable check, not a broad test runner. Prefer no-write check modes (for example Python `-B`). Never repeat an unchanged check or replace a required build gate with diff inspection. If disposable output remains, clean it once when safe; after a blocked or failed cleanup, stop and report it without another inspection or command. Install declared dependencies only as a bounded prerequisite in isolation; otherwise report the missing prerequisite.
-- State only fresh evidence. Unless requested, finish in at most four short lines covering outcome, changed surface, check, and remaining uncertainty—no process recap.
+- State only fresh evidence. Unless requested, finish with the outcome, changed surface, check, and remaining uncertainty—no process recap.
 
 ## Direct Path
 
@@ -48,11 +48,11 @@ Load `references/manual/clarification.md` only when the current instruction expl
 
 ## Retrieval Policy
 
-Retrieval is orthogonal to execution. Retrieve only what resolves the current blocker, not a later implementation. A Decision blocked only by user-owned constraints needs no repository retrieval. Stop at the first sufficient rung:
+Retrieval is orthogonal to execution. Stop at the first sufficient rung:
 
 1. Read a known path or symbol directly. Do not inventory history, branches, or unrelated files, or search outside the project for an implementation unless the blocker or request requires it.
 2. Otherwise use an available bounded/ranked source search, falling back to filename, text, or symbol search.
-3. For unknown callers, dependencies, authoritative boundaries, cross-file guarantees, or universal claims across runtime paths, prefer an available structural code index when it materially reduces exploration. Stay Bounded when known identifiers or a finite known consumer set can be located by text search; a known edit target alone is not Targeted when relationships are unknown.
+3. For unknown callers, dependencies, authoritative boundaries, or cross-file guarantees, prefer an available structural code index when it materially reduces exploration. Stay Bounded when known identifiers or a finite known consumer set can be located by text search; a known edit target alone is not Targeted when relationships are unknown.
 4. For bounded exhaustive repository claims, use coverage-aware discovery and disclose gaps. For external contracts, use the smallest authoritative current source.
 5. Fall back without installing retrieval tooling; verify material conclusions in current source. Use NONE when only user-owned policy is missing, and retrieve only facts needed to resolve it.
 
