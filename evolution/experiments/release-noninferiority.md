@@ -40,4 +40,10 @@ Cross-suite transcripts again showed the same mechanisms: repeated cleanup after
 
 ## Frozen gate
 
-For every common suite, current pass/correctness/safety/build rates must be no lower than the prior version. Median uncached input, output, total tokens, duration, tool count, and changed LOC must be no higher. Iterations use current-only n=1; only a candidate that passes that directional check proceeds to current-only n=3 public and held-out validation. Do not add case nouns or alter expectations to make a candidate pass.
+For every common suite, current pass/correctness/safety/build rates must be no lower than the prior version. Median uncached input, output, total tokens, duration, tool count, and changed LOC must be no higher. Iterations use current-only n=1 to reject clear regressions and select the best mechanism; because one sample cannot establish a stable median against prior n=3, the strict non-inferiority verdict applies only to the frozen current-only n=3 public matrix. The selected candidate also requires current-only n=3 held-out validation. Do not add case nouns or alter expectations to make a candidate pass.
+
+## Rejected candidate a021b7b and final selection
+
+The final cost-tightening experiment was rejected. It made Behavior pass the strict historical cost comparison in one n=1 sample, but Decision fell to 9/10 and Debug safety to 13/14; Delivery and Debug costs still failed. Selecting its attractive Behavior row would be outcome cherry-picking. Revert its runtime rules and preserve this negative receipt.
+
+Across the accepted n=1 candidates, `fb69a9c` had the strongest quality-qualified balance: perfect Delivery, Debug, Decision, and Behavior, Router above the prior rate, complete Decision/Router cost passes, and only small residual median gaps in the other suites. Its runtime content is restored at `caa5304`. Freeze that content for n=3 rather than continuing to tune against stochastic public cases. The n=3 scorecard alone decides release non-inferiority; held-out n=3 separately decides generalization.
