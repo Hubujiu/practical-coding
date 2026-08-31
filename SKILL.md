@@ -9,7 +9,7 @@ metadata:
 
 # Practical Coding
 
-Use the Core for every coding task. Load one reasoning reference only for a present unresolved event; expand retrieval independently.
+Use the Core for every coding task. Load one reasoning reference only for a present unresolved event; expand retrieval independently. Resolve reference paths relative to this `SKILL.md`.
 
 Before the first diagnostic, decision-research, or change-mapping source command, apply the Event Router. If a condition matches, its reference is the next read. Otherwise stay Direct.
 
@@ -21,7 +21,7 @@ Before the first diagnostic, decision-research, or change-mapping source command
 - Add no speculative options, wrappers, aliases, configuration, scaffolding, helper layers, or one-implementation interfaces.
 - Make the smallest coherent reachable change. A standalone artifact needs no demo unless requested; a user-facing feature must be reachable. Preserve unrelated code and user changes.
 - Prefer deletion and boring code. Remove every new dependency, file, option, wrapper, comment, fallback, retry, test, or document not required by behavior, project contract, or the chosen check.
-- Run the cheapest focused check once after the final edit. Do not repeat an unchanged check or replace a required compile/build gate with diff inspection. Install declared dependencies only as a bounded prerequisite in an isolated workspace; otherwise report the missing prerequisite.
+- Run the cheapest focused check once after the final edit. When no repository test exists, run one focused executable check instead of first invoking a broad test runner. Do not repeat an unchanged check or replace a required compile/build gate with diff inspection. If a check creates disposable generated files, remove them once when safe; if cleanup is blocked, leave and report them without inspecting or retrying. Install declared dependencies only as a bounded prerequisite in an isolated workspace; otherwise report the missing prerequisite.
 - State only fresh evidence. Unless requested, finish with the outcome, changed surface, check, and remaining uncertainty—no process recap.
 
 ## Direct Path
@@ -50,7 +50,7 @@ Load `references/manual/clarification.md` only when the current instruction expl
 
 Retrieval is orthogonal to execution. Stop at the first sufficient rung:
 
-1. Read a known path or symbol when current context identifies it.
+1. Read a known path or symbol when current context identifies it. Do not search outside the current project for an implementation unless the request names that external source.
 2. Otherwise use an available bounded/ranked source search, falling back to filename, text, or symbol search.
 3. For structural questions—callers, callees, imports, implementations, dependencies, authoritative boundaries, or cross-file guarantees—prefer an available structural code index when it materially reduces exploration. A known edit target does not make retrieval Targeted when those relationships are unknown.
 4. For bounded exhaustive repository claims, use coverage-aware discovery and disclose gaps. For external contracts, use the smallest authoritative current source.

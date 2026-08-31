@@ -26,6 +26,12 @@ Public current-only n=1 retained full Delivery, Debug, and Decision quality. Rou
 
 Behavior results were invalidated by native-install discovery interference. Codex declared the active Skill at `skills/.system/practical-coding`, while the runner installed it only at `skills/practical-coding`. Agents then searched the shared eval-history tree and sometimes loaded an older v1.3 copy, inflating costs and changing routes. Install the immutable candidate at both the normal location and the declared system alias, record the alias in the manifest, and verify this infrastructure repair before using new Behavior evidence.
 
+## n=1 native isolation candidate 97675e0
+
+The repaired native run passed 18/18 Behavior cells and loaded the current candidate from the run-specific install. This validates the earlier three failures as infrastructure interference. Against prior n=3 medians, however, the n=1 aggregate still regressed in uncached input (+637.5), output (+387.5), total tokens (+618.5), and duration (+12.5s); tool count tied at 7.
+
+Transcripts showed repeated general waste mechanisms: invoking a broad test runner after discovery found no tests, retrying blocked generated-cache cleanup, reading a reference through a wrongly duplicated path before resolving it, and searching sibling workspaces for an implementation despite a known local target and settled contract. Tighten those general operating constraints without naming cases or changing scoring.
+
 ## Frozen gate
 
 For every common suite, current pass/correctness/safety/build rates must be no lower than the prior version. Median uncached input, output, total tokens, duration, tool count, and changed LOC must be no higher. Iterations use current-only n=1; only a candidate that passes that directional check proceeds to current-only n=3 public and held-out validation. Do not add case nouns or alter expectations to make a candidate pass.
