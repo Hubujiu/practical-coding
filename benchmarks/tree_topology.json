@@ -1,0 +1,36 @@
+{
+  "schema_version": 1,
+  "root": "core",
+  "automatic_nodes": {
+    "core": {
+      "depth": 0,
+      "reference": "SKILL.md",
+      "parent": null,
+      "children": ["debugging", "implementation"]
+    },
+    "debugging": {
+      "depth": 1,
+      "reference": "references/debugging.md",
+      "parent": "core",
+      "children": []
+    },
+    "implementation": {
+      "depth": 1,
+      "reference": "references/implementation.md",
+      "parent": "core",
+      "children": []
+    }
+  },
+  "manual_modes": {
+    "decision": "references/manual/decision.md",
+    "clarification": "references/manual/clarification.md"
+  },
+  "retrieval_modes": ["NONE", "TARGETED", "BOUNDED", "STRUCTURAL"],
+  "baseline_ref": "ba4058b4ef47a42bf79c9963b25678a2389897c1",
+  "notes": [
+    "Depth describes disclosure depth, not task complexity.",
+    "Only parent-child edges in this manifest are valid automatic routes.",
+    "Manual modes are never automatic descendants.",
+    "The benchmark may recommend adding, removing, merging, promoting, splitting, or deepening nodes; the manifest is an experiment input, not a permanent taxonomy."
+  ]
+}
