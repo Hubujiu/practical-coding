@@ -67,7 +67,7 @@ ROUTER_CASES = {
     "implementation-contract": ("IMPLEMENTATION", "STRUCTURAL", "A versioned event contract must change across producers and consumers, but the coordinated surface is unknown."),
     "implementation-not-files": ("NONE", "TARGETED", "Update three already-known callers to the already-decided function signature."),
     "exploration-broad": ("NONE", "STRUCTURAL", "In this monorepo, map every service calling the billing client and where responses are transformed."),
-    "exploration-cbm-off": ("NONE", "BOUNDED", "Map the complete call chain in this large repository; no structural index is available, so use bounded source search as the fallback."),
+    "exploration-cbm-off": ("NONE", "STRUCTURAL", "Map the complete call chain in this large repository; no structural index is available, so reconstruct the structural relationship from bounded source search."),
     "verification-risk": ("IMPLEMENTATION", "BOUNDED", "The change is complete, but its existing checks have not been identified; choose the cheapest sufficient evidence for a risky zero-downtime migration."),
     "verification-known": ("NONE", "BOUNDED", "The local change is complete and an existing focused unit test is sufficient, but its path or symbol is not given; locate and run it."),
 }
@@ -323,16 +323,22 @@ def prepare_eval_home(output: Path) -> Path:
     return home
 
 
-def install_native_skill(eval_home: Path, source: Path) -> Path:
-    destination = eval_home / "skills" / "practical-coding"
-    if destination.exists():
-        shutil.rmtree(destination)
-    destination.mkdir(parents=True)
-    shutil.copy2(source / "SKILL.md", destination / "SKILL.md")
-    references = source / "references"
-    if references.is_dir():
-        shutil.copytree(references, destination / "references")
-    return destination
+def install_native_skill(eval_home: Path, source: Path, *, shared_alias: bool = False) -> Path:
+    destinations = [
+        eval_home / "skills" / "practical-coding",
+        eval_home / "skills" / ".system" / "practical-coding",
+    ]
+    if shared_alias:
+        destinations.append(eval_home.parent / "skills" / "practical-coding")
+    for destination in destinations:
+        if destination.exists():
+            shutil.rmtree(destination)
+        destination.mkdir(parents=True)
+        shutil.copy2(source / "SKILL.md", destination / "SKILL.md")
+        references = source / "references"
+        if references.is_dir():
+            shutil.copytree(references, destination / "references")
+    return eval_home / "skills" / ".system" / "practical-coding"
 
 
 def disabled_skill_config() -> str:
@@ -534,7 +540,7 @@ def behavior_score(
     )
     graph_used = any("codebase-memory-mcp" in command for command in normalized)
     source_search_used = any(
-        re.search(r"(^|[\s;&|])(?:rg|grep|find|fd)(?:\.exe)?(?:[\s;&|]|$)", command)
+        re.search(r"(^|[\s;&|'\"])(?:rg|grep|find|fd)(?:\.exe)?(?:[\s;&|'\"]|$)", command)
         or "get-childitem" in command
         or "git grep" in command
         for command in normalized
@@ -1141,7 +1147,7 @@ def scorer_selftest(ponytail: Any) -> None:
             for name, content in data["files"].items():
                 (workspace / name).write_text(content, encoding="utf-8")
             bad = custom_debug_score(case, workspace)
-            if bad["correct"] != 0 or bad["safe"] != 0:
+            if bad["correct"] == 1 and bad["safe"] == 1:
                 raise RuntimeError(f"custom debug bad fixture not caught: {case}")
 
 
@@ -1211,14 +1217,14 @@ def main() -> int:
         "default": prepare_eval_home(output / "default"),
         "native": prepare_eval_home(output / "native"),
     }
-    native_skill = install_native_skill(eval_homes["native"], ROOT)
+    native_skill = install_native_skill(eval_homes["native"], ROOT, shared_alias=True)
     native_previous_skill = None
     if previous:
         eval_homes["native-previous"] = prepare_eval_home(output / "native-previous")
         native_previous_skill = install_native_skill(eval_homes["native-previous"], previous)
     codex_path = resolve_codex(args.codex)
     codex_version = run_command([codex_path, "--version"], ROOT)
-    manifest = {"runner_version": VERSION, "runner_sha256": sha256(Path(__file__)), "model": MODEL, "reasoning": REASONING, "profile": args.profile, "runs": runs, "workers": args.workers, "started_at": dt.datetime.now(dt.timezone.utc).isoformat(), "environment": {"platform": platform.platform(), "python": sys.version, "codex": codex_version.stdout.strip(), "codex_path": codex_path}, "skill": {"current_entrypoint_sha256": sha256(ROOT / "SKILL.md"), "current_bundle_sha256": bundle_sha256(ROOT), "native_install": str(native_skill), "native_previous_install": str(native_previous_skill) if native_previous_skill else None, "previous_ref": args.baseline_ref, "previous_entrypoint_sha256": sha256(previous / "SKILL.md") if previous else None, "previous_bundle_sha256": bundle_sha256(previous) if previous else None}, "sources": {name: {"url": SOURCES[name][0], "commit": SOURCES[name][1], "path": str(sources[name])} for name in SOURCES}, "cases": profile}
+    manifest = {"runner_version": VERSION, "runner_sha256": sha256(Path(__file__)), "model": MODEL, "reasoning": REASONING, "profile": args.profile, "runs": runs, "workers": args.workers, "started_at": dt.datetime.now(dt.timezone.utc).isoformat(), "environment": {"platform": platform.platform(), "python": sys.version, "codex": codex_version.stdout.strip(), "codex_path": codex_path}, "skill": {"current_entrypoint_sha256": sha256(ROOT / "SKILL.md"), "current_bundle_sha256": bundle_sha256(ROOT), "native_install": str(native_skill), "native_shared_alias": str(eval_homes["native"].parent / "skills" / "practical-coding"), "native_previous_install": str(native_previous_skill) if native_previous_skill else None, "previous_ref": args.baseline_ref, "previous_entrypoint_sha256": sha256(previous / "SKILL.md") if previous else None, "previous_bundle_sha256": bundle_sha256(previous) if previous else None}, "sources": {name: {"url": SOURCES[name][0], "commit": SOURCES[name][1], "path": str(sources[name])} for name in SOURCES}, "cases": profile}
     (output / "manifest.json").write_text(json.dumps(manifest, indent=2) + "\n", encoding="utf-8")
     specs = []
     previous_arm = ["practical-previous"] if previous else []

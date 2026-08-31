@@ -1,0 +1,46 @@
+{
+  "release": "v1.5",
+  "candidate_commit": "30ac7e70b425b3f02f7bf4e21cb4809f0e4d6c2c",
+  "model": "gpt-5.6-luna",
+  "reasoning": "medium",
+  "runs": 3,
+  "current_only": true,
+  "public": {
+    "cells": 294,
+    "indeterminate": 0,
+    "delivery": {"passed": 54, "cells": 54},
+    "debug": {"passed": 40, "cells": 42, "correct": 42, "safe": 40},
+    "decision": {"passed": 29, "cells": 30},
+    "native_behavior": {"passed": 52, "cells": 54},
+    "router_recorded": {"passed": 99, "cells": 114, "reasoning": 113, "retrieval": 100},
+    "router_contract_adjudicated": {"passed": 107, "cells": 114, "reasoning": 113, "retrieval": 108},
+    "manifest_sha256": "e53b56772574b22a9e6360b66ed5a6fe6af25f14827f38b42edb76f675c28746",
+    "results_sha256": "2b63d3befbe71edc034145d82789486eaf6bd1d0b81b62e6fca5fa8c1f55317d"
+  },
+  "heldout": {
+    "tasks": 22,
+    "repositories": 3,
+    "cells": 66,
+    "indeterminate": 0,
+    "quality_passed": 61,
+    "stable_tasks_passed": 18,
+    "routing_trace_valid": 66,
+    "routing_exact_recorded": 37,
+    "routing_exact_contract_adjudicated": 48,
+    "spontaneous_manual_mode": 0,
+    "manifest_sha256": "9b32e14658ddfc145a5c5efcf39be88e16c3c4c601b5caf70bc7dd90dda77a97",
+    "results_sha256": "a360d921852b8011e9b95863aba0601eddc24372a14dcc4c47a5aa8509d4f52a"
+  },
+  "historical_reference": {
+    "version": "v1.2",
+    "paired": false,
+    "router_exact": {"passed": 106, "cells": 114}
+  },
+  "evidence_limits": [
+    "Only the current version was run in the final matrix.",
+    "No no-skill, Ponytail, prior-version, or combined-skill arm was run.",
+    "Contract adjudication changed expectations only and did not modify model output.",
+    "Raw transcripts and workspaces remain local because they contain machine-specific paths.",
+    "PR CI is a separate merge gate."
+  ]
+}

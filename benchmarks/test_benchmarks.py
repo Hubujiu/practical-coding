@@ -8,6 +8,21 @@ from benchmarks import run_benchmarks as bench
 
 
 class BenchmarkHarnessTests(unittest.TestCase):
+    def test_native_install_populates_declared_system_alias(self):
+        with tempfile.TemporaryDirectory() as tmp:
+            root = Path(tmp)
+            source = root / "source"
+            source.mkdir()
+            (source / "SKILL.md").write_text("# Current skill\n", encoding="utf-8")
+            (source / "references").mkdir()
+            (source / "references" / "debugging.md").write_text("# Debugging\n", encoding="utf-8")
+            installed = bench.install_native_skill(root / "home" / "run", source, shared_alias=True)
+
+            self.assertEqual(installed, root / "home" / "run" / "skills" / ".system" / "practical-coding")
+            self.assertEqual((installed / "SKILL.md").read_text(encoding="utf-8"), "# Current skill\n")
+            self.assertTrue((root / "home" / "run" / "skills" / "practical-coding" / "references" / "debugging.md").is_file())
+            self.assertTrue((root / "home" / "skills" / "practical-coding" / "SKILL.md").is_file())
+
     def test_decision_labels_override_question_marks_inside_one_item(self):
         answer = "❓ **Q1 — Boundary**: Must it deploy alone? Conversely, can one team own it?\n\n➡️ **Recommendation:** Keep it together because separation adds complexity."
         metrics = bench.decision_metrics(answer)
@@ -101,32 +116,30 @@ class BenchmarkHarnessTests(unittest.TestCase):
         )
         self.assertEqual(bench.parse_router_answer("DEBUGGING"), ("", ""))
 
-    def test_core_is_route_agnostic_and_router_owns_escalation(self):
+    def test_core_is_route_agnostic_and_event_router_owns_escalation(self):
         skill = (bench.ROOT / "SKILL.md").read_text(encoding="utf-8")
         core = skill.split("## Core", 1)[1].split("## Direct Path", 1)[0]
-        router = skill.split("## Event Router", 1)[1].split("## Retrieval Policy", 1)[0]
+        router = skill.split("## Event Router", 1)[1].split("## Explicit-only requirements interview", 1)[0]
         retrieval = skill.split("## Retrieval Policy", 1)[1].split("## Isolation Gate", 1)[0]
 
-        self.assertIn("minimum local code", core)
-        self.assertIn("already-established contracts", core)
+        self.assertIn("smallest coherent reachable change", core)
+        self.assertIn("established contracts", core)
         for module_specific in (
             "references/",
-            "user-owned",
-            "security/permissions",
-            "persistence/migration",
-            "Decision",
-            "Debugging",
-            "Implementation",
-            "Navigation",
+            "diagnosis",
+            "engineering",
+            "specialist",
+            "navigation.md",
         ):
-            self.assertNotIn(module_specific, core)
+            self.assertNotIn(module_specific.lower(), core.lower())
 
         self.assertIn("observed failure", router)
-        self.assertIn("whether or which external dependency", router)
-        self.assertIn("specified and authorized", router)
-        self.assertIn("security/permissions", router)
-        self.assertIn("persistence/migration", router)
-        self.assertNotIn("navigation.md", router.lower())
+        self.assertIn("material user-owned choice", router)
+        self.assertIn("unknown contract or invariant", router)
+        self.assertIn("references/debugging.md", router)
+        self.assertIn("references/decision.md", router)
+        self.assertIn("references/implementation.md", router)
+        self.assertNotIn("specialists/", router)
         self.assertIn("structural code index", retrieval)
         self.assertIn("references/navigation.md", retrieval)
 
@@ -193,6 +206,15 @@ class BenchmarkHarnessTests(unittest.TestCase):
         self.assertTrue(score["passed"])
         self.assertFalse(score["navigation_used"])
         self.assertTrue(score["source_search_used"])
+
+    def test_behavior_score_detects_quoted_search_commands(self):
+        score = bench.behavior_score(
+            ["Get-Content C:/eval/skills/practical-coding/SKILL.md", "pwsh -Command 'rg -n pattern .'"],
+            None,
+            expected_retrieval="BOUNDED",
+        )
+        self.assertTrue(score["source_search_used"])
+        self.assertTrue(score["retrieval_ok"])
 
     def test_behavior_score_uses_loaded_content_not_recursive_filename_listing(self):
         commands = ["Get-ChildItem C:/eval/skills/practical-coding -Recurse; Get-Content $decision"]

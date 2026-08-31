@@ -1,0 +1,299 @@
+{
+  "schema_version": 1,
+  "model": "gpt-5.6-luna",
+  "reasoning": "medium",
+  "runs": 1,
+  "current_candidate_ref": "9dee5729d235f753efaa4aab7d4550e950717f02",
+  "previous_ref": "88382d2b0c00fa278067a5933bbcacc86f46b56e",
+  "current_results": "release-noninferiority-n1-138c321",
+  "historical_results": "v1.3-gate-c-e0bdc19-20260830",
+  "scorer_contract": "active repository scorer and catalog",
+  "release_gate": {
+    "passed": false,
+    "failures": [
+      "delivery: tool_calls_median: 8.000 > 7.500",
+      "debug: uncached_input_tokens_median: 11134.000 > 9583.000",
+      "debug: total_loc_median: 1.500 > 1.000",
+      "decision: duration_seconds_median: 18.015 > 17.398"
+    ]
+  },
+  "suites": {
+    "delivery": {
+      "arms": {
+        "current": {
+          "cells": 18,
+          "determinate": 18,
+          "indeterminate": 0,
+          "passed": 18,
+          "pass_rate": 1.0,
+          "correct_rate": 1.0,
+          "safe_rate": 1.0,
+          "build_rate": 1.0,
+          "uncached_input_tokens_median": 20395.0,
+          "output_tokens_median": 2128.0,
+          "total_tokens_median": 171643.0,
+          "duration_seconds_median": 64.0703929500014,
+          "tool_calls_median": 8.0,
+          "total_loc_median": 19.5
+        },
+        "previous": {
+          "cells": 54,
+          "determinate": 54,
+          "indeterminate": 0,
+          "passed": 54,
+          "pass_rate": 1.0,
+          "correct_rate": 1.0,
+          "safe_rate": 1.0,
+          "build_rate": 1.0,
+          "uncached_input_tokens_median": 21578.5,
+          "output_tokens_median": 2495.5,
+          "total_tokens_median": 176889.5,
+          "duration_seconds_median": 71.11787050000021,
+          "tool_calls_median": 7.5,
+          "total_loc_median": 19.5
+        },
+        "baseline": {
+          "cells": 54,
+          "determinate": 54,
+          "indeterminate": 0,
+          "passed": 54,
+          "pass_rate": 1.0,
+          "correct_rate": 1.0,
+          "safe_rate": 1.0,
+          "build_rate": 1.0,
+          "uncached_input_tokens_median": 17483.5,
+          "output_tokens_median": 2704.0,
+          "total_tokens_median": 197269.0,
+          "duration_seconds_median": 73.46201840000049,
+          "tool_calls_median": 8.0,
+          "total_loc_median": 24.5
+        },
+        "ponytail": {
+          "cells": 54,
+          "determinate": 54,
+          "indeterminate": 0,
+          "passed": 53,
+          "pass_rate": 0.9814814814814815,
+          "correct_rate": 1.0,
+          "safe_rate": 1.0,
+          "build_rate": 0.9444444444444444,
+          "uncached_input_tokens_median": 20521.0,
+          "output_tokens_median": 2332.5,
+          "total_tokens_median": 188596.0,
+          "duration_seconds_median": 59.38337760000013,
+          "tool_calls_median": 8.0,
+          "total_loc_median": 19.0
+        }
+      },
+      "current_vs_previous_gate": {
+        "passed": false,
+        "failures": [
+          "tool_calls_median: 8.000 > 7.500"
+        ]
+      }
+    },
+    "debug": {
+      "arms": {
+        "current": {
+          "cells": 14,
+          "determinate": 14,
+          "indeterminate": 0,
+          "passed": 14,
+          "pass_rate": 1.0,
+          "correct_rate": 1.0,
+          "safe_rate": 1.0,
+          "build_rate": null,
+          "uncached_input_tokens_median": 11134.0,
+          "output_tokens_median": 1170.0,
+          "total_tokens_median": 86159.5,
+          "duration_seconds_median": 34.26685554999858,
+          "tool_calls_median": 5.0,
+          "total_loc_median": 1.5
+        },
+        "previous": {
+          "cells": 42,
+          "determinate": 42,
+          "indeterminate": 0,
+          "passed": 39,
+          "pass_rate": 0.9285714285714286,
+          "correct_rate": 1.0,
+          "safe_rate": 0.9285714285714286,
+          "build_rate": null,
+          "uncached_input_tokens_median": 9583.0,
+          "output_tokens_median": 1243.0,
+          "total_tokens_median": 91712.5,
+          "duration_seconds_median": 35.14714890000141,
+          "tool_calls_median": 6.0,
+          "total_loc_median": 1.0
+        },
+        "superpowers": {
+          "cells": 42,
+          "determinate": 42,
+          "indeterminate": 0,
+          "passed": 36,
+          "pass_rate": 0.8571428571428571,
+          "correct_rate": 1.0,
+          "safe_rate": 0.8571428571428571,
+          "build_rate": null,
+          "uncached_input_tokens_median": 22313.5,
+          "output_tokens_median": 3220.5,
+          "total_tokens_median": 277643.5,
+          "duration_seconds_median": 79.65129255000102,
+          "tool_calls_median": 14.0,
+          "total_loc_median": 1.0
+        }
+      },
+      "current_vs_previous_gate": {
+        "passed": false,
+        "failures": [
+          "uncached_input_tokens_median: 11134.000 > 9583.000",
+          "total_loc_median: 1.500 > 1.000"
+        ]
+      }
+    },
+    "decision": {
+      "arms": {
+        "current": {
+          "cells": 10,
+          "determinate": 10,
+          "indeterminate": 0,
+          "passed": 10,
+          "pass_rate": 1.0,
+          "correct_rate": null,
+          "safe_rate": null,
+          "build_rate": null,
+          "uncached_input_tokens_median": 9644.5,
+          "output_tokens_median": 727.0,
+          "total_tokens_median": 40323.5,
+          "duration_seconds_median": 18.014729650003574,
+          "tool_calls_median": 0.0,
+          "total_loc_median": null
+        },
+        "previous": {
+          "cells": 30,
+          "determinate": 30,
+          "indeterminate": 0,
+          "passed": 30,
+          "pass_rate": 1.0,
+          "correct_rate": null,
+          "safe_rate": null,
+          "build_rate": null,
+          "uncached_input_tokens_median": 10193.0,
+          "output_tokens_median": 775.5,
+          "total_tokens_median": 41964.5,
+          "duration_seconds_median": 17.398457849998522,
+          "tool_calls_median": 0.0,
+          "total_loc_median": null
+        },
+        "grilling": {
+          "cells": 30,
+          "determinate": 30,
+          "indeterminate": 0,
+          "passed": 29,
+          "pass_rate": 0.9666666666666667,
+          "correct_rate": null,
+          "safe_rate": null,
+          "build_rate": null,
+          "uncached_input_tokens_median": 7197.5,
+          "output_tokens_median": 942.0,
+          "total_tokens_median": 37072.5,
+          "duration_seconds_median": 20.345140049999827,
+          "tool_calls_median": 0.0,
+          "total_loc_median": null
+        }
+      },
+      "current_vs_previous_gate": {
+        "passed": false,
+        "failures": [
+          "duration_seconds_median: 18.015 > 17.398"
+        ]
+      }
+    },
+    "router": {
+      "arms": {
+        "current": {
+          "cells": 38,
+          "determinate": 38,
+          "indeterminate": 0,
+          "passed": 34,
+          "pass_rate": 0.8947368421052632,
+          "correct_rate": null,
+          "safe_rate": null,
+          "build_rate": null,
+          "uncached_input_tokens_median": 3765.5,
+          "output_tokens_median": 76.5,
+          "total_tokens_median": 12811.0,
+          "duration_seconds_median": 6.338927300002979,
+          "tool_calls_median": 0.0,
+          "total_loc_median": null
+        },
+        "previous": {
+          "cells": 114,
+          "determinate": 114,
+          "indeterminate": 0,
+          "passed": 96,
+          "pass_rate": 0.8421052631578947,
+          "correct_rate": null,
+          "safe_rate": null,
+          "build_rate": null,
+          "uncached_input_tokens_median": 4013.0,
+          "output_tokens_median": 112.0,
+          "total_tokens_median": 13087.5,
+          "duration_seconds_median": 6.842552300000534,
+          "tool_calls_median": 0.0,
+          "total_loc_median": null
+        }
+      },
+      "current_vs_previous_gate": {
+        "passed": true,
+        "failures": []
+      }
+    },
+    "behavior": {
+      "arms": {
+        "current": {
+          "cells": 18,
+          "determinate": 18,
+          "indeterminate": 0,
+          "passed": 18,
+          "pass_rate": 1.0,
+          "correct_rate": null,
+          "safe_rate": null,
+          "build_rate": null,
+          "uncached_input_tokens_median": 9873.5,
+          "output_tokens_median": 1259.0,
+          "total_tokens_median": 101176.5,
+          "duration_seconds_median": 37.057366649998585,
+          "tool_calls_median": 6.5,
+          "total_loc_median": null
+        },
+        "previous": {
+          "cells": 54,
+          "determinate": 54,
+          "indeterminate": 0,
+          "passed": 53,
+          "pass_rate": 0.9814814814814815,
+          "correct_rate": null,
+          "safe_rate": null,
+          "build_rate": null,
+          "uncached_input_tokens_median": 9896.0,
+          "output_tokens_median": 1465.5,
+          "total_tokens_median": 102874.5,
+          "duration_seconds_median": 40.16638090000015,
+          "tool_calls_median": 7.0,
+          "total_loc_median": null
+        }
+      },
+      "current_vs_previous_gate": {
+        "passed": true,
+        "failures": []
+      }
+    }
+  },
+  "limitations": [
+    "Model executions are cross-run; scoring is current and common-case only.",
+    "Historical workspaces and transcripts are read-only and are not overwritten.",
+    "Stored build outcomes are reused; model execution and builds are not rerun.",
+    "External arms are contextual comparisons and do not control the current-vs-previous release gate."
+  ]
+}

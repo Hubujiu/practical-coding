@@ -1,21 +1,16 @@
 # Decision
 
-Load this module only when a material choice about architecture, dependencies, APIs, data models, compatibility, or multiple plausible implementations remains open—including whether or which package, library, service, or mature external implementation to adopt. Its output is a resolved choice that changes the next action, not a design essay or an option dump.
+Load this module only when a material choice about architecture, dependencies, APIs, data models, compatibility, or multiple plausible implementations remains open—including whether or which package, library, service, or mature external implementation to adopt. Its output is a resolved choice that changes the next action, not a design essay or option dump.
 
 Do not load this module when the request or repository has already settled the material choice. The existence of a popular alternative is not by itself a Decision event.
 
 ## Decision Frontier
 
-Resolve discoverable facts from the repository and authoritative sources before asking the user. Keep a compact ledger of verified facts, constraints, assumptions, decisions, and unresolved choices. Work only on the current frontier: choices whose prerequisites are already known. Do not ask about a downstream choice while an upstream answer could invalidate it.
+Resolve discoverable facts from the repository and authoritative sources before asking the user. Work only on choices whose prerequisites are already known. Ask only about user-owned scope, compatibility, risk tolerance, cost, or preference when at least two plausible answers lead to materially different next actions and choosing the wrong default costs more than one interaction.
 
-Research is part of resolving an open Decision. Compare viable mature implementations when external evidence is necessary; do not ask the user merely for permission to research. Ask only about user-owned scope, compatibility, risk tolerance, cost, or preference when at least two plausible answers lead to materially different next actions and choosing the wrong default costs more than one interaction. Ask every independent user-owned decision on the current frontier in the same round; dependent questions wait for a later round. For every question:
+For each necessary question, explain why it matters, recommend one option with the reason, and state the strongest trade-off. Ask every independent decision on the current frontier in one round; defer dependent questions. If uncertainty is cheap and reversible, choose the repository or platform default and proceed.
 
-- explain briefly why the decision matters now;
-- recommend one option and give the reason;
-- name the strongest material trade-off or alternative;
-- number it so the user can answer the whole round compactly.
-
-Use this compact shape so the recommendation is not hidden inside an option list:
+Use a compact stable shape so the recommendation is visible rather than buried in prose:
 
 ```text
 Q<n> — Decision: <one consequential question>
@@ -23,19 +18,17 @@ Recommendation: <one position and why>
 Trade-off: <the strongest cost or viable alternative>
 ```
 
-End the round with the smallest answer format, then wait. If the task is already sufficiently specified, ask nothing. If uncertainty is cheap and reversible, choose the repository or platform default and proceed. Each reply reshapes the decision tree: record settled choices, recompute the frontier, and reopen a dependent choice if new evidence contradicts an earlier assumption. If the user named implementation options, ask the independent user-owned prerequisites that would choose among them as separate numbered questions in the same round, not as one premature option question. When the user's answers resolve the current frontier and no newly unlocked independent user-owned choice remains, state the selected option and stop; do not open a new interview round or ask confirmation of a now-determined choice.
+End with the smallest answer format and wait. When the reply resolves the frontier, do not ask for confirmation of a now-determined choice.
 
 ## Resolve
 
 1. State the exact decision and constraints that distinguish acceptable options.
-2. Check, in order: established project pattern, standard library, platform/framework, installed dependency, then mature maintained external implementation. Research external options only when the open choice cannot be resolved from local evidence; do not install or vendor an option merely to compare it.
-3. Keep at most three viable options. Compare only material fit, correctness, compatibility, operational, maintenance, and migration differences.
+2. Check, in order: established project pattern, standard library, platform/framework, installed dependency, then mature maintained external implementation.
+3. Keep at most three viable options and compare only material fit, correctness, compatibility, operational, maintenance, and migration differences.
 4. Select the smallest option that fully satisfies current requirements. Do not create an abstraction, dependency, wrapper, or extension point without a present need.
 
-Research only when local evidence cannot resolve a lasting choice or an external dependency is being considered. Prefer official and maintained sources; verify API fit, maintenance, license, and known constraints. Integrate a fitting mature surface instead of cloning it, and isolate only a demonstrated compatibility patch.
-
-Converge when the goal and success condition are clear, hard constraints and non-goals are known, high-impact choices are resolved or deliberately deferred, material contradictions are gone, and remaining uncertainty is cheap to reverse or assigned to a concrete validation step. Then state the selected option, rationale, trade-off, assumptions, and any deferred validation compactly before proceeding within the user's existing authorization.
+Research only when local evidence cannot resolve a lasting choice or an external dependency is being considered. Prefer official and maintained sources; verify API fit, maintenance, license, and known constraints. Unless an unresolved assumption requires one extra line, every resolved final decision is exactly two lines: `Recommendation:` with selection and reason, then `Trade-off:` with the strongest cost or alternative. Proceed only within existing authorization.
 
 ## Durable Decisions
 
-Record the decision only if its reason is not evident in code, future maintainers will likely reconsider it, and the project already has an appropriate mechanism or the user requested one. Do not document facts reconstructable from code or Git.
+Record the decision only if its reason is not evident in code, future maintainers will likely reconsider it, and the project already has an appropriate mechanism or the user requested one.

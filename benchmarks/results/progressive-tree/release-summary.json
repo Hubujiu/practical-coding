@@ -1,0 +1,51 @@
+{
+  "experiment": "progressive-capability-tree",
+  "status": "rejected",
+  "candidate_commit": "eefb3b79c688ced94273daea6a0af22b74d47022",
+  "model": "gpt-5.6-luna",
+  "reasoning": "medium",
+  "public_full": {
+    "cells": 294,
+    "indeterminate": 0,
+    "runs_per_case": 3,
+    "delivery": {"passed": 54, "cells": 54},
+    "debug": {"passed": 34, "cells": 42},
+    "decision_legacy_oracle": {"passed": 5, "cells": 30},
+    "router_legacy_oracle": {"passed": 53, "cells": 114},
+    "native_behavior_legacy_oracle": {"passed": 24, "cells": 54}
+  },
+  "progressive_current_only": {
+    "cells": 378,
+    "indeterminate": 0,
+    "runs_per_cell": 3,
+    "heldout": {
+      "tasks": 22,
+      "repositories": 3,
+      "passed_cells": 58,
+      "cells": 66,
+      "stable_pass_tasks": 18,
+      "spontaneous_manual_mode_count": 0,
+      "routing_trace_valid_cells": 40,
+      "routing_exact_cells": 21
+    },
+    "execution_minimum_sufficient": {"E0": 6, "E1": 1, "E2": 0, "E3": 1},
+    "retrieval_minimum_sufficient": {"R0": 1, "R1": 7, "R2": 0, "R3": 0},
+    "ablation": {
+      "tasks": 8,
+      "leaf_quality_lift": 0,
+      "leaf_quality_tie": 7,
+      "leaf_quality_regression": 1,
+      "adaptive_path_exact": 6
+    }
+  },
+  "historical_comparison": {
+    "source": "benchmarks/results/v1.2/release-summary.json",
+    "paired": false,
+    "rerun": false
+  },
+  "evidence_limits": [
+    "No no-skill, Ponytail, combined-skill, or prior-version arm was rerun.",
+    "Legacy Router, Decision, and Native Behavior graders are not compatible with the progressive-tree schema.",
+    "Raw transcripts and workspaces remain local because they contain machine-specific paths."
+  ]
+}

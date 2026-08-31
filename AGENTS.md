@@ -1,23 +1,33 @@
 # Practical Coding
 
-This repository is an Agent Skill. If you are a coding agent reading this file from a checkout, apply the skill as follows.
+This repository is an Agent Skill. Apply [`SKILL.md`](SKILL.md) when working from this checkout.
 
-Read [`SKILL.md`](SKILL.md) for the route-agnostic shortest-path Core, the three-branch Event Router, and the Retrieval Policy. The Core always applies. Ordinary well-specified work stays Direct with no reasoning reference and no worker.
+## Runtime model
 
-The Event Router handles only unresolved blockers that change how the task must be reasoned about:
+1. Apply the Core and stay Direct unless one present unresolved event matches the Router.
+2. Route only Debugging, Decision, or Implementation; load at most one reasoning reference for the current event.
+3. Complete routing before diagnostic, decision-research, or change-mapping source work. The selected reference is the next read.
+4. Keep retrieval orthogonal. Unknown paths, callers, consumers, and data flow are retrieval questions, not Implementation events.
+5. Contract to the smallest affected surface as soon as the cause, choice, contract, invariant, or evidence boundary is established.
 
-| Trigger | Reasoning module |
+## Event Router
+
+| Present unresolved event | Reference |
 |---|---|
-| An observed failure, regression, or incorrect behavior still lacks an evidenced cause | [`references/debugging.md`](references/debugging.md) |
-| A material unresolved user-owned choice about architecture, whether or which external dependency/implementation to adopt, APIs, data models, or compatibility would change the next action | [`references/decision.md`](references/decision.md) |
-| An unknown contract/invariant, an unresolved material risk boundary (security/permissions, irreversible side effects, persistence/migration, concurrency/transactions, compatibility), or insufficient evidence for a risky material claim blocks safe execution | [`references/implementation.md`](references/implementation.md) |
+| Observed failure still lacks an evidenced cause | [`references/debugging.md`](references/debugging.md) |
+| Material user-owned implementation choice changes the next action | [`references/decision.md`](references/decision.md) |
+| Unknown contract/invariant, coordinated guarantee, material risk boundary, or evidence plan blocks safe execution | [`references/implementation.md`](references/implementation.md) |
 
-Load exactly one first-match reasoning module in addition to the Core. A choice already settled by the request or repository is input, not a Decision event. A security, persistence, migration, concurrency, or compatibility noun is not itself an Implementation event when the governing boundary, affected surface, and sufficient check are already established. Do not treat file count, task nouns, search needs, or the existence of another library as routing evidence. If a different blocker appears later, reassess it without accumulating another reasoning reference in the root; use the Core when sufficient or isolate substantial follow-up work when the saved context exceeds handoff cost.
+A known target and settled behavior/boundary/check stay Direct even when risk nouns are present. A read-only mapping request is Direct plus Retrieval.
 
-Navigation is not a fourth Event Router branch. Code retrieval follows the cheapest sufficient available path: known source first, then bounded/ranked source discovery, then an already-available structural index only when relationship queries materially reduce exploration, followed by current-source verification for material claims. Routine targeted lookup needs no Navigation reference.
+Requirements interviewing is explicit-only through [`references/manual/clarification.md`](references/manual/clarification.md).
 
-Read [`references/navigation.md`](references/navigation.md) only when broad retrieval itself is substantial enough to need the detailed procedure. Host-native ranked search, FFF-style retrieval, and `DeusData/codebase-memory-mcp` are optional capabilities, not project requirements. Use them only when already available; otherwise fall back to ordinary source search without installing tooling or changing project configuration solely for retrieval. An already-integrated structural backend may maintain or refresh its own index as part of normal use.
+## Retrieval
 
-For a substantial triggered event, prefer an isolated no-history worker only when its context savings exceed handoff cost; otherwise load the one selected reasoning reference in the root agent. Keep the root to the Core plus at most one loaded reasoning reference for the task. If broad mapping becomes expensive while another reasoning reference is already resident, prefer a read-only Navigation worker rather than loading a second large reference into the root.
+Use known source, then bounded/ranked search, then an already-available structural capability when it materially reduces relationship discovery. Use exhaustive coverage or external authoritative sources only when the claim requires them. Source remains authoritative.
 
-The root agent owns user intent, authorization, repository state, routing, integration, and the final completion claim. A worker reads [`references/delegation.md`](references/delegation.md) plus exactly one assigned reference and returns a compact capsule. Decision, Debugging, and Navigation workers are read-only. An Implementation worker may write only when its assignment explicitly includes implementation, must have a bounded scope, and must be the sole writer there. Treat a capsule as stale after relevant repository changes.
+Read [`references/navigation.md`](references/navigation.md) only for substantial retrieval. Missing graph/ranked capabilities fall back without installing or persisting tooling solely for retrieval.
+
+## Evolution
+
+`evolution/` is maintainer knowledge and must not enter ordinary runtime context. During Skill maintenance, record mechanisms and failed changes there before modifying another runtime rule. Iterations use n=1; only a frozen release candidate receives the complete n=3 matrix.
