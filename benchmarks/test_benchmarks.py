@@ -101,13 +101,11 @@ class BenchmarkHarnessTests(unittest.TestCase):
         )
         self.assertEqual(bench.parse_router_answer("DEBUGGING"), ("", ""))
 
-    def test_core_is_route_agnostic_and_execution_tree_owns_escalation(self):
+    def test_core_is_route_agnostic_and_event_router_owns_escalation(self):
         skill = (bench.ROOT / "SKILL.md").read_text(encoding="utf-8")
-        core = skill.split("## Core", 1)[1].split("## Execution Depth + Capability Tree", 1)[0]
-        execution = skill.split("## Execution Depth + Capability Tree", 1)[1].split(
-            "## Retrieval Depth + Retrieval Tree", 1
-        )[0]
-        retrieval = skill.split("## Retrieval Depth + Retrieval Tree", 1)[1].split("## Isolation Gate", 1)[0]
+        core = skill.split("## Core", 1)[1].split("## Direct Path", 1)[0]
+        router = skill.split("## Event Router", 1)[1].split("## Explicit-only requirements interview", 1)[0]
+        retrieval = skill.split("## Retrieval Policy", 1)[1].split("## Isolation Gate", 1)[0]
 
         self.assertIn("smallest coherent reachable change", core)
         self.assertIn("established contracts", core)
@@ -120,14 +118,14 @@ class BenchmarkHarnessTests(unittest.TestCase):
         ):
             self.assertNotIn(module_specific.lower(), core.lower())
 
-        self.assertIn("observed failure", execution)
-        self.assertIn("desired behavior is known", execution)
-        self.assertIn("references/debugging.md", execution)
-        self.assertIn("references/engineering.md", execution)
-        self.assertIn("references/specialists/security.md", execution)
-        self.assertIn("references/specialists/state.md", execution)
-        self.assertNotIn("navigation.md", execution.lower())
-        self.assertIn("already-available structural capability", retrieval)
+        self.assertIn("observed failure", router)
+        self.assertIn("material user-owned choice", router)
+        self.assertIn("unknown contract or invariant", router)
+        self.assertIn("references/debugging.md", router)
+        self.assertIn("references/decision.md", router)
+        self.assertIn("references/implementation.md", router)
+        self.assertNotIn("specialists/", router)
+        self.assertIn("structural code index", retrieval)
         self.assertIn("references/navigation.md", retrieval)
 
     def test_decision_suite_inlines_decision_module(self):

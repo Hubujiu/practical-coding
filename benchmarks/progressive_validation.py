@@ -1,5 +1,5 @@
 #!/usr/bin/env python3
-"""Run frozen E/R caps, root-to-leaf ablations, and real-repository held-out tasks."""
+"""Run frozen real-repository held-out tasks against the active event router."""
 
 from __future__ import annotations
 
@@ -28,14 +28,14 @@ import run_benchmarks as bench
 from progressive_cases import ABLATION_IDS, CALIBRATION_IDS, CASES, REPOSITORIES
 
 
-VERSION = "1.0"
+VERSION = "2.0"
 MODEL = bench.MODEL
 REASONING = bench.REASONING
 EXECUTION_LEVELS = ("E0", "E1", "E2", "E3")
 RETRIEVAL_LEVELS = ("R0", "R1", "R2", "R3")
 TRACE_RE = re.compile(
-    r"BENCHMARK_TRACE\s+execution=(E[0-3])\s+retrieval=(R[0-3])\s+"
-    r"path=(\S+)\s+refs=([^\r\n]+)",
+    r"BENCHMARK_TRACE\s+reasoning=(NONE|DEBUGGING|DECISION|IMPLEMENTATION)\s+"
+    r"retrieval=(NONE|TARGETED|BOUNDED|STRUCTURAL)\s+refs=([^\r\n]+)",
     re.I,
 )
 
@@ -132,38 +132,22 @@ def ablation_bundle(variant: str, case: dict[str, Any]) -> str:
 def parse_trace(answer: str) -> dict[str, Any]:
     matches = list(TRACE_RE.finditer(answer))
     if not matches:
-        return {"execution": None, "retrieval": None, "capability_path": [], "references_loaded": []}
+        return {"reasoning": None, "retrieval": None, "references_loaded": []}
     match = matches[-1]
-    path_raw = match.group(3).strip().strip("<>").lower()
-    path = [] if path_raw == "none" else [part for part in path_raw.split(">") if part]
-    refs_raw = match.group(4).strip().strip("<>")
+    refs_raw = match.group(3).strip().strip("<>")
     refs = [] if refs_raw.lower() == "none" else [part.strip().strip("<>") for part in refs_raw.split(",") if part.strip()]
     return {
-        "execution": match.group(1).upper(),
+        "reasoning": match.group(1).upper(),
         "retrieval": match.group(2).upper(),
-        "capability_path": path,
         "references_loaded": refs,
     }
 
 
 def validate_trace(trace: dict[str, Any]) -> bool:
-    execution = trace["execution"]
-    retrieval = trace["retrieval"]
-    path = trace["capability_path"]
-    if execution not in EXECUTION_LEVELS or retrieval not in RETRIEVAL_LEVELS:
-        return False
-    if not path:
-        return execution in {"E0", "E1"}
-    if len(path) == 1:
-        return execution == "E2" and path[0] in {"diagnosis", "engineering"}
-    if len(path) != 2 or execution != "E3":
-        return False
-    root, leaf = path
-    allowed = {
-        "diagnosis": {"security", "state", "compatibility", "performance"},
-        "engineering": {"security", "state", "compatibility", "performance", "quality", "interface"},
-    }
-    return leaf in allowed.get(root, set())
+    return (
+        trace["reasoning"] in {"NONE", "DEBUGGING", "DECISION", "IMPLEMENTATION"}
+        and trace["retrieval"] in {"NONE", "TARGETED", "BOUNDED", "STRUCTURAL"}
+    )
 
 
 def score_answer(case: dict[str, Any], answer: str, commands: list[str], workspace: Path) -> dict[str, Any]:
@@ -175,9 +159,8 @@ def score_answer(case: dict[str, Any], answer: str, commands: list[str], workspa
     clean = status.returncode == 0 and not status.stdout.strip()
     manual_markers = (
         "references/manual/clarification.md",
-        "references/manual/decision.md",
         "requirements interview",
-        "decision mode",
+        "grill me",
     )
     spontaneous_manual = any(marker in lower for marker in manual_markers)
     passed = not missing and not probe_missing and clean
@@ -224,11 +207,11 @@ def prepare_workspace(source: Path, commit: str, workspace: Path) -> None:
 def task_prompt(case: dict[str, Any], loaded: str, variant: str) -> str:
     trace = (
         "After the evidence-backed report, append exactly one final line using this benchmark-only instrumentation: "
-        "BENCHMARK_TRACE execution=E0 retrieval=R0 path=none refs=none. "
-        "Replace the depths with the levels actually used; for a specialist path use, for example, "
-        "path=engineering>security, and list comma-separated reference paths after refs=. "
-        "E1 is allowed only when you actually run one executable probe; source discovery alone changes only R-depth. "
-        "Manual-only modes are never a capability path. Do not mention this instrumentation elsewhere."
+        "BENCHMARK_TRACE reasoning=NONE retrieval=TARGETED refs=none. "
+        "Replace reasoning with NONE, DEBUGGING, DECISION, or IMPLEMENTATION and retrieval with NONE, TARGETED, "
+        "BOUNDED, or STRUCTURAL according to the behavior actually used; list comma-separated Practical Coding "
+        "reference paths after refs=. Requirements interviewing is never a reasoning route. "
+        "Do not mention this instrumentation elsewhere."
     )
     return (
         f"Frozen held-out task {case['task_id']} ({case['family']}).\n\n{case['prompt']}\n\n"
@@ -246,28 +229,13 @@ def build_specs(phases: list[str], runs: int, *, current_only: bool = False) -> 
     specs: list[tuple[str, str, str, int]] = []
     selected = set(phases)
     if "all" in selected:
-        selected = {"heldout", "axes", "ablation"}
+        selected = {"heldout"}
     if "heldout" in selected:
         for case in CASES:
             variants = ("adaptive",) if current_only else ("no-skill", "previous", "adaptive")
             for variant in variants:
                 for repetition in range(1, runs + 1):
                     specs.append(("heldout", case["task_id"], variant, repetition))
-    if "axes" in selected:
-        for case in CASES:
-            if case["task_id"] not in CALIBRATION_IDS:
-                continue
-            for axis, levels in (("execution", EXECUTION_LEVELS), ("retrieval", RETRIEVAL_LEVELS)):
-                for variant in (*levels, "adaptive"):
-                    for repetition in range(1, runs + 1):
-                        specs.append((axis, case["task_id"], variant, repetition))
-    if "ablation" in selected:
-        for case in CASES:
-            if case["task_id"] not in ABLATION_IDS:
-                continue
-            for variant in ("parent-only", "parent-leaf", "adaptive"):
-                for repetition in range(1, runs + 1):
-                    specs.append(("ablation", case["task_id"], variant, repetition))
     return specs
 
 
@@ -300,10 +268,6 @@ def run_cell(
             loaded = bench.skill_text("practical-previous", {}, previous)
         else:
             loaded = bench.skill_text("practical-current", {}, None)
-    elif phase in {"execution", "retrieval"}:
-        loaded = bench.skill_text("practical-current", {}, None) if variant == "adaptive" else capped_bundle(phase, variant)
-    elif phase == "ablation":
-        loaded = ablation_bundle(variant, case)
     else:
         raise ValueError(phase)
 
@@ -327,9 +291,8 @@ def run_cell(
         "family": case["family"],
         "variant": variant,
         "repetition": repetition,
-        "expected_execution": case["expected_execution"],
-        "expected_retrieval": case["expected_retrieval"],
-        "expected_capability_path": case["capability_path"],
+        "expected_reasoning": case["expected_reasoning"],
+        "expected_retrieval": case["expected_retrieval_mode"],
         "exit_status": code,
         "timed_out": timed_out,
         "forced_after_completion": forced,
@@ -338,16 +301,14 @@ def run_cell(
         **parsed["usage"],
         "answer": parsed["answer"],
         "tool_commands": parsed["tool_commands"],
-        "selected_execution": trace["execution"],
+        "selected_reasoning": trace["reasoning"],
         "selected_retrieval": trace["retrieval"],
-        "selected_capability_path": trace["capability_path"],
         "references_loaded": trace["references_loaded"],
         "routing_trace_valid": trace_valid,
         "routing_exact": (
             trace_valid
-            and trace["execution"] == case["expected_execution"]
-            and trace["retrieval"] == case["expected_retrieval"]
-            and trace["capability_path"] == case["capability_path"]
+            and trace["reasoning"] == case["expected_reasoning"]
+            and trace["retrieval"] == case["expected_retrieval_mode"]
         ),
     }
     infrastructure_error = "timeout" if timed_out else (f"codex exit status {code}" if code and not forced else None)
@@ -493,7 +454,7 @@ def ablation_report(records: list[dict[str, Any]], runs: int) -> dict[str, Any]:
 
 def parse_args() -> argparse.Namespace:
     parser = argparse.ArgumentParser(description=__doc__)
-    parser.add_argument("--phase", action="append", choices=("all", "heldout", "axes", "ablation"), default=[])
+    parser.add_argument("--phase", action="append", choices=("all", "heldout"), default=[])
     parser.add_argument("--runs", type=int, default=3)
     parser.add_argument("--workers", type=int, default=3)
     parser.add_argument("--output", type=Path)
@@ -511,15 +472,9 @@ def parse_args() -> argparse.Namespace:
 def self_test() -> None:
     assert len(CASES) >= 20
     assert set(REPOSITORIES) == {case["repository"] for case in CASES}
-    assert {case["expected_execution"] for case in CASES} == set(EXECUTION_LEVELS)
-    assert {case["expected_retrieval"] for case in CASES} == set(RETRIEVAL_LEVELS)
-    assert {case["capability_path"][-1] for case in CASES if len(case["capability_path"]) == 2} == {
-        "security", "state", "compatibility", "performance", "quality", "interface"
-    }
-    for axis, levels in (("execution", EXECUTION_LEVELS), ("retrieval", RETRIEVAL_LEVELS)):
-        for level in levels:
-            bundle = capped_bundle(axis, level)
-            assert f'axis="{axis}" level="{level}"' in bundle
+    assert {case["expected_reasoning"] for case in CASES} == {"NONE", "DEBUGGING", "IMPLEMENTATION"}
+    assert {case["expected_retrieval_mode"] for case in CASES} == {"TARGETED", "BOUNDED", "STRUCTURAL"}
+    assert validate_trace(parse_trace("BENCHMARK_TRACE reasoning=DEBUGGING retrieval=BOUNDED refs=references/debugging.md"))
     print("progressive validation self-test: PASS")
 
 
@@ -608,20 +563,6 @@ def main() -> int:
     selected_phases = {spec[0] for spec in specs}
     if "heldout" in selected_phases:
         (output / "heldout-report.json").write_text(json.dumps(heldout_report(records, args.runs), indent=2) + "\n", encoding="utf-8")
-    if selected_phases & {"execution", "retrieval"}:
-        observations, details = axes_outputs(records, args.runs)
-        with (output / "observations.jsonl").open("w", encoding="utf-8") as handle:
-            for observation in observations:
-                handle.write(json.dumps(observation, ensure_ascii=False) + "\n")
-        (output / "axes-detail.json").write_text(json.dumps(details, indent=2) + "\n", encoding="utf-8")
-        ladder = bench.run_command(
-            [sys.executable, str(HERE / "ladder_analysis.py"), str(output / "observations.jsonl"), "--output", str(output / "ladder-report.json")],
-            ROOT,
-        )
-        if ladder.returncode:
-            raise RuntimeError(ladder.stderr)
-    if "ablation" in selected_phases:
-        (output / "ablation-report.json").write_text(json.dumps(ablation_report(records, args.runs), indent=2) + "\n", encoding="utf-8")
     manifest.update({
         "completed_at": dt.datetime.now(dt.timezone.utc).isoformat(),
         "elapsed_seconds": elapsed,

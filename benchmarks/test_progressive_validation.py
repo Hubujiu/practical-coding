@@ -3,50 +3,34 @@ import unittest
 from pathlib import Path
 
 from benchmarks import progressive_validation as progressive
-from benchmarks.progressive_cases import ABLATION_IDS, CALIBRATION_IDS, CASES
+from benchmarks.progressive_cases import CASES
 
 
 class ProgressiveValidationTests(unittest.TestCase):
-    def test_catalog_has_required_coverage(self):
+    def test_catalog_has_required_real_task_coverage(self):
         self.assertGreaterEqual(len(CASES), 20)
-        self.assertEqual({case["expected_execution"] for case in CASES}, set(progressive.EXECUTION_LEVELS))
-        self.assertEqual({case["expected_retrieval"] for case in CASES}, set(progressive.RETRIEVAL_LEVELS))
         self.assertEqual(
-            {case["capability_path"][-1] for case in CASES if len(case["capability_path"]) == 2},
-            {"security", "state", "compatibility", "performance", "quality", "interface"},
+            {case["expected_reasoning"] for case in CASES},
+            {"NONE", "DEBUGGING", "IMPLEMENTATION"},
         )
-        self.assertGreaterEqual(len(CALIBRATION_IDS), 8)
-        self.assertGreaterEqual(len(ABLATION_IDS), 6)
-
-    def test_caps_exclude_later_depth_headings(self):
-        e0 = progressive.capped_bundle("execution", "E0")
-        e2 = progressive.capped_bundle("execution", "E2")
-        r1 = progressive.capped_bundle("retrieval", "R1")
-        self.assertNotIn("### E1 — Probe", e0)
-        self.assertNotIn("### E3 — Specialist leaf", e2)
-        self.assertNotIn("### R2 — Specialized retrieval", r1)
-        self.assertIn("references/debugging.md", e2)
-
-    def test_parent_leaf_ablation_has_no_conflicting_e2_cap(self):
-        case = next(case for case in CASES if case["task_id"] == "pp-admin-token-security")
-        bundle = progressive.ablation_bundle("parent-leaf", case)
-        self.assertIn("references/specialists/security.md", bundle)
-        self.assertNotIn('<benchmark-cap axis="execution" level="E2">', bundle)
+        self.assertEqual(
+            {case["expected_retrieval_mode"] for case in CASES},
+            {"TARGETED", "BOUNDED", "STRUCTURAL"},
+        )
 
     def test_trace_parser_uses_last_machine_line(self):
         trace = progressive.parse_trace(
-            "report\nBENCHMARK_TRACE execution=E0 retrieval=R1 path=none refs=none\n"
-            "BENCHMARK_TRACE execution=E3 retrieval=R2 path=<engineering>security> refs=<references/engineering.md,references/specialists/security.md>"
+            "report\nBENCHMARK_TRACE reasoning=NONE retrieval=TARGETED refs=none\n"
+            "BENCHMARK_TRACE reasoning=DEBUGGING retrieval=BOUNDED refs=references/debugging.md"
         )
-        self.assertEqual(trace["execution"], "E3")
-        self.assertEqual(trace["retrieval"], "R2")
-        self.assertEqual(trace["capability_path"], ["engineering", "security"])
-        self.assertEqual(len(trace["references_loaded"]), 2)
+        self.assertEqual(trace["reasoning"], "DEBUGGING")
+        self.assertEqual(trace["retrieval"], "BOUNDED")
+        self.assertEqual(trace["references_loaded"], ["references/debugging.md"])
         self.assertTrue(progressive.validate_trace(trace))
 
-    def test_trace_rejects_leaf_path_below_e3(self):
+    def test_trace_rejects_removed_numeric_depth_contract(self):
         trace = progressive.parse_trace(
-            "BENCHMARK_TRACE execution=E0 retrieval=R2 path=engineering>security refs=references/engineering.md"
+            "BENCHMARK_TRACE execution=E3 retrieval=R2 path=engineering>security refs=references/engineering.md"
         )
         self.assertFalse(progressive.validate_trace(trace))
 
@@ -62,16 +46,16 @@ class ProgressiveValidationTests(unittest.TestCase):
             score = progressive.score_answer(case, "alpha and bravo", ["pytest focused"], root)
         self.assertTrue(score["passed"])
 
-    def test_full_spec_count_is_frozen(self):
-        specs = progressive.build_specs(["all"], 3)
-        expected = len(CASES) * 3 * 3 + len(CALIBRATION_IDS) * 2 * 5 * 3 + len(ABLATION_IDS) * 3 * 3
-        self.assertEqual(len(specs), expected)
+    def test_all_is_heldout_only_for_active_runtime(self):
+        specs = progressive.build_specs(["all"], 1, current_only=True)
+        self.assertEqual(len(specs), len(CASES))
+        self.assertEqual({spec[0] for spec in specs}, {"heldout"})
+        self.assertEqual({spec[2] for spec in specs}, {"adaptive"})
 
-    def test_current_only_omits_external_comparison_arms(self):
-        specs = progressive.build_specs(["all"], 3, current_only=True)
-        heldout = [spec for spec in specs if spec[0] == "heldout"]
-        self.assertEqual(len(heldout), len(CASES) * 3)
-        self.assertEqual({spec[2] for spec in heldout}, {"adaptive"})
+    def test_comparison_arms_remain_available_but_are_not_default_current_only(self):
+        specs = progressive.build_specs(["heldout"], 1, current_only=False)
+        self.assertEqual(len(specs), len(CASES) * 3)
+        self.assertEqual({spec[2] for spec in specs}, {"no-skill", "previous", "adaptive"})
 
 
 if __name__ == "__main__":

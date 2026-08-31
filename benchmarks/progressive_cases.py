@@ -1,4 +1,4 @@
-"""Frozen real-repository cases for the progressive capability-tree experiment.
+"""Frozen real-repository cases for adaptive runtime experiments.
 
 The cases are intentionally read-only.  They exercise source retrieval, executable
 probes, diagnosis, engineering guarantees, and every claimed specialist leaf without
@@ -40,6 +40,19 @@ def _case(
     probe_terms: list[str] | None = None,
     calibration: bool = False,
 ) -> dict[str, object]:
+    reasoning = (
+        "DEBUGGING"
+        if (capability_path or [None])[0] == "diagnosis"
+        else "IMPLEMENTATION"
+        if (capability_path or [None])[0] == "engineering"
+        else "NONE"
+    )
+    retrieval_mode = {
+        "R0": "TARGETED",
+        "R1": "BOUNDED",
+        "R2": "STRUCTURAL",
+        "R3": "STRUCTURAL",
+    }[retrieval]
     return {
         "task_id": task_id,
         "repository": repository,
@@ -47,6 +60,8 @@ def _case(
         "expected_execution": execution,
         "expected_retrieval": retrieval,
         "capability_path": capability_path or [],
+        "expected_reasoning": reasoning,
+        "expected_retrieval_mode": retrieval_mode,
         "prompt": prompt,
         "required": required,
         "probe_terms": probe_terms or [],

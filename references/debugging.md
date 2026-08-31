@@ -1,33 +1,33 @@
-# Diagnosis
+# Debugging
 
-Load this capability root only after an observed or reported failure, regression, incorrect behavior, or failed verification still lacks an evidenced cause after sufficient bounded retrieval and, when useful, one cheap executable Core-only probe.
+Load this module only for an observed or reported failure, regression, incorrect behavior, or failed verification that still lacks an evidenced cause.
 
-Do not load Diagnosis merely because more source must be found. Caller/reference/flow discovery belongs to Retrieval and can deepen independently while execution remains E0.
+## Evidence First
 
-## Structured diagnosis
+- Reproduce the symptom when practical, or collect the smallest useful evidence when reproduction is unavailable.
+- Trace the real execution path backward from the symptom to the earliest incorrect state.
+- Distinguish observed facts from hypotheses.
+- Test one meaningful hypothesis at a time instead of changing several possible causes together.
 
-1. Reproduce the symptom when practical, or collect the smallest evidence that distinguishes plausible causes.
-2. Trace the real execution path backward from the symptom to the earliest incorrect state.
-3. Keep observed facts separate from hypotheses.
-4. Test one meaningful hypothesis at a time.
-5. Fix the narrowest authoritative cause, not a downstream symptom.
-6. Verify the original symptom with fresh focused evidence.
+## Fix the Cause
 
-Do not use broad retries, catches, fallbacks, defaults, or defensive branches to hide an unexplained failure. Temporary instrumentation is justified only when it distinguishes hypotheses.
+- Prefer the narrowest fix that corrects the root cause and preserves existing contracts.
+- Do not patch a downstream symptom when an earlier incorrect state is identifiable and fixable.
+- Treat universal wording such as "never," "every," or "no X can" as one contract across current mutation paths. Before editing a reported caller, inspect its delegated helper and nearest sibling caller; if both can violate that contract, fix the invariant once in their common state-mutation or parsing helper. Patch only the reported adapter when evidence shows the helper intentionally owns a different lower-level contract.
+- Do not use broad retries, catches, fallbacks, default values, or defensive branches to hide an unexplained failure.
+- Add temporary logging or instrumentation only when it produces evidence needed to distinguish hypotheses.
 
-## Specialist leaf trigger
+Judge a fix by delivered behavior. It should remove the earliest incorrect state, preserve other callers of the repaired boundary, restore any violated security, permission, integrity, accessibility, compatibility, or explicit project constraint, and change no unrelated behavior.
 
-Load one child only when the remaining causal uncertainty is specifically inside a material specialist boundary:
+## Stay in Scope
 
-- trust/permission/rejection behavior → `specialists/security.md`
-- persistence/order/race/transaction/restart behavior → `specialists/state.md`
-- version/public-contract/environment coexistence → `specialists/compatibility.md`
-- measured hot path/resource behavior → `specialists/performance.md`
-
-`quality.md` and `interface.md` are not diagnosis leaves by default. Use them only if the task itself changes from diagnosis into a substantive structural or interface-quality event and the root reroutes it.
+- Diagnose the reported failure; do not turn debugging into a repository-wide search for unrelated defects.
+- Do not write tests merely because debugging occurred. Use the cheapest reproduction or focused check that can falsify the fix; add a durable test only when regression risk or project requirements justify it.
+- If diagnosis exposes a different material blocker, return it to the root instead of loading another reference here.
 
 ## Exit
 
-As soon as the earliest incorrect state and authoritative repair boundary are known, stop diagnosis. Contract to the affected surface, make the smallest coherent fix, and run the cheapest check that can falsify the fix.
-
-Add a durable regression test only when project rules, regression risk, or the evidence plan gives it lasting value.
+- Verify the original symptom with fresh evidence.
+- Exercise the nearest shared caller or boundary when the repaired invariant serves more than the named symptom.
+- Remove temporary diagnostic instrumentation unless it has durable operational value.
+- Report remaining uncertainty instead of hiding it behind defensive code.
