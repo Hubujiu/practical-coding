@@ -32,6 +32,12 @@ The repaired native run passed 18/18 Behavior cells and loaded the current candi
 
 Transcripts showed repeated general waste mechanisms: invoking a broad test runner after discovery found no tests, retrying blocked generated-cache cleanup, reading a reference through a wrongly duplicated path before resolving it, and searching sibling workspaces for an implementation despite a known local target and settled contract. Tighten those general operating constraints without naming cases or changing scoring.
 
+## n=1 full candidate e58e29a
+
+Quality met or exceeded the prior version: Delivery, Debug, Decision, and Behavior were perfect; Router was 36/38 (94.7%) versus the prior aggregate 84.2%. The strict cost gate still failed. Delivery improved uncached input, output, time, and tools but total tokens and LOC were higher. Debug, Decision, and Behavior retained median cost regressions; Behavior improved materially from the preceding isolated run but remained +483 uncached, +193 output, +11,177 total tokens, +4.5 seconds, and +0.5 tools.
+
+Cross-suite transcripts again showed the same mechanisms: repeated cleanup after an explicit rejection, broad history/inventory work for known local targets, broad test-runner attempts when no test exists, and one extra failed reference read. Prefer checks that suppress disposable output, make failed cleanup terminal, and keep known-target retrieval local. Clarify that finite known consumers located by identifiers remain Bounded, while a missing user-owned policy alone requires no retrieval.
+
 ## Frozen gate
 
 For every common suite, current pass/correctness/safety/build rates must be no lower than the prior version. Median uncached input, output, total tokens, duration, tool count, and changed LOC must be no higher. Iterations use current-only n=1; only a candidate that passes that directional check proceeds to current-only n=3 public and held-out validation. Do not add case nouns or alter expectations to make a candidate pass.
