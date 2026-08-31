@@ -276,7 +276,7 @@ CASES = [
         "E3",
         "R2",
         "Review where sensitive-word rejection occurs in the Spring AI Alibaba request path. Map interceptor registration and callers, define rejection-before-model-side-effect behavior, and identify the narrowest security tests needed. Report only; do not edit files.",
-        [["SensitiveWordInterceptor"], ["SpringAiAlibabaAgentService"], ["ModelInterceptor"], ["reject", "before"], ["test"]],
+        [["SensitiveWordInterceptor"], ["SpringAiAlibabaAgentService"], ["ModelInterceptor", "model interceptor"], ["reject", "before"], ["test"]],
         capability_path=["engineering", "security"],
     ),
     _case(

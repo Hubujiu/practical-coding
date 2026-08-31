@@ -40,7 +40,17 @@ Cost should be unchanged or lower because at most one general reasoning referenc
 
 ## Result
 
-Pending.
+### Iteration 1 — `67aad6c`, n=1
+
+- Public full current-only: Delivery 18/18, Debug 13/14, Decision 7/10, Router 30/38, Native Behavior 17/18.
+- Held-out current-only: 21/22 mechanical passes, 22/22 determinate, 0 spontaneous requirements-interview activation, 22/22 valid traces, 10/22 exact reasoning+retrieval traces.
+- The held-out miss was a tokenization defect: the answer proved the model-interceptor boundary but the evidence group accepted only unspaced `ModelInterceptor`.
+- The Debug miss exposed a contradictory oracle: the prompt required preserving sibling cache semantics while the scorer required changing them. The candidate preserved the stated sibling contract.
+- Four Router misses were Direct tasks incorrectly escalated to Implementation despite already-settled target/boundary/check evidence.
+- Native Debugging delivered a correct shared-boundary fix but did not load the required module before diagnostic source work.
+- Decision outputs converged but lacked the stable `Recommendation:` structure required for compact user-visible comparison.
+
+Iteration 2 changes are limited to these reusable mechanisms: pre-source event routing, explicit Direct settled-boundary protection, stable Decision output structure, retrieval instrumentation definitions, and scorer/oracle corrections. No benchmark case noun is added to runtime text.
 
 ## Decision
 
@@ -49,4 +59,3 @@ Pending.
 ## Follow-up
 
 If this fails, preserve the failure mechanism here or under `evolution/rejected/` before starting another runtime change.
-

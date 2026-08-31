@@ -77,6 +77,14 @@ class ExpandedCatalogTests(unittest.TestCase):
                 oracle = score_extra_debug(case, root)
                 self.assertEqual((oracle["correct"], oracle["safe"]), (1, 1), oracle["reason"])
 
+    def test_ttl_oracle_preserves_the_prompted_sibling_cache_semantics(self):
+        with tempfile.TemporaryDirectory() as tmp:
+            root = Path(tmp)
+            for name, content in DEBUG_ORACLES["trace-ttl-zero"].items():
+                (root / name).write_text(content, encoding="utf-8")
+            result = score_extra_debug("trace-ttl-zero", root)
+            self.assertEqual((result["correct"], result["safe"]), (1, 1))
+
     def test_decision_cases_have_two_turn_resolution_contract(self):
         for case, spec in bench.DECISION_CASES.items():
             with self.subTest(case=case):

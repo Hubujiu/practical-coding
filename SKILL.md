@@ -31,6 +31,8 @@ The Core always applies. If no Event Router condition matches, proceed immediate
 
 The Router selects only whether one additional reasoning module must be loaded; it does not own retrieval strategy or add mandatory workflow. Route only on a present unresolved blocker. Settled facts and choices are inputs, not events. A security, persistence, migration, concurrency, performance, interface, or compatibility noun is not itself a blocker.
 
+Complete this routing check from the request and already-available evidence before diagnostic, decision-research, or change-mapping source work. When a condition matches, the selected reference is the next read. Direct is allowed when the cause, choice, governing boundary, affected surface, and sufficient check needed for the requested action are already established; do not manufacture uncertainty merely because source will be read.
+
 Use this first-match ladder:
 
 1. An observed failure, regression, incorrect behavior, or failed check still lacks an evidenced cause: read `references/debugging.md`.
@@ -38,6 +40,8 @@ Use this first-match ladder:
 3. Safe execution is blocked by an unknown contract or invariant, an unmapped coherent change surface, an unresolved material risk boundary such as security/permissions, irreversible effects, persistence/migration, concurrency/transactions, or compatibility, or insufficient evidence for a risky material claim: read `references/implementation.md`.
 
 Read exactly that one reasoning module in addition to the Core. Resolve the blocker, then reassess only if a different blocker appears. Reassessment does not justify accumulating references in the root: handle a trivial later blocker with the Core, or isolate a substantial later event when the saved context exceeds handoff cost. Do not preload modules or load candidates together to compare them.
+
+A named target plus an already-settled behavior, contract, boundary, and focused check stays Direct even when the change concerns persistence, permissions, compatibility, or irreversible effects. File count and the need for local caller lookup do not create an Implementation event.
 
 ## Explicit-only requirements interview
 

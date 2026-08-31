@@ -419,8 +419,8 @@ def score_extra_debug(case: str, workspace: Path) -> dict[str, Any]:
         if score == "ttl-zero":
             module = _load_module(workspace, "ttl.py", "debug_ttl_zero")
             correct = module.session_ttl({"SESSION_TTL": "0"}) == 0
-            safe = module.cache_ttl({"CACHE_TTL": "0"}) == 0 and module.cache_ttl({}) == 60
-            return _result(correct, safe, "explicit zero survives shared TTL parsing")
+            safe = module.cache_ttl({"CACHE_TTL": "0"}) == 60 and module.cache_ttl({}) == 60
+            return _result(correct, safe, "session zero is preserved without changing sibling cache semantics")
 
         if score == "null-sort":
             module = _load_module(workspace, "sorting.py", "debug_null_sort")

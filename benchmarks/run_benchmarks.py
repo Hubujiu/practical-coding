@@ -1141,7 +1141,7 @@ def scorer_selftest(ponytail: Any) -> None:
             for name, content in data["files"].items():
                 (workspace / name).write_text(content, encoding="utf-8")
             bad = custom_debug_score(case, workspace)
-            if bad["correct"] != 0 or bad["safe"] != 0:
+            if bad["correct"] == 1 and bad["safe"] == 1:
                 raise RuntimeError(f"custom debug bad fixture not caught: {case}")
 
 

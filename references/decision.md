@@ -10,6 +10,16 @@ Resolve discoverable facts from the repository and authoritative sources before 
 
 For each necessary question, explain why it matters, recommend one option with the reason, and state the strongest trade-off. Ask every independent decision on the current frontier in one round; defer dependent questions. If uncertainty is cheap and reversible, choose the repository or platform default and proceed.
 
+Use a compact stable shape so the recommendation is visible rather than buried in prose:
+
+```text
+Q<n> — Decision: <one consequential question>
+Recommendation: <one position and why>
+Trade-off: <the strongest cost or viable alternative>
+```
+
+End with the smallest answer format and wait. When the reply resolves the frontier, do not ask for confirmation of a now-determined choice.
+
 ## Resolve
 
 1. State the exact decision and constraints that distinguish acceptable options.
@@ -17,9 +27,8 @@ For each necessary question, explain why it matters, recommend one option with t
 3. Keep at most three viable options and compare only material fit, correctness, compatibility, operational, maintenance, and migration differences.
 4. Select the smallest option that fully satisfies current requirements. Do not create an abstraction, dependency, wrapper, or extension point without a present need.
 
-Research only when local evidence cannot resolve a lasting choice or an external dependency is being considered. Prefer official and maintained sources; verify API fit, maintenance, license, and known constraints. When the choice is resolved, state the selected option, rationale, trade-off, assumptions, and deferred validation compactly before proceeding within existing authorization.
+Research only when local evidence cannot resolve a lasting choice or an external dependency is being considered. Prefer official and maintained sources; verify API fit, maintenance, license, and known constraints. When the choice is resolved, use `Recommendation:` and `Trade-off:` labels to state the selected option, rationale, assumptions, and deferred validation compactly before proceeding within existing authorization.
 
 ## Durable Decisions
 
 Record the decision only if its reason is not evident in code, future maintainers will likely reconsider it, and the project already has an appropriate mechanism or the user requested one.
-

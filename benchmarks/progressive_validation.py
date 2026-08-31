@@ -209,7 +209,10 @@ def task_prompt(case: dict[str, Any], loaded: str, variant: str) -> str:
         "After the evidence-backed report, append exactly one final line using this benchmark-only instrumentation: "
         "BENCHMARK_TRACE reasoning=NONE retrieval=TARGETED refs=none. "
         "Replace reasoning with NONE, DEBUGGING, DECISION, or IMPLEMENTATION and retrieval with NONE, TARGETED, "
-        "BOUNDED, or STRUCTURAL according to the behavior actually used; list comma-separated Practical Coding "
+        "BOUNDED, or STRUCTURAL according to the behavior actually used. NONE means no repository source acquisition; "
+        "TARGETED means only already-known paths or symbols; BOUNDED means lexical/filename/symbol search in a limited "
+        "scope; STRUCTURAL means relationship/flow mapping or bounded exhaustive discovery, even when reconstructed "
+        "from source because no graph index is available. List comma-separated Practical Coding "
         "reference paths after refs=. Requirements interviewing is never a reasoning route. "
         "Do not mention this instrumentation elsewhere."
     )

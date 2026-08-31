@@ -17,6 +17,8 @@ class ProgressiveValidationTests(unittest.TestCase):
             {case["expected_retrieval_mode"] for case in CASES},
             {"TARGETED", "BOUNDED", "STRUCTURAL"},
         )
+        security = next(case for case in CASES if case["task_id"] == "sa-sensitive-security")
+        self.assertIn("model interceptor", security["required"][2])
 
     def test_trace_parser_uses_last_machine_line(self):
         trace = progressive.parse_trace(

@@ -26,7 +26,7 @@ DEBUG_ORACLES = {
         "inventory.py": """def _debit(stock, sku, quantity):\n    available = stock.get(sku, 0)\n    if quantity > available:\n        return False\n    stock[sku] = available - quantity\n    return True\n\ndef reserve(stock, sku, quantity):\n    return _debit(stock, sku, quantity)\n\ndef consume(stock, sku, quantity):\n    return _debit(stock, sku, quantity)\n""",
     },
     "trace-ttl-zero": {
-        "ttl.py": """def parse_ttl(value, default):\n    if value is None:\n        return default\n    return int(value)\n\ndef session_ttl(env):\n    return parse_ttl(env.get(\"SESSION_TTL\"), 300)\n\ndef cache_ttl(env):\n    return parse_ttl(env.get(\"CACHE_TTL\"), 60)\n""",
+        "ttl.py": """def parse_ttl(value, default):\n    if value is None:\n        return default\n    return int(value) or default\n\ndef session_ttl(env):\n    value = env.get(\"SESSION_TTL\")\n    if value is None:\n        return 300\n    return int(value)\n\ndef cache_ttl(env):\n    return parse_ttl(env.get(\"CACHE_TTL\"), 60)\n""",
     },
     "trace-null-sort": {
         "sorting.py": """def name_key(value):\n    return (value is None, \"\" if value is None else value.lower())\n\ndef sort_products(rows):\n    return sorted(rows, key=lambda row: name_key(row.get(\"name\")))\n\ndef sort_customers(rows):\n    return sorted(rows, key=lambda row: name_key(row.get(\"name\")))\n""",
