@@ -55,6 +55,8 @@ if ($TreeSelfTest) {
     Push-Location $repoRoot
     try {
         & python benchmarks/tree_validation.py --self-test
+        if ($LASTEXITCODE -ne 0) { exit $LASTEXITCODE }
+        & python -m unittest benchmarks.test_tree_benchmarks
         exit $LASTEXITCODE
     }
     finally {
