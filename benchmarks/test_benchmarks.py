@@ -16,11 +16,12 @@ class BenchmarkHarnessTests(unittest.TestCase):
             (source / "SKILL.md").write_text("# Current skill\n", encoding="utf-8")
             (source / "references").mkdir()
             (source / "references" / "debugging.md").write_text("# Debugging\n", encoding="utf-8")
-            installed = bench.install_native_skill(root / "home", source)
+            installed = bench.install_native_skill(root / "home" / "run", source, shared_alias=True)
 
-            self.assertEqual(installed, root / "home" / "skills" / ".system" / "practical-coding")
+            self.assertEqual(installed, root / "home" / "run" / "skills" / ".system" / "practical-coding")
             self.assertEqual((installed / "SKILL.md").read_text(encoding="utf-8"), "# Current skill\n")
-            self.assertTrue((root / "home" / "skills" / "practical-coding" / "references" / "debugging.md").is_file())
+            self.assertTrue((root / "home" / "run" / "skills" / "practical-coding" / "references" / "debugging.md").is_file())
+            self.assertTrue((root / "home" / "skills" / "practical-coding" / "SKILL.md").is_file())
 
     def test_decision_labels_override_question_marks_inside_one_item(self):
         answer = "❓ **Q1 — Boundary**: Must it deploy alone? Conversely, can one team own it?\n\n➡️ **Recommendation:** Keep it together because separation adds complexity."

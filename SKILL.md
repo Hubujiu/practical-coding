@@ -18,6 +18,7 @@ Before the first diagnostic, decision-research, or change-mapping source command
 - Read the request and touched code; define the smallest observable success.
 - Stop at the first rung that works: do nothing; reuse the nearest project primitive; standard library; platform feature; available dependency; one line; otherwise minimum local code.
 - Reuse established APIs and established contracts. Build only behavior required by a current caller or requirement; nearby richness is not a requirement.
+- When one established primitive owns a shared behavior, repair it once instead of adding caller-specific branches or modes.
 - Add no speculative options, wrappers, aliases, configuration, scaffolding, helper layers, or one-implementation interfaces.
 - Make the smallest coherent reachable change. A standalone artifact needs no demo; a user-facing feature must be reachable. Preserve unrelated code and user changes.
 - Prefer deletion. Remove each new dependency, file, option, wrapper, comment, fallback, retry, test, or document not required by behavior, project contract, or verification.
@@ -38,7 +39,7 @@ Use this first-match ladder:
 2. A material user-owned choice about architecture, dependency, implementation, API, data model, or compatibility remains unresolved and would change the next action: read `references/decision.md`.
 3. Safe execution is blocked by an unknown contract or invariant; required producers and consumers must change together but their joint contract is unknown; a material security, irreversible-effect, persistence/migration, concurrency/transaction, or compatibility boundary remains unresolved; or evidence sufficient for a risky material claim is unknown: read `references/implementation.md`.
 
-Read exactly that reference plus the Core. Resolve the blocker, then contract. Do not preload candidates. Reassess only for a different later blocker; handle a trivial one with the Core or isolate a substantial one when the saved context exceeds handoff cost.
+Read exactly that reference plus the Core. Resolve the blocker, then contract. Do not preload candidates. A failed check of your proposed change stays inside the active event; correct the candidate without loading Debugging. Reassess only for a different later blocker; handle a trivial one with the Core or isolate a substantial one when the saved context exceeds handoff cost.
 
 Stay Direct when the cause, choice, governing boundary, affected surface, and sufficient check are already established. A named target with settled behavior remains Direct even when it concerns risk; a requested standalone artifact with no integration remains Direct. Unknown locations, file count, callers, consumers, and data flow are Retrieval questions, not Implementation events. Read-only source mapping is never an Implementation event. Choosing evidence sufficient to support a material risk or performance claim is an Implementation boundary, not a user-owned product Decision.
 

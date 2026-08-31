@@ -14,6 +14,7 @@ Load this module only for an observed or reported failure, regression, incorrect
 - Prefer the narrowest fix that corrects the root cause and preserves existing contracts.
 - Do not patch a downstream symptom when an earlier incorrect state is identifiable and fixable.
 - Treat universal wording such as "never," "every," or "no X can" as one contract across current mutation paths. Before editing a reported caller, inspect its delegated helper and nearest sibling caller; if both can violate that contract, fix the invariant once in their common state-mutation or parsing helper. Patch only the reported adapter when evidence shows the helper intentionally owns a different lower-level contract.
+- When the request names shared behavior, repair the authoritative shared primitive for all current callers. Do not preserve the same defect behind a new per-caller flag or branch unless an established caller contract requires different behavior.
 - Do not use broad retries, catches, fallbacks, default values, or defensive branches to hide an unexplained failure.
 - Add temporary logging or instrumentation only when it produces evidence needed to distinguish hypotheses.
 

@@ -323,11 +323,13 @@ def prepare_eval_home(output: Path) -> Path:
     return home
 
 
-def install_native_skill(eval_home: Path, source: Path) -> Path:
+def install_native_skill(eval_home: Path, source: Path, *, shared_alias: bool = False) -> Path:
     destinations = [
         eval_home / "skills" / "practical-coding",
         eval_home / "skills" / ".system" / "practical-coding",
     ]
+    if shared_alias:
+        destinations.append(eval_home.parent / "skills" / "practical-coding")
     for destination in destinations:
         if destination.exists():
             shutil.rmtree(destination)
@@ -336,7 +338,7 @@ def install_native_skill(eval_home: Path, source: Path) -> Path:
         references = source / "references"
         if references.is_dir():
             shutil.copytree(references, destination / "references")
-    return destinations[-1]
+    return eval_home / "skills" / ".system" / "practical-coding"
 
 
 def disabled_skill_config() -> str:
@@ -1215,14 +1217,14 @@ def main() -> int:
         "default": prepare_eval_home(output / "default"),
         "native": prepare_eval_home(output / "native"),
     }
-    native_skill = install_native_skill(eval_homes["native"], ROOT)
+    native_skill = install_native_skill(eval_homes["native"], ROOT, shared_alias=True)
     native_previous_skill = None
     if previous:
         eval_homes["native-previous"] = prepare_eval_home(output / "native-previous")
         native_previous_skill = install_native_skill(eval_homes["native-previous"], previous)
     codex_path = resolve_codex(args.codex)
     codex_version = run_command([codex_path, "--version"], ROOT)
-    manifest = {"runner_version": VERSION, "runner_sha256": sha256(Path(__file__)), "model": MODEL, "reasoning": REASONING, "profile": args.profile, "runs": runs, "workers": args.workers, "started_at": dt.datetime.now(dt.timezone.utc).isoformat(), "environment": {"platform": platform.platform(), "python": sys.version, "codex": codex_version.stdout.strip(), "codex_path": codex_path}, "skill": {"current_entrypoint_sha256": sha256(ROOT / "SKILL.md"), "current_bundle_sha256": bundle_sha256(ROOT), "native_install": str(native_skill), "native_previous_install": str(native_previous_skill) if native_previous_skill else None, "previous_ref": args.baseline_ref, "previous_entrypoint_sha256": sha256(previous / "SKILL.md") if previous else None, "previous_bundle_sha256": bundle_sha256(previous) if previous else None}, "sources": {name: {"url": SOURCES[name][0], "commit": SOURCES[name][1], "path": str(sources[name])} for name in SOURCES}, "cases": profile}
+    manifest = {"runner_version": VERSION, "runner_sha256": sha256(Path(__file__)), "model": MODEL, "reasoning": REASONING, "profile": args.profile, "runs": runs, "workers": args.workers, "started_at": dt.datetime.now(dt.timezone.utc).isoformat(), "environment": {"platform": platform.platform(), "python": sys.version, "codex": codex_version.stdout.strip(), "codex_path": codex_path}, "skill": {"current_entrypoint_sha256": sha256(ROOT / "SKILL.md"), "current_bundle_sha256": bundle_sha256(ROOT), "native_install": str(native_skill), "native_shared_alias": str(eval_homes["native"].parent / "skills" / "practical-coding"), "native_previous_install": str(native_previous_skill) if native_previous_skill else None, "previous_ref": args.baseline_ref, "previous_entrypoint_sha256": sha256(previous / "SKILL.md") if previous else None, "previous_bundle_sha256": bundle_sha256(previous) if previous else None}, "sources": {name: {"url": SOURCES[name][0], "commit": SOURCES[name][1], "path": str(sources[name])} for name in SOURCES}, "cases": profile}
     (output / "manifest.json").write_text(json.dumps(manifest, indent=2) + "\n", encoding="utf-8")
     specs = []
     previous_arm = ["practical-previous"] if previous else []

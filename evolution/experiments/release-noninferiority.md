@@ -47,3 +47,9 @@ For every common suite, current pass/correctness/safety/build rates must be no l
 The final cost-tightening experiment was rejected. It made Behavior pass the strict historical cost comparison in one n=1 sample, but Decision fell to 9/10 and Debug safety to 13/14; Delivery and Debug costs still failed. Selecting its attractive Behavior row would be outcome cherry-picking. Revert its runtime rules and preserve this negative receipt.
 
 Across the accepted n=1 candidates, `fb69a9c` had the strongest quality-qualified balance: perfect Delivery, Debug, Decision, and Behavior, Router above the prior rate, complete Decision/Router cost passes, and only small residual median gaps in the other suites. Its runtime content is restored at `caa5304`. Freeze that content for n=3 rather than continuing to tune against stochastic public cases. The n=3 scorecard alone decides release non-inferiority; held-out n=3 separately decides generalization.
+
+## n=3 public candidate 8314f62
+
+The strict gate failed. Decision and Router passed; Delivery failed only LOC; Debug improved quality to 40/42 but retained uncached, duration, and LOC cost gaps; Behavior fell to 52/54 versus the prior 53/54. Held-out was not started.
+
+One Behavior miss never loaded the candidate because Codex declared a shared eval-root Skill path while the runner installed only hash-local aliases. Add a current-only shared alias and record it in the manifest; never use that alias for a simultaneous historical native arm. The other miss loaded Debugging after an Implementation candidate check failed, accumulating two roots. The two Debug safety misses left a shared invariant inconsistent by patching or parameterizing the named caller path. These support two general corrections: a failed candidate check remains in the active event, and shared behavior is repaired once at its authoritative primitive unless a real caller contract requires divergence.
