@@ -37,11 +37,11 @@ Use this first-match ladder:
 
 1. An observed failure, regression, incorrect behavior, or failed check still lacks an evidenced cause: read `references/debugging.md`.
 2. A material user-owned choice about architecture, whether or which dependency or implementation to adopt, API, data model, or compatibility remains unresolved and would change the next action: read `references/decision.md`.
-3. Safe execution is blocked by an unknown contract or invariant, an unmapped coherent change surface, an unresolved material risk boundary such as security/permissions, irreversible effects, persistence/migration, concurrency/transactions, or compatibility, or insufficient evidence for a risky material claim: read `references/implementation.md`.
+3. Safe execution is blocked by an unknown contract or invariant; a requested change must coordinate producers/consumers that are required to move together but that joint contract is not established; a material risk boundary such as security/permissions, irreversible effects, persistence/migration, concurrency/transactions, or compatibility remains unresolved; or sufficient evidence for a risky material claim is unknown: read `references/implementation.md`.
 
 Read exactly that one reasoning module in addition to the Core. Resolve the blocker, then reassess only if a different blocker appears. Reassessment does not justify accumulating references in the root: handle a trivial later blocker with the Core, or isolate a substantial later event when the saved context exceeds handoff cost. Do not preload modules or load candidates together to compare them.
 
-A named target plus an already-settled behavior, contract, boundary, and focused check stays Direct even when the change concerns persistence, permissions, compatibility, or irreversible effects. Unknown file locations, file count, and the need to discover callers, consumers, or data flow are Retrieval questions; they do not create an Implementation event when the change contract is already settled or no change is requested.
+A named target plus an already-settled behavior, contract, boundary, and focused check stays Direct even when the change concerns persistence, permissions, compatibility, or irreversible effects. Unknown file locations, file count, and the need to discover callers, consumers, or data flow are Retrieval questions; they do not create an Implementation event when the change contract is already settled. A read-only request to map or report source relationships is never an Implementation event.
 
 ## Explicit-only requirements interview
 

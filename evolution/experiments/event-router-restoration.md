@@ -63,6 +63,12 @@ Iteration 2 changes are limited to these reusable mechanisms: pre-source event r
 
 Iteration 3 therefore changes only the general Direct/source-discovery distinction plus benchmark command/evidence-group semantics. The broad quality modules already pass their n=1 gates.
 
+### Iteration 3 focused result — `313e2bb`, n=1
+
+Both source-discovery controls still over-routed to Implementation. The cause was a contradictory candidate rule: `unmapped coherent change surface` appeared as an Implementation trigger even though the Direct and Retrieval sections said unknown paths/callers alone are retrieval. The earlier phrase won the first-match routing check.
+
+This phrase is an incorrect improvement and is removed. Implementation now requires an unresolved governing contract/risk/evidence boundary, or a coordinated change whose required joint contract is not established. Read-only mapping is explicitly Direct plus Retrieval.
+
 ## Decision
 
 Pending.
