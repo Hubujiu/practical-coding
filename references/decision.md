@@ -27,7 +27,7 @@ End with the smallest answer format and wait. When the reply resolves the fronti
 3. Keep at most three viable options and compare only material fit, correctness, compatibility, operational, maintenance, and migration differences.
 4. Select the smallest option that fully satisfies current requirements. Do not create an abstraction, dependency, wrapper, or extension point without a present need.
 
-Research only when local evidence cannot resolve a lasting choice or an external dependency is being considered. Prefer official and maintained sources; verify API fit, maintenance, license, and known constraints. When the choice is resolved, use `Recommendation:` and `Trade-off:` labels to state the selected option, rationale, assumptions, and deferred validation compactly before proceeding within existing authorization.
+Research only when local evidence cannot resolve a lasting choice or an external dependency is being considered. Prefer official and maintained sources; verify API fit, maintenance, license, and known constraints. Every resolved final decision starts with `Recommendation:` and includes `Trade-off:`; state the selected option, rationale, assumptions, and deferred validation compactly before proceeding within existing authorization.
 
 ## Durable Decisions
 

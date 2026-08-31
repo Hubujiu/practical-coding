@@ -1,0 +1,323 @@
+{
+  "schema_version": 1,
+  "model": "gpt-5.6-luna",
+  "reasoning": "medium",
+  "runs": 3,
+  "current_candidate_ref": "30ac7e70b425b3f02f7bf4e21cb4809f0e4d6c2c",
+  "previous_ref": "88382d2b0c00fa278067a5933bbcacc86f46b56e",
+  "current_results": "event-router-final-public-30ac7e7",
+  "historical_results": "v1.3-gate-c-e0bdc19-20260830",
+  "scorer_contract": "active repository scorer and catalog",
+  "release_gate": {
+    "passed": false,
+    "failures": [
+      "delivery: output_tokens_median: 2708.000 > 2495.500",
+      "delivery: total_tokens_median: 205214.500 > 176889.500",
+      "delivery: duration_seconds_median: 74.552 > 71.118",
+      "delivery: tool_calls_median: 8.000 > 7.500",
+      "delivery: total_loc_median: 21.000 > 19.500",
+      "debug: uncached_input_tokens_median: 10082.500 > 9583.000",
+      "debug: output_tokens_median: 1424.000 > 1243.000",
+      "debug: total_tokens_median: 94801.500 > 91712.500",
+      "debug: duration_seconds_median: 37.290 > 35.147",
+      "debug: total_loc_median: 1.500 > 1.000",
+      "decision: pass_rate: 0.966667 < 1.000000",
+      "decision: output_tokens_median: 792.000 > 775.500",
+      "decision: duration_seconds_median: 17.485 > 17.398",
+      "router: uncached_input_tokens_median: 4025.500 > 4013.000",
+      "behavior: uncached_input_tokens_median: 10338.000 > 9896.000"
+    ]
+  },
+  "suites": {
+    "delivery": {
+      "arms": {
+        "current": {
+          "cells": 54,
+          "determinate": 54,
+          "indeterminate": 0,
+          "passed": 54,
+          "pass_rate": 1.0,
+          "correct_rate": 1.0,
+          "safe_rate": 1.0,
+          "build_rate": 1.0,
+          "uncached_input_tokens_median": 20601.5,
+          "output_tokens_median": 2708.0,
+          "total_tokens_median": 205214.5,
+          "duration_seconds_median": 74.55229150000014,
+          "tool_calls_median": 8.0,
+          "total_loc_median": 21.0
+        },
+        "previous": {
+          "cells": 54,
+          "determinate": 54,
+          "indeterminate": 0,
+          "passed": 54,
+          "pass_rate": 1.0,
+          "correct_rate": 1.0,
+          "safe_rate": 1.0,
+          "build_rate": 1.0,
+          "uncached_input_tokens_median": 21578.5,
+          "output_tokens_median": 2495.5,
+          "total_tokens_median": 176889.5,
+          "duration_seconds_median": 71.11787050000021,
+          "tool_calls_median": 7.5,
+          "total_loc_median": 19.5
+        },
+        "baseline": {
+          "cells": 54,
+          "determinate": 54,
+          "indeterminate": 0,
+          "passed": 54,
+          "pass_rate": 1.0,
+          "correct_rate": 1.0,
+          "safe_rate": 1.0,
+          "build_rate": 1.0,
+          "uncached_input_tokens_median": 17483.5,
+          "output_tokens_median": 2704.0,
+          "total_tokens_median": 197269.0,
+          "duration_seconds_median": 73.46201840000049,
+          "tool_calls_median": 8.0,
+          "total_loc_median": 24.5
+        },
+        "ponytail": {
+          "cells": 54,
+          "determinate": 54,
+          "indeterminate": 0,
+          "passed": 53,
+          "pass_rate": 0.9814814814814815,
+          "correct_rate": 1.0,
+          "safe_rate": 1.0,
+          "build_rate": 0.9444444444444444,
+          "uncached_input_tokens_median": 20521.0,
+          "output_tokens_median": 2332.5,
+          "total_tokens_median": 188596.0,
+          "duration_seconds_median": 59.38337760000013,
+          "tool_calls_median": 8.0,
+          "total_loc_median": 19.0
+        }
+      },
+      "current_vs_previous_gate": {
+        "passed": false,
+        "failures": [
+          "output_tokens_median: 2708.000 > 2495.500",
+          "total_tokens_median: 205214.500 > 176889.500",
+          "duration_seconds_median: 74.552 > 71.118",
+          "tool_calls_median: 8.000 > 7.500",
+          "total_loc_median: 21.000 > 19.500"
+        ]
+      }
+    },
+    "debug": {
+      "arms": {
+        "current": {
+          "cells": 42,
+          "determinate": 42,
+          "indeterminate": 0,
+          "passed": 40,
+          "pass_rate": 0.9523809523809523,
+          "correct_rate": 1.0,
+          "safe_rate": 0.9523809523809523,
+          "build_rate": null,
+          "uncached_input_tokens_median": 10082.5,
+          "output_tokens_median": 1424.0,
+          "total_tokens_median": 94801.5,
+          "duration_seconds_median": 37.29014834999907,
+          "tool_calls_median": 6.0,
+          "total_loc_median": 1.5
+        },
+        "previous": {
+          "cells": 42,
+          "determinate": 42,
+          "indeterminate": 0,
+          "passed": 39,
+          "pass_rate": 0.9285714285714286,
+          "correct_rate": 1.0,
+          "safe_rate": 0.9285714285714286,
+          "build_rate": null,
+          "uncached_input_tokens_median": 9583.0,
+          "output_tokens_median": 1243.0,
+          "total_tokens_median": 91712.5,
+          "duration_seconds_median": 35.14714890000141,
+          "tool_calls_median": 6.0,
+          "total_loc_median": 1.0
+        },
+        "superpowers": {
+          "cells": 42,
+          "determinate": 42,
+          "indeterminate": 0,
+          "passed": 36,
+          "pass_rate": 0.8571428571428571,
+          "correct_rate": 1.0,
+          "safe_rate": 0.8571428571428571,
+          "build_rate": null,
+          "uncached_input_tokens_median": 22313.5,
+          "output_tokens_median": 3220.5,
+          "total_tokens_median": 277643.5,
+          "duration_seconds_median": 79.65129255000102,
+          "tool_calls_median": 14.0,
+          "total_loc_median": 1.0
+        }
+      },
+      "current_vs_previous_gate": {
+        "passed": false,
+        "failures": [
+          "uncached_input_tokens_median: 10082.500 > 9583.000",
+          "output_tokens_median: 1424.000 > 1243.000",
+          "total_tokens_median: 94801.500 > 91712.500",
+          "duration_seconds_median: 37.290 > 35.147",
+          "total_loc_median: 1.500 > 1.000"
+        ]
+      }
+    },
+    "decision": {
+      "arms": {
+        "current": {
+          "cells": 30,
+          "determinate": 30,
+          "indeterminate": 0,
+          "passed": 29,
+          "pass_rate": 0.9666666666666667,
+          "correct_rate": null,
+          "safe_rate": null,
+          "build_rate": null,
+          "uncached_input_tokens_median": 9369.5,
+          "output_tokens_median": 792.0,
+          "total_tokens_median": 41158.5,
+          "duration_seconds_median": 17.485239199997523,
+          "tool_calls_median": 0.0,
+          "total_loc_median": null
+        },
+        "previous": {
+          "cells": 30,
+          "determinate": 30,
+          "indeterminate": 0,
+          "passed": 30,
+          "pass_rate": 1.0,
+          "correct_rate": null,
+          "safe_rate": null,
+          "build_rate": null,
+          "uncached_input_tokens_median": 10193.0,
+          "output_tokens_median": 775.5,
+          "total_tokens_median": 41964.5,
+          "duration_seconds_median": 17.398457849998522,
+          "tool_calls_median": 0.0,
+          "total_loc_median": null
+        },
+        "grilling": {
+          "cells": 30,
+          "determinate": 30,
+          "indeterminate": 0,
+          "passed": 29,
+          "pass_rate": 0.9666666666666667,
+          "correct_rate": null,
+          "safe_rate": null,
+          "build_rate": null,
+          "uncached_input_tokens_median": 7197.5,
+          "output_tokens_median": 942.0,
+          "total_tokens_median": 37072.5,
+          "duration_seconds_median": 20.345140049999827,
+          "tool_calls_median": 0.0,
+          "total_loc_median": null
+        }
+      },
+      "current_vs_previous_gate": {
+        "passed": false,
+        "failures": [
+          "pass_rate: 0.966667 < 1.000000",
+          "output_tokens_median: 792.000 > 775.500",
+          "duration_seconds_median: 17.485 > 17.398"
+        ]
+      }
+    },
+    "router": {
+      "arms": {
+        "current": {
+          "cells": 114,
+          "determinate": 114,
+          "indeterminate": 0,
+          "passed": 107,
+          "pass_rate": 0.9385964912280702,
+          "correct_rate": null,
+          "safe_rate": null,
+          "build_rate": null,
+          "uncached_input_tokens_median": 4025.5,
+          "output_tokens_median": 78.5,
+          "total_tokens_median": 13070.5,
+          "duration_seconds_median": 6.207433199999286,
+          "tool_calls_median": 0.0,
+          "total_loc_median": null
+        },
+        "previous": {
+          "cells": 114,
+          "determinate": 114,
+          "indeterminate": 0,
+          "passed": 96,
+          "pass_rate": 0.8421052631578947,
+          "correct_rate": null,
+          "safe_rate": null,
+          "build_rate": null,
+          "uncached_input_tokens_median": 4013.0,
+          "output_tokens_median": 112.0,
+          "total_tokens_median": 13087.5,
+          "duration_seconds_median": 6.842552300000534,
+          "tool_calls_median": 0.0,
+          "total_loc_median": null
+        }
+      },
+      "current_vs_previous_gate": {
+        "passed": false,
+        "failures": [
+          "uncached_input_tokens_median: 4025.500 > 4013.000"
+        ]
+      }
+    },
+    "behavior": {
+      "arms": {
+        "current": {
+          "cells": 54,
+          "determinate": 54,
+          "indeterminate": 0,
+          "passed": 53,
+          "pass_rate": 0.9814814814814815,
+          "correct_rate": null,
+          "safe_rate": null,
+          "build_rate": null,
+          "uncached_input_tokens_median": 10338.0,
+          "output_tokens_median": 1421.5,
+          "total_tokens_median": 98591.0,
+          "duration_seconds_median": 39.62859959999696,
+          "tool_calls_median": 6.0,
+          "total_loc_median": null
+        },
+        "previous": {
+          "cells": 54,
+          "determinate": 54,
+          "indeterminate": 0,
+          "passed": 53,
+          "pass_rate": 0.9814814814814815,
+          "correct_rate": null,
+          "safe_rate": null,
+          "build_rate": null,
+          "uncached_input_tokens_median": 9896.0,
+          "output_tokens_median": 1465.5,
+          "total_tokens_median": 102874.5,
+          "duration_seconds_median": 40.16638090000015,
+          "tool_calls_median": 7.0,
+          "total_loc_median": null
+        }
+      },
+      "current_vs_previous_gate": {
+        "passed": false,
+        "failures": [
+          "uncached_input_tokens_median: 10338.000 > 9896.000"
+        ]
+      }
+    }
+  },
+  "limitations": [
+    "Model executions are cross-run; scoring is current and common-case only.",
+    "Historical workspaces and transcripts are read-only and are not overwritten.",
+    "Stored build outcomes are reused; model execution and builds are not rerun.",
+    "External arms are contextual comparisons and do not control the current-vs-previous release gate."
+  ]
+}

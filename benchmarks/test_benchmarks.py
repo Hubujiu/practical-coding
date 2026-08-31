@@ -192,6 +192,15 @@ class BenchmarkHarnessTests(unittest.TestCase):
         self.assertFalse(score["navigation_used"])
         self.assertTrue(score["source_search_used"])
 
+    def test_behavior_score_detects_quoted_search_commands(self):
+        score = bench.behavior_score(
+            ["Get-Content C:/eval/skills/practical-coding/SKILL.md", "pwsh -Command 'rg -n pattern .'"],
+            None,
+            expected_retrieval="BOUNDED",
+        )
+        self.assertTrue(score["source_search_used"])
+        self.assertTrue(score["retrieval_ok"])
+
     def test_behavior_score_uses_loaded_content_not_recursive_filename_listing(self):
         commands = ["Get-ChildItem C:/eval/skills/practical-coding -Recurse; Get-Content $decision"]
         outputs = ["# Practical Coding\nLoaded core\ndecision.md\ndebugging.md\n# Decision\nLoaded body\n"]

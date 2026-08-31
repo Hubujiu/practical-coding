@@ -534,7 +534,7 @@ def behavior_score(
     )
     graph_used = any("codebase-memory-mcp" in command for command in normalized)
     source_search_used = any(
-        re.search(r"(^|[\s;&|])(?:rg|grep|find|fd)(?:\.exe)?(?:[\s;&|]|$)", command)
+        re.search(r"(^|[\s;&|'\"])(?:rg|grep|find|fd)(?:\.exe)?(?:[\s;&|'\"]|$)", command)
         or "get-childitem" in command
         or "git grep" in command
         for command in normalized
