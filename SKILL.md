@@ -13,8 +13,10 @@ Use the least engineering and the least context that can still produce a reliabl
 
 The **default path starts at Core/E0**. Practical Coding has two adaptive controls:
 
-- **Execution depth** — how much reasoning structure and assurance the current unresolved event needs.
-- **Retrieval depth** — how much source/context the next material decision needs.
+- **Execution depth** — how much structured reasoning and assurance the current unresolved execution event needs after relevant evidence is available.
+- **Retrieval depth** — how much source/context must be acquired for the next material decision.
+
+These axes are independent. **Source discovery is Retrieval, not Execution escalation.** Reading another file, finding a caller, inspecting a sibling, or locating a contract can raise R-depth while execution remains E0.
 
 Depth is not a workflow to complete. Start shallow, expand only when current evidence cannot answer the next material question, then contract after localization.
 
@@ -49,12 +51,12 @@ The Core applies everywhere and should remain sufficient for most work.
 
 ## Execution Depth + Capability Tree
 
-Execution depth answers **how much engineering is needed**. Capability paths answer **what kind of engineering is needed**.
+Execution depth answers **how much structured engineering reasoning is needed after relevant context is available**. Capability paths answer **what kind of engineering reasoning is needed**.
 
 ```text
 Core
  ├─ E0 Direct
- └─ E1 Focused evidence
+ └─ E1 Probe
       └─ E2 Capability root
           ├─ diagnosis
           │    ├─ security
@@ -76,26 +78,31 @@ The tree is sparse and evidence-driven. Do not traverse every node. In the root 
 
 ### E0 — Direct
 
-Default here. Use Core only when the target behavior, governing contract, and sufficient focused check are already clear.
+Default here. Use Core only when the target behavior, governing contract, and sufficient focused check are already clear from current or retrieved evidence.
 
 Do not load a reasoning reference.
 
-### E1 — Focused
+Retrieval may still deepen independently. A task can be `E0/R2` when the edit is simple but the target relationship is not yet known.
 
-Stay Core-only and take one bounded local evidence step to remove a specific blocker:
+### E1 — Probe
 
-- inspect the nearest caller, contract, sibling pattern, or focused test;
+Stay Core-only. Use E1 only when **one cheap executable observation** can settle a concrete execution uncertainty without a structured root procedure:
+
 - reproduce or directly exercise one behavior;
-- identify the smallest check that can falsify the change.
+- falsify one concrete hypothesis;
+- establish one local observable claim or invariant;
+- run the smallest focused check whose result determines the next action.
 
-If that resolves the blocker, return to E0 behavior. Do not turn local inspection into a workflow.
+**Do not raise execution depth merely to find or read source.** Finding callers, references, siblings, contracts, implementations, or configuration is Retrieval work; raise R-depth instead while execution can remain E0.
+
+If the probe resolves the blocker, return to E0 behavior. If not, load a root only when a structured execution problem remains.
 
 ### E2 — Capability root
 
-Load exactly one root only when E1 was insufficient.
+Load exactly one root only when sufficient bounded retrieval, plus an E1 probe when an executable probe is useful, still leaves a structured execution blocker.
 
 - **diagnosis** → `references/debugging.md` when an observed failure, regression, incorrect behavior, or failed verification still lacks an evidenced cause.
-- **engineering** → `references/engineering.md` when the desired behavior is known but safe execution is blocked by an unresolved contract, invariant, ownership boundary, or multi-part change surface.
+- **engineering** → `references/engineering.md` when the desired behavior is known but the authoritative contract, invariant, ownership boundary, or coherent change surface remains unresolved.
 
 These are event types, not mandatory phases. A feature does not require engineering depth merely because it is a feature; a bug does not require diagnosis after its cause is already known.
 
@@ -127,7 +134,9 @@ Higher-depth context may remain in the model, but higher-depth behavior should s
 
 ## Retrieval Depth + Retrieval Tree
 
-Retrieval is independent of execution. A simple edit can need broad discovery; a difficult bug can already have a known target.
+Retrieval is the **only adaptive axis for acquiring code/source/context**. It answers where to look and how far to expand, independently of execution depth.
+
+`Navigation` is not a third runtime capability. `references/navigation.md` is only the deeper procedure used inside the Retrieval tree when structural mapping or a bounded exhaustive repository claim becomes substantial.
 
 ```text
 R0 Target
@@ -145,7 +154,9 @@ Use current context, a known path, symbol, error, route, test, or configuration.
 
 ### R1 — Local
 
-Use bounded/ranked filename, text, symbol, reference, or host-native source search inside the nearest plausible scope. Prefer top-k, limits, pagination, and batched narrow queries.
+Use bounded/ranked filename, text, symbol, reference, or host-native source search inside the nearest plausible scope. This is also where ordinary caller/reference lookup, sibling-pattern inspection, nearby contract reading, and local configuration discovery belong.
+
+Prefer top-k, limits, pagination, and batched narrow queries. Raise execution depth only if the retrieved evidence reveals an execution problem that needs more than Core reasoning.
 
 ### R2 — Specialized retrieval
 
@@ -160,6 +171,8 @@ Read `references/navigation.md` only when structural retrieval itself becomes su
 
 Use repository-wide discovery only when R0–R2 cannot localize the relevant boundary or the task requires an explicit bounded exhaustive repository claim. Narrow results before reading source; do not dump broad matches into context.
 
+When R3 coverage itself becomes substantial, `references/navigation.md` also defines the coverage discipline. This still remains Retrieval, not a separate Navigation phase.
+
 ### Retrieval contraction
 
 After expansion identifies the relevant files, symbols, relationships, or external contract, contract immediately to that surface. Current source remains authoritative for repository behavior.
@@ -168,9 +181,9 @@ After expansion identifies the relevant files, symbols, relationships, or extern
 
 Do not create workers for ordinary E0/E1 work or merely because parallelism is available.
 
-When a second substantial event, specialist guarantee, or broad structural mapping would add more root-context cost than a compact handoff, dispatch one worker. The worker reads `references/delegation.md` plus only its assigned capability root/leaf or Navigation reference and returns an evidence capsule.
+When a second substantial event, specialist guarantee, or broad structural mapping would add more root-context cost than a compact handoff, dispatch one worker. The worker reads `references/delegation.md` plus only its assigned capability root/leaf or structural-retrieval reference and returns an evidence capsule.
 
-- Diagnosis, Navigation, and read-only specialist workers do not write.
+- Diagnosis, structural-retrieval, and read-only specialist workers do not write.
 - A bounded Engineering worker may write only when explicitly assigned a non-overlapping scope and there is no competing writer.
 - Manual-only interaction modes stay in the root conversation and are never worker-selected.
 - Never build worker pipelines or overlapping writers.
@@ -190,6 +203,8 @@ Track at least:
 - unnecessary root/leaf loads, missed specialist loads, and branch-confusion clusters;
 - over-escalation and under-escalation by task family;
 - transfer across repositories and, when practical, model/harness configurations.
+
+For axis calibration, **retrieval-only source discovery must not count as E1**. An E1 observation requires an executable probe or focused falsification step; a case may legitimately be `E0/R1` or `E0/R2`.
 
 For manual-only modes, separately test explicit activation and **zero spontaneous activation** on ordinary tasks. Do not tune them as adaptive gates.
 

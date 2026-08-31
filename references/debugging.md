@@ -1,6 +1,8 @@
 # Diagnosis
 
-Load this capability root only after an observed or reported failure, regression, incorrect behavior, or failed verification still lacks an evidenced cause and one bounded Core-only inspection was insufficient.
+Load this capability root only after an observed or reported failure, regression, incorrect behavior, or failed verification still lacks an evidenced cause after sufficient bounded retrieval and, when useful, one cheap executable Core-only probe.
+
+Do not load Diagnosis merely because more source must be found. Caller/reference/flow discovery belongs to Retrieval and can deepen independently while execution remains E0.
 
 ## Structured diagnosis
 

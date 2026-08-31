@@ -1,8 +1,8 @@
 # Engineering
 
-Load this capability root only when the desired behavior is known but Core + one focused evidence step cannot safely localize the authoritative contract, invariant, ownership boundary, or coherent change surface.
+Load this capability root only when the desired behavior is known but sufficient bounded Retrieval still cannot safely localize the authoritative contract, invariant, ownership boundary, or coherent change surface. An E1 probe may precede this root only when one cheap executable observation could settle that execution uncertainty.
 
-Engineering is not a synonym for implementation. Most implementation remains E0/E1. This root exists only for unresolved engineering boundaries.
+Engineering is not a synonym for implementation. Most implementation remains E0 with whatever R-depth is needed to find the target. Source discovery by itself does not justify Engineering.
 
 ## Structured mapping
 

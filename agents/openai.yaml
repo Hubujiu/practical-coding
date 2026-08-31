@@ -1,6 +1,6 @@
 interface:
   display_name: "Practical Coding"
-  short_description: "Small correct changes with adaptive code retrieval"
-  default_prompt: "Use $practical-coding. Keep well-specified work on the Direct Path, load at most one reasoning reference for an unresolved blocker, and retrieve code through the cheapest sufficient available capability."
+  short_description: "Small correct changes with adaptive engineering and retrieval depth"
+  default_prompt: "Use $practical-coding. Start at Core/E0. Treat code/source discovery as Retrieval, escalating R0→R1→R2/R3 only as needed. For one unresolved execution event, load at most one capability root and one evidence-triggered specialist leaf, then contract after localization."
 policy:
   allow_implicit_invocation: true

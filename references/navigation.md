@@ -1,13 +1,15 @@
-# Navigation
+# Structural Retrieval Procedure
 
-Load this module only when structural or repository-wide retrieval is itself a substantial unresolved event. Produce the smallest bounded map that answers the task; do not tour the repository.
+This file is **not a separate Navigation axis or execution phase**. It is the deeper procedure inside the Retrieval tree for substantial **R2 Structural** mapping and, when needed, disciplined **R3 bounded exhaustive repository** coverage.
 
-## Retrieval tree
+Routine R0/R1 target reading, caller/reference lookup, sibling inspection, and nearby contract discovery do not need this file.
+
+## Retrieval tree position
 
 `R0 Target → R1 Local`, then branch only as needed:
 
 - **R2 Structural relation** for callers/callees/imports/implementations/dependencies/data/config flow.
-- **R2 External contract** is handled by the root with authoritative external sources; it does not require this module unless local structural mapping is also substantial.
+- **R2 External contract** is handled by the root with authoritative external sources; it does not require this file unless local structural mapping is also substantial.
 - **R3 Bounded exhaustive repository claim** only when the requested claim is explicitly repository-wide or lower-depth retrieval cannot localize the boundary.
 
 External retrieval is not downstream of repository-wide search.
@@ -28,4 +30,6 @@ State the boundary being exhausted, search it systematically with pagination/cov
 
 ## Contract
 
-Once the relevant relationship or boundary is known, stop navigation and contract retrieval to that surface. Do not keep searching merely because a broad tool remains available.
+Once the relevant relationship or boundary is known, stop retrieval expansion and contract to that surface. Do not keep searching merely because a broad tool remains available.
+
+Finding source may change R-depth without changing E-depth. Raise execution only if the retrieved evidence exposes an unresolved execution problem that requires Probe, Diagnosis, Engineering, or a specialist leaf.

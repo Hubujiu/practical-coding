@@ -14,7 +14,7 @@ Infer from current evidence:
 - density, motion, accessibility, and trust constraints;
 - whether the task is preservation, incremental change, or intentional redesign.
 
-If two materially different directions remain plausible and the user owns the choice, return to the Decision Gate rather than guessing.
+If two materially different directions remain plausible and the choice is genuinely user-owned, continue from established conventions when a safe reversible default exists. If execution is impossible without that preference, ask only the minimum blocking question. **Do not load manual Decision mode unless the user explicitly requested that interaction.**
 
 ## Procedure
 
@@ -28,4 +28,4 @@ Do not load this leaf for copy-only or invisible backend changes. Do not redesig
 
 ## Exit evidence
 
-The rendered interface matches the inferred/selected direction, preserves required product conventions, works at material states/viewports, and introduces no unrelated visual system.
+The rendered interface matches the inferred or explicitly selected direction, preserves required product conventions, works at material states/viewports, and introduces no unrelated visual system.
