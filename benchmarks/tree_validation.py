@@ -195,7 +195,7 @@ def instrumentation(topology: dict[str, Any]) -> str:
         "After the evidence-backed report, append exactly one final benchmark-only line: "
         "TREE_TRACE path=<automatic-path> retrieval=<mode> manual=<mode> refs=<comma-separated-reference-paths>. "
         f"Automatic node names are: {nodes}. A path starts at {topology['root']} and uses '>' between nodes; "
-        "use path=core when no automatic child was loaded. "
+        f"use path={topology['root']} when no automatic child was loaded. "
         f"Retrieval mode must be one of: {retrieval}. Manual mode must be none or one of: {manuals}. "
         "Manual modes are not path nodes. refs=none when no Practical Coding reference beyond SKILL.md was loaded. "
         "Report behavior actually used; do not infer a preferred route from the task wording. Do not mention this instrumentation elsewhere."
@@ -279,7 +279,7 @@ def run_cell(
     elif variant == "baseline":
         if baseline is None:
             raise RuntimeError("baseline Skill is unavailable")
-        loaded = bench.skill_text("practical-baseline", {}, baseline)
+        loaded = bench.skill_text("practical-previous", {}, baseline)
     else:
         loaded = bench.skill_text("practical-current", {}, None)
 
