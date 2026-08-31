@@ -13,7 +13,7 @@ The default runtime stays Ponytail-like and minimal. **Interactive requirement/d
 ```mermaid
 flowchart TB
   T[Task] --> E0[E0 Direct / Core]
-  E0 --> E1[E1 Focused evidence]
+  E0 --> E1[E1 Probe]
   E1 -->|unexplained failure| DX[E2 diagnosis]
   E1 -->|unresolved contract/invariant| EN[E2 engineering]
   DX --> S1[E3 security/state/compatibility/performance]
@@ -27,6 +27,8 @@ flowchart TB
 ```
 
 The model starts at Core/E0. Branches become available only when evidence shows the current execution or retrieval depth is insufficient.
+
+**Execution and Retrieval are independent.** Finding another file, caller, sibling, contract, implementation, or configuration is Retrieval work and does not by itself raise execution depth. A simple edit may therefore be `E0/R2`; a difficult bug with a known target may be `E3/R0`.
 
 ## Manual-only interaction modes
 
@@ -43,7 +45,7 @@ This keeps interactive skills available without charging every coding task for m
 
 ## Minimal Core
 
-Most tasks should remain E0/E1:
+Most tasks should remain at Core with shallow execution depth:
 
 - smallest observable success;
 - smallest coherent diff;
@@ -56,28 +58,36 @@ Most tasks should remain E0/E1:
 
 | Depth | Meaning | Loaded context |
 |---|---|---|
-| **E0 Direct** | target, contract, and check are clear | Core only |
-| **E1 Focused** | one bounded evidence step can remove a blocker | Core only |
-| **E2 Root** | a real unresolved event needs a structured method | one root: diagnosis **or** engineering |
+| **E0 Direct** | behavior/contract/check are clear from available or retrieved evidence | Core only |
+| **E1 Probe** | one cheap executable observation can settle one execution uncertainty | Core only |
+| **E2 Root** | a real unresolved execution event needs a structured method | one root: diagnosis **or** engineering |
 | **E3 Leaf** | a material specialist guarantee remains | root + one specialist leaf |
+
+E1 is deliberately narrow: reproduce one behavior, exercise one path, falsify one concrete hypothesis, or run one focused check. **Searching or reading source is not E1.**
 
 The specialist leaves are deliberately narrow: security, persistence/concurrency/state, compatibility/migration, measured performance, structural quality, and interface quality.
 
 This takes the useful part of expert skill packs—concrete trigger, procedure, exit, verification—without loading their workflows globally. Addy Osmani's progressive-disclosure anatomy, Superpowers' executable procedures, SkillsBench expert skills, and design-oriented skills such as taste-skill inform the leaf design rather than becoming dependencies.
 
-## Retrieval is also a tree
+## Retrieval tree
+
+Retrieval is the only adaptive control for **acquiring source/context**:
 
 - **R0 Target** — known source;
-- **R1 Local** — bounded/ranked search;
+- **R1 Local** — bounded/ranked search, nearby callers/references/siblings/contracts;
 - **R2 Structural** — relation/flow lookup;
 - **R2 External** — authoritative contract the repository cannot establish;
 - **R3 Bounded exhaustive repository** — only for explicit exhaustive claims or failed localization.
 
 The governing rule remains **expand → localize → contract**. Structural tools such as Codebase Memory are optional accelerators, never required dependencies.
 
+`references/navigation.md` is retained as a filename for compatibility, but conceptually it is **the deeper R2 Structural / R3 coverage procedure inside Retrieval**, not a third runtime axis or a separate phase.
+
 ## Benchmark-driven tree optimization
 
 Benchmark the adaptive tree against no-skill and the accepted prior Practical Coding version. Measure correctness/safety/build first, then minimum-sufficient depth/path, unnecessary or missed root/leaf loads, branch confusion, tokens, time, tool calls, and LOC.
+
+Axis calibration must keep the distinction measurable: a source-discovery-only task can be `E0/R1` or `E0/R2`; E1 requires an executable probe.
 
 Manual-only modes are a separate control surface: test that explicit activation works and that ordinary tasks have **zero spontaneous manual-mode activation**. Do not treat Clarification or Decision as adaptive routing candidates.
 
@@ -96,7 +106,7 @@ SKILL.md
 references/
 ├── debugging.md          # adaptive diagnosis root
 ├── engineering.md        # adaptive engineering root
-├── navigation.md         # adaptive retrieval procedure
+├── navigation.md         # Retrieval: substantial R2 structural / R3 coverage procedure
 ├── delegation.md
 ├── specialists/          # adaptive E3 leaves
 │   ├── security.md

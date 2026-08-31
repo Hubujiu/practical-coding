@@ -14,8 +14,8 @@ Practical Coding 默认只回答一个问题：
 用户任务
   ↓
 Core / E0 Direct
-  ↓  当前证据不足才加深
-E1 Focused
+  ↓  仍存在执行不确定性且一个便宜实验可判定
+E1 Probe
   ├─ E2 diagnosis
   │   └─ E3 security / state / compatibility / performance
   └─ E2 engineering
@@ -29,6 +29,8 @@ R0 Target → R1 Local
 ```
 
 模型默认直接从 Core/E0 开始，不再先判断“要不要澄清”“要不要 Decision”。
+
+**Execution 和 Retrieval 是两个真正独立的轴。** 找文件、caller、reference、sibling、contract、implementation、configuration 都属于 Retrieval，本身不会让执行从 E0 升到 E1。因此简单修改也可能是 `E0/R2`，而目标已知的复杂 bug 也可能是 `E3/R0`。
 
 ## 仅手动激活的交互模式
 
@@ -45,7 +47,7 @@ R0 Target → R1 Local
 
 ## Core：保持最小
 
-大多数任务应该停在 E0/E1：
+大多数任务应该保持 Core + 浅执行深度：
 
 - 最小可观察成功；
 - 最小但完整的修改；
@@ -58,16 +60,18 @@ R0 Target → R1 Local
 
 | 深度 | 含义 | 加载 |
 |---|---|---|
-| **E0** | 目标、契约、验证都清楚 | 仅 Core |
-| **E1** | 一个局部证据步骤即可解决阻塞 | 仅 Core |
-| **E2** | 真实执行问题需要结构化处理 | diagnosis 或 engineering 二选一 |
-| **E3** | 仍存在明确领域保证 | 根能力 + 一个专家叶子 |
+| **E0 Direct** | 行为、契约、验证已由当前/检索到的证据确定 | 仅 Core |
+| **E1 Probe** | 一个便宜的可执行观察就能解决一个执行不确定性 | 仅 Core |
+| **E2 Root** | 真实执行问题需要结构化处理 | diagnosis 或 engineering 二选一 |
+| **E3 Leaf** | 仍存在明确领域保证 | 根能力 + 一个专家叶子 |
 
-`Debugging` 是 diagnosis 根能力；只有已经观察到错误、但原因仍未知时才加载。`engineering` 只在契约、不变量、所有权边界或协同修改面无法由 E1 定位时加载。
+E1 被刻意限制得很窄：复现一个行为、执行一条路径、证伪一个具体假设，或者跑一个能直接决定下一步的 focused check。**搜索/阅读源码不属于 E1。**
+
+`Debugging` 是 diagnosis 根能力；只有已经观察到错误、在足够的 bounded retrieval 和必要的 Probe 后原因仍未知时才加载。`engineering` 只在目标行为已知，但 authoritative contract、不变量、所有权边界或协同修改面仍无法定位时加载。
 
 E3 专家叶子保持窄边界：`security / state / compatibility / performance / quality / interface`。它们吸收专家 Skill 的 trigger、procedure、exit、verification，但不会成为全局 checklist。
 
-## 检索树
+## Retrieval：唯一的源码/上下文获取轴
 
 ```text
 R0 Target
@@ -77,11 +81,21 @@ R0 Target
    └─ R3 Bounded exhaustive repo
 ```
 
-仍然遵循 **expand → localize → contract**。Codebase Memory 等结构化工具只是可选加速器，不是依赖。
+- `R0`：目标已经知道；
+- `R1`：局部、排序后的搜索，也包括普通 caller/reference/sibling/附近 contract 检索；
+- `R2 Structural`：调用、依赖、数据流、配置流等结构关系；
+- `R2 External`：仓库无法确定的官方 API/协议/许可证契约；
+- `R3`：明确要求 repository-wide exhaustive claim，或低层检索始终无法定位边界。
+
+仍然遵循 **expand → localize → contract**。Codebase Memory、LSP/AST、FFF 风格 ranked retrieval 等只是可选加速器，不是依赖。
+
+`references/navigation.md` 暂时保留文件名以减少迁移，但它在概念上只是 **Retrieval 内部较深的 R2 Structural / R3 coverage 操作方法**，不再是第三个轴，也不是独立阶段。
 
 ## Benchmark 反向优化
 
 自动能力树继续通过 no-skill、上一个已接受 Practical Coding、depth caps、parent-vs-leaf ablation 和真实项目体验来调优：正确性/安全/build 优先，然后才比较路由、token、时间、tool calls、LOC。
+
+两个轴的 benchmark 必须保持可解释：如果任务只是需要多找一个 caller，它可以是 `E0/R1`；只有真正做了可执行 Probe 才能记为 E1。
 
 手动模式单独测两件事：
 
@@ -100,7 +114,7 @@ R0 Target
 references/
 ├── debugging.md
 ├── engineering.md
-├── navigation.md
+├── navigation.md         # Retrieval 内部：较深 R2 Structural / R3 coverage
 ├── delegation.md
 ├── specialists/          # 自动路由可选择
 │   ├── security.md

@@ -8,10 +8,12 @@ Contributions to the progressive-capability-tree experiment should preserve one 
 
 - Keep `SKILL.md` as the compact control policy and Core.
 - Default runtime begins at Core/E0; there is no automatic Clarification or Decision gate.
-- Execution depth currently tests `E0 Direct → E1 Focused → E2 Root → E3 Leaf`.
+- Execution depth currently tests `E0 Direct → E1 Probe → E2 Root → E3 Leaf`.
+- E1 is only a cheap executable observation/falsification step. **Source discovery never raises execution depth by itself.**
 - E2 selects one root: `diagnosis` or `engineering`.
 - E3 may add one evidence-triggered specialist leaf, not a global checklist.
 - Retrieval starts `R0 Target → R1 Local`, then branches to `R2 Structural`, `R2 External contract`, or `R3 bounded exhaustive repository`.
+- Retrieval is the only adaptive axis for acquiring code/source/context. `references/navigation.md` is an R2 Structural/R3 coverage procedure, not a third capability axis.
 - Keep normal root context to Core + at most one capability root + one leaf.
 - Do not introduce mandatory plans, reviews, interviews, Git workflows, tests, documents, workers, or lifecycle ceremony as universal stages.
 
@@ -20,6 +22,8 @@ Contributions to the progressive-capability-tree experiment should preserve one 
 Interaction-heavy modes such as `grill-me`/requirements interviewing and Decision/option selection must remain outside adaptive routing.
 
 A manual mode may be activated only by an explicit user request for that interaction. Do not create automatic triggers from vague requirements, multiple plausible solutions, risk level, or task complexity. Do not let one manual mode route into another without a second explicit request or an original request that explicitly asked for both behaviors.
+
+A specialist may ask one minimum blocking user-owned question when execution is otherwise impossible. That is normal interaction and must not be reframed as entering manual Decision or Clarification mode.
 
 Benchmark these modes separately: explicit activation should add value; spontaneous activation on ordinary tasks should be zero.
 
@@ -30,6 +34,17 @@ The adaptive depth count, root set, leaf set, and trigger boundaries are hypothe
 A good tree change identifies a repeated mechanism, an observable pre-action trigger, the current routing error, parent-vs-leaf/depth-cap evidence, expected quality/context effect, and held-out validation for general claims.
 
 A specialist node that does not show stable net lift over its parent on its claimed task family should be tightened, merged, replaced, or removed.
+
+## Execution / Retrieval orthogonality
+
+When labeling a task or designing a benchmark case, ask two separate questions:
+
+1. **Retrieval:** how much source/context must be acquired before the next material decision is supported?
+2. **Execution:** once relevant evidence is available, how much structured engineering reasoning is still required?
+
+Finding a caller, sibling, contract, implementation, or configuration belongs to R0–R3. It does not justify E1. E1 requires an executable probe such as reproducing behavior, exercising one path, or falsifying one concrete hypothesis.
+
+Valid combinations include `E0/R0`, `E0/R2`, `E3/R0`, and `E3/R2`.
 
 ## Retrieval discipline
 
