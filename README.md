@@ -1,6 +1,6 @@
 # Practical Coding — Progressive Capability Tree Experiment
 
-> **Experimental branch:** `experiment/progressive-ladders`. The architecture below is a candidate and has not yet earned a release claim.
+> **Rejected experiment:** `experiment/progressive-ladders`. The architecture below is preserved as a tested candidate, not a release claim. Current-only validation found no specialist-leaf lift and did not justify several depth nodes.
 
 Practical Coding asks:
 
@@ -121,5 +121,11 @@ references/
 ```
 
 Historical benchmark results remain historical; fresh repeated runs are required before merging this experiment or publishing comparative claims.
+
+## Experiment result
+
+The 2026-08-31 current-only cycle completed 294 public-regression cells plus 378 progressive-tree cells at `n=3`, with zero indeterminate cells. Delivery passed 54/54 and manual-only modes had zero spontaneous activations, but held-out routing was exact in only 21/66 cells. E2 was never the minimum sufficient execution depth; R2/R3 were never minimum sufficient retrieval depths; eight parent-to-leaf ablations produced 0 lifts, 7 ties, and 1 regression.
+
+The candidate therefore **failed the merge gate**. See [`benchmarks/results/progressive-tree/README.md`](benchmarks/results/progressive-tree/README.md). Historical v1.2 numbers are used only as an offline, non-paired reference; no no-skill, Ponytail, combined-skill, or prior-version arm was rerun in this cycle.
 
 MIT License. See `THIRD_PARTY_NOTICES.md` for upstream attribution.

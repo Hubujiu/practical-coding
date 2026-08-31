@@ -2,7 +2,7 @@
 
 This experimental branch keeps the existing public regression harness and adds evaluation for **progressive execution/retrieval depth plus adaptive capability-path routing**.
 
-Historical v1.0–v1.2 results remain evidence for the Skill versions that produced them. They are not evidence that the new capability tree is better until fresh runs are completed.
+Historical v1.0–v1.2 results remain evidence for the Skill versions that produced them. The completed current-only experiment did not establish that the progressive capability tree is better; see [`results/progressive-tree/`](results/progressive-tree/).
 
 ## Three adaptive benchmark questions
 
@@ -73,6 +73,17 @@ Adaptive rows may include `capability_path` and `references_loaded`; parent-vs-l
 pwsh -NoProfile -File benchmarks/run.ps1 -SelfTest
 pwsh -NoProfile -File benchmarks/run.ps1 -Profile standard -Runs 3 -Workers 3 -RequireStableRanking
 pwsh -NoProfile -File benchmarks/run.ps1 -Profile full -Runs 3 -Workers 3 -RequireStableRanking
+```
+
+Current-only progressive validation:
+
+```powershell
+python benchmarks/progressive_validation.py `
+  --phase all `
+  --current-only `
+  --runs 3 `
+  --workers 3 `
+  --output benchmark-results/progressive-current-only
 ```
 
 Candidate before/after gate:

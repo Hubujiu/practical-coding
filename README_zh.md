@@ -1,6 +1,6 @@
 # Practical Coding — 渐进式能力树实验
 
-> **实验分支：** `experiment/progressive-ladders`。当前结构是待验证候选方案，不代表已发布 benchmark 结论。
+> **已拒绝实验：** `experiment/progressive-ladders`。以下结构作为已测试候选方案保留，不代表发布结论；当前版本验证没有证明专家叶子收益，也没有支持若干深度节点。
 
 Practical Coding 默认只回答一个问题：
 
@@ -129,3 +129,9 @@ references/
 ```
 
 详见 [`benchmarks/LADDER_EVOLUTION.md`](benchmarks/LADDER_EVOLUTION.md)、[`evolution/README.md`](evolution/README.md) 与 [`evolution/EXPERIENCE_SCHEMA.md`](evolution/EXPERIENCE_SCHEMA.md)。
+
+## 实验结果
+
+2026-08-31 的 current-only 周期完成了 294 个公共回归单元和 378 个渐进树单元，均为 `n=3`、0 indeterminate。Delivery 54/54，manual-only 零误触发 0/66；但 held-out 路由只有 21/66 精确。E2 从未成为最低充分执行深度，R2/R3 从未成为最低充分检索深度；8 组 parent→leaf 消融为 0 提升、7 持平、1 回退。
+
+因此该候选方案 **未通过合并门槛**。完整结论见 [`benchmarks/results/progressive-tree/REPORT_ZH.md`](benchmarks/results/progressive-tree/REPORT_ZH.md)。本轮没有重跑 no-skill、Ponytail、组合 Skill 或旧版本；v1.2 仅作为离线、非配对历史报告参照。

@@ -2,6 +2,8 @@
 
 This document freezes the next validation cycle for `experiment/progressive-ladders` before results are inspected.
 
+Execution note (2026-08-31): the user narrowed the formal run to the current version only and requested offline comparison with prior reports. The completed current-only matrix is recorded in [`results/progressive-tree/`](results/progressive-tree/). It rejected the candidate; the original broader comparative protocol below remains preserved as the pre-run design, not as a claim that those arms ran.
+
 The objective is to test whether the tree improves quality-qualified routing and context cost—not to prove that the current number of depths or leaves is correct.
 
 ## 1. Freeze before running

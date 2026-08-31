@@ -167,6 +167,7 @@ def analyze(records: Iterable[dict[str, Any]]) -> dict[str, Any]:
 
         scorable = sum(statuses[name] for name in ("exact", "over_escalation", "under_escalation", "quality_failure", "inconsistent"))
         exact_or_over_under = statuses["exact"] + statuses["over_escalation"] + statuses["under_escalation"]
+        qualified_adaptive = statuses["exact"] + statuses["over_escalation"]
 
         cost_by_level: dict[str, Any] = {}
         for level in levels:
@@ -178,8 +179,15 @@ def analyze(records: Iterable[dict[str, Any]]) -> dict[str, Any]:
             "tasks_seen": sum(1 for _, case_axis in grouped if case_axis == axis),
             "scorable_tasks": scorable,
             "status_counts": dict(sorted(statuses.items())),
+            "qualified_adaptive_rate": (qualified_adaptive / scorable) if scorable else None,
+            "overall_exact_rate": (statuses["exact"] / scorable) if scorable else None,
+            "quality_failure_rate": (statuses["quality_failure"] / scorable) if scorable else None,
+            "inconsistent_rate": (statuses["inconsistent"] / scorable) if scorable else None,
             "over_escalation_rate": (statuses["over_escalation"] / exact_or_over_under) if exact_or_over_under else None,
             "under_escalation_rate": (statuses["under_escalation"] / exact_or_over_under) if exact_or_over_under else None,
+            # Conditional routing rate retained for compatibility. It excludes
+            # quality failures and inconsistent rows; use overall_exact_rate
+            # for the end-to-end adaptive result.
             "exact_rate": (statuses["exact"] / exact_or_over_under) if exact_or_over_under else None,
             "minimum_sufficient_counts": {level: minimum_counts[level] for level in levels},
             "levels_never_minimum": [level for level in levels if minimum_counts[level] == 0],

@@ -1,6 +1,6 @@
 # Experiment: progressive capability tree
 
-Status: **candidate implemented; validation pending**
+Status: **rejected by current-only validation; preserved for evidence**
 
 ## Observation
 
@@ -68,4 +68,17 @@ Use at least n=3 for boundary claims and include held-out repositories/tasks bef
 
 ## Result
 
-Pending fresh benchmark and real-project evidence. Do not publish comparative claims from this experiment yet.
+The 2026-08-31 current-only cycle completed 294 public-regression cells and 378 progressive-validation cells, all determinate at `n=3`.
+
+The candidate did not meet its acceptance signals:
+
+- 22 held-out real tasks produced 18/22 stable task passes, but only 40/66 valid routing traces and 21/66 exact E/R/path selections;
+- execution minima were E0=6, E1=1, E2=0, E3=1, so E2 was never independently necessary;
+- retrieval minima were R0=1, R1=7, R2=0, R3=0, so the calibration did not justify R2/R3 as separate minimum-sufficient depths;
+- eight parent-vs-leaf ablations produced zero quality lifts, seven ties, and one regression;
+- manual-only spontaneous activation was 0/66, which supports that isolated boundary;
+- Delivery remained 54/54, but Debug was 34/42 due to genuine shared-boundary/sibling-safety misses.
+
+The experiment is rejected as a release architecture. Preserve its runner, frozen cases, and evidence; do not tune triggers to these cases. Any replacement must begin as a new frozen experiment after simplifying or redefining the unsupported depth/leaf boundaries.
+
+See [`../../benchmarks/results/progressive-tree/REPORT_ZH.md`](../../benchmarks/results/progressive-tree/REPORT_ZH.md).

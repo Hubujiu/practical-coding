@@ -33,6 +33,19 @@ class LadderAnalysisTests(unittest.TestCase):
         self.assertNotIn("R1", report["levels_never_minimum"])
         self.assertIn("R3", report["levels_never_minimum"])
 
+    def test_reports_end_to_end_rates_without_hiding_quality_failures(self):
+        records = [
+            {"task_id": "exact", "axis": "execution", "arm": "cap", "level": "E0", "qualified": True},
+            {"task_id": "exact", "axis": "execution", "arm": "adaptive", "level": "E0", "qualified": True},
+            {"task_id": "failed", "axis": "execution", "arm": "cap", "level": "E0", "qualified": True},
+            {"task_id": "failed", "axis": "execution", "arm": "adaptive", "level": "E0", "qualified": False},
+        ]
+        report = analyze(records)["axes"]["execution"]
+        self.assertEqual(report["exact_rate"], 1.0)
+        self.assertEqual(report["qualified_adaptive_rate"], 0.5)
+        self.assertEqual(report["overall_exact_rate"], 0.5)
+        self.assertEqual(report["quality_failure_rate"], 0.5)
+
     def test_averages_qualified_cap_cost(self):
         records = [
             {"task_id": "a", "axis": "execution", "arm": "cap", "level": "E0", "qualified": True, "tokens": 100},
