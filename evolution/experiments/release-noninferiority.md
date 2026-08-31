@@ -53,3 +53,11 @@ Across the accepted n=1 candidates, `fb69a9c` had the strongest quality-qualifie
 The strict gate failed. Decision and Router passed; Delivery failed only LOC; Debug improved quality to 40/42 but retained uncached, duration, and LOC cost gaps; Behavior fell to 52/54 versus the prior 53/54. Held-out was not started.
 
 One Behavior miss never loaded the candidate because Codex declared a shared eval-root Skill path while the runner installed only hash-local aliases. Add a current-only shared alias and record it in the manifest; never use that alias for a simultaneous historical native arm. The other miss loaded Debugging after an Implementation candidate check failed, accumulating two roots. The two Debug safety misses left a shared invariant inconsistent by patching or parameterizing the named caller path. These support two general corrections: a failed candidate check remains in the active event, and shared behavior is repaired once at its authoritative primitive unless a real caller contract requires divergence.
+
+## Final n=1 selection and release status
+
+Candidate `138c321` passed all Delivery, Debug, Decision, and Behavior cells at n=1. Behavior passed every strict quality/cost comparison and Router remained above the prior aggregate pass rate. Delivery failed only median tools (+0.5); Debug failed uncached input (+1551) and LOC (+0.5) while improving safety; Decision failed duration (+0.62 seconds).
+
+A mechanical 7,112-to-6,028-byte entrypoint compression was tested at `849b9a0`. It preserved quality but made at least one cost metric worse in every suite, so it was rejected and reverted rather than selected from noisy metrics. Further wording edits would be benchmark-directed tuning without a new real mechanism.
+
+The formal scorecard therefore remains FAIL and PR #5 remains Draft. The strongest current evidence is published in `benchmarks/results/v1.5/COMPARISON_SCORECARD.md`; it includes previous, no-skill baseline, Ponytail, Superpowers, and grilling context under the current scorer. Do not run held-out or another final n=3 until a new general mechanism can close the remaining strict cost gaps without sacrificing quality.
