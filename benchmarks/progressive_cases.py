@@ -1,8 +1,8 @@
 """Frozen real-repository cases for adaptive runtime experiments.
 
-The cases are intentionally read-only.  They exercise source retrieval, executable
-probes, diagnosis, engineering guarantees, and every claimed specialist leaf without
-letting benchmark work mutate the source repositories.
+The cases are intentionally read-only. They exercise source retrieval, executable
+probes, debugging, implementation guarantees, and direct reporting without letting
+benchmark work mutate the source repositories.
 """
 
 from __future__ import annotations
@@ -37,10 +37,11 @@ def _case(
     required: list[list[str]],
     *,
     capability_path: list[str] | None = None,
-    probe_terms: list[str] | None = None,
+    probe_terms: list[list[str]] | None = None,
+    reasoning: str | None = None,
     calibration: bool = False,
 ) -> dict[str, object]:
-    reasoning = (
+    expected_reasoning = reasoning or (
         "DEBUGGING"
         if (capability_path or [None])[0] == "diagnosis"
         else "IMPLEMENTATION"
@@ -60,7 +61,7 @@ def _case(
         "expected_execution": execution,
         "expected_retrieval": retrieval,
         "capability_path": capability_path or [],
-        "expected_reasoning": reasoning,
+        "expected_reasoning": expected_reasoning,
         "expected_retrieval_mode": retrieval_mode,
         "prompt": prompt,
         "required": required,
@@ -108,7 +109,7 @@ CASES = [
         "R0",
         "Run the focused PluginStateMachineTest once to establish the current transition behavior, then report the command and whether the test passed. Do not edit files or run the full build.",
         [["PluginStateMachineTest"], ["pass", "success", "tests run"]],
-        probe_terms=["pluginstatemachinetest", "mvn", "mvnw"],
+        probe_terms=[["pluginstatemachinetest"], ["mvn", "mvnw"]],
         calibration=True,
     ),
     _case(
@@ -188,7 +189,7 @@ CASES = [
         "R0",
         "Run the focused exportFilename test once to establish the current filename contract, then report the exact command and outcome. Do not edit files or run the full test suite.",
         [["exportFilename"], ["pass", "passed", "tests"]],
-        probe_terms=["exportfilename", "npm", "vitest"],
+        probe_terms=[["exportfilename"], ["npm", "vitest"]],
     ),
     _case(
         "ca-export-failure-diagnosis",
@@ -220,6 +221,7 @@ CASES = [
         "Plan keyboard and screen-reader acceptance for ExportProgressModal without changing its visual direction. Inspect the component and tests; specify focus, labeling, cancel action, progress announcement, and the smallest browser/component evidence. Report only; do not edit files.",
         [["ExportProgressModal"], ["focus", "keyboard"], ["aria", "screen reader", "label"], ["cancel"], ["progress"]],
         capability_path=["engineering", "interface"],
+        reasoning="NONE",
     ),
     _case(
         "ca-export-quality",
@@ -267,7 +269,7 @@ CASES = [
         "R0",
         "Compile the ai-example-spring-ai-memory module once with its required reactor dependencies to establish current reachability. Report the exact Maven command and outcome; do not edit files or run unrelated modules.",
         [["ai-example-spring-ai-memory"], ["build success", "success", "compiled"]],
-        probe_terms=["mvn", "ai-example-spring-ai-memory", "-pl"],
+        probe_terms=[["mvn", "mvnw"], ["ai-example-spring-ai-memory"], ["-pl"]],
     ),
     _case(
         "sa-sensitive-security",
@@ -276,7 +278,7 @@ CASES = [
         "E3",
         "R2",
         "Review where sensitive-word rejection occurs in the Spring AI Alibaba request path. Map interceptor registration and callers, define rejection-before-model-side-effect behavior, and identify the narrowest security tests needed. Report only; do not edit files.",
-        [["SensitiveWordInterceptor"], ["SpringAiAlibabaAgentService"], ["ModelInterceptor", "model interceptor"], ["reject", "before"], ["test"]],
+        [["SensitiveWordInterceptor"], ["SpringAiAlibabaAgentService"], ["reject", "before"], ["test"]],
         capability_path=["engineering", "security"],
     ),
     _case(

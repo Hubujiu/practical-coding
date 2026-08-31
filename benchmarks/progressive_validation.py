@@ -154,7 +154,8 @@ def score_answer(case: dict[str, Any], answer: str, commands: list[str], workspa
     lower = answer.lower()
     missing = [group for group in case["required"] if not any(term.lower() in lower for term in group)]
     command_text = "\n".join(commands).lower()
-    probe_missing = [term for term in case["probe_terms"] if term.lower() not in command_text]
+    probe_groups = [group if isinstance(group, list) else [group] for group in case["probe_terms"]]
+    probe_missing = [group for group in probe_groups if not any(term.lower() in command_text for term in group)]
     status = bench.run_command(["git", "status", "--porcelain"], workspace)
     clean = status.returncode == 0 and not status.stdout.strip()
     manual_markers = (
@@ -213,7 +214,8 @@ def task_prompt(case: dict[str, Any], loaded: str, variant: str) -> str:
         "TARGETED means only already-known paths or symbols; BOUNDED means lexical/filename/symbol search in a limited "
         "scope; STRUCTURAL means relationship/flow mapping or bounded exhaustive discovery, even when reconstructed "
         "from source because no graph index is available. List comma-separated Practical Coding "
-        "reference paths after refs=. Requirements interviewing is never a reasoning route. "
+        "reference paths after refs=. The reasoning value must be one of the four listed values; STRUCTURAL is only a "
+        "retrieval value. Requirements interviewing is never a reasoning route. "
         "Do not mention this instrumentation elsewhere."
     )
     return (

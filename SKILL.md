@@ -41,7 +41,7 @@ Use this first-match ladder:
 
 Read exactly that one reasoning module in addition to the Core. Resolve the blocker, then reassess only if a different blocker appears. Reassessment does not justify accumulating references in the root: handle a trivial later blocker with the Core, or isolate a substantial later event when the saved context exceeds handoff cost. Do not preload modules or load candidates together to compare them.
 
-A named target plus an already-settled behavior, contract, boundary, and focused check stays Direct even when the change concerns persistence, permissions, compatibility, or irreversible effects. File count and the need for local caller lookup do not create an Implementation event.
+A named target plus an already-settled behavior, contract, boundary, and focused check stays Direct even when the change concerns persistence, permissions, compatibility, or irreversible effects. Unknown file locations, file count, and the need to discover callers, consumers, or data flow are Retrieval questions; they do not create an Implementation event when the change contract is already settled or no change is requested.
 
 ## Explicit-only requirements interview
 

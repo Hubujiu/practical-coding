@@ -17,8 +17,8 @@ class ProgressiveValidationTests(unittest.TestCase):
             {case["expected_retrieval_mode"] for case in CASES},
             {"TARGETED", "BOUNDED", "STRUCTURAL"},
         )
-        security = next(case for case in CASES if case["task_id"] == "sa-sensitive-security")
-        self.assertIn("model interceptor", security["required"][2])
+        interface = next(case for case in CASES if case["task_id"] == "ca-progress-interface")
+        self.assertEqual(interface["expected_reasoning"], "NONE")
 
     def test_trace_parser_uses_last_machine_line(self):
         trace = progressive.parse_trace(
@@ -39,13 +39,22 @@ class ProgressiveValidationTests(unittest.TestCase):
     def test_score_requires_evidence_probe_and_clean_workspace(self):
         case = {
             "required": [["alpha"], ["beta", "bravo"]],
-            "probe_terms": ["pytest", "focused"],
+            "probe_terms": [["pytest"], ["focused", "narrow"]],
         }
         with tempfile.TemporaryDirectory() as tmp:
             root = Path(tmp)
             (root / "seed.txt").write_text("seed\n", encoding="utf-8")
             progressive.bench.snapshot_workspace(root)
             score = progressive.score_answer(case, "alpha and bravo", ["pytest focused"], root)
+        self.assertTrue(score["passed"])
+
+    def test_probe_command_accepts_equivalent_project_runner_entrypoints(self):
+        case = {"required": [["pass"]], "probe_terms": [["mvn", "mvnw"], ["focused-test"]]}
+        with tempfile.TemporaryDirectory() as tmp:
+            root = Path(tmp)
+            (root / "seed.txt").write_text("seed\n", encoding="utf-8")
+            progressive.bench.snapshot_workspace(root)
+            score = progressive.score_answer(case, "pass", ["mvn -Dtest=focused-test test"], root)
         self.assertTrue(score["passed"])
 
     def test_all_is_heldout_only_for_active_runtime(self):

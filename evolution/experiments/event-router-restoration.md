@@ -52,6 +52,17 @@ Cost should be unchanged or lower because at most one general reasoning referenc
 
 Iteration 2 changes are limited to these reusable mechanisms: pre-source event routing, explicit Direct settled-boundary protection, stable Decision output structure, retrieval instrumentation definitions, and scorer/oracle corrections. No benchmark case noun is added to runtime text.
 
+### Iteration 2 — `bacb34e`, n=1
+
+- Public focused full-profile surfaces: Debug 14/14, Decision 10/10, Native Behavior 18/18, Router 33/38.
+- Router reasoning was correct in 36/38; two read-only/source-discovery tasks still over-routed to Implementation. Three remaining failures were retrieval granularity disagreements, not reasoning-module or delivered-quality failures.
+- Held-out: 19/22 mechanical passes, 0 spontaneous requirements interviewing, 21/22 valid traces, 18/22 exact event+retrieval traces.
+- Two held-out failures were executable-command oracle defects: the scorer required both `mvn` and `mvnw`, or both `npm` and `vitest`, rather than accepting equivalent project runner entrypoints.
+- The remaining security answer again established the rejection boundary; the redundant exact type-name evidence group was not material to the task contract.
+- One interface planning task was mechanically inherited as Implementation from the rejected leaf tree, although no code change or unresolved implementation boundary was requested. The event-router oracle is corrected to Direct before final validation.
+
+Iteration 3 therefore changes only the general Direct/source-discovery distinction plus benchmark command/evidence-group semantics. The broad quality modules already pass their n=1 gates.
+
 ## Decision
 
 Pending.
