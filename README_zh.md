@@ -1,137 +1,72 @@
-# Practical Coding — 渐进式能力树实验
+# Practical Coding
 
-> **已拒绝实验：** `experiment/progressive-ladders`。以下结构作为已测试候选方案保留，不代表发布结论；当前版本验证没有证明专家叶子收益，也没有支持若干深度节点。
+Practical Coding 是一个 Agent Skill：目标是交付最小、可靠的代码修改，同时避免把所有任务都变成重量级流程。
 
-Practical Coding 默认只回答一个问题：
-
-> **下一步可靠行动，最少需要多少工程化深度和多少上下文？**
-
-默认运行时继续保持 Ponytail 式最小化。**需求访谈、grill-me、Decision 这类交互流程不属于自动路由树。**
-
-## 默认结构
+运行时只有一个 Core、三个由证据触发的推理模块，以及一条独立的检索策略：
 
 ```text
-用户任务
-  ↓
-Core / E0 Direct
-  ↓  仍存在执行不确定性且一个便宜实验可判定
-E1 Probe
-  ├─ E2 diagnosis
-  │   └─ E3 security / state / compatibility / performance
-  └─ E2 engineering
-      └─ E3 security / state / compatibility / performance / quality / interface
+Core / Direct
+├─ 已观察失败但原因未证实            → Debugging
+├─ 会改变实现方向的重大选择尚未解决    → Decision
+└─ 契约、不变量、风险边界或证据计划未解决 → Implementation
 
 检索独立：
-R0 Target → R1 Local
-             ├─ R2 Structural
-             ├─ R2 External contract
-             └─ R3 Bounded exhaustive repo
+已知目标 → 有界/排序搜索 → 结构或权威证据 → 有界穷举覆盖
 ```
 
-模型默认直接从 Core/E0 开始，不再先判断“要不要澄清”“要不要 Decision”。
+## 运行时契约
 
-**Execution 和 Retrieval 是两个真正独立的轴。** 找文件、caller、reference、sibling、contract、implementation、configuration 都属于 Retrieval，本身不会让执行从 E0 升到 E1。因此简单修改也可能是 `E0/R2`，而目标已知的复杂 bug 也可能是 `E3/R0`。
+Core 始终适用：
 
-## 仅手动激活的交互模式
+- 先定义最小可观察成功；
+- 复用项目已经存在的 primitive；
+- 不添加推测性的抽象、依赖、配置、验证、测试或文档；
+- 保留无关行为和用户已有修改；
+- 用能证伪关键结论的最便宜检查验证。
 
-`grill-me` 式需求澄清和 Decision/方案选择被移出自动能力树。**需求模糊、存在多个方案、任务重要、高风险、模型觉得多问一点更好，都不能成为自动 trigger。**
+没有 Event Router 条件时保持 Direct。风险名词、文件数量、路径未知或需要找 caller，本身都不是推理升级理由。
 
-只有用户当前指令明确要求相应行为时才允许加载：
+存在未解决事件时只加载一个 reference：
 
-- [`references/manual/clarification.md`](references/manual/clarification.md)：例如“grill me”“先采访我需求”“先只问需求不要写代码”；
-- [`references/manual/decision.md`](references/manual/decision.md)：例如“进入 Decision 模式”“先把方案列出来让我选再实现”。
+- [`references/debugging.md`](references/debugging.md)：已观察失败仍没有证据化原因；
+- [`references/decision.md`](references/decision.md)：会改变实现方向的重大用户选择尚未解决；
+- [`references/implementation.md`](references/implementation.md)：安全执行被未知契约、协同不变量、重大风险边界或证据计划阻塞。
 
-显式描述这个行为也算手动激活，不要求用户必须知道文件名。但一个 manual mode **不能自动跳转到另一个 manual mode**。
+需求采访和 `grill-me` 只能由用户显式激活 [`references/manual/clarification.md`](references/manual/clarification.md)。普通任务里一个不可避免的阻塞问题不算进入采访模式。
 
-普通编码任务如果缺少一个导致完全无法安全执行的必要信息，可以只问那个最小阻塞问题；这只是正常交互，不等于进入 grill-me/Decision 工作流。
+## 检索策略
 
-## Core：保持最小
+检索与推理正交，始终使用能提供充分当前上下文的最便宜能力：
 
-大多数任务应该保持 Core + 浅执行深度：
+1. 读取已知路径或 symbol；
+2. 使用有界/排序的文件名、文本或 symbol 搜索；
+3. 关系问题在确实节省探索成本时使用已经可用的结构索引；
+4. 只有明确穷举结论才做有界覆盖，仓库无法建立的外部契约才查询权威来源；
+5. 重要结论必须回到当前源码验证。
 
-- 最小可观察成功；
-- 最小但完整的修改；
-- 优先复用项目已有 primitive；
-- 不添加推测性的抽象、wrapper、fallback、配置、验证、测试或文档；
-- 用最便宜、能证伪关键结论的检查验证；
-- 不碰无关代码和用户已有修改。
+[`references/navigation.md`](references/navigation.md) 只用于较重的检索过程。Codebase Memory、LSP/AST、排序搜索和普通搜索都是可选能力，不是依赖。
 
-## 执行深度与能力树
+## 演化纪律
 
-| 深度 | 含义 | 加载 |
-|---|---|---|
-| **E0 Direct** | 行为、契约、验证已由当前/检索到的证据确定 | 仅 Core |
-| **E1 Probe** | 一个便宜的可执行观察就能解决一个执行不确定性 | 仅 Core |
-| **E2 Root** | 真实执行问题需要结构化处理 | diagnosis 或 engineering 二选一 |
-| **E3 Leaf** | 仍存在明确领域保证 | 根能力 + 一个专家叶子 |
+普通运行时不读取 `evolution/`。维护阶段才记录体验、合并重复机制、先冻结实验再修改运行时规则，并保留失败改进。
 
-E1 被刻意限制得很窄：复现一个行为、执行一条路径、证伪一个具体假设，或者跑一个能直接决定下一步的 focused check。**搜索/阅读源码不属于 E1。**
+被拒绝的 E/R 深度与专家叶子实验保存在 [`evolution/rejected/`](evolution/rejected/)，其 n=3 证据位于 [`benchmarks/results/progressive-tree/`](benchmarks/results/progressive-tree/)。替代实验记录在 [`evolution/experiments/event-router-restoration.md`](evolution/experiments/event-router-restoration.md)。
 
-`Debugging` 是 diagnosis 根能力；只有已经观察到错误、在足够的 bounded retrieval 和必要的 Probe 后原因仍未知时才加载。`engineering` 只在目标行为已知，但 authoritative contract、不变量、所有权边界或协同修改面仍无法定位时加载。
+## 验证
 
-E3 专家叶子保持窄边界：`security / state / compatibility / performance / quality / interface`。它们吸收专家 Skill 的 trigger、procedure、exit、verification，但不会成为全局 checklist。
+公共回归与真实仓库 held-out 使用 `gpt-5.6-luna`、medium reasoning。迭代阶段使用 `n=1`；发布结论必须完成 current-only 全矩阵 `n=3`。
 
-## Retrieval：唯一的源码/上下文获取轴
+```powershell
+pwsh -NoProfile -File benchmarks/run.ps1 -SelfTest
+pwsh -NoProfile -File benchmarks/run.ps1 -ProgressiveSelfTest
 
-```text
-R0 Target
-└─ R1 Local
-   ├─ R2 Structural
-   ├─ R2 External contract
-   └─ R3 Bounded exhaustive repo
+python benchmarks/run_catalog.py --profile full --runs 3 --workers 3 `
+  --arm practical-current --arm practical-native --output benchmark-results/public-final
+
+python benchmarks/progressive_validation.py --phase all --current-only --runs 3 --workers 3 `
+  --output benchmark-results/heldout-final
 ```
 
-- `R0`：目标已经知道；
-- `R1`：局部、排序后的搜索，也包括普通 caller/reference/sibling/附近 contract 检索；
-- `R2 Structural`：调用、依赖、数据流、配置流等结构关系；
-- `R2 External`：仓库无法确定的官方 API/协议/许可证契约；
-- `R3`：明确要求 repository-wide exhaustive claim，或低层检索始终无法定位边界。
+历史报告只证明生成它的版本；除非在同一冻结矩阵中重跑，否则只能做非配对参照。
 
-仍然遵循 **expand → localize → contract**。Codebase Memory、LSP/AST、FFF 风格 ranked retrieval 等只是可选加速器，不是依赖。
-
-`references/navigation.md` 暂时保留文件名以减少迁移，但它在概念上只是 **Retrieval 内部较深的 R2 Structural / R3 coverage 操作方法**，不再是第三个轴，也不是独立阶段。
-
-## Benchmark 反向优化
-
-自动能力树继续通过 no-skill、上一个已接受 Practical Coding、depth caps、parent-vs-leaf ablation 和真实项目体验来调优：正确性/安全/build 优先，然后才比较路由、token、时间、tool calls、LOC。
-
-两个轴的 benchmark 必须保持可解释：如果任务只是需要多找一个 caller，它可以是 `E0/R1`；只有真正做了可执行 Probe 才能记为 E1。
-
-手动模式单独测两件事：
-
-1. 用户明确激活时是否真的有收益；
-2. 普通任务的 **spontaneous manual activation 必须为 0**。
-
-因此 Clarification/Decision 不再参与 adaptive minimum-sufficient path，也不能靠 benchmark 调成自动 Gate。
-
-## WikiSkill 式演化闭环
-
-运行时不读取 `evolution/`。维护阶段把 benchmark/真实项目体验、持久 wiki 知识、冻结实验、runtime 规则分开，只有重复机制经过验证后才修改能力树边界。
-
-## Runtime references
-
-```text
-references/
-├── debugging.md
-├── engineering.md
-├── navigation.md         # Retrieval 内部：较深 R2 Structural / R3 coverage
-├── delegation.md
-├── specialists/          # 自动路由可选择
-│   ├── security.md
-│   ├── state.md
-│   ├── compatibility.md
-│   ├── performance.md
-│   ├── quality.md
-│   └── interface.md
-└── manual/               # 只能由用户明确激活
-    ├── clarification.md
-    └── decision.md
-```
-
-详见 [`benchmarks/LADDER_EVOLUTION.md`](benchmarks/LADDER_EVOLUTION.md)、[`evolution/README.md`](evolution/README.md) 与 [`evolution/EXPERIENCE_SCHEMA.md`](evolution/EXPERIENCE_SCHEMA.md)。
-
-## 实验结果
-
-2026-08-31 的 current-only 周期完成了 294 个公共回归单元和 378 个渐进树单元，均为 `n=3`、0 indeterminate。Delivery 54/54，manual-only 零误触发 0/66；但 held-out 路由只有 21/66 精确。E2 从未成为最低充分执行深度，R2/R3 从未成为最低充分检索深度；8 组 parent→leaf 消融为 0 提升、7 持平、1 回退。
-
-因此该候选方案 **未通过合并门槛**。完整结论见 [`benchmarks/results/progressive-tree/REPORT_ZH.md`](benchmarks/results/progressive-tree/REPORT_ZH.md)。本轮没有重跑 no-skill、Ponytail、组合 Skill 或旧版本；v1.2 仅作为离线、非配对历史报告参照。
+MIT License。第三方归属见 `THIRD_PARTY_NOTICES.md`。

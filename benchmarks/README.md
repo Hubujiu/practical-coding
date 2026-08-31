@@ -1,108 +1,46 @@
 # Practical Coding benchmark chain
 
-This experimental branch keeps the existing public regression harness and adds evaluation for **progressive execution/retrieval depth plus adaptive capability-path routing**.
+The active release candidate uses one Core, a Debugging/Decision/Implementation Event Router, and orthogonal retrieval. The rejected E/R depth and specialist-leaf experiment remains historical evidence under [`results/progressive-tree/`](results/progressive-tree/) and [`../evolution/rejected/`](../evolution/rejected/).
 
-Historical v1.0–v1.2 results remain evidence for the Skill versions that produced them. The completed current-only experiment did not establish that the progressive capability tree is better; see [`results/progressive-tree/`](results/progressive-tree/).
+## Active questions
 
-## Three adaptive benchmark questions
+1. Does the Skill deliver a correct, safe, reachable result?
+2. Does it load the one reasoning module required by the present unresolved event—and no module for Direct work?
+3. Does retrieval stop at the cheapest sufficient capability?
+4. Does requirements interviewing remain at zero spontaneous activation?
 
-1. **Does the Skill produce a correct, safe, reachable result?**
-2. **Did it pay for more process/context than the result required?**
-3. **When it went deep, did it load the right capability root/leaf?**
+## Iteration versus release
 
-Existing Delivery, Debug, Router, Native Behavior, and Navigation suites preserve adaptive regression coverage. The historical Navigation suite should now be interpreted as **Retrieval behavior**, not a third runtime axis. Historical Decision cases may remain for compatibility, but Decision/requirements-interview behavior is now **manual-only** and must not be interpreted as an adaptive routing target.
-
-## Candidate depth model
-
-Execution:
-
-```text
-E0 Direct
-E1 Probe
-E2 Capability root
-E3 Specialist leaf
-```
-
-Retrieval:
-
-```text
-R0 Target
-R1 Local
-├─ R2 Structural
-├─ R2 External contract
-└─ R3 Bounded exhaustive repository
-```
-
-The axes must be labeled independently. **Source discovery alone never raises execution depth.** Finding/reading a caller, sibling, contract, implementation, or configuration can produce `E0/R1` or `E0/R2`. E1 requires a cheap executable probe such as reproducing behavior, exercising one path, or falsifying one concrete hypothesis.
-
-For each task/axis, run frozen depth caps and identify the **lowest quality-qualified depth**. For deep task families, also run parent-vs-leaf ablations before claiming that a specialist node earns its context cost.
-
-## Primary adaptive metrics
-
-- `over_escalation`, `under_escalation`, `minimum_sufficient_counts`;
-- selected `capability_path` and references loaded;
-- unnecessary/missed root or leaf;
-- branch confusion and path exactness;
-- cost at each quality-qualified cap.
-
-## Manual-mode metrics
-
-Manual-only Clarification/Decision are not eligible `capability_path` values. Test them in explicit opt-in cases and add a negative control over ordinary tasks:
-
-- explicit-activation quality/cost delta;
-- spontaneous manual-mode activation rate — target **0**.
-
-Do not loosen an adaptive trigger to make a manual-mode benchmark pass.
-
-## Baselines
-
-Every release-quality cycle should retain `no-skill`, accepted prior Practical Coding, and the candidate Practical Coding tree. Add Ponytail, Superpowers, Addy-style expert skills, or other specialist skills only where the comparison answers a real family-specific question.
-
-## Analyze aggregated depth observations
-
-```bash
-python benchmarks/ladder_analysis.py observations.jsonl
-python benchmarks/ladder_analysis.py observations.jsonl --output ladder-report.json
-```
-
-Adaptive rows may include `capability_path` and `references_loaded`; parent-vs-leaf qualification follows `LADDER_EVOLUTION.md`.
-
-## Existing harness commands
+Use `n=1` while changing mechanisms or scorer contracts. Run the complete `n=3` matrices only after focused n=1 evidence supports release.
 
 ```powershell
 pwsh -NoProfile -File benchmarks/run.ps1 -SelfTest
-pwsh -NoProfile -File benchmarks/run.ps1 -Profile standard -Runs 3 -Workers 3 -RequireStableRanking
-pwsh -NoProfile -File benchmarks/run.ps1 -Profile full -Runs 3 -Workers 3 -RequireStableRanking
+pwsh -NoProfile -File benchmarks/run.ps1 -ProgressiveSelfTest
 ```
 
-Current-only progressive validation:
+Current-only public matrix:
 
 ```powershell
-python benchmarks/progressive_validation.py `
-  --phase all `
-  --current-only `
-  --runs 3 `
-  --workers 3 `
-  --output benchmark-results/progressive-current-only
+python benchmarks/run_catalog.py --profile full --runs 1 --workers 3 `
+  --arm practical-current --arm practical-native `
+  --output benchmark-results/public-n1
 ```
 
-Candidate before/after gate:
+Current-only real-repository held-out:
 
 ```powershell
-pwsh -NoProfile -File benchmarks/run.ps1 `
-  -Profile full `
-  -Runs 3 `
-  -Workers 3 `
-  -BaselineRef <accepted-previous-commit> `
-  -IncludeBaseline `
-  -RequireStableRanking
+python benchmarks/progressive_validation.py --phase all --current-only --runs 1 --workers 3 `
+  --output benchmark-results/heldout-n1
 ```
 
-## Acceptance order
+Change `--runs 1` to `--runs 3` only for the frozen final candidate.
 
-1. correctness and safety;
-2. build/reachability;
-3. adaptive depth/path sufficiency;
-4. then tokens, model time, tool calls, LOC, and context/reference cost.
+## Interpretation
 
-Public tasks that influenced Skill wording are regression tests. Strong boundary/node claims require held-out tasks and repeated determinate runs. Real-project experience is calibration evidence recorded separately under `evolution/`.
+- Delivery and Debug grade delivered behavior, safety, and build evidence.
+- Decision grades compact two-turn convergence.
+- Router grades reasoning selection and retrieval separately.
+- Native Behavior verifies actual Skill discovery and module isolation.
+- Held-out tasks use frozen commits from three real repositories and mechanically grade evidence coverage, executable probes, clean workspaces, event/retrieval traces, and spontaneous requirements interviewing.
+
+Historical reports are version-specific. Offline comparison with v1.2 is non-paired unless old and new arms are rerun together in one frozen matrix.

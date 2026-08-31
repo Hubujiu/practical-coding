@@ -1,35 +1,34 @@
-# Structural Retrieval Procedure
+# Navigation
 
-This file is **not a separate Navigation axis or execution phase**. It is the deeper procedure inside the Retrieval tree for substantial **R2 Structural** mapping and, when needed, disciplined **R3 bounded exhaustive repository** coverage.
+Navigation is the detailed retrieval procedure, not an Event Router branch. Load it only when broad code discovery, structural mapping, external contract lookup, or bounded exhaustive coverage is substantial enough that the short Retrieval Policy in `SKILL.md` is insufficient.
 
-Routine R0/R1 target reading, caller/reference lookup, sibling inspection, and nearby contract discovery do not need this file.
+Use already-available capabilities only. Do not install a backend, add a persistent integration, or change project configuration solely to obtain retrieval for the current task.
 
-## Retrieval tree position
+## Retrieval ladder
 
-`R0 Target → R1 Local`, then branch only as needed:
+### Known target
 
-- **R2 Structural relation** for callers/callees/imports/implementations/dependencies/data/config flow.
-- **R2 External contract** is handled by the root with authoritative external sources; it does not require this file unless local structural mapping is also substantial.
-- **R3 Bounded exhaustive repository claim** only when the requested claim is explicitly repository-wide or lower-depth retrieval cannot localize the boundary.
+Read the identified file, symbol, route, test, error, or configuration directly. Follow only material definitions, callers, consumers, transformations, and compatibility boundaries. Stop when the requested behavior and minimum coherent surface are established.
 
-External retrieval is not downstream of repository-wide search.
+### Bounded or ranked source discovery
 
-## Structural retrieval
+When location is unknown, prefer an already-available bounded/ranked primitive. Otherwise use ordinary filename, text, and symbol search.
 
-1. Start from the best anchor already known: symbol, error, route, test, config key, type, or file.
-2. Ask one relationship question at a time.
-3. Prefer an already-available structural index/graph when it reduces source exploration; otherwise use bounded source search.
-4. Rank candidates before reading source. Read only enough to confirm or reject each relationship.
-5. Return exact paths/symbols and material edges, not raw search output.
+- Batch narrow queries rather than dumping the repository.
+- Use top-k, limits, pagination, and narrow scopes where available.
+- Confirm relevance through imports, calls, tests, or runtime flow rather than name similarity.
+- Read definitions first, then only the material neighbors.
 
-Graph/index output is navigation evidence, not repository truth. Confirm material behavior in current source before editing.
+### Structural retrieval
 
-## Bounded exhaustive claims
+Use an already-available structural code index when the unresolved question is primarily relational and lexical reconstruction would be expensive: callers, callees, imports, implementations, inheritance, dependencies, or cross-file flow.
 
-State the boundary being exhausted, search it systematically with pagination/coverage tracking, and report gaps. Do not call a partial search exhaustive.
+When Codebase Memory is available, confirm project identity/freshness, use the smallest graph query set, check index coverage once candidate paths are known, and read current source for material claims and every partial/stale/excluded range. If unavailable or insufficient, continue with bounded source discovery.
+
+### External and exhaustive evidence
+
+For a repository-wide claim, state the bounded scope, search systematically with pagination/coverage tracking, and disclose gaps. For an external API/protocol/license contract, use the smallest authoritative maintained source needed for the code decision.
 
 ## Contract
 
-Once the relevant relationship or boundary is known, stop retrieval expansion and contract to that surface. Do not keep searching merely because a broad tool remains available.
-
-Finding source may change R-depth without changing E-depth. Raise execution only if the retrieved evidence exposes an unresolved execution problem that requires Probe, Diagnosis, Engineering, or a specialist leaf.
+Search and graph output are evidence, not repository truth. Verify material conclusions in current source. Once the relevant relationship or boundary is known, stop expanding and contract to that surface.

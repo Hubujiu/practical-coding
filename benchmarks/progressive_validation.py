@@ -15,7 +15,6 @@ import statistics
 import sys
 import threading
 import time
-from collections import Counter, defaultdict
 from pathlib import Path
 from typing import Any
 
@@ -25,14 +24,12 @@ if str(HERE) not in sys.path:
     sys.path.insert(0, str(HERE))
 
 import run_benchmarks as bench
-from progressive_cases import ABLATION_IDS, CALIBRATION_IDS, CASES, REPOSITORIES
+from progressive_cases import CASES, REPOSITORIES
 
 
 VERSION = "2.0"
 MODEL = bench.MODEL
 REASONING = bench.REASONING
-EXECUTION_LEVELS = ("E0", "E1", "E2", "E3")
-RETRIEVAL_LEVELS = ("R0", "R1", "R2", "R3")
 TRACE_RE = re.compile(
     r"BENCHMARK_TRACE\s+reasoning=(NONE|DEBUGGING|DECISION|IMPLEMENTATION)\s+"
     r"retrieval=(NONE|TARGETED|BOUNDED|STRUCTURAL)\s+refs=([^\r\n]+)",
@@ -44,89 +41,6 @@ def sha256(path: Path) -> str:
     digest = hashlib.sha256()
     digest.update(path.read_bytes())
     return digest.hexdigest()
-
-
-def _section(text: str, start: str, end: str | None) -> str:
-    begin = text.index(start)
-    finish = text.index(end, begin) if end else len(text)
-    return text[begin:finish]
-
-
-def _through_subsection(section: str, heading: str, next_heading: str | None) -> str:
-    begin = section.index(heading)
-    finish = section.index(next_heading, begin) if next_heading else len(section)
-    return section[:finish]
-
-
-def _reference(root: Path, relative: str) -> str:
-    path = root / relative
-    return f"\n<loaded-skill-reference path=\"{relative}\">\n{path.read_text(encoding='utf-8')}\n</loaded-skill-reference>\n"
-
-
-def capped_bundle(axis: str, level: str, root: Path = ROOT) -> str:
-    skill = (root / "SKILL.md").read_text(encoding="utf-8")
-    execution = _section(skill, "## Execution Depth + Capability Tree", "## Retrieval Depth + Retrieval Tree")
-    retrieval = _section(skill, "## Retrieval Depth + Retrieval Tree", "## Isolation Gate")
-    prefix = skill[: skill.index("## Execution Depth + Capability Tree")]
-
-    if axis == "execution":
-        next_by_level = {
-            "E0": "### E1 — Probe",
-            "E1": "### E2 — Capability root",
-            "E2": "### E3 — Specialist leaf",
-            "E3": None,
-        }
-        execution = _through_subsection(execution, "### E0 — Direct", next_by_level[level])
-        body = prefix + execution + retrieval
-        if level in {"E2", "E3"}:
-            body += _reference(root, "references/debugging.md")
-            body += _reference(root, "references/engineering.md")
-        if level == "E3":
-            for leaf in ("security", "state", "compatibility", "performance", "quality", "interface"):
-                body += _reference(root, f"references/specialists/{leaf}.md")
-    elif axis == "retrieval":
-        next_by_level = {
-            "R0": "### R1 — Local",
-            "R1": "### R2 — Specialized retrieval",
-            "R2": "### R3 — Bounded exhaustive repository claim",
-            "R3": None,
-        }
-        retrieval = _through_subsection(retrieval, "### R0 — Target", next_by_level[level])
-        body = prefix + execution + retrieval
-        body += _reference(root, "references/debugging.md")
-        body += _reference(root, "references/engineering.md")
-        for leaf in ("security", "state", "compatibility", "performance", "quality", "interface"):
-            body += _reference(root, f"references/specialists/{leaf}.md")
-        if level in {"R2", "R3"}:
-            body += _reference(root, "references/navigation.md")
-    else:
-        raise ValueError(axis)
-
-    constraint = (
-        f"\n<benchmark-cap axis=\"{axis}\" level=\"{level}\">"
-        f"This is a frozen {axis} cap. Do not use behavior or context above {level}; "
-        "if the task cannot be supported within the cap, report the unsupported guarantee instead of simulating a deeper level."
-        "</benchmark-cap>\n"
-    )
-    return f'<loaded-skill name="practical-coding">\n{body}\n</loaded-skill>{constraint}'
-
-
-def ablation_bundle(variant: str, case: dict[str, Any]) -> str:
-    path = list(case["capability_path"])
-    if len(path) != 2:
-        raise ValueError(f"ablation task lacks root+leaf path: {case['task_id']}")
-    root_name, leaf = path
-    parent_body = capped_bundle("execution", "E2").split("<benchmark-cap", 1)[0].rstrip()
-    if variant == "parent-only":
-        body = parent_body
-        return body + f"\n<benchmark-ablation>Use only the {root_name} parent; the {leaf} leaf is unavailable.</benchmark-ablation>"
-    if variant == "parent-leaf":
-        body = parent_body
-        body += _reference(ROOT, f"references/specialists/{leaf}.md")
-        return body + f"\n<benchmark-ablation>Use the {root_name}>{leaf} path when its trigger is evidenced.</benchmark-ablation>"
-    if variant == "adaptive":
-        return bench.skill_text("practical-current", {}, None)
-    raise ValueError(variant)
 
 
 def parse_trace(answer: str) -> dict[str, Any]:
@@ -224,10 +138,6 @@ def task_prompt(case: dict[str, Any], loaded: str, variant: str) -> str:
         "Cite concrete source paths/symbols and fresh command evidence.\n\n"
         f"{trace}\n\n<benchmark-variant>{variant}</benchmark-variant>\n{loaded}"
     )
-
-
-def _cell_key(spec: tuple[str, str, str, int]) -> tuple[str, str, str, int]:
-    return spec
 
 
 def build_specs(phases: list[str], runs: int, *, current_only: bool = False) -> list[tuple[str, str, str, int]]:
@@ -368,93 +278,6 @@ def heldout_report(records: list[dict[str, Any]], runs: int) -> dict[str, Any]:
             sum(record.get("routing_exact") is True for record in adaptive) / len(adaptive) if adaptive else None
         ),
     }
-
-
-def axes_outputs(records: list[dict[str, Any]], runs: int) -> tuple[list[dict[str, Any]], dict[str, Any]]:
-    observations: list[dict[str, Any]] = []
-    details: dict[str, Any] = {"runs_per_cell": runs, "tasks": {}}
-    for axis, levels in (("execution", EXECUTION_LEVELS), ("retrieval", RETRIEVAL_LEVELS)):
-        rows = [record for record in records if record["phase"] == axis]
-        for task_id in sorted({record["task_id"] for record in rows}):
-            details["tasks"].setdefault(task_id, {})[axis] = {}
-            for variant in (*levels, "adaptive"):
-                group = [record for record in rows if record["task_id"] == task_id and record["variant"] == variant]
-                determinate = [record for record in group if record["passed"] is not None]
-                stable_quality = len(determinate) == runs and all(record["passed"] is True for record in determinate)
-                if variant == "adaptive":
-                    selected = [record[f"selected_{axis}"] for record in determinate]
-                    stable_level = selected[0] if selected and len(set(selected)) == 1 and selected[0] in levels else levels[-1]
-                    paths = [tuple(record["selected_capability_path"]) for record in determinate]
-                    stable_path = list(paths[0]) if paths and len(set(paths)) == 1 else []
-                    refs = sorted({ref for record in determinate for ref in record["references_loaded"]})
-                    stable_trace = len(determinate) == runs and all(record.get("routing_trace_valid") is True for record in determinate)
-                    observation = {
-                        "task_id": task_id,
-                        "axis": axis,
-                        "arm": "adaptive",
-                        "level": stable_level,
-                        "qualified": stable_quality and stable_trace and bool(selected) and len(set(selected)) == 1,
-                        "capability_path": stable_path,
-                        "references_loaded": refs,
-                    }
-                else:
-                    observation = {
-                        "task_id": task_id,
-                        "axis": axis,
-                        "arm": "cap",
-                        "level": variant,
-                        "qualified": stable_quality,
-                    }
-                observation.update({
-                    "tokens": _mean(determinate, "total_tokens"),
-                    "duration_seconds": _mean(determinate, "duration_seconds"),
-                    "tool_calls": _mean(determinate, "tool_calls"),
-                })
-                observations.append(observation)
-                details["tasks"][task_id][axis][variant] = {
-                    "determinate": len(determinate),
-                    "pass_rate": sum(record["passed"] is True for record in determinate) / len(determinate) if determinate else None,
-                    "stable_quality": stable_quality,
-                }
-    return observations, details
-
-
-def ablation_report(records: list[dict[str, Any]], runs: int) -> dict[str, Any]:
-    rows = [record for record in records if record["phase"] == "ablation"]
-    tasks: dict[str, Any] = {}
-    counters = Counter()
-    for task_id in sorted({record["task_id"] for record in rows}):
-        task = next(case for case in CASES if case["task_id"] == task_id)
-        variants: dict[str, Any] = {}
-        for variant in ("parent-only", "parent-leaf", "adaptive"):
-            group = [record for record in rows if record["task_id"] == task_id and record["variant"] == variant]
-            determinate = [record for record in group if record["passed"] is not None]
-            variants[variant] = {
-                "determinate": len(determinate),
-                "pass_rate": sum(record["passed"] is True for record in determinate) / len(determinate) if determinate else None,
-                "tokens_mean": _mean(determinate, "total_tokens"),
-                "duration_seconds_mean": _mean(determinate, "duration_seconds"),
-                "tool_calls_mean": _mean(determinate, "tool_calls"),
-            }
-        parent = variants["parent-only"]["pass_rate"]
-        leaf = variants["parent-leaf"]["pass_rate"]
-        adaptive = variants["adaptive"]["pass_rate"]
-        if parent is not None and leaf is not None:
-            if leaf > parent:
-                counters["leaf_quality_lift"] += 1
-            elif leaf == parent:
-                counters["leaf_quality_tie"] += 1
-            else:
-                counters["leaf_quality_regression"] += 1
-        adaptive_paths = [tuple(record["selected_capability_path"]) for record in rows if record["task_id"] == task_id and record["variant"] == "adaptive"]
-        exact = bool(adaptive_paths) and all(list(path) == task["capability_path"] for path in adaptive_paths)
-        counters["adaptive_path_exact" if exact else "adaptive_path_not_exact"] += 1
-        tasks[task_id] = {
-            "expected_capability_path": task["capability_path"],
-            "variants": variants,
-            "adaptive_path_exact": exact,
-        }
-    return {"runs_per_cell": runs, "counts": dict(counters), "tasks": tasks}
 
 
 def parse_args() -> argparse.Namespace:

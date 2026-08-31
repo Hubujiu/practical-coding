@@ -15,4 +15,4 @@ Do not activate it because the request appears vague, short, risky, incomplete, 
 
 Return a compact intent capsule: observable success, material scope/non-goals, user-owned constraints, and deliberately deferred ambiguities.
 
-Do **not** automatically load Decision or any other manual mode afterward. Return control to the default Core/E0 path unless the user explicitly requested another manual mode as well.
+Do **not** automatically load Decision afterward merely because the interview produced alternatives. Return control to the Core/Event Router; Decision loads only if a material implementation choice genuinely remains unresolved.

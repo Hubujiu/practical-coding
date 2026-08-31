@@ -1,4 +1,6 @@
-# Progressive depth and capability-tree evolution protocol
+# Historical rejected experiment: progressive depth and capability-tree protocol
+
+This document preserves the frozen methodology used to reject the E/R depth and specialist-leaf tree. It is not the active runtime or release protocol. See [`NEXT_VALIDATION.md`](NEXT_VALIDATION.md) for the Event Router validation.
 
 This protocol evaluates whether Practical Coding chooses the **lowest quality-qualified depth and the smallest useful capability path**.
 

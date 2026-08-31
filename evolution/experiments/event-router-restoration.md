@@ -69,6 +69,14 @@ Both source-discovery controls still over-routed to Implementation. The cause wa
 
 This phrase is an incorrect improvement and is removed. Implementation now requires an unresolved governing contract/risk/evidence boundary, or a coordinated change whose required joint contract is not established. Read-only mapping is explicitly Direct plus Retrieval.
 
+### Final n=1 gate — `8669827`
+
+- The two repeated retrieval-only controls both routed Direct with the expected retrieval scope.
+- Five affected held-out controls passed 5/5 quality, 5/5 valid traces, 5/5 exact reasoning+retrieval, and zero spontaneous requirements interviewing.
+- Combined with Iteration 2, all Delivery, Debug, Decision, and Native Behavior n=1 quality surfaces passed; Router residuals were retrieval-granularity differences rather than module-selection or delivered-quality regressions.
+
+The runtime wording is frozen. Documentation and dead rejected-runner paths are being cleaned before the complete n=3 release matrix; no further runtime tuning is allowed without returning to a new n=1 experiment.
+
 ## Decision
 
 Pending.
