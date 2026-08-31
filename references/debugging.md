@@ -22,6 +22,7 @@ Judge a fix by delivered behavior. It should remove the earliest incorrect state
 ## Stay in Scope
 
 - Diagnose the reported failure; do not turn debugging into a repository-wide search for unrelated defects.
+- Batch sufficient known-path reads and checks; do not inspect Git history or inventory the repository when current source can establish the cause.
 - Do not write tests merely because debugging occurred. Use the cheapest reproduction or focused check that can falsify the fix; add a durable test only when regression risk or project requirements justify it.
 - If diagnosis exposes a different material blocker, return it to the root instead of loading another reference here.
 

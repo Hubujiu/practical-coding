@@ -38,6 +38,12 @@ Quality met or exceeded the prior version: Delivery, Debug, Decision, and Behavi
 
 Cross-suite transcripts again showed the same mechanisms: repeated cleanup after an explicit rejection, broad history/inventory work for known local targets, broad test-runner attempts when no test exists, and one extra failed reference read. Prefer checks that suppress disposable output, make failed cleanup terminal, and keep known-target retrieval local. Clarify that finite known consumers located by identifiers remain Bounded, while a missing user-owned policy alone requires no retrieval.
 
+## n=1 full candidate fb69a9c
+
+The strict gate nearly converged. Decision and Router passed every quality/cost gate. Delivery failed only by one median LOC; Debug retained +1681 uncached, +2 output, +2158 total tokens, +0.65 seconds, and +0.5 LOC while improving pass/safety from 92.9% to 100%; Behavior retained only +8.5 output and +1.24 seconds while improving pass from 98.1% to 100%.
+
+Remaining transcript evidence was consistent across suites: routine Debugging still inventoried Git state/history after current source was sufficient, cleanup rejection still caused retries in some runs, and short coding finals could be tighter. Preserve layout, batch sufficient known-path evidence, and bound unrequested final answers. For routing, resolve only the current Decision rather than retrieving for its later implementation, while universal safety claims across runtime paths require Structural evidence.
+
 ## Frozen gate
 
 For every common suite, current pass/correctness/safety/build rates must be no lower than the prior version. Median uncached input, output, total tokens, duration, tool count, and changed LOC must be no higher. Iterations use current-only n=1; only a candidate that passes that directional check proceeds to current-only n=3 public and held-out validation. Do not add case nouns or alter expectations to make a candidate pass.
