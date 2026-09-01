@@ -4,7 +4,7 @@ description: "Use for implementing, fixing, refactoring, or reviewing code with 
 license: MIT
 metadata:
   author: Hubujiu
-  version: "1.6"
+  version: "1.7"
 ---
 
 # Practical Coding
@@ -74,7 +74,8 @@ Core and one small routed node use no worker. Use `references/delegation.md` onl
 Runtime agents do not read `evolution/`. The tree is not a fixed taxonomy.
 
 - Every runtime node owns its behavior, current depth, and only its immediate-child router; a leaf says so explicitly.
-- Add a child only when a repeatable pre-load signal exists and parent-versus-child ablation shows quality-qualified net lift across multiple tasks or repositories.
+- On an `experiment/*` branch, a proposed child may be staged only to collect controlled parent-versus-child and adaptive-routing evidence. Staging is not promotion.
+- Promote a staged child into a release topology only when a repeatable pre-load signal exists and parent-versus-child ablation shows quality-qualified net lift across multiple tasks or repositories.
 - Merge siblings when their boundary is persistently ambiguous and separation adds no net value.
 - Promote a child into its parent when the child is needed for most parent tasks.
 - Remove a child that does not independently improve qualified outcomes enough to justify context and routing cost.

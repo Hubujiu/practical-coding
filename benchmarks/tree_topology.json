@@ -1,5 +1,5 @@
 {
-  "schema_version": 1,
+  "schema_version": 2,
   "root": "core",
   "automatic_nodes": {
     "core": {
@@ -12,12 +12,36 @@
       "depth": 1,
       "reference": "references/debugging.md",
       "parent": "core",
+      "children": ["dynamic-evidence"]
+    },
+    "dynamic-evidence": {
+      "depth": 2,
+      "reference": "references/debugging-dynamic-evidence.md",
+      "parent": "debugging",
       "children": []
     },
     "implementation": {
       "depth": 1,
       "reference": "references/implementation.md",
       "parent": "core",
+      "children": ["security-boundary", "migration-compatibility", "state-concurrency"]
+    },
+    "security-boundary": {
+      "depth": 2,
+      "reference": "references/implementation-security-boundary.md",
+      "parent": "implementation",
+      "children": []
+    },
+    "migration-compatibility": {
+      "depth": 2,
+      "reference": "references/implementation-migration-compatibility.md",
+      "parent": "implementation",
+      "children": []
+    },
+    "state-concurrency": {
+      "depth": 2,
+      "reference": "references/implementation-state-concurrency.md",
+      "parent": "implementation",
       "children": []
     }
   },
@@ -27,10 +51,17 @@
   },
   "retrieval_modes": ["NONE", "TARGETED", "BOUNDED", "STRUCTURAL"],
   "baseline_ref": "ba4058b4ef47a42bf79c9963b25678a2389897c1",
+  "candidate_status": {
+    "dynamic-evidence": "staged",
+    "security-boundary": "staged",
+    "migration-compatibility": "staged",
+    "state-concurrency": "staged"
+  },
   "notes": [
     "Depth describes disclosure depth, not task complexity.",
     "Only parent-child edges in this manifest are valid automatic routes.",
     "Manual modes are never automatic descendants.",
+    "Depth-2 nodes are staged experiment candidates, not release-promoted capabilities.",
     "The benchmark may recommend adding, removing, merging, promoting, splitting, or deepening nodes; the manifest is an experiment input, not a permanent taxonomy."
   ]
 }

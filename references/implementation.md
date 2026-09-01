@@ -30,10 +30,16 @@ Claim only what fresh evidence supports. If the environment blocks an appropriat
 
 ## Local Router
 
-**Current status: leaf.** Security, persistence, state, concurrency, compatibility, interface, and similar nouns are not children merely because they are recognizable categories. No specialist descendant is active until benchmark evidence proves that it adds stable value over this node.
+The following depth-2 children are staged candidates. Choose at most one for the present blocker; do not load siblings merely because their nouns also appear in the task.
+
+1. If the primary invariant is who/what may cross a trust boundary—authentication, authorization, untrusted input, secrets, permission checks, or a sensitive side effect that must be rejected before execution—load `references/implementation-security-boundary.md`.
+2. If an existing persisted representation, public/shared API, serialized format, schema, or configuration contract must change while old data/callers/versions may coexist or rollback must remain possible, load `references/implementation-migration-compatibility.md`.
+3. If correctness primarily depends on ordering, atomicity, idempotency, transactions, retries/duplicate delivery, concurrent mutation, or restart-visible state ownership, load `references/implementation-state-concurrency.md`.
+
+Stay in this parent when the risk is ordinary, the authoritative boundary is already clear, or the specialist would only restate this node. Security takes precedence only when allow/deny or secret-handling is the primary guarantee; migration takes precedence for version/representation coexistence; state/concurrency takes precedence for ordering/atomicity. If no single specialist owns the blocker cleanly, stay here rather than loading multiple siblings.
+
+These children are experimental. Retain them only when each earns independent minimum-sufficient cases, quality-qualified lift over this parent, and acceptable Trigger/Boundary behavior.
 
 Resolve ordinary implementation choices locally by established project convention, platform default, or the smallest sufficient reversible choice. Never route automatically to Decision. If a genuinely user-owned choice blocks safe execution and no default is justified, ask the minimum blocking question without opening a Decision workflow.
-
-A future child may be added here only when failures form a repeatable pre-load cluster, the boundary is observable before loading the child, and parent-versus-child ablation demonstrates quality-qualified net lift across multiple tasks or repositories. When that happens, this file—not Core—owns the child trigger.
 
 If work exposes a genuinely different top-level unexplained failure rather than an Implementation descendant, return that blocker to Core.
