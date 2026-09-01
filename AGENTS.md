@@ -4,21 +4,14 @@ This repository is an Agent Skill. Apply [`SKILL.md`](SKILL.md) when working fro
 
 ## Runtime model
 
-1. Apply Core at tree depth 0.
-2. Core knows only its immediate automatic children: Debugging and Implementation.
-3. A loaded node owns only its own next-level router. Do not preload siblings or descendants and do not send descendant selection back to Core.
-4. Current Debugging and Implementation nodes are leaves until benchmark evidence earns a child.
-5. Keep retrieval orthogonal. Unknown paths, callers, consumers, and data flow are retrieval questions, not execution-tree depth.
-6. Automatic routing must converge toward resolving the current blocker; it must not reopen deliberation.
+1. Apply Core at tree depth 0; it is the only automatic execution node.
+2. Resolve debugging, contract mapping, implementation, and verification with Core.
+3. Keep retrieval orthogonal. Unknown paths, callers, consumers, and data flow are retrieval questions, not execution-tree depth.
+4. Execution must converge toward resolving the current blocker; it must not reopen deliberation.
 
-## Root Router
+## Automatic execution
 
-| Present unresolved blocker | Immediate child |
-|---|---|
-| Observed failure still lacks an evidenced cause | [`references/debugging.md`](references/debugging.md) |
-| Unknown contract/invariant, coordinated guarantee, material risk boundary, or evidence requirement blocks safe execution | [`references/implementation.md`](references/implementation.md) |
-
-A known target and settled behavior/boundary/check stay at Core even when risk nouns are present. A read-only mapping request is Core plus Retrieval.
+There is no automatic child router. A known target, unexplained failure, contract boundary, implementation map, and focused verification all stay at Core. A read-only mapping request is Core plus Retrieval.
 
 ## Manual modes
 

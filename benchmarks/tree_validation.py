@@ -464,9 +464,9 @@ def self_test(topology: dict[str, Any]) -> None:
     assert set(REPOSITORIES) == {case["repository"] for case in CASES}
     for name in topology["automatic_nodes"]:
         assert node_path(topology, name)[-1] == name
-    trace = parse_trace("TREE_TRACE path=core>debugging retrieval=BOUNDED manual=none refs=references/debugging.md")
+    trace = parse_trace("TREE_TRACE path=core retrieval=BOUNDED manual=none refs=none")
     assert validate_trace(topology, trace)
-    assert not validate_automatic_path(topology, ["core", "debugging", "implementation"])
+    assert not validate_automatic_path(topology, ["core", "debugging"])
     assert any(case.get("manual_request") == "decision" for case in CASES)
     print("tree validation self-test: PASS")
 

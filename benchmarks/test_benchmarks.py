@@ -116,10 +116,10 @@ class BenchmarkHarnessTests(unittest.TestCase):
         )
         self.assertEqual(bench.parse_router_answer("DEBUGGING"), ("", ""))
 
-    def test_core_is_local_tree_root_and_manual_modes_are_separate(self):
+    def test_core_is_only_automatic_node_and_manual_modes_are_separate(self):
         skill = (bench.ROOT / "SKILL.md").read_text(encoding="utf-8")
-        core = skill.split("## Core", 1)[1].split("## Root Router", 1)[0]
-        router = skill.split("## Root Router", 1)[1].split("## Convergence Rule", 1)[0]
+        core = skill.split("## Core", 1)[1].split("## Automatic Execution", 1)[0]
+        automatic = skill.split("## Automatic Execution", 1)[1].split("## Convergence Rule", 1)[0]
         convergence = skill.split("## Convergence Rule", 1)[1].split("## Manual Modes", 1)[0]
         manual = skill.split("## Manual Modes", 1)[1].split("## Retrieval Policy", 1)[0]
         retrieval = skill.split("## Retrieval Policy", 1)[1].split("## Isolation Gate", 1)[0]
@@ -134,12 +134,13 @@ class BenchmarkHarnessTests(unittest.TestCase):
         ):
             self.assertNotIn(module_specific.lower(), core.lower())
 
-        self.assertIn("observed failure", router)
-        self.assertIn("unknown contract or invariant", router)
-        self.assertIn("references/debugging.md", router)
-        self.assertIn("references/implementation.md", router)
-        self.assertNotIn("references/manual/decision.md", router)
-        self.assertNotIn("references/decision.md", router)
+        self.assertIn("only automatic execution node", skill)
+        self.assertIn("debugging", automatic)
+        self.assertIn("implementation", automatic)
+        self.assertNotIn("references/debugging.md", automatic)
+        self.assertNotIn("references/implementation.md", automatic)
+        self.assertNotIn("references/manual/decision.md", automatic)
+        self.assertNotIn("references/decision.md", automatic)
         self.assertIn("must not reopen deliberation", convergence)
         self.assertIn("Do not automatically load Decision", convergence)
         self.assertIn("references/manual/decision.md", manual)
