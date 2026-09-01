@@ -54,3 +54,30 @@ Chronological maintenance log. Keep entries short; detailed evidence belongs in 
 
 - The corrected leaf-topology run completed 58/58 determinate cells with adaptive 15/15, every capability ceiling 13/13, trace 15/15, manual 2/2, and zero spontaneous manual activation.
 - Preserved `2026-09-01-tree-n1-leaf-candidate-qualified.md` and froze the leaf candidate for a fresh complete paired n=3 comparison.
+
+## 2026-09-02 — leaf candidate paired n=3 rejected
+
+- Preserved the complete 252-cell artifact; adaptive 41/45 was below frozen v1.5 at 44/45 and no-skill at 45/45.
+- Three failures were evidence-identity oracle defects; one loaded a retired depth-2 reference, and the analyzer crashed instead of classifying that invalid node.
+- Froze `tree-evidence-identity-and-invalid-trace-20260902.md`; scorer/analyzer repair returns to n=1 before the separate retired-reference isolation hypothesis.
+
+## 2026-09-02 — explicit outcome field normalization
+
+- The scorer/analyzer n=1 had adaptive 15/15 and 57/58 total cells; the sole ceiling failure explicitly reported `Outcome: ... did not start` after the required focused command.
+- Added `Outcome:` as result-reporting evidence while retaining the independent command probe requirement; the complete n=1 must rerun.
+
+## 2026-09-02 — observed trace fallback
+
+- The outcome-normalized n=1 had all three ceilings at 13/13; adaptive was 14/15 only because one complete manual answer omitted the benchmark footer.
+- Froze `tree-observed-trace-fallback-20260902.md`; missing traces may be recovered from observed active reference reads, while unknown/retired reads remain invalid.
+
+## 2026-09-02 — retired reference isolation
+
+- Observed trace n=1 correctly rejected one adaptive load of a retired security child; parent wording alone did not remove the file from discovery.
+- Froze `tree-retired-reference-isolation-20260902.md`; removed all four rejected depth-2 documents from runtime `references/` while preserving their history and receipts.
+- Added concrete focused-test method alternatives for the independent Implementation ceiling oracle failure; the combined frozen candidate must rerun complete n=1.
+
+## 2026-09-02 — isolated leaf candidate n=1 qualification
+
+- The fresh current-only run completed 58/58 determinate cells; adaptive and all three ceilings passed every task, all traces/manual contracts passed, and spontaneous manual activation remained zero.
+- Preserved `2026-09-02-tree-n1-isolated-leaf-qualified.md`; froze the candidate for a new complete paired n=3 comparison.

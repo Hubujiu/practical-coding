@@ -37,6 +37,10 @@ TRACE_RE = re.compile(
     r"TREE_TRACE\s+path=([^\s]+)\s+retrieval=([A-Z_]+)\s+manual=([a-z_-]+)\s+refs=([^\r\n]+)",
     re.I,
 )
+OBSERVED_REF_RE = re.compile(
+    r"practical-coding[/\\](references[/\\][a-z0-9_./\\-]+\.md)",
+    re.I,
+)
 
 
 def load_topology(path: Path) -> dict[str, Any]:
@@ -98,6 +102,56 @@ def parse_trace(answer: str) -> dict[str, Any]:
     }
 
 
+def canonical_reference(raw: str) -> str:
+    ref = str(raw).strip().strip("<>\"'").lower().replace("\\", "/")
+    marker = "/practical-coding/"
+    if marker in ref:
+        ref = ref.split(marker, 1)[1]
+    if ref.startswith("manual/"):
+        ref = f"references/{ref}"
+    if "/" not in ref and ref.endswith(".md"):
+        ref = f"references/{ref}"
+    return ref
+
+
+def allowed_references(topology: dict[str, Any]) -> set[str]:
+    automatic = {
+        canonical_reference(spec["reference"])
+        for name, spec in topology["automatic_nodes"].items()
+        if name != topology["root"]
+    }
+    manual = {canonical_reference(ref) for ref in topology.get("manual_modes", {}).values()}
+    return automatic | manual | {"references/navigation.md"}
+
+
+def infer_trace_from_commands(topology: dict[str, Any], commands: list[str]) -> dict[str, Any]:
+    command_text = "\n".join(commands).replace("\\", "/")
+    refs = sorted({canonical_reference(match.group(1)) for match in OBSERVED_REF_RE.finditer(command_text)})
+    nodes = topology["automatic_nodes"]
+    loaded_nodes = [
+        name
+        for name, spec in nodes.items()
+        if name != topology["root"] and canonical_reference(spec["reference"]) in refs
+    ]
+    paths = [node_path(topology, name) for name in loaded_nodes]
+    path = max(paths, key=len) if paths and all(
+        candidate == paths[0][: len(candidate)] or paths[0] == candidate[: len(paths[0])]
+        for candidate in paths
+    ) else [topology["root"]]
+    loaded_manual = [
+        name
+        for name, ref in topology.get("manual_modes", {}).items()
+        if canonical_reference(ref) in refs
+    ]
+    manual = loaded_manual[0] if len(loaded_manual) == 1 else "none"
+    return {
+        "path": path,
+        "retrieval": "TARGETED" if commands else "NONE",
+        "manual": manual,
+        "references_loaded": refs,
+    }
+
+
 def validate_automatic_path(topology: dict[str, Any], path: list[str]) -> bool:
     if not path or path[0] != topology["root"]:
         return False
@@ -110,7 +164,8 @@ def validate_automatic_path(topology: dict[str, Any], path: list[str]) -> bool:
 def validate_trace(topology: dict[str, Any], trace: dict[str, Any]) -> bool:
     retrieval_ok = trace["retrieval"] in set(topology.get("retrieval_modes", []))
     manual_ok = trace["manual"] == "none" or trace["manual"] in topology.get("manual_modes", {})
-    return retrieval_ok and manual_ok and validate_automatic_path(topology, trace["path"])
+    refs_ok = all(canonical_reference(ref) in allowed_references(topology) for ref in trace["references_loaded"])
+    return retrieval_ok and manual_ok and refs_ok and validate_automatic_path(topology, trace["path"])
 
 
 def score_answer(
@@ -125,6 +180,7 @@ def score_answer(
     lower = answer.lower()
     missing = [group for group in case["required"] if not any(term.lower() in lower for term in group)]
     command_text = "\n".join(commands).lower()
+    normalized_command_text = command_text.replace("\\", "/")
     probe_groups = [group if isinstance(group, list) else [group] for group in case["probe_terms"]]
     probe_missing = [group for group in probe_groups if not any(term.lower() in command_text for term in group)]
     status = bench.run_command(["git", "status", "--porcelain"], workspace)
@@ -136,10 +192,12 @@ def score_answer(
     if enforce_runtime_contract:
         selected_manual = (trace or {}).get("manual")
         refs = [str(ref).lower().replace("\\", "/") for ref in (trace or {}).get("references_loaded", [])]
-        manual_ref_loaded = any("references/manual/" in ref for ref in refs)
+        manual_ref_loaded = any("manual/" in ref for ref in refs) or "references/manual/" in normalized_command_text
         if requested_manual:
-            manual_contract_ok = selected_manual == requested_manual and any(
-                f"references/manual/{requested_manual}.md" in ref for ref in refs
+            requested_suffix = f"manual/{requested_manual}.md"
+            manual_contract_ok = selected_manual == requested_manual and (
+                any(requested_suffix in ref for ref in refs)
+                or f"references/{requested_suffix}" in normalized_command_text
             )
         else:
             spontaneous_manual = selected_manual not in {None, "none"} or manual_ref_loaded
@@ -296,6 +354,10 @@ def run_cell(
     parsed = bench.parse_transcript(stdout)
     current_runtime = variant == "adaptive" or variant.startswith("cap:")
     trace = parse_trace(parsed["answer"]) if current_runtime else None
+    trace_source = "reported" if trace and trace.get("path") else None
+    if current_runtime and trace and not trace.get("path"):
+        trace = infer_trace_from_commands(topology, parsed["tool_commands"])
+        trace_source = "observed-commands"
     trace_valid = validate_trace(topology, trace) if current_runtime and trace is not None else None
     terminal_node = trace["path"][-1] if trace and trace.get("path") else None
 
@@ -322,6 +384,7 @@ def run_cell(
         "selected_manual": trace["manual"] if trace else None,
         "references_loaded": trace["references_loaded"] if trace else [],
         "routing_trace_valid": trace_valid,
+        "routing_trace_source": trace_source,
     }
     infrastructure_error = "timeout" if timed_out else (f"codex exit status {code}" if code and not forced else None)
     if infrastructure_error:

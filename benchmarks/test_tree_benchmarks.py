@@ -44,6 +44,29 @@ class TreeTopologyTests(unittest.TestCase):
         self.assertTrue(validation.validate_trace(self.topology, trace))
         self.assertEqual(trace["path"], ["core"])
 
+    def test_missing_trace_can_be_recovered_from_observed_reference_reads(self) -> None:
+        trace = validation.infer_trace_from_commands(
+            self.topology,
+            [
+                r"Get-Content D:\Workspace\AiProjects\practical-coding\references\implementation.md",
+                r"Get-Content D:\Workspace\AiProjects\practical-coding\references\manual\decision.md",
+            ],
+        )
+        self.assertEqual(trace["path"], ["core", "implementation"])
+        self.assertEqual(trace["manual"], "decision")
+        self.assertTrue(validation.validate_trace(self.topology, trace))
+
+    def test_observed_retired_reference_remains_an_invalid_trace(self) -> None:
+        trace = validation.infer_trace_from_commands(
+            self.topology,
+            [
+                r"Get-Content D:\Workspace\AiProjects\practical-coding\references\implementation.md",
+                r"Get-Content D:\Workspace\AiProjects\practical-coding\references\implementation-state-concurrency.md",
+            ],
+        )
+        self.assertEqual(trace["path"], ["core", "implementation"])
+        self.assertFalse(validation.validate_trace(self.topology, trace))
+
 
 class MinimumSufficientTests(unittest.TestCase):
     @classmethod
@@ -108,6 +131,12 @@ class MinimumSufficientTests(unittest.TestCase):
             "under_disclosure",
         )
 
+    def test_retired_selected_node_is_an_invalid_trace_not_an_analysis_crash(self) -> None:
+        self.assertEqual(
+            analysis.relation_to_minimum(self.topology, "state-concurrency", {"core"}, False),
+            "invalid_trace",
+        )
+
 
 class SkillUseMetricTests(unittest.TestCase):
     def test_skilluse_self_test(self) -> None:
@@ -169,6 +198,58 @@ class ManualContractTests(unittest.TestCase):
             trace=trace,
             enforce_runtime_contract=True,
         )
+        self.assertFalse(result["manual_contract_ok"])
+
+    def test_manual_contract_accepts_root_elided_identity(self) -> None:
+        case = next(item for item in tree_cases.CASES if item["task_id"] == "sa-memory-strategy-manual-decision")
+        trace = validation.parse_trace(
+            "TREE_TRACE path=core retrieval=TARGETED manual=decision refs=manual/decision.md"
+        )
+        result = validation.score_answer(
+            case,
+            (
+                "Recommendation: use SummaryCompressionMemoryChatService instead of "
+                "SlidingWindowMemoryChatService. Strongest trade-off: lossy recall."
+            ),
+            [],
+            HERE.parent,
+            trace=trace,
+            enforce_runtime_contract=True,
+        )
+        self.assertTrue(result["manual_contract_ok"])
+
+    def test_manual_contract_accepts_observed_reference_read(self) -> None:
+        case = next(item for item in tree_cases.CASES if item["task_id"] == "sa-memory-strategy-manual-decision")
+        trace = validation.parse_trace(
+            "TREE_TRACE path=core retrieval=TARGETED manual=decision refs=none"
+        )
+        result = validation.score_answer(
+            case,
+            (
+                "Recommendation: use SummaryCompressionMemoryChatService instead of "
+                "SlidingWindowMemoryChatService. Strongest trade-off: lossy recall."
+            ),
+            [r"Get-Content D:\repo\references\manual\decision.md"],
+            HERE.parent,
+            trace=trace,
+            enforce_runtime_contract=True,
+        )
+        self.assertTrue(result["manual_contract_ok"])
+
+    def test_automatic_task_detects_observed_manual_reference_read(self) -> None:
+        case = next(item for item in tree_cases.CASES if item["task_id"] == "pp-known-contract")
+        trace = validation.parse_trace(
+            "TREE_TRACE path=core retrieval=TARGETED manual=none refs=none"
+        )
+        result = validation.score_answer(
+            case,
+            "PluginDescriptor status version lifecycle",
+            [r"Get-Content D:\repo\references\manual\decision.md"],
+            HERE.parent,
+            trace=trace,
+            enforce_runtime_contract=True,
+        )
+        self.assertTrue(result["spontaneous_manual_mode"])
         self.assertFalse(result["manual_contract_ok"])
 
     def test_manual_tradeoff_evidence_does_not_require_colon_formatting(self) -> None:
@@ -266,6 +347,21 @@ class ManualContractTests(unittest.TestCase):
 
 
 class EvidenceOracleTests(unittest.TestCase):
+    def test_executor_diagnosis_accepts_a_concrete_focused_test_method(self) -> None:
+        case = next(item for item in tree_cases.CASES if item["task_id"] == "pp-running-after-throw")
+        result = validation.score_answer(
+            case,
+            (
+                "DefaultPluginOperationExecutor runCommand leaves RUNNING after an Error. "
+                "Strengthen errorIsNotSwallowedAsOperationFailure to assert the record reaches a failed terminal state."
+            ),
+            [],
+            HERE.parent,
+            trace=None,
+            enforce_runtime_contract=False,
+        )
+        self.assertEqual(result["missing_evidence_groups"], [])
+
     def test_cancel_diagnosis_accepts_existing_cancellation_test(self) -> None:
         case = next(item for item in tree_cases.CASES if item["task_id"] == "ca-cancel-download")
         result = validation.score_answer(
@@ -321,6 +417,21 @@ class EvidenceOracleTests(unittest.TestCase):
                 "Outcome: blocked before collection because a required plugin could not be resolved."
             ),
             ["npx vitest run src/lib/exportFilename.test.ts"],
+            HERE.parent,
+            trace=None,
+            enforce_runtime_contract=False,
+        )
+        self.assertEqual(result["missing_evidence_groups"], [])
+
+    def test_focused_probe_accepts_an_explicit_outcome_field(self) -> None:
+        case = next(item for item in tree_cases.CASES if item["task_id"] == "ca-export-filename-probe")
+        result = validation.score_answer(
+            case,
+            (
+                "Ran npm test -- src/lib/exportFilename.test.ts once. "
+                "Outcome: Vitest did not start because dependencies are absent."
+            ),
+            ["npm test -- src/lib/exportFilename.test.ts"],
             HERE.parent,
             trace=None,
             enforce_runtime_contract=False,

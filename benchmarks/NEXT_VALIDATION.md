@@ -10,7 +10,7 @@ This protocol freezes final validation for `experiment/evolvable-router-tree` af
 - Retrieval remains orthogonal to execution-tree depth.
 - The deterministic scorer normalizes equivalent semantic acts, outcome wording, ordinary inflections, and Windows/POSIX reference paths without changing the frozen task prompts.
 
-Qualified n=1 artifact: `benchmark-results/tree-delivery-n1-leaves-inflection-20260901` (58/58 determinate cells; adaptive 15/15; every capability ceiling 13/13).
+Qualified n=1 artifact: `benchmark-results/tree-delivery-n1-retired-isolated-20260902` (58/58 determinate cells; adaptive 15/15; every capability ceiling 13/13; all traces/manual contracts valid).
 
 ## Iteration gate
 

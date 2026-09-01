@@ -1,6 +1,6 @@
 # EXP-20260901 — Evolvable local router tree
 
-Status: **leaf candidate n=1 qualified; paired n=3 pending**
+Status: **isolated leaf candidate n=1 qualified; paired n=3 pending**
 
 ## Observation
 
@@ -104,3 +104,5 @@ This qualifies the frozen candidate for the complete n=3 run; it is not yet a re
 The first complete paired n=3 artifact (`benchmark-results/tree-final-eca9a09-20260901`) failed the release gate and was retained as diagnostic evidence. It exposed remaining semantic-oracle gaps and showed that none of the four staged depth-2 nodes entered a minimum-sufficient set. After general oracle corrections, a fresh 106-cell n=1 passed completely, again with no depth-2 marginal lift.
 
 The candidate therefore returned to the original seed topology: Core with leaf Debugging and Implementation children, plus explicit-only manual Decision/Clarification. The first leaf run exposed one further recommendation-inflection oracle defect; after freezing and correcting it, `benchmark-results/tree-delivery-n1-leaves-inflection-20260901` completed 58/58 determinate cells with adaptive 15/15, all three capability ceilings 13/13, trace 15/15, explicit manual 2/2, and zero spontaneous manual activation. This leaf candidate is frozen for a new paired n=3; superiority remains pending.
+
+That paired rerun also failed and revealed two additional mechanisms: deterministic evidence identities and trace instrumentation needed command-observed normalization, while retired child documents still under `references/` remained discoverable despite their removal from the topology. After freezing those mechanisms, adding positive/negative harness tests, and removing the four retired documents from the runtime reference surface, `benchmark-results/tree-delivery-n1-retired-isolated-20260902` completed 58/58 with every arm/capability cell passing and all trace/manual gates clean. This isolated leaf candidate is the current frozen n=3 candidate; no superiority claim exists until the new paired report completes.

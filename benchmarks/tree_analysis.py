@@ -105,7 +105,7 @@ def minimum_sufficient_set(topology: dict[str, Any], cap_status: dict[str, bool]
 def relation_to_minimum(topology: dict[str, Any], selected: str | None, minimum: set[str], passed: bool | None) -> str:
     if not minimum:
         return "quality_gap"
-    if selected is None:
+    if selected is None or selected not in topology["automatic_nodes"]:
         return "invalid_trace"
     if selected in minimum:
         return "exact_minimum" if passed else "quality_failure_at_minimum"

@@ -68,7 +68,7 @@ CASES = [
         "personal-progress",
         "unexplained-failure",
         "An operation sometimes remains RUNNING after its worker throws. The cause is not established. Inspect the operation executor and focused tests, identify the earliest incorrect state transition, and name the cheapest falsifying test. Diagnose only; do not edit files.",
-        [["DefaultPluginOperationExecutor"], ["PluginOperationExecutorTest"], ["RUNNING"], ["fail", "exception", "complete"]],
+        [["DefaultPluginOperationExecutor", "runCommand"], ["PluginOperationExecutorTest", "errorIsNotSwallowedAsOperationFailure", "commandErrorDoesNotLeaveOperationRunning"], ["RUNNING"], ["fail", "exception", "complete"]],
     ),
     _case(
         "pp-token-rotation-boundary",
@@ -111,14 +111,14 @@ CASES = [
         "cover-atelier",
         "uncertain-performance",
         "Large AVIF exports are reported to stall the UI, but no timing evidence exists. Map the main-thread/worker boundary and propose one bounded measurement that separates encode latency, progress delivery, memory pressure, and cancellation. Diagnose and report only; do not edit files.",
-        [["avifEncoder.worker.ts"], ["encodeAvif"], ["performance", "duration", "latency", "measure"], ["memory"], ["cancel", "Abort"]],
+        [["avifEncoder.worker.ts"], ["encodeAvif", "avifEncoder"], ["performance", "duration", "latency", "measure"], ["memory"], ["cancel", "Abort"]],
     ),
     _case(
         "ca-export-filename-probe",
         "cover-atelier",
         "focused-verification",
         "Run the focused exportFilename test once to establish the current filename contract, then report the exact command and outcome. Do not edit files or run the full test suite.",
-        [["exportFilename"], ["pass", "passed", "blocked", "failed", "error", "could not", "unable", "无法", "未运行", "tests"]],
+        [["exportFilename"], ["Outcome:", "pass", "passed", "blocked", "failed", "error", "could not", "unable", "无法", "未运行", "tests"]],
         probe_terms=[["exportfilename"], ["npm", "vitest"]],
     ),
     _case(

@@ -19,6 +19,10 @@ A deterministic scorer is invalid when it rewards behavior forbidden by the task
 - `evolution/raw/sessions/2026-09-01-tree-n1-path-normalization.md`: Windows backslashes caused a correctly loaded manual reference to fail enforcement, and a focused-suite result still failed an identifier-specific test-file group.
 - `evolution/raw/sessions/2026-09-01-tree-n3-failed-oracle-and-topology.md`: the complete paired run rejected explicit `Decision: choose` recommendations, an exact blocked test outcome, and an authoritative cancellation boundary solely because they did not use preferred headings/success wording/UI-caller tokens.
 - `evolution/raw/sessions/2026-09-01-tree-n1-leaves-recommend-inflection.md`: a complete leaf-topology run rejected `Recommend ...` while accepting only the noun `Recommendation`, despite independent option and trade-off evidence.
+- `evolution/raw/sessions/2026-09-02-tree-n3-leaf-failed.md`: a complete paired run rejected authoritative `avifEncoder`/`runCommand` boundary evidence and an actually observed correct manual-reference read because their trace labels differed from preferred tokens.
+- `evolution/raw/sessions/2026-09-02-tree-n1-outcome-field.md`: a complete n=1 rejected `Outcome: ... did not start` despite the required focused command and an explicit truthful result.
+- `evolution/raw/sessions/2026-09-02-tree-n1-missing-trace.md`: a complete n=1 rejected a correct manual Decision answer solely because it omitted the benchmark-only footer, although command evidence proved the requested reference read.
+- `evolution/raw/sessions/2026-09-02-tree-n1-retired-reference-observed.md`: observed trace recovery correctly rejected a retired runtime reference, while a separate ceiling answer showed that a concrete focused test method can satisfy the test-evidence act without repeating its class name.
 
 ## Affected nodes/boundaries
 
@@ -36,6 +40,11 @@ Benchmark scorer/oracle contract only. These observations do not justify runtime
 - Score an exact blocked/failed probe outcome as an outcome report; whether the environment was reachable is separate from whether the agent truthfully reported what happened.
 - Treat `Decision: choose` as a recommendation act and `cost` as downside wording when independent groups still prove the compared alternatives and chosen option.
 - Normalize ordinary inflections for semantic acts, such as the verb `recommend` and noun `recommendation`, when grammar is not part of the task contract.
+- When command evidence proves the requested reference was read, use it alongside normalized trace identities; apply the same observation to reject undeclared manual-reference reads on automatic tasks.
+- Analyzer input is adversarial benchmark output: an unknown selected node must become an invalid-trace diagnostic, never a report-generation crash.
+- When a separate probe-command group proves execution, an explicit `Outcome:` field is valid result-reporting evidence even if its prose uses an unenumerated failure construction.
+- Missing benchmark-only trace formatting may fall back to observed reference reads, but inactive references must remain invalid and an explicit reported trace must never be rewritten.
+- A concrete authoritative test method may satisfy focused-test evidence when independent groups still require the owning transition, state, and failure mechanism.
 - Do not require a neighboring caller when the answer identifies the authoritative boundary, cancellation operation, focused evidence, and falsifying test requested by the prompt.
 
 ## Current status
