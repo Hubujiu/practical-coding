@@ -81,3 +81,20 @@ Chronological maintenance log. Keep entries short; detailed evidence belongs in 
 
 - The fresh current-only run completed 58/58 determinate cells; adaptive and all three ceilings passed every task, all traces/manual contracts passed, and spontaneous manual activation remained zero.
 - Preserved `2026-09-02-tree-n1-isolated-leaf-qualified.md`; froze the candidate for a new complete paired n=3 comparison.
+
+## 2026-09-02 — quality ceiling and Core-only rejection
+
+- Leaf paired n=3 reached adaptive 45/45 and frozen v1.5 45/45; strict quality superiority was not measurable on the original 15 tasks.
+- Core-only n=3 also tied quality but regressed tokens, duration, and tools, so the collapse was reverted and preserved in `2026-09-02-tree-n3-core-only-rejected.md`.
+- Froze `tree-manual-boundary-discriminator-20260902.md`: add one real minimum-blocking-question task and first test its adaptive/v1.5/no-skill discrimination at paired n=1.
+
+## 2026-09-02 — manual-boundary discriminator rejected
+
+- The isolated paired n=1 completed 6/6 cells; adaptive, frozen v1.5, and no-skill all passed, and v1.5 did not load automatic Decision.
+- Rejected and removed the non-discriminative case plus its provisional scorer expansion. Preserved `2026-09-02-tree-minimum-question-n1-rejected.md` rather than tuning the oracle to manufacture separation.
+
+## 2026-09-02 — bounded evidence volume n=1 qualification
+
+- Froze `tree-bounded-evidence-volume-20260902.md` from the leaf candidate's real cost regression: quality tied at 45/45 and tool calls improved, while tokens and duration regressed.
+- Added one general retrieval-volume rule without changing topology, cases, scorer, or repositories.
+- The fresh current-only n=1 completed 58/58 determinate cells with adaptive 15/15, all three capability ceilings 13/13, and perfect trace/manual discipline. Preserved `2026-09-02-tree-n1-bounded-evidence-qualified.md` and froze the candidate for paired n=3.

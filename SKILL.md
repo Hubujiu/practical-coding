@@ -63,6 +63,8 @@ Retrieval is orthogonal to the execution tree. Expand only because current evide
 4. For bounded exhaustive repository claims, use coverage-aware discovery and disclose gaps. For external contracts, use the smallest authoritative current source.
 5. Fall back without installing retrieval tooling; verify material conclusions in current source.
 
+Once candidate paths or symbols are known, stop inventory and read only relevant symbols or bounded line ranges; do not dump whole files or repeat broad discovery. Batch independent bounded reads only while each result stays focused.
+
 Routine lookup stays here. Load `references/navigation.md` only for substantial broad structural mapping or bounded exhaustive discovery. Retrieval does not become an execution-tree node merely because a reasoning node needs source evidence.
 
 ## Isolation Gate

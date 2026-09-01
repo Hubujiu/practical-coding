@@ -146,6 +146,10 @@ class BenchmarkHarnessTests(unittest.TestCase):
         self.assertIn("references/manual/clarification.md", manual)
         self.assertIn("structural code index", retrieval)
         self.assertIn("references/navigation.md", retrieval)
+        self.assertIn("Once candidate paths or symbols are known, stop inventory", retrieval)
+        self.assertIn("bounded line ranges", retrieval)
+        self.assertIn("do not dump whole files or repeat broad discovery", retrieval)
+        self.assertIn("Batch independent bounded reads", retrieval)
 
     def test_decision_suite_inlines_decision_module(self):
         with tempfile.TemporaryDirectory() as tmp:
