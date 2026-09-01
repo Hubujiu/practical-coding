@@ -41,6 +41,24 @@ python benchmarks/tree_analysis.py benchmark-results/tree-final/results.jsonl `
   --output benchmark-results/tree-final/analysis.json
 ```
 
+## Explicit evolution workflow benchmark
+
+Maintenance-time WikiSkill-inspired capabilities are tested separately from runtime routing. They must remain explicit-only and cannot weaken the acceptance gate for runtime Skill changes.
+
+```powershell
+python benchmarks/evolution_workflow_validation.py --self-test `
+  --output benchmark-results/evolution-workflow-contract.json
+```
+
+This deterministic suite scores whether:
+
+- `session-to-wiki` writes a sanitized immutable receipt before wiki consolidation and cannot mutate runtime Skill files;
+- `evolve-skill` reads wiki/impact history first, freezes one atomic hypothesis and benchmark before the runtime patch, runs baseline before candidate, compares both on identical evidence, and rolls back regression/indeterminate candidates;
+- neither maintenance skill appears as an automatic topology child/reference;
+- wiki index/log/impact control files and the current-session receipt exist.
+
+A perfect score is required. This is a maintenance-contract gate, **not** a substitute for `tree_validation.py` runtime-quality evidence. If runtime Skill/tree text changes, the relevant model-backed tree benchmark must still be rerun under the `evolve-skill` non-regression rule.
+
 ## Interpretation
 
 Delivered quality gates the candidate. Automatic route exactness does not.
