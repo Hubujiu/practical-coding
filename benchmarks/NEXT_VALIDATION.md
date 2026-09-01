@@ -5,12 +5,12 @@ This protocol freezes final validation for `experiment/evolvable-router-tree` af
 ## Frozen candidate
 
 - Core owns only Debugging and Implementation as automatic children.
-- Debugging and Implementation own their staged depth-2 candidates locally.
+- Debugging and Implementation are leaves; repeated ablation did not earn a depth-2 child.
 - Decision and Clarification remain explicit-only manual modes.
 - Retrieval remains orthogonal to execution-tree depth.
-- The deterministic scorer normalizes equivalent evidence and Windows/POSIX reference paths without changing the frozen task prompts.
+- The deterministic scorer normalizes equivalent semantic acts, outcome wording, ordinary inflections, and Windows/POSIX reference paths without changing the frozen task prompts.
 
-Qualified n=1 artifact: `benchmark-results/tree-delivery-n1-normalized-20260901-125524`.
+Qualified n=1 artifact: `benchmark-results/tree-delivery-n1-leaves-inflection-20260901` (58/58 determinate cells; adaptive 15/15; every capability ceiling 13/13).
 
 ## Iteration gate
 
@@ -34,7 +34,7 @@ Required evidence:
 - adaptive delivered quality is strictly better than the frozen v1.5 baseline on the same cases and no worse than no-skill on required correctness/safety/reachability;
 - zero adaptive trace failures and zero spontaneous manual-mode activation;
 - both explicit manual tasks load the requested manual mode in every repetition;
-- parent-versus-child capability evidence uses all three repetitions before retaining, removing, promoting, or merging a staged node;
+- parent-versus-child capability evidence uses all three repetitions before retaining, removing, promoting, or merging a node;
 - raw machine paths remain in ignored artifacts and are excluded from published compact reports;
 - report version, commit, model, harness, frozen repository refs, cell counts, pass counts, noninferiority results, and limitations separately.
 

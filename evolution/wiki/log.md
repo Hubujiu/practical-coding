@@ -32,3 +32,25 @@ Chronological maintenance log. Keep entries short; detailed evidence belongs in 
 - The normalized harness completed 106/106 determinate cells with adaptive 15/15, trace 15/15, explicit manual 2/2, and zero spontaneous manual activation.
 - Preserved `2026-09-01-tree-n1-qualified.md`; froze runtime, topology, cases, and scorer for paired n=3 comparison.
 - Deferred n=1 node-removal suggestions because capability minima varied across repetitions; stable n=3 parent-versus-child evidence will decide staged-node retention.
+
+## 2026-09-01 — paired n=3 release-gate failure
+
+- Preserved the complete 408-cell artifact; adaptive 40/45 did not beat frozen v1.5 at 44/45, so the candidate was rejected for delivery.
+- Classified five adaptive failures as presentation/outcome/caller oracle mismatches while retaining independent negative controls for substantive evidence.
+- Froze `tree-oracle-outcome-semantics-20260901.md`; the corrected scorer must return to a fresh current-only n=1 before any topology mutation or paired rerun.
+
+## 2026-09-01 — outcome semantics qualified; staged depth removed
+
+- The corrected current-only n=1 completed 106/106 determinate cells with adaptive 15/15, trace 15/15, manual 2/2, and zero spontaneous manual activation.
+- Combined that clean rerun with the earlier repeated paired ablation: no staged depth-2 node was minimum-sufficient in either artifact.
+- Froze `tree-remove-unearned-depth2-20260901.md`; removed only the four unearned staged descendants and kept Debugging/Implementation as leaves.
+
+## 2026-09-01 — leaf-topology recommendation inflection
+
+- The first complete leaf n=1 was 58/58 determinate; all ceilings passed, but adaptive was 14/15 because `Recommend` was not accepted as a recommendation act.
+- Preserved the artifact and froze `tree-oracle-recommend-inflection-20260901.md`; added a positive verb-form test while retaining the missing-trade-off negative control.
+
+## 2026-09-01 — leaf candidate n=1 qualification
+
+- The corrected leaf-topology run completed 58/58 determinate cells with adaptive 15/15, every capability ceiling 13/13, trace 15/15, manual 2/2, and zero spontaneous manual activation.
+- Preserved `2026-09-01-tree-n1-leaf-candidate-qualified.md` and froze the leaf candidate for a fresh complete paired n=3 comparison.

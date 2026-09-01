@@ -30,15 +30,7 @@ Claim only what fresh evidence supports. If the environment blocks an appropriat
 
 ## Local Router
 
-The following depth-2 children are staged candidates. Choose at most one for the present blocker; do not load siblings merely because their nouns also appear in the task.
-
-1. If the primary invariant is who/what may cross a trust boundary—authentication, authorization, untrusted input, secrets, permission checks, or a sensitive side effect that must be rejected before execution—load `references/implementation-security-boundary.md`.
-2. If an existing persisted representation, public/shared API, serialized format, schema, or configuration contract must change while old data/callers/versions may coexist or rollback must remain possible, load `references/implementation-migration-compatibility.md`.
-3. If correctness primarily depends on ordering, atomicity, idempotency, transactions, retries/duplicate delivery, concurrent mutation, or restart-visible state ownership, load `references/implementation-state-concurrency.md`.
-
-Stay in this parent when the risk is ordinary, the authoritative boundary is already clear, or the specialist would only restate this node. Security takes precedence only when allow/deny or secret-handling is the primary guarantee; migration takes precedence for version/representation coexistence; state/concurrency takes precedence for ordering/atomicity. If no single specialist owns the blocker cleanly, stay here rather than loading multiple siblings.
-
-These children are experimental. Retain them only when each earns independent minimum-sufficient cases, quality-qualified lift over this parent, and acceptable Trigger/Boundary behavior.
+This node is a leaf. Handle security/permission boundaries, migration/compatibility, and state/concurrency invariants with the shared implementation rules above; repeated capability ablation did not show stable minimum-sufficient lift for separate children.
 
 Resolve ordinary implementation choices locally by established project convention, platform default, or the smallest sufficient reversible choice. Never route automatically to Decision. If a genuinely user-owned choice blocks safe execution and no default is justified, ask the minimum blocking question without opening a Decision workflow.
 

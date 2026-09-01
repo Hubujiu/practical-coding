@@ -4,6 +4,8 @@
 This suite measures whether immediate-child trigger language is discriminative before
 paying for full real-repository runs. It is diagnostic only: human-authored labels
 here never replace capability-ceiling evidence or deterministic task verifiers.
+When the active topology has no staged children, its frozen cases are historical and
+the self-test reports the suite inactive.
 """
 
 from __future__ import annotations
@@ -184,9 +186,18 @@ def summarize(rows: list[dict[str, Any]], topology: dict[str, Any], runs: int) -
 
 def self_test(topology: dict[str, Any]) -> None:
     assert CASE_IDS
-    parents = {case["parent"] for case in CASES}
-    assert parents <= set(topology["automatic_nodes"])
-    for case in CASES:
+    case_parents = {case["parent"] for case in CASES}
+    active_parents = {
+        name
+        for name, spec in topology["automatic_nodes"].items()
+        if name in case_parents and spec.get("children")
+    }
+    if not active_parents:
+        print("tree discriminator self-test: PASS (inactive; no staged children)")
+        return
+    cases = [case for case in CASES if case["parent"] in active_parents]
+    assert {case["parent"] for case in cases} == active_parents
+    for case in cases:
         allowed = {"parent", *topology["automatic_nodes"][case["parent"]].get("children", [])}
         assert case["expected"] in allowed
     assert parse_route("ROUTE=dynamic-evidence") == "dynamic-evidence"

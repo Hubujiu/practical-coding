@@ -22,30 +22,16 @@ class TreeTopologyTests(unittest.TestCase):
         self.assertEqual(validation.node_path(self.topology, "debugging"), ["core", "debugging"])
         self.assertEqual(validation.node_path(self.topology, "implementation"), ["core", "implementation"])
 
-    def test_staged_descendants_are_parent_local(self) -> None:
-        self.assertEqual(
-            validation.node_path(self.topology, "dynamic-evidence"),
-            ["core", "debugging", "dynamic-evidence"],
-        )
-        self.assertEqual(
-            validation.node_path(self.topology, "security-boundary"),
-            ["core", "implementation", "security-boundary"],
-        )
-        self.assertEqual(
-            validation.node_path(self.topology, "migration-compatibility"),
-            ["core", "implementation", "migration-compatibility"],
-        )
-        self.assertEqual(
-            validation.node_path(self.topology, "state-concurrency"),
-            ["core", "implementation", "state-concurrency"],
-        )
+    def test_evidence_rejected_descendants_leave_seed_nodes_as_leaves(self) -> None:
+        self.assertEqual(self.topology["automatic_nodes"]["debugging"]["children"], [])
+        self.assertEqual(self.topology["automatic_nodes"]["implementation"]["children"], [])
 
     def test_cross_sibling_path_is_invalid(self) -> None:
         self.assertFalse(validation.validate_automatic_path(self.topology, ["core", "debugging", "implementation"]))
         self.assertFalse(
             validation.validate_automatic_path(
                 self.topology,
-                ["core", "implementation", "security-boundary", "state-concurrency"],
+                ["core", "implementation", "debugging"],
             )
         )
 
@@ -70,11 +56,7 @@ class MinimumSufficientTests(unittest.TestCase):
             {
                 "core": True,
                 "debugging": True,
-                "dynamic-evidence": True,
                 "implementation": True,
-                "security-boundary": True,
-                "migration-compatibility": True,
-                "state-concurrency": True,
             },
         )
         self.assertEqual(result, {"core"})
@@ -85,29 +67,21 @@ class MinimumSufficientTests(unittest.TestCase):
             {
                 "core": False,
                 "debugging": True,
-                "dynamic-evidence": True,
                 "implementation": True,
-                "security-boundary": True,
-                "migration-compatibility": True,
-                "state-concurrency": True,
             },
         )
         self.assertEqual(result, {"debugging", "implementation"})
 
-    def test_depth_two_minimum_is_derived_when_parent_fails(self) -> None:
+    def test_leaf_minimum_is_derived_when_root_fails(self) -> None:
         result = analysis.minimum_sufficient_set(
             self.topology,
             {
                 "core": False,
-                "debugging": False,
-                "dynamic-evidence": True,
+                "debugging": True,
                 "implementation": False,
-                "security-boundary": False,
-                "migration-compatibility": False,
-                "state-concurrency": False,
             },
         )
-        self.assertEqual(result, {"dynamic-evidence"})
+        self.assertEqual(result, {"debugging"})
 
     def test_no_passing_capability_is_quality_gap(self) -> None:
         result = analysis.minimum_sufficient_set(
@@ -115,11 +89,7 @@ class MinimumSufficientTests(unittest.TestCase):
             {
                 "core": False,
                 "debugging": False,
-                "dynamic-evidence": False,
                 "implementation": False,
-                "security-boundary": False,
-                "migration-compatibility": False,
-                "state-concurrency": False,
             },
         )
         self.assertEqual(result, set())
@@ -240,6 +210,45 @@ class ManualContractTests(unittest.TestCase):
         self.assertEqual(result["missing_evidence_groups"], [])
         self.assertTrue(result["manual_contract_ok"])
 
+    def test_manual_evidence_accepts_decision_and_cost_wording(self) -> None:
+        case = next(item for item in tree_cases.CASES if item["task_id"] == "sa-memory-strategy-manual-decision")
+        trace = validation.parse_trace(
+            "TREE_TRACE path=core retrieval=TARGETED manual=decision refs=references/manual/decision.md"
+        )
+        result = validation.score_answer(
+            case,
+            (
+                "Decision: choose SummaryCompressionMemoryChatService instead of "
+                "SlidingWindowMemoryChatService for summary-compression. "
+                "Its strongest cost is lossy recall."
+            ),
+            [],
+            HERE.parent,
+            trace=trace,
+            enforce_runtime_contract=True,
+        )
+        self.assertEqual(result["missing_evidence_groups"], [])
+        self.assertTrue(result["manual_contract_ok"])
+
+    def test_manual_evidence_accepts_recommend_as_a_verb(self) -> None:
+        case = next(item for item in tree_cases.CASES if item["task_id"] == "sa-memory-strategy-manual-decision")
+        trace = validation.parse_trace(
+            "TREE_TRACE path=core retrieval=TARGETED manual=decision refs=references/manual/decision.md"
+        )
+        result = validation.score_answer(
+            case,
+            (
+                "Recommend SummaryCompressionMemoryChatService over SlidingWindowMemoryChatService. "
+                "The summary-compression trade-off is lossy recall."
+            ),
+            [],
+            HERE.parent,
+            trace=trace,
+            enforce_runtime_contract=True,
+        )
+        self.assertEqual(result["missing_evidence_groups"], [])
+        self.assertTrue(result["manual_contract_ok"])
+
     def test_manual_evidence_still_requires_a_tradeoff(self) -> None:
         case = next(item for item in tree_cases.CASES if item["task_id"] == "sa-memory-strategy-manual-decision")
         trace = validation.parse_trace(
@@ -253,7 +262,7 @@ class ManualContractTests(unittest.TestCase):
             trace=trace,
             enforce_runtime_contract=True,
         )
-        self.assertIn(["trade-off", "tradeoff", "权衡", "代价"], result["missing_evidence_groups"])
+        self.assertIn(["trade-off", "tradeoff", "cost", "权衡", "代价"], result["missing_evidence_groups"])
 
 
 class EvidenceOracleTests(unittest.TestCase):
@@ -288,11 +297,41 @@ class EvidenceOracleTests(unittest.TestCase):
         )
         self.assertEqual(result["missing_evidence_groups"], [])
 
+    def test_cancel_diagnosis_accepts_authoritative_boundary_without_ui_caller(self) -> None:
+        case = next(item for item in tree_cases.CASES if item["task_id"] == "ca-cancel-download")
+        result = validation.score_answer(
+            case,
+            (
+                "exportCover has no signal.aborted check before link.click. "
+                "The focused avifEncoder.test.ts covers abort; add one falsifying test at that probe."
+            ),
+            [],
+            HERE.parent,
+            trace=None,
+            enforce_runtime_contract=False,
+        )
+        self.assertEqual(result["missing_evidence_groups"], [])
+
+    def test_focused_probe_accepts_an_explicit_blocked_outcome(self) -> None:
+        case = next(item for item in tree_cases.CASES if item["task_id"] == "ca-export-filename-probe")
+        result = validation.score_answer(
+            case,
+            (
+                "Ran npx vitest run src/lib/exportFilename.test.ts once. "
+                "Outcome: blocked before collection because a required plugin could not be resolved."
+            ),
+            ["npx vitest run src/lib/exportFilename.test.ts"],
+            HERE.parent,
+            trace=None,
+            enforce_runtime_contract=False,
+        )
+        self.assertEqual(result["missing_evidence_groups"], [])
+
     def test_cancel_diagnosis_still_requires_concrete_test_evidence(self) -> None:
         case = next(item for item in tree_cases.CASES if item["task_id"] == "ca-cancel-download")
         result = validation.score_answer(
             case,
-            "EditorShell passes an AbortController signal into exportCover; inspect the download boundary.",
+            "An AbortController signal reaches exportCover; inspect the download boundary.",
             [],
             HERE.parent,
             trace=None,

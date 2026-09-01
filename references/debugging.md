@@ -24,13 +24,7 @@ Judge a fix by delivered behavior. It should remove the earliest incorrect state
 
 ## Local Router
 
-**Candidate child at depth 2:**
-
-Load `references/debugging-dynamic-evidence.md` only when the failure is reproduced or credibly observed but the next useful discriminator depends on live timing, state, process/worker boundaries, browser/network behavior, CI/runtime environment, or async ordering that static source tracing cannot falsify; or when one bounded evidence-bearing hypothesis has failed and further static inspection would only repeat the same uncertainty.
-
-Do not load it for an ordinary failing test, exception, or deterministic bug whose earliest incorrect state can already be isolated from the focused trace and source. If the candidate signal disappears, resolve here. Do not preload the child.
-
-This child is staged on the experimental branch. It remains only if parent-versus-child ablation shows stable lift and adaptive routing does not over-trigger it.
+This node is a leaf. Keep live timing, state, process/worker, browser/network, CI/runtime, and async-ordering evidence inside the current debugging loop; those concerns did not earn a separate child in repeated capability ablation.
 
 Do not route to Decision when diagnosis exposes alternatives. Reuse the established project contract or smallest sufficient reversible option. If a genuinely user-owned choice blocks progress with no safe default, ask the minimum blocking question without loading a Decision module.
 

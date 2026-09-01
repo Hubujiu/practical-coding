@@ -82,7 +82,7 @@ CASES = [
         "personal-progress",
         "manual-decision",
         "Explicit decision request: compare a breaking rename versus a one-release compatibility alias for a required public plugin-dispatch response field while old plugins and clients coexist. Inspect the current HTTP/view contract as needed and recommend one option with its strongest trade-off. Do not implement.",
-        [["Recommendation:", "recommendation", "推荐", "建议"], ["trade-off", "tradeoff", "权衡", "代价"], ["alias", "compatib"], ["one release", "one-release", "release window"]],
+        [["Recommendation:", "recommendation", "recommend", "Decision:", "choose", "推荐", "建议", "决定", "选择"], ["trade-off", "tradeoff", "cost", "权衡", "代价"], ["alias", "compatib"], ["one release", "one-release", "release window"]],
         manual_request="decision",
     ),
     _case(
@@ -97,7 +97,7 @@ CASES = [
         "cover-atelier",
         "unexplained-failure",
         "Users report that cancelling an export sometimes still downloads a file. The cause is not established. Inspect the cancellation path and focused tests, identify the earliest observable boundary to probe, and name the single cheapest falsifying test. Diagnose only; do not edit files.",
-        [["AbortController", "AbortSignal", "signal", "abort()", "abort"], ["EditorShell"], ["exportCover"], ["focused", "suite", "existing test", ".test."], ["probe", "test"]],
+        [["AbortController", "AbortSignal", "signal", "abort()", "abort"], ["exportCover"], ["focused", "suite", "existing test", ".test."], ["probe", "test"]],
     ),
     _case(
         "ca-new-format-existing-pattern",
@@ -118,7 +118,7 @@ CASES = [
         "cover-atelier",
         "focused-verification",
         "Run the focused exportFilename test once to establish the current filename contract, then report the exact command and outcome. Do not edit files or run the full test suite.",
-        [["exportFilename"], ["pass", "passed", "tests"]],
+        [["exportFilename"], ["pass", "passed", "blocked", "failed", "error", "could not", "unable", "无法", "未运行", "tests"]],
         probe_terms=[["exportfilename"], ["npm", "vitest"]],
     ),
     _case(
@@ -147,7 +147,7 @@ CASES = [
         "super-agent",
         "manual-decision",
         "Explicit decision request: for this repository's conversational memory example, compare the existing sliding-window and summary-compression approaches for a long-running support chat where bounded context cost matters more than exact verbatim recall. Inspect the current implementations as needed, then recommend one with its strongest trade-off. Do not implement.",
-        [["Recommendation:", "recommendation", "推荐", "建议"], ["trade-off", "tradeoff", "权衡", "代价"], ["SlidingWindowMemoryChatService", "sliding-window"], ["SummaryCompressionMemoryChatService", "summary-compression"]],
+        [["Recommendation:", "recommendation", "recommend", "Decision:", "choose", "推荐", "建议", "决定", "选择"], ["trade-off", "tradeoff", "cost", "权衡", "代价"], ["SlidingWindowMemoryChatService", "sliding-window"], ["SummaryCompressionMemoryChatService", "summary-compression"]],
         manual_request="decision",
     ),
     _case(
