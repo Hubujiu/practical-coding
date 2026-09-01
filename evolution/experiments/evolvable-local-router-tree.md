@@ -1,6 +1,6 @@
 # EXP-20260901 — Evolvable local router tree
 
-Status: **Core-only candidate n=1 qualified; paired n=3 pending**
+Status: **isolated leaf candidate n=1 qualified; paired n=3 pending**
 
 ## Observation
 
@@ -106,5 +106,3 @@ The first complete paired n=3 artifact (`benchmark-results/tree-final-eca9a09-20
 The candidate therefore returned to the original seed topology: Core with leaf Debugging and Implementation children, plus explicit-only manual Decision/Clarification. The first leaf run exposed one further recommendation-inflection oracle defect; after freezing and correcting it, `benchmark-results/tree-delivery-n1-leaves-inflection-20260901` completed 58/58 determinate cells with adaptive 15/15, all three capability ceilings 13/13, trace 15/15, explicit manual 2/2, and zero spontaneous manual activation. This leaf candidate is frozen for a new paired n=3; superiority remains pending.
 
 That paired rerun also failed and revealed two additional mechanisms: deterministic evidence identities and trace instrumentation needed command-observed normalization, while retired child documents still under `references/` remained discoverable despite their removal from the topology. After freezing those mechanisms, adding positive/negative harness tests, and removing the four retired documents from the runtime reference surface, `benchmark-results/tree-delivery-n1-retired-isolated-20260902` completed 58/58 with every arm/capability cell passing and all trace/manual gates clean. This isolated leaf candidate is the current frozen n=3 candidate; no superiority claim exists until the new paired report completes.
-
-The next paired run reached a quality ceiling: both adaptive and frozen v1.5 scored 45/45. Core alone passed all 39 automatic ceiling cells, neither automatic child was minimum-sufficient, and adaptive over-disclosed to a child in 13/39 cells. Because adaptive used fewer tools but more tokens/time, the ceiling result was not accepted as a net improvement. The final experiment collapsed both automatic leaves without copying their prose into Core. `benchmark-results/tree-delivery-n1-core-only-20260902` then passed 28/28 cells with adaptive 15/15, Core 13/13, perfect trace/manual discipline, and zero spontaneous manual activation. The Core-only candidate is frozen for a cost-and-quality paired n=3 comparison.

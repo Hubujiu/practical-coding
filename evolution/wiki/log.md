@@ -81,14 +81,3 @@ Chronological maintenance log. Keep entries short; detailed evidence belongs in 
 
 - The fresh current-only run completed 58/58 determinate cells; adaptive and all three ceilings passed every task, all traces/manual contracts passed, and spontaneous manual activation remained zero.
 - Preserved `2026-09-02-tree-n1-isolated-leaf-qualified.md`; froze the candidate for a new complete paired n=3 comparison.
-
-## 2026-09-02 — paired quality ceiling; automatic leaves collapsed
-
-- The complete paired artifact passed adaptive 45/45, frozen v1.5 45/45, and no-skill 44/45 with perfect adaptive trace/manual discipline.
-- Strict quality superiority was unmeasurable at the 100% ceiling; adaptive used fewer tools but more tokens/time, so the report was not accepted as the requested final improvement.
-- Core ceiling passed 39/39 and no child was minimum-sufficient. Froze `tree-collapse-automatic-leaves-20260902.md`; collapsed Debugging/Implementation into Core and removed their runtime files for an n=1 cost/quality test.
-
-## 2026-09-02 — Core-only n=1 qualification
-
-- The Core-only run completed 28/28 determinate cells with adaptive 15/15, Core ceiling 13/13, perfect trace/manual discipline, and zero spontaneous manual activation.
-- Preserved `2026-09-02-tree-n1-core-only-qualified.md`; froze the candidate for a 174-cell paired n=3 quality-and-cost comparison.

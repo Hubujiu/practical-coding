@@ -9,7 +9,7 @@ metadata:
 
 # Practical Coding
 
-Use Core for every coding task. Core is the only automatic execution node. Manual modes and retrieval disclose separately only when their explicit conditions apply.
+Use Core for every coding task. Core is the root of the automatic execution tree. A loaded node may disclose only its own immediate children; it must not know or select descendants owned by another node.
 
 ## Core
 
@@ -25,18 +25,25 @@ Use Core for every coding task. Core is the only automatic execution node. Manua
 - Run the cheapest focused check once after the final edit. If no repository test exists, run one focused executable check, not a broad test runner. Prefer no-write check modes. Never repeat an unchanged check or replace a required build gate with diff inspection. Install declared dependencies only as a bounded prerequisite in isolation; otherwise report the missing prerequisite.
 - State only fresh evidence. Unless requested, finish with the outcome, changed surface, check, and remaining uncertainty—no process recap.
 
-## Automatic Execution
+## Root Router
 
-Resolve debugging, contract mapping, implementation, and verification with the Core rules above. Evidence did not show a quality-qualified benefit from separate automatic Debugging or Implementation references. Unknown locations, callers, consumers, file count, or data flow remain retrieval questions.
+Route only when Core cannot safely resolve the present blocker. These are the only automatic children known at depth 0:
+
+1. An observed failure, regression, incorrect behavior, or failed check still lacks an evidenced cause: load `references/debugging.md`.
+2. Safe execution is blocked by an unknown contract or invariant; required producers and consumers must change together but their joint contract is unknown; a material security, irreversible-effect, persistence/migration, concurrency/transaction, or compatibility boundary remains unresolved; or sufficient evidence for a risky material claim is unknown: load `references/implementation.md`.
+
+Otherwise stay at Core. Unknown locations, callers, consumers, file count, or data flow are retrieval questions, not automatic execution children.
+
+A routed node owns its next decision. Do not return to Core merely to discover a descendant. Do not preload siblings or descendants. If a node declares itself a leaf, resolve there unless the task becomes a genuinely different top-level blocker.
 
 ## Convergence Rule
 
-Execution must converge on the current blocker and must not reopen deliberation.
+Automatic routing may deepen execution only to resolve a current blocker. It must not reopen deliberation.
 
 - Do not automatically load Decision from Core or from any execution node.
 - When implementation exposes an ordinary technical choice, reuse the established project convention or choose the smallest sufficient reversible option and continue.
 - When a genuinely user-owned choice blocks progress and no safe default exists, ask only the minimum blocking question in the current context. Do not activate the Decision workflow unless the user explicitly requested decision analysis.
-- A failed check of the current candidate stays in the current execution loop when its cause is the candidate itself; correct it there instead of opening a fresh routing cycle.
+- A failed check of the current candidate stays inside the active node when its cause is the candidate itself; correct it there instead of opening a fresh routing cycle.
 
 ## Manual Modes
 
@@ -66,7 +73,7 @@ Core and one small routed node use no worker. Use `references/delegation.md` onl
 
 Runtime agents do not read `evolution/`. The tree is not a fixed taxonomy.
 
-- Core is currently the only automatic runtime node; manual modes and retrieval remain orthogonal.
+- Every runtime node owns its behavior, current depth, and only its immediate-child router; a leaf says so explicitly.
 - On an `experiment/*` branch, a proposed child may be staged only to collect controlled parent-versus-child and adaptive-routing evidence. Staging is not promotion.
 - Promote a staged child into a release topology only when a repeatable pre-load signal exists and parent-versus-child ablation shows quality-qualified net lift across multiple tasks or repositories.
 - Merge siblings when their boundary is persistently ambiguous and separation adds no net value.

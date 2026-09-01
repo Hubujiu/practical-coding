@@ -6,6 +6,18 @@
       "depth": 0,
       "reference": "SKILL.md",
       "parent": null,
+      "children": ["debugging", "implementation"]
+    },
+    "debugging": {
+      "depth": 1,
+      "reference": "references/debugging.md",
+      "parent": "core",
+      "children": []
+    },
+    "implementation": {
+      "depth": 1,
+      "reference": "references/implementation.md",
+      "parent": "core",
       "children": []
     }
   },
@@ -20,7 +32,7 @@
     "Depth describes disclosure depth, not task complexity.",
     "Only parent-child edges in this manifest are valid automatic routes.",
     "Manual modes are never automatic descendants.",
-    "Core is the only automatic node; repeated capability ablation did not earn a separate automatic child.",
+    "Debugging and Implementation are leaves; benchmark evidence did not earn a depth-2 child.",
     "The benchmark may recommend adding, removing, merging, promoting, splitting, or deepening nodes; the manifest is an experiment input, not a permanent taxonomy."
   ]
 }

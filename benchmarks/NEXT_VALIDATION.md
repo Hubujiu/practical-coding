@@ -4,12 +4,13 @@ This protocol freezes final validation for `experiment/evolvable-router-tree` af
 
 ## Frozen candidate
 
-- Core is the only automatic execution node; repeated n=3 capability ablation found no minimum-sufficient or quality-lift task for separate Debugging/Implementation nodes.
+- Core owns only Debugging and Implementation as automatic children.
+- Debugging and Implementation are leaves; repeated ablation did not earn a depth-2 child.
 - Decision and Clarification remain explicit-only manual modes.
 - Retrieval remains orthogonal to execution-tree depth.
 - The deterministic scorer normalizes equivalent semantic acts, outcome wording, ordinary inflections, and Windows/POSIX reference paths without changing the frozen task prompts.
 
-Qualified n=1 artifact: `benchmark-results/tree-delivery-n1-core-only-20260902` (28/28 determinate cells; adaptive 15/15; Core ceiling 13/13; all traces/manual contracts valid).
+Qualified n=1 artifact: `benchmark-results/tree-delivery-n1-retired-isolated-20260902` (58/58 determinate cells; adaptive 15/15; every capability ceiling 13/13; all traces/manual contracts valid).
 
 ## Iteration gate
 
