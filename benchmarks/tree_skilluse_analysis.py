@@ -2,8 +2,8 @@
 """Derive Trigger / Compliance / Boundary metrics from tree benchmark ceilings.
 
 This companion analysis intentionally does not introduce human-authored gold routes.
-A node's positive routing opportunities are tasks where its capability ceiling is
-stable-passing while its parent is not. Negative opportunities are tasks already
+A node's positive routing opportunities are tasks where that node is empirically
+minimum-sufficient while its parent is not. Negative opportunities are tasks already
 stable-passing at the parent. Adaptive traces are then scored against those
 empirically derived opportunity sets.
 """
@@ -27,7 +27,6 @@ from tree_analysis import (
     determinate,
     load_jsonl,
     load_topology,
-    stable_pass,
     task_reports,
 )
 
@@ -82,7 +81,8 @@ def analyze_node(
 
     positive = [
         task for task in ordinary_tasks
-        if task["cap_stable_pass"].get(node) and not task["cap_stable_pass"].get(parent)
+        if node in task["minimum_sufficient_set"]
+        and not task["cap_stable_pass"].get(parent)
     ]
     negative = [
         task for task in ordinary_tasks
@@ -203,7 +203,7 @@ def analyze(rows: list[dict[str, Any]], topology: dict[str, Any]) -> dict[str, A
         "method": "capability-derived-skill-use",
         "nodes": nodes,
         "notes": [
-            "Trigger positives are derived from stable child lift over parent, not human gold labels.",
+            "Trigger positives are derived from empirically minimum-sufficient child capability, not human gold labels.",
             "Boundary negatives are tasks already stable-passing at the parent.",
             "Compliance is delivered pass rate among adaptive cells that selected the node/subtree.",
             "Do not promote from this report alone; use tree_analysis.py release quality and topology diagnostics too.",
