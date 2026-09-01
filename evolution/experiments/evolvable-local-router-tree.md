@@ -1,6 +1,6 @@
 # EXP-20260901 — Evolvable local router tree
 
-Status: **candidate implemented; benchmark execution pending**
+Status: **n=1 candidate qualified; paired n=3 pending**
 
 ## Observation
 
@@ -97,4 +97,6 @@ This experiment is not accepted merely because the new Router looks cleaner. Evi
 
 ## Result
 
-Pending fresh n=1 and frozen n=3 evidence. The current branch is an experiment implementation, not a release claim.
+The normalized current-only run at `benchmark-results/tree-delivery-n1-normalized-20260901-125524` completed 106/106 determinate cells. Adaptive passed 15/15 tasks, all 15 traces were valid, both explicit manual Decision tasks passed, and no automatic task activated a manual mode.
+
+This qualifies the frozen candidate for the complete n=3 run; it is not yet a release or superiority claim. Capability minima varied across n=1 repetitions, so node removal/promotion decisions are deferred to repeated paired evidence against the frozen v1.5 and no-skill arms.

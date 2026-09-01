@@ -135,7 +135,7 @@ def score_answer(
     spontaneous_manual = False
     if enforce_runtime_contract:
         selected_manual = (trace or {}).get("manual")
-        refs = [str(ref).lower() for ref in (trace or {}).get("references_loaded", [])]
+        refs = [str(ref).lower().replace("\\", "/") for ref in (trace or {}).get("references_loaded", [])]
         manual_ref_loaded = any("references/manual/" in ref for ref in refs)
         if requested_manual:
             manual_contract_ok = selected_manual == requested_manual and any(

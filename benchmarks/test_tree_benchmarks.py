@@ -4,6 +4,7 @@ import unittest
 from pathlib import Path
 
 from benchmarks import tree_analysis as analysis
+from benchmarks import tree_cases
 from benchmarks import tree_skilluse_analysis as skilluse
 from benchmarks import tree_validation as validation
 
@@ -163,6 +164,144 @@ class ManualContractTests(unittest.TestCase):
         self.assertEqual(trace["path"], ["core"])
         self.assertEqual(trace["manual"], "decision")
         self.assertTrue(validation.validate_trace(self.topology, trace))
+
+    def test_explicit_manual_contract_normalizes_windows_reference_path(self) -> None:
+        case = next(item for item in tree_cases.CASES if item["task_id"] == "sa-memory-strategy-manual-decision")
+        trace = validation.parse_trace(
+            r"TREE_TRACE path=core retrieval=TARGETED manual=decision refs=D:\repo\references\manual\decision.md"
+        )
+        result = validation.score_answer(
+            case,
+            (
+                "Recommendation: use SummaryCompressionMemoryChatService instead of "
+                "SlidingWindowMemoryChatService. Strongest trade-off: lossy recall."
+            ),
+            [],
+            HERE.parent,
+            trace=trace,
+            enforce_runtime_contract=True,
+        )
+        self.assertTrue(result["manual_contract_ok"])
+
+    def test_non_manual_windows_reference_does_not_satisfy_manual_contract(self) -> None:
+        case = next(item for item in tree_cases.CASES if item["task_id"] == "sa-memory-strategy-manual-decision")
+        trace = validation.parse_trace(
+            r"TREE_TRACE path=core retrieval=TARGETED manual=decision refs=D:\repo\references\implementation.md"
+        )
+        result = validation.score_answer(
+            case,
+            (
+                "Recommendation: use SummaryCompressionMemoryChatService instead of "
+                "SlidingWindowMemoryChatService. Strongest trade-off: lossy recall."
+            ),
+            [],
+            HERE.parent,
+            trace=trace,
+            enforce_runtime_contract=True,
+        )
+        self.assertFalse(result["manual_contract_ok"])
+
+    def test_manual_tradeoff_evidence_does_not_require_colon_formatting(self) -> None:
+        case = next(item for item in tree_cases.CASES if item["task_id"] == "sa-memory-strategy-manual-decision")
+        trace = validation.parse_trace(
+            "TREE_TRACE path=core retrieval=TARGETED manual=decision refs=references/manual/decision.md"
+        )
+        result = validation.score_answer(
+            case,
+            (
+                "Recommendation: use SummaryCompressionMemoryChatService instead of "
+                "SlidingWindowMemoryChatService for summary-compression. "
+                "Its strongest trade-off is lossy recall."
+            ),
+            [],
+            HERE.parent,
+            trace=trace,
+            enforce_runtime_contract=True,
+        )
+        self.assertEqual(result["missing_evidence_groups"], [])
+        self.assertTrue(result["manual_contract_ok"])
+
+    def test_manual_evidence_accepts_equivalent_chinese_labels(self) -> None:
+        case = next(item for item in tree_cases.CASES if item["task_id"] == "sa-memory-strategy-manual-decision")
+        trace = validation.parse_trace(
+            "TREE_TRACE path=core retrieval=TARGETED manual=decision refs=references/manual/decision.md"
+        )
+        result = validation.score_answer(
+            case,
+            (
+                "推荐：使用 SummaryCompressionMemoryChatService，而不是 SlidingWindowMemoryChatService。"
+                "summary-compression 的最强权衡是额外模型调用和细节损失。"
+            ),
+            [],
+            HERE.parent,
+            trace=trace,
+            enforce_runtime_contract=True,
+        )
+        self.assertEqual(result["missing_evidence_groups"], [])
+        self.assertTrue(result["manual_contract_ok"])
+
+    def test_manual_evidence_still_requires_a_tradeoff(self) -> None:
+        case = next(item for item in tree_cases.CASES if item["task_id"] == "sa-memory-strategy-manual-decision")
+        trace = validation.parse_trace(
+            "TREE_TRACE path=core retrieval=TARGETED manual=decision refs=references/manual/decision.md"
+        )
+        result = validation.score_answer(
+            case,
+            "推荐：使用 SummaryCompressionMemoryChatService，而不是 SlidingWindowMemoryChatService。",
+            [],
+            HERE.parent,
+            trace=trace,
+            enforce_runtime_contract=True,
+        )
+        self.assertIn(["trade-off", "tradeoff", "权衡", "代价"], result["missing_evidence_groups"])
+
+
+class EvidenceOracleTests(unittest.TestCase):
+    def test_cancel_diagnosis_accepts_existing_cancellation_test(self) -> None:
+        case = next(item for item in tree_cases.CASES if item["task_id"] == "ca-cancel-download")
+        result = validation.score_answer(
+            case,
+            (
+                "EditorShell passes an AbortController signal into exportCover. "
+                "The existing avifEncoder.test.ts covers cancellation, while the cheapest falsifying test "
+                "should probe before link.click and prove the download side effect is suppressed."
+            ),
+            [],
+            HERE.parent,
+            trace=None,
+            enforce_runtime_contract=False,
+        )
+        self.assertEqual(result["missing_evidence_groups"], [])
+
+    def test_cancel_diagnosis_accepts_semantic_operation_and_test_evidence(self) -> None:
+        case = next(item for item in tree_cases.CASES if item["task_id"] == "ca-cancel-download")
+        result = validation.score_answer(
+            case,
+            (
+                "EditorShell calls abort() while exportCover can still reach link.click. "
+                "Existing tests cover stalled-worker cancellation; add one falsifying test at the download probe."
+            ),
+            [],
+            HERE.parent,
+            trace=None,
+            enforce_runtime_contract=False,
+        )
+        self.assertEqual(result["missing_evidence_groups"], [])
+
+    def test_cancel_diagnosis_still_requires_concrete_test_evidence(self) -> None:
+        case = next(item for item in tree_cases.CASES if item["task_id"] == "ca-cancel-download")
+        result = validation.score_answer(
+            case,
+            "EditorShell passes an AbortController signal into exportCover; inspect the download boundary.",
+            [],
+            HERE.parent,
+            trace=None,
+            enforce_runtime_contract=False,
+        )
+        self.assertIn(
+            ["focused", "suite", "existing test", ".test."],
+            result["missing_evidence_groups"],
+        )
 
 
 if __name__ == "__main__":
