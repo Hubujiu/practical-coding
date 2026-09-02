@@ -1,0 +1,123 @@
+name: Recover verified four-arm runner
+
+on:
+  push:
+    branches:
+      - automation/recover-four-arm-embedded-20260902
+  workflow_dispatch:
+
+permissions:
+  contents: write
+
+jobs:
+  recover:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          fetch-depth: 0
+          token: ${{ secrets.GITHUB_TOKEN }}
+
+      - name: Verify, commit, and fast-forward target branch
+        env:
+          TARGET_BRANCH: experiment/evolvable-router-tree
+          EXPECTED_BASE: ec9269d17abfc8c9e497a7fc69906e3df8ffe3b4
+        run: |
+          set -euo pipefail
+
+          mkdir -p /tmp/four-arm-recovery
+          cp -R _recovery_payload/. /tmp/four-arm-recovery/
+
+          git fetch origin "${TARGET_BRANCH}"
+          current="$(git rev-parse "origin/${TARGET_BRANCH}")"
+          if [ "${current}" != "${EXPECTED_BASE}" ]; then
+            required=(
+              benchmarks/skill_state_model_cases.py
+              benchmarks/skill_state_model_runner.py
+              benchmarks/skill_state_model_analysis.py
+              runtime/skill_state_http_transport.py
+            )
+            for path in "${required[@]}"; do
+              git cat-file -e "origin/${TARGET_BRANCH}:${path}" || {
+                echo "target moved to ${current} without ${path}" >&2
+                exit 1
+              }
+            done
+            echo "target already contains the recovered implementation at ${current}"
+            exit 0
+          fi
+
+          git checkout --detach "${EXPECTED_BASE}"
+          cp -R /tmp/four-arm-recovery/. .
+
+          python - <<'PY'
+          from pathlib import Path
+
+          path = Path('.github/workflows/validate.yml')
+          text = path.read_text(encoding='utf-8')
+          old = 'run: python -m unittest tests.test_skill_state_hardening tests.test_skill_state_host benchmarks.test_skill_state_runtime'
+          new = 'run: python -m unittest tests.test_skill_state_hardening tests.test_skill_state_host tests.test_skill_state_model_infrastructure benchmarks.test_skill_state_runtime'
+          if old not in text:
+              raise SystemExit('execution-state CI test command did not match the frozen base')
+          path.write_text(text.replace(old, new, 1), encoding='utf-8')
+          PY
+
+          python -m compileall -q \
+            runtime \
+            tests \
+            benchmarks/skill_state_model_cases.py \
+            benchmarks/skill_state_model_runner.py \
+            benchmarks/skill_state_model_analysis.py
+          python -m unittest \
+            tests.test_skill_state_hardening \
+            tests.test_skill_state_host \
+            tests.test_skill_state_model_infrastructure
+          python runtime/skill_state_http_transport.py
+          python benchmarks/skill_state_model_cases.py
+          python benchmarks/skill_state_model_runner.py --self-test
+          python benchmarks/skill_state_model_analysis.py --self-test
+
+          git diff --check
+          test -f benchmarks/skill_state_model_cases.py
+          test -f benchmarks/skill_state_model_runner.py
+          test -f benchmarks/skill_state_model_analysis.py
+          test -f runtime/skill_state_http_transport.py
+          test -f tests/test_skill_state_model_infrastructure.py
+          ! git status --short | grep -E '(^| )benchmarks/results/|(^| )benchmark-results/'
+
+          git config user.name "OpenAI"
+          git config user.email "noreply@openai.com"
+          git add \
+            .github/workflows/validate.yml \
+            benchmarks/skill_state_model_cases.py \
+            benchmarks/skill_state_model_runner.py \
+            benchmarks/skill_state_model_analysis.py \
+            runtime/skill_state_http_transport.py \
+            tests/test_skill_state_model_infrastructure.py
+          git diff --cached --check
+
+          expected_paths="$(cat <<'EOF'
+          .github/workflows/validate.yml
+          benchmarks/skill_state_model_analysis.py
+          benchmarks/skill_state_model_cases.py
+          benchmarks/skill_state_model_runner.py
+          runtime/skill_state_http_transport.py
+          tests/test_skill_state_model_infrastructure.py
+          EOF
+          )"
+          actual_paths="$(git diff --cached --name-only | sort)"
+          test "${actual_paths}" = "${expected_paths}" || {
+            echo "unexpected staged paths:" >&2
+            printf '%s\n' "${actual_paths}" >&2
+            exit 1
+          }
+
+          git commit -m "feat: add execution-state four-arm benchmark runner"
+          commit="$(git rev-parse HEAD)"
+          echo "RECOVERED_COMMIT=${commit}"
+          git show --stat --oneline --decorate=short --no-renames "${commit}"
+
+          git fetch origin "${TARGET_BRANCH}"
+          test "$(git rev-parse "origin/${TARGET_BRANCH}")" = "${EXPECTED_BASE}"
+          git push origin "${commit}:refs/heads/${TARGET_BRANCH}"
+          git ls-remote origin "refs/heads/${TARGET_BRANCH}"
