@@ -1,6 +1,6 @@
 # Execution state for long-running coding skills
 
-This document adapts the runtime mechanism from Badhe, Tiwari, and Chung, *SKILL.state: Scalable Long-Horizon Agent Skills* (arXiv:2608.26263v2), to Practical Coding. It does not turn the paper's reported model results into project claims. It defines a candidate architecture, a deterministic contract, and the model-backed evidence still required here.
+This document adapts the runtime mechanism from Badhe, Tiwari, and Chung, *SKILL.state: Scalable Long-Horizon Agent Skills* (arXiv:2608.26263v2), to Practical Coding. It does not turn the paper's reported model results into project claims. It defines a candidate architecture, deterministic state and host contracts, and the model-backed evidence still required here.
 
 ## Four separate concerns
 
@@ -21,7 +21,8 @@ A state-aware host should construct each model invocation from only:
 
 - immutable loaded Skill procedure `P`;
 - validated current execution state `Σt`;
-- latest observation `Ot` after the host has processed any explicit user control change.
+- latest observation `Ot` after the host has processed any explicit user control change;
+- one bounded host validation error only when retrying a rejected transition.
 
 The model returns exactly one runtime payload:
 
@@ -37,7 +38,7 @@ The model returns exactly one runtime payload:
 
 The runtime validates the complete successor state before releasing `action` to the host. Omitted patch keys survive, and `null` deletes an obsolete optional entry. Malformed JSON, duplicate object keys, `NaN`/infinity, invalid UTF-8, an oversized input or state, an unexpected output key, a wrong type, a forbidden field, or an illegal router path rejects the whole transition. Rejection leaves the caller-owned canonical state unchanged, and the CLI does not overwrite its output file or print the proposed action.
 
-A validated state transition does **not** authorize the action. The helper never executes it; it only returns or prints a proposal after state validation. The surrounding host must independently validate the tool, arguments, permissions, working directory, and side effects before execution. A bounded retry may resend the same `P + Σt + Ot` together with a compact validation error, but retries must remain capped and must start from the original canonical state.
+A validated state transition does **not** authorize the action. The helper never executes it; it only returns or prints a proposal after state validation. The surrounding host must independently validate the tool, arguments, permissions, working directory, and side effects before execution. A bounded retry resends the same `P + Σt + Ot` with a compact validation error, remains capped, and starts from the original canonical state.
 
 Reasoning may occur inside one model invocation, but it is transient computation. Do not place chain-of-thought, transcript copies, full tool output, or an append-only action diary in `Σ`.
 
@@ -99,11 +100,52 @@ For those cases, set `history.required=true` and keep bounded references to immu
 
 `_atomic_write_json()` prevents partial replacement of one local JSON file, but it is not compare-and-swap. Multiple hosts can still overwrite one another with individually valid snapshots. `build_prompt()` deep-copies and validates one isolated snapshot before serialization, but that snapshot is not a lock or revision check. A concurrent integration must add a revision/CAS or single-writer ownership rule before sharing one state file.
 
-## Host boundary
+## Audited history-free host boundary
 
-`build_prompt()` deliberately accepts no conversation-history argument. That makes accidental history replay visible in the adapter API, but a Skill file cannot force the surrounding product or API to discard prior messages. A host may use state projection to reduce reconstruction while still retaining conversation history, but it must not claim horizon-independent prompt growth until the actual model request contains only `P + Σt + Ot`.
+`build_prompt()` deliberately accepts no conversation-history argument, but that local API shape alone cannot prove what the surrounding SDK or product sends. `runtime/skill_state_host.py` adds an explicit transport-facing boundary for the `state history-free` arm.
 
-The helper is zero-dependency and local. Ordinary `apply` and `transition` operations reject host-owned control-field changes; `host-apply` is the explicit control-plane path for a router or new user instruction. JSON documents are decoded strictly, input files are size-bounded, and transition actions containing non-printable control characters are rejected. Callers must check the CLI exit status and must not treat stdout as an execution authorization channel.
+A prepared request places the frozen procedure and transition contract in the
+current top-level `instructions` field. Its single current user input contains
+only canonical JSON for validated state, latest observation, and optional bounded
+validation feedback. This separates the authoritative procedure from untrusted
+evidence at the request-role boundary. The host rejects:
+
+- `previous_response_id` and equivalent parent/response handles;
+- `conversation`, thread, session, or context-management handles;
+- prompt references or server-managed prompt state;
+- prior assistant or tool input items;
+- nested option fields that can import previous context.
+
+It also explicitly fixes `store=false`, `stream=false`, `background=false`, and `truncation="disabled"`; freezes the model, procedure, tools, options, limits, and request contract in a self-digested manifest; and applies hard limits to every variable request component and the final canonical request body.
+
+The audit records hashes and byte sizes for the exact request body, procedure, state, observation, tools, and options. `audit_wire_request_against_manifest()` rejects any drift. A manifest-free audit validates only one body and is not eligible for a trajectory-level bound; the manifest-matched audit supports only a **client-visible serialized-request-body** claim. A caller must send the prepared bytes unchanged. If an SDK rebuilds the body, or the transport attaches a context-bearing header, cookie, proxy session, or other state out of band, the final outbound request must be captured and rechecked; otherwise the run is state shadow, not demonstrated history-free execution.
+
+The host can bound `latest_observation` but cannot prove that it is truly the latest observation rather than a relabeled history dump. The benchmark must freeze and identify the observation injector and retain the per-step observation hash.
+
+The history-free boundary is about model context composition, not data-retention or privacy guarantees. `store=false` means this request does not ask the Responses API to store the generated response for later retrieval; provider logging, abuse monitoring, and retention policies are separate concerns.
+
+On a rejected model transition, the host retries from the unchanged original state with the same procedure and latest observation plus one bounded deterministic validation error. It does not append the rejected response. On acceptance, the successor must be durably persisted before the action proposal is returned. Persistence success is still not action authorization; the product's ordinary tool and side-effect policy remains mandatory.
+
+See [`SKILL_STATE_HOST.md`](SKILL_STATE_HOST.md) for the full request schema, limits, CLI, integration example, manifest contract, and benchmark handoff.
+
+## What “bounded” may mean
+
+With the default hard caps, each client request has a fixed byte ceiling composed of bounded procedure, state, latest observation, validation feedback, tools, options, and wrapper overhead. The ceiling does not depend on the number of preceding task steps. This supports the statement:
+
+> The captured client-visible input for each audited history-free step is bounded with respect to task horizon.
+
+It does **not** support these stronger statements without further evidence:
+
+- total token use for an entire `T`-step task is constant;
+- provider-internal context is known or bounded by the client audit;
+- state always preserves every future-relevant fact;
+- state reduces tokens or latency on real tasks.
+
+Even when every step is bounded, cumulative input over `T` steps is still expected to grow with `T`. Actual provider-reported tokens and end-to-end time must be measured in the paired model gate.
+
+## Host boundary CLI
+
+The state helper remains the canonical schema/transition CLI:
 
 ```powershell
 python runtime/skill_state.py init `
@@ -114,16 +156,34 @@ python runtime/skill_state.py init `
 python runtime/skill_state.py validate "$env:TEMP\practical-coding-state.json"
 ```
 
-Keep ephemeral state outside the target repository unless the user explicitly requests a durable, reviewable artifact.
+The history-free helper can build and re-audit an offline request, but never sends it:
+
+```powershell
+python runtime/skill_state_host.py build `
+  --model "gpt-5.6-luna" `
+  --procedure procedure.txt `
+  --state "$env:TEMP\practical-coding-state.json" `
+  --observation observation.txt `
+  --request-output request.json `
+  --audit-output request-audit.json `
+  --manifest-output host-manifest.json
+
+python runtime/skill_state_host.py audit request.json `
+  --manifest host-manifest.json `
+  --output request-reaudit.json
+```
+
+Keep ephemeral state and raw request/response artifacts outside the target repository unless the user explicitly requests a durable, reviewable artifact.
 
 ## Validation
 
-The deterministic checks cover parser strictness, isolated snapshots, merge/deletion mechanics, rollback, schema and input budgets, router ownership, JSON-envelope round trips, and the rule that a rejected CLI transition does not expose its action or overwrite its output. The existing synthetic contract also demonstrates bounded state under one fixed hand-authored update schedule and that the merge mechanism permits an immediate stale-value replacement.
+The deterministic checks cover parser strictness, isolated snapshots, merge/deletion mechanics, rollback, schema and input budgets, router ownership, JSON-envelope round trips, the rule that a rejected CLI transition does not expose its action or overwrite its output, and the audited one-current-input/no-history host boundary.
 
-Those checks do **not** demonstrate that a model will ignore distractor telemetry, detect a corrective observation, retain every future-relevant fact, resist semantic prompt injection, or choose an authorized action. Those are model-backed and host-integration questions.
+The existing synthetic contract demonstrates bounded state under one fixed hand-authored update schedule and that the merge mechanism permits an immediate stale-value replacement. The host tests demonstrate request shape, manifest identity, retry rollback, and persistence-before-release. Neither demonstrates that a model will ignore distractor telemetry, detect a corrective observation, retain every future-relevant fact, resist semantic prompt injection, or choose an authorized action.
 
 ```powershell
-python -m unittest tests.test_skill_state_hardening
+python -m py_compile runtime/skill_state.py runtime/skill_state_host.py
+python -m unittest tests.test_skill_state_hardening tests.test_skill_state_host
 python -m unittest benchmarks.test_skill_state_runtime
 python benchmarks/skill_state_validation.py --self-test `
   --output benchmark-results/skill-state-contract.json
@@ -131,4 +191,4 @@ python benchmarks/skill_state_validation.py --self-test `
 
 Because the runtime prompt and Skill wording affect model behavior, the existing model-backed tree benchmark must still run under the normal `n=1` iteration and frozen `n=3` non-regression policy before release promotion.
 
-The dedicated comparison protocol is in [`../benchmarks/SKILL_STATE_MODEL_GATE.md`](../benchmarks/SKILL_STATE_MODEL_GATE.md). It separates full-history, state-shadow, and true history-free `P + Σ + O` arms so a cost or bounded-context claim cannot be inferred from the deterministic byte simulation alone.
+The dedicated comparison protocol is in [`../benchmarks/SKILL_STATE_MODEL_GATE.md`](../benchmarks/SKILL_STATE_MODEL_GATE.md). It separates full-history, state-shadow, and true history-free `P + Σ + O` arms so a cost or bounded-context claim cannot be inferred from deterministic byte limits alone.

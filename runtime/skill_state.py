@@ -445,7 +445,7 @@ def build_prompt(procedure: str, state: Mapping[str, Any], latest_observation: s
         f"{RUNTIME_INPUT_MARKER}{runtime_input}"
         f"{OUTPUT_CONTRACT_MARKER}"
         'Return exactly one JSON object and no Markdown or reasoning text: '
-        '{"state_patch":{...},"action":"<proposed next command or tool action>"}. '
+        '{"state_patch":{},"action":"<proposed next command or tool action>"}. '
         "A rejected transition leaves canonical state unchanged, and its action must not execute. "
         "A valid transition releases the proposal only to the host authorization boundary."
     )

@@ -15,7 +15,7 @@
 
 1. 先读取并遵守 AGENTS.md、SKILL.md、evolution/skills/evolve-skill/SKILL.md。
 2. 读取 evolution/wiki/index.md、evolution/wiki/skill-impact.md，以及与本次机制直接相关的少量 wiki、receipt、experiment 和 benchmark 结果。不要把整个 evolution/ 塞进上下文。
-3. 读取 benchmarks/tree_topology.json、benchmarks/TREE_EVOLUTION.md 和当前相关 benchmark 契约。若候选涉及执行状态，还必须读取 docs/SKILL_STATE.md 与 benchmarks/SKILL_STATE_MODEL_GATE.md。
+3. 读取 benchmarks/tree_topology.json、benchmarks/TREE_EVOLUTION.md 和当前相关 benchmark 契约。若候选涉及执行状态，还必须读取 docs/SKILL_STATE.md、docs/SKILL_STATE_HOST.md 与 benchmarks/SKILL_STATE_MODEL_GATE.md。
 4. 记录当前分支 HEAD、工作树状态、模型、reasoning 配置、harness、case 集、scorer 版本和重复次数。只在 experiment/evolvable-router-tree 上工作，不合并 PR。
 5. 从累计证据中只选择一个原子假设；目标只能是一个节点、一个父子边界、一个检索边界、一个跨切面运行时机制或一个评测缺陷。多个相互独立的问题必须拆成后续迭代。
 6. 在看到候选结果之前，先在 evolution/experiments/ 写下冻结假设：证据指针、因果机制、可观察的预加载/激活信号、准确目标、候选补丁形状、预期收益、明确反证条件、baseline ref、评测方案和接受门槛。
@@ -73,11 +73,13 @@ arXiv:2608.26263 的核心是用显式、可验证的当前执行状态替代不
 
 按 benchmarks/SKILL_STATE_MODEL_GATE.md 冻结并比较四个 arm：full history、state shadow、state history-free、no-skill full history。前三个 arm 必须使用相同的自动路由、检索策略、工具、任务、观察序列和交付 scorer。
 
-先运行 tests/test_skill_state_hardening.py、benchmarks/test_skill_state_runtime.py 与 benchmarks/skill_state_validation.py，验证严格 JSON 解析、隔离快照、schema、merge、null deletion、host-owned 控制字段、invalid transition rollback、结构化 prompt 数据边界和 state byte budget。确定性 contract 只能证明这些机械边界以及固定手写更新序列下的结果；它不能证明模型会过滤噪音、识别纠正信息、抵抗语义 prompt injection 或选择安全动作。随后再运行真实模型任务。
+先运行 `python -m unittest tests.test_skill_state_hardening tests.test_skill_state_host benchmarks.test_skill_state_runtime` 与 `python benchmarks/skill_state_validation.py --self-test`，验证严格 JSON 解析、隔离快照、schema、merge、null deletion、host-owned 控制字段、invalid transition rollback、结构化数据边界、state byte budget、冻结 manifest、one-current-input 请求、无历史句柄、重试回滚和持久化后才释放 action。确定性 contract 只能证明这些机械边界；它不能证明模型会过滤噪音、识别纠正信息、保留未来相关事实、抵抗语义 prompt injection 或选择安全动作。随后再运行真实模型任务。
 
-所有通过状态验证的 action 仍只是提案；host 必须独立校验工具、参数、权限、工作目录和副作用，不得把 state validation 当作执行授权。
+state-history-free arm 必须通过 runtime/skill_state_host.py 或等价的实际传输边界构造请求：冻结 procedure/model/tools/options/limits manifest 和 observation injector；把 procedure 放入当前 instructions；唯一 user input 只包含 Σ、当前 O 和可选的有界 validation error；禁止 previous_response_id、conversation、prompt reference、context management、旧 assistant/tool item、上下文 header/cookie、proxy session 等历史通道，也不得把累计历史改名塞入 O。每个实际 outbound request 必须与 manifest 重审计并保存 SHA-256、原始脱敏请求、原始响应、observation identity、provider token usage 和 transport timing。如果 SDK 或代理重建请求且无法截获最终 body、header 与会话状态，该 arm 只能记为 state shadow，不能记为 history-free。
 
-重点测量：交付质量、重复命令/检查/假设、过早覆盖或删除、陈旧事实恢复步数、invalid patch 重试、每步真实请求 token、累计 token、时长和工具调用。只有实际 host 请求完全省略旧消息并仅包含 P + Σ + O 时，才允许声称 prompt 对执行步数有界；state shadow 只能声称减少状态重建，不能声称 O(1) 上下文。
+所有通过状态验证的 action 仍只是提案；host 必须先持久化 successor，再独立校验工具、参数、权限、工作目录和副作用。不得把 state validation 当作执行授权。
+
+重点测量：交付质量、重复命令/检查/假设、过早覆盖或删除、陈旧事实恢复步数、invalid patch 重试、每步真实请求 token、累计 uncached input token、输出 token、端到端时长和工具调用。只有实际 host 请求完全省略旧消息、历史句柄和 server-side conversation reference，并且所有可变组成部分与完整 request 都受冻结上限约束时，才允许声称“单步客户端可见输入相对任务步数有界”；整个 T 步任务的累计输入仍是 O(T)。State shadow 只能声称减少状态重建，不能声称有界上下文。
 
 必须包含 history-required 对照：审计/溯源任务、动态发现 schema 的任务、早期信息在当时无法判断未来相关性的任务。此类任务应保留有界不可变 artifact 指针或退出 history-free，而不是强行丢弃历史；artifact 字符串通过 schema 校验不等于其不可变、可访问或足够完整，host 必须验证这些属性。
 

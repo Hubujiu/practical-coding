@@ -59,6 +59,14 @@ Retrieval remains orthogonal to the execution tree. Use the cheapest available c
 
 [`references/navigation.md`](references/navigation.md) is the optional detailed procedure for substantial retrieval. Codebase Memory, LSP/AST, ranked search, and ordinary search are capabilities, not required dependencies.
 
+## Execution state
+
+Long tasks may use a bounded current-state projection without adding a router node. [`runtime/skill_state.py`](runtime/skill_state.py) validates the coding-domain state and merge transitions. [`runtime/skill_state_host.py`](runtime/skill_state_host.py) builds and audits the exact one-current-input request needed by a true history-free host.
+
+The host boundary freezes procedure, model, tools, options, and limits; rejects prior-response, conversation, prompt-reference, context-management, assistant, and tool-history channels; retries from the unchanged canonical state; and withholds an action until the valid successor is persisted. A validated action remains subject to the surrounding product's normal authorization policy.
+
+A state projection used while prior messages remain attached is **state shadow**, not history-free execution. Deterministic byte limits can establish a bounded captured client request, but token, latency, and delivered-quality benefits remain pending until the four-arm model protocol in [`benchmarks/SKILL_STATE_MODEL_GATE.md`](benchmarks/SKILL_STATE_MODEL_GATE.md) is run. See [`docs/SKILL_STATE.md`](docs/SKILL_STATE.md) and [`docs/SKILL_STATE_HOST.md`](docs/SKILL_STATE_HOST.md).
+
 ## Benchmark-driven tree evolution
 
 The benchmark does **not** validate a predefined tree. It provides evidence used to grow, split, merge, promote, collapse, or remove nodes.
@@ -101,6 +109,6 @@ python benchmarks/tree_analysis.py benchmark-results/tree-final/results.jsonl `
 
 The accepted v1.5 flat Debugging/Decision/Implementation Event Router remains historical baseline evidence under [`benchmarks/results/v1.5/`](benchmarks/results/v1.5/) and [`evolution/experiments/event-router-restoration.md`](evolution/experiments/event-router-restoration.md). The rejected fixed E/R depth and specialist-leaf experiment remains under [`evolution/rejected/`](evolution/rejected/) and [`benchmarks/results/progressive-tree/`](benchmarks/results/progressive-tree/). Historical reports are not rewritten to fit the new topology.
 
-The accepted evolvable-tree paired n=3 report is published under [`benchmarks/results/evolvable-tree/`](benchmarks/results/evolvable-tree/): adaptive 45/45, frozen v1.5 44/45, and no-skill 44/45 across 252/252 determinate cells. The report keeps the quality win separate from the measured cost regression.
+The published `b82b38d` paired n=3 tree report is under [`benchmarks/results/evolvable-tree/`](benchmarks/results/evolvable-tree/): adaptive, frozen v1.5, and no-skill each passed 45/45 across 252/252 determinate cells, so the release quality gate passed. Adaptive still used more average tokens, time, and tool calls than frozen v1.5; the report therefore makes no cost-improvement claim.
 
 MIT License. See `THIRD_PARTY_NOTICES.md` for attribution.

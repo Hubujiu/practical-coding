@@ -1,1 +1,1 @@
-"""Deterministic runtime helpers for Practical Coding experiments."""
+"""Deterministic execution-state and audited host-boundary helpers."""
