@@ -1,0 +1,13 @@
+TARGET_BRANCH=experiment/evolvable-router-tree
+REMOTE_BRANCH_SHA=ea8580f169154cab01914f4c76e369f1a26f91f8
+PARENT_SHA=ec9269d17abfc8c9e497a7fc69906e3df8ffe3b4
+REQUIRED_FILES_PRESENT=YES
+
+GIT_SHOW_STAT_BEGIN
+ea8580f (origin/experiment/evolvable-router-tree) bench: add execution-state four-arm runner
+ benchmarks/skill_state_model_analysis.py |  403 ++++++++++++
+ benchmarks/skill_state_model_cases.py    |  413 ++++++++++++
+ benchmarks/skill_state_model_runner.py   | 1001 ++++++++++++++++++++++++++++++
+ runtime/skill_state_http_transport.py    |  431 +++++++++++++
+ 4 files changed, 2248 insertions(+)
+GIT_SHOW_STAT_END
