@@ -1,0 +1,113 @@
+from __future__ import annotations
+
+import copy
+import json
+import unittest
+from pathlib import Path
+
+from benchmarks import skill_state_validation as contract
+from runtime.skill_state import (
+    MAX_STATE_BYTES,
+    StateValidationError,
+    apply_state_patch,
+    apply_transition,
+    build_prompt,
+    initial_state,
+    validate_state,
+)
+
+
+class SkillStateRuntimeTests(unittest.TestCase):
+    def test_nested_merge_preserves_omitted_siblings_and_null_deletes(self) -> None:
+        state = initial_state("repair branch", ["focused check passes"])
+        state = apply_state_patch(
+            state,
+            {
+                "facts": {"branch": {"name": "feature", "head": "old", "base": "main"}},
+                "hypotheses": {"active": {"stale": "cache", "source": "parser"}},
+            },
+        )
+        successor = apply_state_patch(
+            state,
+            {
+                "facts": {"branch": {"head": "new"}},
+                "hypotheses": {"active": {"stale": None}},
+            },
+        )
+        self.assertEqual(successor["facts"]["branch"], {"name": "feature", "head": "new", "base": "main"})
+        self.assertNotIn("stale", successor["hypotheses"]["active"])
+        self.assertEqual(successor["hypotheses"]["active"]["source"], "parser")
+
+    def test_invalid_patch_does_not_mutate_canonical_state(self) -> None:
+        state = initial_state("keep canonical state", ["invalid output rolls back"])
+        before = copy.deepcopy(state)
+        with self.assertRaises(StateValidationError):
+            apply_state_patch(state, {"route": {"retrieval": "UNBOUNDED"}})
+        self.assertEqual(state, before)
+
+    def test_transcript_and_reasoning_cannot_enter_state(self) -> None:
+        state = initial_state("avoid narrative memory", ["state remains operational"])
+        for key in ("transcript", "reasoning", "chain_of_thought", "tool_output"):
+            with self.subTest(key=key), self.assertRaises(StateValidationError):
+                apply_state_patch(state, {"facts": {key: "large text"}})
+
+    def test_transition_requires_exact_runtime_shape(self) -> None:
+        state = initial_state("advance", ["one action selected"])
+        successor, action = apply_transition(
+            state,
+            {
+                "state_patch": {"next_action": "run focused test"},
+                "action": "python -m unittest focused",
+            },
+        )
+        self.assertEqual(successor["next_action"], "run focused test")
+        self.assertEqual(action, "python -m unittest focused")
+        with self.assertRaises(StateValidationError):
+            apply_transition(state, {"state_patch": {}, "action": "test", "reasoning": "persist me"})
+
+    def test_prompt_contains_only_procedure_state_and_latest_observation(self) -> None:
+        state = initial_state("inspect current failure", ["cause is evidenced"])
+        prompt = build_prompt("Use the smallest evidenced fix.", state, "Latest check failed at parser.py:9")
+        self.assertIn("Procedure (immutable)", prompt)
+        self.assertIn("Skill Execution State", prompt)
+        self.assertIn("Latest check failed", prompt)
+        self.assertNotIn("Previous Observation", prompt)
+        self.assertNotIn("History:", prompt)
+
+    def test_state_budget_is_enforced(self) -> None:
+        state = initial_state("bounded", ["state remains below budget"])
+        with self.assertRaises(StateValidationError):
+            apply_state_patch(state, {"facts": {"oversized": "x" * (MAX_STATE_BYTES + 1)}})
+        validate_state(state)
+        self.assertLess(len(json.dumps(state).encode("utf-8")), MAX_STATE_BYTES)
+
+    def test_history_target_uses_bounded_artifact_references(self) -> None:
+        state = initial_state("audit release", ["provenance remains available"])
+        successor = apply_state_patch(
+            state,
+            {"history": {"required": True, "artifacts": ["artifacts/release-audit.jsonl#event-18"]}},
+        )
+        self.assertTrue(successor["history"]["required"])
+        self.assertEqual(len(successor["history"]["artifacts"]), 1)
+
+
+class SkillStateTopologyIsolationTests(unittest.TestCase):
+    def test_execution_state_is_not_a_router_or_manual_mode(self) -> None:
+        topology = json.loads((Path(__file__).resolve().parent / "tree_topology.json").read_text(encoding="utf-8"))
+        self.assertNotIn("execution_state", topology["automatic_nodes"])
+        self.assertNotIn("execution_state", topology["manual_modes"])
+        substrate = topology["runtime_substrates"]["execution_state"]
+        self.assertFalse(substrate["automatic_node"])
+        self.assertFalse(substrate["manual_mode"])
+        self.assertEqual(substrate["activation"], "state-pressure")
+
+
+class SkillStateContractTests(unittest.TestCase):
+    def test_deterministic_contract(self) -> None:
+        report = contract.run_contract()
+        self.assertEqual(report["contract_gate"], "PASS")
+        self.assertTrue(all(report["checks"].values()))
+
+
+if __name__ == "__main__":
+    unittest.main()
