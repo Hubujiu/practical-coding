@@ -1,6 +1,6 @@
 # EXP-20260902 — Bound evidence volume after discovery
 
-Status: **n=1 qualified; frozen for paired n=3**
+Status: **accepted for release quality; cost hypothesis not confirmed**
 
 ## Observation
 
@@ -21,3 +21,9 @@ Deterministic tests must pass, followed by a fresh complete current-only n=1 wit
 ## n=1 qualification
 
 `benchmark-results/tree-bounded-evidence-n1-20260902` completed 58/58 determinate cells. Adaptive passed 15/15; Core, Debugging, and Implementation capability ceilings each passed 13/13; adaptive trace/manual discipline was perfect. The runtime/scorer/cases are frozen for paired n=3.
+
+## Paired n=3 result
+
+`benchmark-results/tree-final-b202f7a-20260902` completed 252/252 determinate cells. Adaptive passed 45/45, while frozen v1.5 and no-skill each passed 44/45. Trace and manual-mode gates were perfect and the release-quality gate passed.
+
+The bounded-volume cost hypothesis was not confirmed: adaptive mean tokens/duration/tools were 258,061.64 / 76.82s / 8.42 versus v1.5 at 217,460.96 / 72.20s / 7.24. The candidate is accepted on the separately frozen primary delivery criterion of strict paired quality superiority, not as evidence that the wording reduced cost. Future cost work must start from this regression and return to n=1.

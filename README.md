@@ -101,4 +101,6 @@ python benchmarks/tree_analysis.py benchmark-results/tree-final/results.jsonl `
 
 The accepted v1.5 flat Debugging/Decision/Implementation Event Router remains historical baseline evidence under [`benchmarks/results/v1.5/`](benchmarks/results/v1.5/) and [`evolution/experiments/event-router-restoration.md`](evolution/experiments/event-router-restoration.md). The rejected fixed E/R depth and specialist-leaf experiment remains under [`evolution/rejected/`](evolution/rejected/) and [`benchmarks/results/progressive-tree/`](benchmarks/results/progressive-tree/). Historical reports are not rewritten to fit the new topology.
 
+The accepted evolvable-tree paired n=3 report is published under [`benchmarks/results/evolvable-tree/`](benchmarks/results/evolvable-tree/): adaptive 45/45, frozen v1.5 44/45, and no-skill 44/45 across 252/252 determinate cells. The report keeps the quality win separate from the measured cost regression.
+
 MIT License. See `THIRD_PARTY_NOTICES.md` for attribution.

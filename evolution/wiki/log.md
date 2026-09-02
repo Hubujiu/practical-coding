@@ -98,3 +98,10 @@ Chronological maintenance log. Keep entries short; detailed evidence belongs in 
 - Froze `tree-bounded-evidence-volume-20260902.md` from the leaf candidate's real cost regression: quality tied at 45/45 and tool calls improved, while tokens and duration regressed.
 - Added one general retrieval-volume rule without changing topology, cases, scorer, or repositories.
 - The fresh current-only n=1 completed 58/58 determinate cells with adaptive 15/15, all three capability ceilings 13/13, and perfect trace/manual discipline. Preserved `2026-09-02-tree-n1-bounded-evidence-qualified.md` and froze the candidate for paired n=3.
+
+## 2026-09-02 — evolvable leaf tree delivery accepted
+
+- Candidate `b202f7a165ae3ea4404d404bb1235ebf4270cbfb` completed the paired n=3 matrix with 252/252 determinate cells.
+- Adaptive passed 45/45 versus frozen v1.5 at 44/45 and no-skill at 44/45; release quality, trace, explicit manual, and zero-spontaneous-manual gates passed.
+- Cost did not improve against v1.5: mean tokens +18.67%, duration +6.40%, and tool calls +16.26%. The bounded-volume subhypothesis is therefore unconfirmed; acceptance rests on strict paired quality superiority.
+- Preserved `2026-09-02-tree-n3-b202f7a-delivery.md` and published the sanitized compact report under `benchmarks/results/evolvable-tree/`.

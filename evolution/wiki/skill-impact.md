@@ -41,3 +41,16 @@ Experiments before this tracker was introduced remain authoritative in their exi
 - deterministic gate: 22 tree/discriminator/evolution tests passed; maintenance workflow 28/28
 - decision: `Accepted`
 - rationale: prompt/scorer alignment, semantic and language equivalence, and Windows path normalization are covered by positive and negative tests; runtime inputs remain unchanged. Stable topology and prior-version claims remain pending paired n=3 evidence.
+
+## 2026-09-02 — evolvable leaf tree delivery
+
+- hypothesis: `evolution/experiments/tree-bounded-evidence-volume-20260902.md`
+- target: Core retrieval-volume rule on the isolated Debugging/Implementation leaf topology
+- frozen baseline: v1.5 at `ba4058b4ef47a42bf79c9963b25678a2389897c1`
+- candidate ref: `b202f7a165ae3ea4404d404bb1235ebf4270cbfb`
+- artifact: `benchmark-results/tree-final-b202f7a-20260902` (252/252 determinate, n=3)
+- required quality: adaptive 45/45; v1.5 44/45; no-skill 44/45
+- discipline: trace 45/45; explicit manual 6/6; spontaneous manual 0/39
+- adaptive versus v1.5 cost: tokens 258,061.64 vs 217,460.96; duration 76.82s vs 72.20s; tools 8.42 vs 7.24
+- decision: `Accepted`
+- rationale: the frozen primary release gate requires strict paired delivered-quality superiority and no regression against no-skill; both comparators were exceeded by one cell with perfect discipline. The proposed cost mechanism was not confirmed and the regression remains an explicit limitation, not an acceptance claim.
