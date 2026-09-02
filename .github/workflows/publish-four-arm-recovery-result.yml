@@ -1,0 +1,74 @@
+name: Publish four-arm recovery verification
+
+on:
+  push:
+    branches:
+      - automation/recover-four-arm-embedded-20260902
+  workflow_dispatch:
+
+permissions:
+  contents: write
+
+jobs:
+  verify:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          fetch-depth: 0
+          token: ${{ secrets.GITHUB_TOKEN }}
+
+      - name: Wait for target and publish exact verification
+        env:
+          TARGET_BRANCH: experiment/evolvable-router-tree
+          EXPECTED_BASE: ec9269d17abfc8c9e497a7fc69906e3df8ffe3b4
+          RESULT_BRANCH: automation/four-arm-recovery-result
+        run: |
+          set -euo pipefail
+          remote="${EXPECTED_BASE}"
+          for _ in $(seq 1 60); do
+            git fetch -q origin "${TARGET_BRANCH}"
+            remote="$(git rev-parse "origin/${TARGET_BRANCH}")"
+            if [ "${remote}" != "${EXPECTED_BASE}" ]; then
+              break
+            fi
+            sleep 5
+          done
+          test "${remote}" != "${EXPECTED_BASE}" || {
+            echo "target branch did not move" >&2
+            exit 1
+          }
+
+          required=(
+            benchmarks/skill_state_model_cases.py
+            benchmarks/skill_state_model_runner.py
+            benchmarks/skill_state_model_analysis.py
+            runtime/skill_state_http_transport.py
+          )
+          for path in "${required[@]}"; do
+            git cat-file -e "${remote}:${path}"
+          done
+
+          stat="$(git show --stat --oneline --decorate=short --no-renames "${remote}")"
+          parent="$(git rev-parse "${remote}^")"
+          mkdir -p /tmp/four-arm-result
+          {
+            echo "TARGET_BRANCH=${TARGET_BRANCH}"
+            echo "REMOTE_BRANCH_SHA=${remote}"
+            echo "PARENT_SHA=${parent}"
+            echo "REQUIRED_FILES_PRESENT=YES"
+            echo
+            echo "GIT_SHOW_STAT_BEGIN"
+            printf '%s\n' "${stat}"
+            echo "GIT_SHOW_STAT_END"
+          } > /tmp/four-arm-result/RECOVERY_RESULT.txt
+
+          git checkout --orphan result-branch
+          git rm -rf . >/dev/null 2>&1 || true
+          cp /tmp/four-arm-result/RECOVERY_RESULT.txt .
+          git config user.name "OpenAI"
+          git config user.email "noreply@openai.com"
+          git add RECOVERY_RESULT.txt
+          git commit -m "chore: publish four-arm recovery verification"
+          git push --force origin "HEAD:refs/heads/${RESULT_BRANCH}"
+          cat RECOVERY_RESULT.txt
