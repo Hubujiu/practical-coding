@@ -1,7 +1,7 @@
 {
   "experiment": "evolvable-local-router-tree",
-  "status": "accepted",
-  "candidate_commit": "b82b38d",
+  "status": "tree-n3-accepted-state-gate-pending",
+  "candidate_commit": "d85c72cc5aa239da32352309e723ed1e6fc80429",
   "baseline_ref": "ba4058b4ef47a42bf79c9963b25678a2389897c1",
   "model": "gpt-5.6-luna",
   "reasoning": "medium",
@@ -12,33 +12,17 @@
   "determinate": 252,
   "quality": {
     "adaptive": {"passed": 45, "cells": 45, "stable_tasks": 15},
-    "baseline_v1_5": {"passed": 45, "cells": 45, "stable_tasks": 15},
+    "baseline": {"passed": 45, "cells": 45, "stable_tasks": 15},
     "no_skill": {"passed": 45, "cells": 45, "stable_tasks": 15},
-    "release_gate": "PASS"
+    "release_quality_gate": "PASS"
   },
   "discipline": {
     "adaptive_trace_failures": 0,
     "explicit_manual_contract_failures": 0,
-    "spontaneous_manual": {"count": 0, "automatic_cells": 39}
+    "spontaneous_manual_count": 0
   },
-  "capability_ceiling": {
-    "core": {"passed": 39, "cells": 39},
-    "debugging": {"passed": 39, "cells": 39},
-    "implementation": {"passed": 39, "cells": 39}
-  },
-  "cost": {
-    "adaptive": {"tokens_mean": 253543.13, "duration_seconds_mean": 84.15, "tool_calls_mean": 8.82},
-    "baseline_v1_5": {"tokens_mean": 222598.13, "duration_seconds_mean": 80.31, "tool_calls_mean": 8.02},
-    "no_skill": {"tokens_mean": 245342.04, "duration_seconds_mean": 81.66, "tool_calls_mean": 6.33}
-  },
-  "parallelism": {
-    "work_count": 2,
-    "work_case_counts": [8, 7],
-    "workers_per_work": 8
-  },
-  "limitations": [
-    "Quality passed with equal 45/45 rates; no cost advantage is claimed.",
-    "Raw transcripts and machine paths remain in ignored local artifacts.",
-    "Deterministic runtime contract evidence remains separate from model-backed quality evidence."
-  ]
+  "parallelism": {"work_count": 2, "work_case_counts": [8, 7], "workers_per_work": 8},
+  "execution_state_model_gate": "PENDING",
+  "pending_reason": "No four-arm model-backed transport runner or final outbound header/cookie/proxy audit exists in the repository.",
+  "raw_artifacts": "ignored benchmark-results/tree-d85c72c-final-merged/"
 }
