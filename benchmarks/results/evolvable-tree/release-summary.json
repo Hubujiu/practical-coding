@@ -1,7 +1,7 @@
 {
   "experiment": "evolvable-local-router-tree",
   "status": "accepted",
-  "candidate_commit": "b202f7a165ae3ea4404d404bb1235ebf4270cbfb",
+  "candidate_commit": "b82b38d",
   "baseline_ref": "ba4058b4ef47a42bf79c9963b25678a2389897c1",
   "model": "gpt-5.6-luna",
   "reasoning": "medium",
@@ -12,13 +12,13 @@
   "determinate": 252,
   "quality": {
     "adaptive": {"passed": 45, "cells": 45, "stable_tasks": 15},
-    "baseline_v1_5": {"passed": 44, "cells": 45, "stable_tasks": 14},
-    "no_skill": {"passed": 44, "cells": 45, "stable_tasks": 14},
+    "baseline_v1_5": {"passed": 45, "cells": 45, "stable_tasks": 15},
+    "no_skill": {"passed": 45, "cells": 45, "stable_tasks": 15},
     "release_gate": "PASS"
   },
   "discipline": {
-    "adaptive_trace": {"passed": 45, "cells": 45},
-    "explicit_manual": {"passed": 6, "cells": 6},
+    "adaptive_trace_failures": 0,
+    "explicit_manual_contract_failures": 0,
     "spontaneous_manual": {"count": 0, "automatic_cells": 39}
   },
   "capability_ceiling": {
@@ -27,13 +27,18 @@
     "implementation": {"passed": 39, "cells": 39}
   },
   "cost": {
-    "adaptive": {"tokens_mean": 258061.64, "duration_seconds_mean": 76.82, "tool_calls_mean": 8.42},
-    "baseline_v1_5": {"tokens_mean": 217460.96, "duration_seconds_mean": 72.20, "tool_calls_mean": 7.24},
-    "no_skill": {"tokens_mean": 258750.62, "duration_seconds_mean": 76.55, "tool_calls_mean": 6.31}
+    "adaptive": {"tokens_mean": 253543.13, "duration_seconds_mean": 84.15, "tool_calls_mean": 8.82},
+    "baseline_v1_5": {"tokens_mean": 222598.13, "duration_seconds_mean": 80.31, "tool_calls_mean": 8.02},
+    "no_skill": {"tokens_mean": 245342.04, "duration_seconds_mean": 81.66, "tool_calls_mean": 6.33}
+  },
+  "parallelism": {
+    "work_count": 2,
+    "work_case_counts": [8, 7],
+    "workers_per_work": 8
   },
   "limitations": [
-    "Adaptive quality is strictly better, but its mean tokens, duration, and tool calls regress against v1.5.",
-    "The bounded-evidence cost subhypothesis was not confirmed.",
-    "Raw transcripts and machine paths remain in the ignored local artifact."
+    "Quality passed with equal 45/45 rates; no cost advantage is claimed.",
+    "Raw transcripts and machine paths remain in ignored local artifacts.",
+    "Deterministic runtime contract evidence remains separate from model-backed quality evidence."
   ]
 }
