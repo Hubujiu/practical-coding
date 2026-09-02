@@ -59,7 +59,7 @@
 ```text
 按照 evolution/skills/evolve-skill/SKILL.md 最多执行 3 次独立迭代。
 
-每一轮都必须完整经历：独立冻结假设 → 冻结 benchmark → baseline → 单一候选 → 相同证据 candidate → 回归门禁 → 接受并提交，或拒绝并回滚。上一轮没有形成 Accepted commit，不得开始下一轮；不同轮次不得共享未冻结的候选结果。出现 no_action、必要门禁下降、基础设施结果不可判定、预算耗尽或连续两轮拒绝时立即停止。
+每一轮都必须完整经历：独立冻结假设 → 冻结 benchmark → baseline → 单一候选 → 相同证据 candidate → 回归门禁 → 接受并提交，或拒绝并回滚。上一轮没有完成“接受并提交”或“拒绝、回滚并记录”的闭环，不得开始下一轮；被拒绝后若继续，下一轮必须使用新的独立假设，不能继续修补同一候选。不同轮次不得共享未冻结的候选结果。出现 no_action、基础设施结果不可判定、预算耗尽或连续两轮拒绝时立即停止；任一轮出现必要质量门禁下降时，必须先回滚并记录，再由停止条件决定是否还能开启新的独立轮次。
 
 最终按轮次列出假设、证据、结果、决定和 commit，不得把多轮修改压成一个无法归因的补丁。
 ```
@@ -73,11 +73,13 @@ arXiv:2608.26263 的核心是用显式、可验证的当前执行状态替代不
 
 按 benchmarks/SKILL_STATE_MODEL_GATE.md 冻结并比较四个 arm：full history、state shadow、state history-free、no-skill full history。前三个 arm 必须使用相同的自动路由、检索策略、工具、任务、观察序列和交付 scorer。
 
-先运行 benchmarks/test_skill_state_runtime.py 与 benchmarks/skill_state_validation.py，验证 schema、merge、null deletion、host-owned 控制字段、invalid transition rollback、prompt 数据边界和 state byte budget。随后再运行真实模型任务；确定性 contract 不能替代模型质量结果。
+先运行 tests/test_skill_state_hardening.py、benchmarks/test_skill_state_runtime.py 与 benchmarks/skill_state_validation.py，验证严格 JSON 解析、隔离快照、schema、merge、null deletion、host-owned 控制字段、invalid transition rollback、结构化 prompt 数据边界和 state byte budget。确定性 contract 只能证明这些机械边界以及固定手写更新序列下的结果；它不能证明模型会过滤噪音、识别纠正信息、抵抗语义 prompt injection 或选择安全动作。随后再运行真实模型任务。
+
+所有通过状态验证的 action 仍只是提案；host 必须独立校验工具、参数、权限、工作目录和副作用，不得把 state validation 当作执行授权。
 
 重点测量：交付质量、重复命令/检查/假设、过早覆盖或删除、陈旧事实恢复步数、invalid patch 重试、每步真实请求 token、累计 token、时长和工具调用。只有实际 host 请求完全省略旧消息并仅包含 P + Σ + O 时，才允许声称 prompt 对执行步数有界；state shadow 只能声称减少状态重建，不能声称 O(1) 上下文。
 
-必须包含 history-required 对照：审计/溯源任务、动态发现 schema 的任务、早期信息在当时无法判断未来相关性的任务。此类任务应保留有界不可变 artifact 指针或退出 history-free，而不是强行丢弃历史。
+必须包含 history-required 对照：审计/溯源任务、动态发现 schema 的任务、早期信息在当时无法判断未来相关性的任务。此类任务应保留有界不可变 artifact 指针或退出 history-free，而不是强行丢弃历史；artifact 字符串通过 schema 校验不等于其不可变、可访问或足够完整，host 必须验证这些属性。
 
 本轮只允许一个候选，例如：激活条件、schema 字段、patch 所有权、history escape hatch、core 中披露量或 host adapter。冻结后按 n=1 调试、n>=3 配对门禁；质量下降则回滚，不得用 token 降低换取正确率下降。
 ```

@@ -16,6 +16,7 @@ import math
 import os
 import sys
 import tempfile
+from collections.abc import Mapping as MappingABC, Sequence as SequenceABC
 from pathlib import Path
 from typing import Any, Mapping, Sequence
 
@@ -25,6 +26,8 @@ MAX_TEXT_BYTES = 2 * 1024
 MAX_LIST_ITEMS = 32
 MAX_MAP_ITEMS = 64
 MAX_NESTING_DEPTH = 6
+MAX_JSON_INPUT_BYTES = 128 * 1024
+MAX_RUNTIME_TEXT_BYTES = 64 * 1024
 
 RETRIEVAL_MODES = frozenset({"NONE", "TARGETED", "BOUNDED", "STRUCTURAL"})
 MANUAL_MODES = frozenset({"none", "decision", "clarification"})
@@ -70,15 +73,70 @@ class StateValidationError(ValueError):
     """Raised when canonical execution state or a proposed patch is invalid."""
 
 
+def _utf8_size(value: str, path: str) -> int:
+    try:
+        return len(value.encode("utf-8"))
+    except UnicodeEncodeError as exc:
+        raise StateValidationError(f"{path} is not valid UTF-8 text: {exc}") from exc
+
+
+def _unique_json_object(pairs: list[tuple[str, Any]]) -> dict[str, Any]:
+    result: dict[str, Any] = {}
+    for key, value in pairs:
+        if key in result:
+            raise StateValidationError(f"duplicate JSON object key is not allowed: {key!r}")
+        result[key] = value
+    return result
+
+
+def _reject_nonfinite_json(value: str) -> Any:
+    raise StateValidationError(f"non-finite JSON number is not allowed: {value}")
+
+
+def _parse_json_document(value: str, source: str) -> Any:
+    if _utf8_size(value, source) > MAX_JSON_INPUT_BYTES:
+        raise StateValidationError(f"{source} exceeds {MAX_JSON_INPUT_BYTES} UTF-8 bytes")
+    try:
+        return json.loads(
+            value,
+            object_pairs_hook=_unique_json_object,
+            parse_constant=_reject_nonfinite_json,
+        )
+    except StateValidationError:
+        raise
+    except (json.JSONDecodeError, RecursionError, ValueError) as exc:
+        raise StateValidationError(f"invalid JSON in {source}: {exc}") from exc
+
+
+def _safe_deepcopy(value: Any, path: str) -> Any:
+    try:
+        return copy.deepcopy(value)
+    except Exception as exc:
+        raise StateValidationError(f"{path} could not be copied as an isolated JSON snapshot: {exc}") from exc
+
+
+def _mapping_snapshot(value: MappingABC[str, Any], path: str) -> dict[str, Any]:
+    try:
+        plain = dict(value)
+    except Exception as exc:
+        raise StateValidationError(f"{path} could not be read as an object: {exc}") from exc
+    snapshot = _safe_deepcopy(plain, path)
+    return dict(_require_mapping(snapshot, path))
+
+
 def initial_state(objective: str, success: Sequence[str]) -> dict[str, Any]:
     """Create and validate a new compact coding-domain execution state."""
 
-    if isinstance(success, (str, bytes)):
-        raise StateValidationError("success must be a sequence of conditions, not one string")
+    if isinstance(success, (str, bytes)) or not isinstance(success, SequenceABC):
+        raise StateValidationError("success must be a sequence of condition strings")
+    try:
+        success_conditions = list(success)
+    except Exception as exc:
+        raise StateValidationError(f"success could not be read as a sequence: {exc}") from exc
     state: dict[str, Any] = {
         "schema_version": SCHEMA_VERSION,
         "objective": objective,
-        "success": list(success),
+        "success": success_conditions,
         "route": {
             "automatic_path": ["core"],
             "retrieval": "NONE",
@@ -98,10 +156,10 @@ def initial_state(objective: str, success: Sequence[str]) -> dict[str, Any]:
 
 def _encoded_size(value: Any) -> int:
     try:
-        payload = json.dumps(value, ensure_ascii=False, separators=(",", ":"))
-    except (TypeError, ValueError) as exc:
-        raise StateValidationError(f"state must contain only JSON values: {exc}") from exc
-    return len(payload.encode("utf-8"))
+        payload = json.dumps(value, ensure_ascii=False, separators=(",", ":"), allow_nan=False)
+        return len(payload.encode("utf-8"))
+    except (TypeError, ValueError, UnicodeEncodeError) as exc:
+        raise StateValidationError(f"state must contain only UTF-8 JSON values: {exc}") from exc
 
 
 def _require_mapping(value: Any, path: str, keys: set[str] | frozenset[str] | None = None) -> Mapping[str, Any]:
@@ -109,6 +167,9 @@ def _require_mapping(value: Any, path: str, keys: set[str] | frozenset[str] | No
         raise StateValidationError(f"{path} must be an object")
     if len(value) > MAX_MAP_ITEMS:
         raise StateValidationError(f"{path} exceeds {MAX_MAP_ITEMS} entries")
+    for key in value:
+        if not isinstance(key, str):
+            raise StateValidationError(f"{path} object keys must be strings, got {type(key).__name__}")
     if keys is not None and set(value) != set(keys):
         missing = sorted(set(keys) - set(value))
         extra = sorted(set(value) - set(keys))
@@ -121,9 +182,19 @@ def _require_text(value: Any, path: str, *, allow_empty: bool = True, max_bytes:
         raise StateValidationError(f"{path} must be a string")
     if not allow_empty and not value.strip():
         raise StateValidationError(f"{path} must not be empty")
-    if len(value.encode("utf-8")) > max_bytes:
+    if _utf8_size(value, path) > max_bytes:
         raise StateValidationError(f"{path} exceeds {max_bytes} UTF-8 bytes")
     return value
+
+
+def _require_action(value: Any, path: str = "transition.action") -> str:
+    action = _require_text(value, path, allow_empty=False)
+    for index, character in enumerate(action):
+        if not character.isprintable():
+            raise StateValidationError(
+                f"{path} contains a disallowed control character at index {index}"
+            )
+    return action
 
 
 def _require_string_list(
@@ -176,23 +247,11 @@ def _validate_json_tree(value: Any, path: str, depth: int = 0) -> None:
         for key, item in value.items():
             _require_text(key, f"{path}.<key>", allow_empty=False, max_bytes=256)
             if key.lower() in FORBIDDEN_STATE_KEYS:
-                raise StateValidationError(f"{path}.{key} is forbidden in persistent execution state")
+                raise StateValidationError(f"{path}.{key} is forbidden in execution state and patches")
             _validate_json_tree(item, f"{path}.{key}", depth + 1)
         return
     raise StateValidationError(f"{path} contains a non-JSON value: {type(value).__name__}")
 
-
-def _reject_forbidden_patch_keys(value: Any, path: str = "patch") -> None:
-    if isinstance(value, dict):
-        for key, item in value.items():
-            if not isinstance(key, str):
-                raise StateValidationError(f"{path} keys must be strings")
-            if key.lower() in FORBIDDEN_STATE_KEYS:
-                raise StateValidationError(f"{path}.{key} is forbidden even when deletion is requested")
-            _reject_forbidden_patch_keys(item, f"{path}.{key}")
-    elif isinstance(value, list):
-        for index, item in enumerate(value):
-            _reject_forbidden_patch_keys(item, f"{path}[{index}]")
 
 
 def validate_state(state: Mapping[str, Any]) -> None:
@@ -284,11 +343,11 @@ def _merge_patch(target: Any, patch: Any) -> Any:
 
 
 def _apply_validated_patch(state: Mapping[str, Any], patch: Mapping[str, Any]) -> dict[str, Any]:
-    validate_state(state)
-    if not isinstance(patch, dict):
-        raise StateValidationError("state patch must be an object")
-    _reject_forbidden_patch_keys(patch)
-    candidate = _merge_patch(state, patch)
+    state_snapshot = _safe_deepcopy(state, "state")
+    validate_state(state_snapshot)
+    patch_object = _require_mapping(patch, "state patch")
+    _validate_json_tree(patch_object, "state patch")
+    candidate = _merge_patch(state_snapshot, patch_object)
     if not isinstance(candidate, dict):
         raise StateValidationError("state patch replaced the canonical state with a non-object")
     validate_state(candidate)
@@ -298,50 +357,46 @@ def _apply_validated_patch(state: Mapping[str, Any], patch: Mapping[str, Any]) -
 def apply_state_patch(state: Mapping[str, Any], patch: Mapping[str, Any]) -> dict[str, Any]:
     """Apply a model-owned patch without allowing task or routing control drift."""
 
-    if not isinstance(patch, dict):
-        raise StateValidationError("state patch must be an object")
-    controlled = sorted(set(patch) & HOST_OWNED_TOP_LEVEL_KEYS)
+    patch_object = _require_mapping(patch, "state patch")
+    controlled = sorted(set(patch_object) & HOST_OWNED_TOP_LEVEL_KEYS)
     if controlled:
         raise StateValidationError(
             f"model state patch cannot change host-owned fields: {controlled}"
         )
-    return _apply_validated_patch(state, patch)
+    return _apply_validated_patch(state, patch_object)
 
 
 def apply_host_patch(state: Mapping[str, Any], patch: Mapping[str, Any]) -> dict[str, Any]:
     """Apply an explicit host/user control update to objective, success, or route."""
 
-    if not isinstance(patch, dict):
-        raise StateValidationError("host patch must be an object")
-    extra = sorted(set(patch) - HOST_OWNED_TOP_LEVEL_KEYS)
+    patch_object = _require_mapping(patch, "host patch")
+    extra = sorted(set(patch_object) - HOST_OWNED_TOP_LEVEL_KEYS)
     if extra:
         raise StateValidationError(f"host patch contains model-owned fields: {extra}")
-    return _apply_validated_patch(state, patch)
+    return _apply_validated_patch(state, patch_object)
 
 
 def parse_transition(value: str | Mapping[str, Any]) -> tuple[dict[str, Any], str]:
     """Parse the runtime-facing model payload with exactly state_patch and action."""
 
     if isinstance(value, str):
-        try:
-            decoded = json.loads(value)
-        except json.JSONDecodeError as exc:
-            raise StateValidationError(f"transition is not valid JSON: {exc}") from exc
+        decoded = _parse_json_document(value, "transition")
+    elif isinstance(value, MappingABC):
+        decoded = _mapping_snapshot(value, "transition")
     else:
-        decoded = dict(value)
+        raise StateValidationError("transition must be a JSON string or object")
     payload = _require_mapping(decoded, "transition", {"state_patch", "action"})
-    patch = payload["state_patch"]
-    if not isinstance(patch, dict):
-        raise StateValidationError("transition.state_patch must be an object")
-    action = _require_text(payload["action"], "transition.action", allow_empty=False)
-    return copy.deepcopy(patch), action
+    patch = _require_mapping(payload["state_patch"], "transition.state_patch")
+    action = _require_action(payload["action"])
+    return _safe_deepcopy(patch, "transition.state_patch"), action
 
 
 def apply_transition(state: Mapping[str, Any], value: str | Mapping[str, Any]) -> tuple[dict[str, Any], str]:
     """Validate a model transition and return ``(successor_state, action)``.
 
     The action is returned only after the complete successor state validates.
-    Callers must not execute an action from a rejected transition.
+    It is still an untrusted proposal: callers must independently authorize the
+    tool and side effects, and must never execute an action from a rejected transition.
     """
 
     patch, action = parse_transition(value)
@@ -355,21 +410,24 @@ def build_prompt(procedure: str, state: Mapping[str, Any], latest_observation: s
     This function intentionally has no history parameter. A host must also omit
     prior messages at the API/runtime layer before claiming horizon-independent
     prompt growth. The runtime input is serialized as one JSON value so content
-    cannot escape a Markdown fence or masquerade as a control section.
+    cannot structurally escape a Markdown fence or become a new prompt section.
+    This framing does not make semantically hostile observation text trustworthy.
     """
 
-    _require_text(procedure, "procedure", allow_empty=False, max_bytes=64 * 1024)
-    _require_text(latest_observation, "latest_observation", max_bytes=64 * 1024)
-    validate_state(state)
+    _require_text(procedure, "procedure", allow_empty=False, max_bytes=MAX_RUNTIME_TEXT_BYTES)
+    _require_text(latest_observation, "latest_observation", max_bytes=MAX_RUNTIME_TEXT_BYTES)
+    state_snapshot = _safe_deepcopy(state, "state")
+    validate_state(state_snapshot)
     runtime_input = json.dumps(
         {
             "procedure": procedure,
-            "state": state,
+            "state": state_snapshot,
             "latest_observation": latest_observation,
         },
         ensure_ascii=False,
         separators=(",", ":"),
         sort_keys=True,
+        allow_nan=False,
     )
     model_owned = ", ".join(sorted(MODEL_OWNED_TOP_LEVEL_KEYS))
     host_owned = ", ".join(sorted(HOST_OWNED_TOP_LEVEL_KEYS))
@@ -382,22 +440,33 @@ def build_prompt(procedure: str, state: Mapping[str, Any], latest_observation: s
         "- Persist only current, future-relevant facts. Omit unchanged patch keys; use null only to delete an "
         "obsolete optional entry. Do not copy reasoning, transcripts, or raw tool output into state.\n"
         f"- `state_patch` may update only these top-level fields: {model_owned}.\n"
-        f"- Never include these host-owned fields in `state_patch`: {host_owned}.\n\n"
+        f"- Never include these host-owned fields in `state_patch`: {host_owned}.\n"
+        "- `action` is only a proposal. The host must independently authorize its tool, arguments, and side effects.\n\n"
         f"{RUNTIME_INPUT_MARKER}{runtime_input}"
         f"{OUTPUT_CONTRACT_MARKER}"
         'Return exactly one JSON object and no Markdown or reasoning text: '
-        '{"state_patch":{...},"action":"<exact next command or tool action>"}. '
-        "A rejected transition leaves canonical state unchanged, and its action must not execute."
+        '{"state_patch":{...},"action":"<proposed next command or tool action>"}. '
+        "A rejected transition leaves canonical state unchanged, and its action must not execute. "
+        "A valid transition releases the proposal only to the host authorization boundary."
     )
 
 
-def _read_json(path: Path) -> Any:
+def _read_text(path: Path, *, max_bytes: int, label: str) -> str:
     try:
-        return json.loads(path.read_text(encoding="utf-8"))
+        payload = path.read_bytes()
     except OSError as exc:
         raise StateValidationError(f"cannot read {path}: {exc}") from exc
-    except json.JSONDecodeError as exc:
-        raise StateValidationError(f"invalid JSON in {path}: {exc}") from exc
+    if len(payload) > max_bytes:
+        raise StateValidationError(f"{label} exceeds {max_bytes} UTF-8 bytes")
+    try:
+        return payload.decode("utf-8")
+    except UnicodeDecodeError as exc:
+        raise StateValidationError(f"{label} is not valid UTF-8: {exc}") from exc
+
+
+def _read_json(path: Path) -> Any:
+    document = _read_text(path, max_bytes=MAX_JSON_INPUT_BYTES, label=f"JSON document {path}")
+    return _parse_json_document(document, str(path))
 
 
 def _atomic_write_json(path: Path, value: Any) -> None:
@@ -405,7 +474,7 @@ def _atomic_write_json(path: Path, value: Any) -> None:
     fd, temp_name = tempfile.mkstemp(prefix=f".{path.name}.", suffix=".tmp", dir=path.parent)
     try:
         with os.fdopen(fd, "w", encoding="utf-8", newline="\n") as handle:
-            json.dump(value, handle, ensure_ascii=False, indent=2, sort_keys=True)
+            json.dump(value, handle, ensure_ascii=False, indent=2, sort_keys=True, allow_nan=False)
             handle.write("\n")
             handle.flush()
             os.fsync(handle.fileno())
@@ -476,15 +545,27 @@ def main(argv: Sequence[str] | None = None) -> int:
             return 0
         if args.command == "transition":
             state = _read_json(args.state)
-            response = args.response.read_text(encoding="utf-8")
+            response = _read_text(
+                args.response,
+                max_bytes=MAX_JSON_INPUT_BYTES,
+                label=f"transition response {args.response}",
+            )
             successor, action = apply_transition(state, response)
             _atomic_write_json(args.output, successor)
             print(action)
             return 0
         if args.command == "render":
             state = _read_json(args.state)
-            procedure = args.procedure.read_text(encoding="utf-8")
-            observation = args.observation.read_text(encoding="utf-8")
+            procedure = _read_text(
+                args.procedure,
+                max_bytes=MAX_RUNTIME_TEXT_BYTES,
+                label=f"procedure {args.procedure}",
+            )
+            observation = _read_text(
+                args.observation,
+                max_bytes=MAX_RUNTIME_TEXT_BYTES,
+                label=f"observation {args.observation}",
+            )
             print(build_prompt(procedure, state, observation))
             return 0
     except (OSError, StateValidationError) as exc:

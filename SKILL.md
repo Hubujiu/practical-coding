@@ -35,6 +35,7 @@ Execution state is a cross-cutting runtime substrate, not a router node. Do not 
 - Never persist chain-of-thought, transcript copies, raw tool output, or an action diary in execution state. Replace stale facts instead of appending versions and retain compact outcomes or evidence pointers instead of logs.
 - Preserve bounded history artifacts when the schema is still being discovered, an earlier observation may have unrecognized future relevance, the task asks for audit/provenance/explanation, or concurrent writers lack deterministic conflict resolution.
 - State projection does not change automatic depth, retrieval breadth, or manual-mode eligibility. A host that still appends prior messages may use the projection to reduce reconstruction, but must not claim bounded horizon-independent prompt growth.
+- A validated transition releases only a proposed action. The host must independently authorize its tool, arguments, and side effects; JSON framing prevents structural delimiter escape but does not make hostile observation text semantically trustworthy.
 
 ## Root Router
 
