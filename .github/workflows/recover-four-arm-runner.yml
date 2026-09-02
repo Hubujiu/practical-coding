@@ -1,0 +1,352 @@
+name: Recover four-arm runner objects
+
+on:
+  push:
+    branches:
+      - automation/recover-four-arm-runner-20260902
+  workflow_dispatch:
+
+permissions:
+  contents: write
+
+jobs:
+  recover:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          fetch-depth: 0
+          token: ${{ secrets.GITHUB_TOKEN }}
+      - name: Recover verified blobs onto target branch
+        env:
+          GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+          TARGET_BRANCH: experiment/evolvable-router-tree
+          EXPECTED_BASE: ec9269d17abfc8c9e497a7fc69906e3df8ffe3b4
+        run: |
+          set -euo pipefail
+          git fetch origin "${TARGET_BRANCH}"
+          actual="$(git rev-parse "origin/${TARGET_BRANCH}")"
+          test "${actual}" = "${EXPECTED_BASE}" || {
+            echo "target moved: ${actual}" >&2
+            exit 1
+          }
+          git checkout --detach "${EXPECTED_BASE}"
+
+          python - <<'PY'
+          from __future__ import annotations
+
+          import ast
+          import base64
+          import itertools
+          import json
+          import os
+          import re
+          import urllib.request
+          from pathlib import Path
+
+          repo = os.environ["GITHUB_REPOSITORY"]
+          token = os.environ["GH_TOKEN"]
+          root = Path.cwd()
+
+          # Later re-uploads are preferred when two blobs implement the same role.
+          candidates = [
+              "cd358b5c26bf64ddb0e00a4bd853496e45e19b78",
+              "1294b5894a5d7704dd77af82d62c7074fc421224",
+              "8dea11580d5af8854fb5a639b3c1b341e8e2eda3",
+              "17c9d46dab5b39389ba6d722dfe3f8815b438f6d",
+              "21aa4739b8161bf9ecbd4e051faeb60cc3288f65",
+              "39c325ddc3ca4ad857f1ea2dd4f6fed0eda80377",
+              "9a4cb2eddcc156d582a383008acc34773bb01814",
+              "5456c9cb5bf89ec880447b5a73f6c3bfac4ed01d",
+              "15b57850c975d9d2fd9f5a25b964862e4e561874",
+              "279877494992bac5c4387b9663133d2bc93e678b",
+              "b0aec50bbba8ff3c0bf0128e965d8f6fb4f356f2",
+              "2c2c6d0cfed53c64714de8bd9b60518720e5de52",
+              "0c18d4dc77d106ec21ae19dfcf175aec89e173a3",
+              "7bbd883173258dde04fe1ad4261736b3e9749722",
+              "a0bd95ed1274dd7b40ee7bf2174673fbb50329e5",
+              "b85efb2ce726e13326ea64a536dd50b010066b32",
+          ]
+
+          def fetch_blob(sha: str) -> bytes:
+              request = urllib.request.Request(
+                  f"https://api.github.com/repos/{repo}/git/blobs/{sha}",
+                  headers={
+                      "Authorization": f"Bearer {token}",
+                      "Accept": "application/vnd.github+json",
+                      "X-GitHub-Api-Version": "2022-11-28",
+                      "User-Agent": "practical-coding-blob-recovery",
+                  },
+              )
+              with urllib.request.urlopen(request, timeout=30) as response:
+                  payload = json.load(response)
+              if payload.get("encoding") != "base64":
+                  raise RuntimeError(f"unexpected encoding for {sha}: {payload.get('encoding')}")
+              return base64.b64decode(payload["content"])
+
+          blobs: dict[str, bytes] = {}
+          for sha in candidates:
+              try:
+                  data = fetch_blob(sha)
+                  data.decode("utf-8")
+              except Exception as exc:
+                  print(f"skip {sha}: {exc}")
+                  continue
+              blobs[sha] = data
+              first = data.decode("utf-8", errors="replace").splitlines()[:2]
+              print(f"blob {sha} bytes={len(data)} first={first!r}")
+
+          if len(blobs) < 4:
+              raise RuntimeError("fewer than four recoverable UTF-8 blobs")
+
+          priority = {sha: len(candidates) - index for index, sha in enumerate(candidates)}
+
+          def main_score(role: str, text: str) -> int:
+              lower = text.lower()
+              score = 0
+              if "unittest" in lower or "pytest" in lower:
+                  score -= 20
+              if role == "transport":
+                  for marker, weight in (
+                      ("http.client", 8),
+                      ("httpsconnection", 8),
+                      ("transportresponse", 4),
+                      ("content-length", 3),
+                      ("set-cookie", 3),
+                      ("proxy", 2),
+                      ("outbound", 2),
+                  ):
+                      score += weight if marker in lower else 0
+              elif role == "cases":
+                  for marker, weight in (
+                      ("delayed", 4),
+                      ("corrective", 4),
+                      ("distractor", 4),
+                      ("history-required", 4),
+                      ("observations", 4),
+                      ("profiles", 3),
+                      ("horizon", 3),
+                  ):
+                      score += weight if marker in lower else 0
+                  if "argparse.argumentparser" in lower:
+                      score -= 5
+              elif role == "runner":
+                  for marker, weight in (
+                      ("historyfreehost", 9),
+                      ("state-history-free", 8),
+                      ("state-shadow", 7),
+                      ("no-skill-full-history", 7),
+                      ("argparse", 3),
+                      ("results.jsonl", 3),
+                  ):
+                      score += weight if marker in lower else 0
+              elif role == "analysis":
+                  for marker, weight in (
+                      ("token_gate", 8),
+                      ("latency_gate", 8),
+                      ("bounded_context_gate", 8),
+                      ("quality_gate", 5),
+                      ("bootstrap", 4),
+                      ("release-summary", 3),
+                  ):
+                      score += weight if marker in lower else 0
+              return score
+
+          role_paths = {
+              "transport": Path("runtime/skill_state_http_transport.py"),
+              "cases": Path("benchmarks/skill_state_model_cases.py"),
+              "runner": Path("benchmarks/skill_state_model_runner.py"),
+              "analysis": Path("benchmarks/skill_state_model_analysis.py"),
+          }
+          chosen: dict[Path, str] = {}
+          used: set[str] = set()
+          minimum = {"transport": 20, "cases": 16, "runner": 24, "analysis": 24}
+          for role, path in role_paths.items():
+              ranked = sorted(
+                  (
+                      (main_score(role, data.decode("utf-8")), priority[sha], len(data), sha)
+                      for sha, data in blobs.items()
+                      if sha not in used
+                  ),
+                  reverse=True,
+              )
+              if not ranked or ranked[0][0] < minimum[role]:
+                  raise RuntimeError(f"cannot identify {role}; ranking={ranked[:5]}")
+              score, _, _, sha = ranked[0]
+              chosen[path] = sha
+              used.add(sha)
+              print(f"selected {path}: {sha} score={score}")
+
+          def parsed(sha: str) -> ast.Module | None:
+              try:
+                  return ast.parse(blobs[sha].decode("utf-8"))
+              except SyntaxError:
+                  return None
+
+          def available_names(sha: str) -> set[str]:
+              tree = parsed(sha)
+              names: set[str] = set()
+              if tree is None:
+                  return names
+              for node in tree.body:
+                  if isinstance(node, (ast.FunctionDef, ast.AsyncFunctionDef, ast.ClassDef)):
+                      names.add(node.name)
+                  elif isinstance(node, (ast.Assign, ast.AnnAssign)):
+                      targets = node.targets if isinstance(node, ast.Assign) else [node.target]
+                      for target in targets:
+                          if isinstance(target, ast.Name):
+                              names.add(target.id)
+                  elif isinstance(node, ast.ImportFrom):
+                      names.update(alias.asname or alias.name for alias in node.names if alias.name != "*")
+                  elif isinstance(node, ast.Import):
+                      names.update(alias.asname or alias.name.split(".")[0] for alias in node.names)
+              return names
+
+          def module_path(module: str) -> Path | None:
+              if module.startswith("benchmarks._skill_state_model_"):
+                  return Path(*module.split(".")).with_suffix(".py")
+              if module.startswith("runtime._skill_state_http_"):
+                  return Path(*module.split(".")).with_suffix(".py")
+              if module.startswith("_skill_state_model_"):
+                  return Path("benchmarks") / f"{module}.py"
+              if module.startswith("_skill_state_http_"):
+                  return Path("runtime") / f"{module}.py"
+              return None
+
+          requirements: dict[Path, set[str]] = {}
+
+          def discover_imports(path: Path, sha: str) -> None:
+              tree = parsed(sha)
+              if tree is None:
+                  return
+              for node in ast.walk(tree):
+                  if not isinstance(node, ast.ImportFrom) or not node.module:
+                      continue
+                  target = module_path(node.module)
+                  if target is None or (root / target).is_file() or target in chosen:
+                      continue
+                  names = {alias.name for alias in node.names if alias.name != "*"}
+                  requirements.setdefault(target, set()).update(names)
+
+          for path, sha in list(chosen.items()):
+              discover_imports(path, sha)
+
+          # Resolve helper modules by the symbols imported from each module. Iterate because
+          # helpers may import another helper.
+          while requirements:
+              target, required = requirements.popitem()
+              if target in chosen or (root / target).is_file():
+                  continue
+              ranked = []
+              for sha in blobs:
+                  if sha in used:
+                      continue
+                  names = available_names(sha)
+                  covered = len(required & names)
+                  missing = len(required - names)
+                  text = blobs[sha].decode("utf-8", errors="replace").lower()
+                  basename_bonus = 3 if target.stem.lower() in text else 0
+                  score = covered * 20 - missing * 25 + basename_bonus
+                  ranked.append((score, covered, priority[sha], len(blobs[sha]), sha, sorted(names)))
+              ranked.sort(reverse=True)
+              if not ranked or ranked[0][1] != len(required):
+                  raise RuntimeError(
+                      f"cannot resolve helper {target} imports={sorted(required)} ranking={ranked[:4]}"
+                  )
+              _, _, _, _, sha, _ = ranked[0]
+              chosen[target] = sha
+              used.add(sha)
+              print(f"selected helper {target}: {sha} imports={sorted(required)}")
+              discover_imports(target, sha)
+
+          # Recover ordinary unit tests when available. Tests are not required to identify
+          # the four main modules, but they are required before publishing the recovered commit.
+          test_candidates: list[tuple[int, int, str, str]] = []
+          for sha, data in blobs.items():
+              if sha in used:
+                  continue
+              text = data.decode("utf-8", errors="replace")
+              lower = text.lower()
+              if "unittest" not in lower and "pytest" not in lower:
+                  continue
+              score = 0
+              if "skill_state_model" in lower:
+                  score += 10
+              if "skill_state_http_transport" in lower:
+                  score += 10
+              if "four-arm" in lower or "four arm" in lower:
+                  score += 4
+              if score:
+                  test_candidates.append((score, priority[sha], sha, lower))
+          test_candidates.sort(reverse=True)
+          for score, _, sha, lower in test_candidates:
+              if "skill_state_http_transport" in lower:
+                  path = Path("tests/test_skill_state_http_transport.py")
+              else:
+                  path = Path("tests/test_skill_state_model_runner.py")
+              if path in chosen:
+                  continue
+              chosen[path] = sha
+              used.add(sha)
+              print(f"selected test {path}: {sha} score={score}")
+
+          for path, sha in chosen.items():
+              path.parent.mkdir(parents=True, exist_ok=True)
+              path.write_bytes(blobs[sha])
+
+          for required in role_paths.values():
+              if not required.is_file():
+                  raise RuntimeError(f"required recovered file missing: {required}")
+
+          Path("recovery-map.json").write_text(
+              json.dumps({str(path): sha for path, sha in sorted(chosen.items())}, indent=2) + "\n",
+              encoding="utf-8",
+          )
+          PY
+
+          python -m compileall -q runtime tests \
+            benchmarks/skill_state_model_cases.py \
+            benchmarks/skill_state_model_runner.py \
+            benchmarks/skill_state_model_analysis.py
+
+          test_modules=(tests.test_skill_state_hardening tests.test_skill_state_host)
+          if test -f tests/test_skill_state_http_transport.py; then
+            test_modules+=(tests.test_skill_state_http_transport)
+          fi
+          if test -f tests/test_skill_state_model_runner.py; then
+            test_modules+=(tests.test_skill_state_model_runner)
+          fi
+          python -m unittest "${test_modules[@]}"
+
+          # Deterministic parser/configuration self-tests only. These modes must not call a model.
+          python benchmarks/skill_state_model_runner.py --self-test
+          python benchmarks/skill_state_model_analysis.py --self-test
+
+          rm recovery-map.json
+          git diff --check
+          git status --short
+          test -f benchmarks/skill_state_model_cases.py
+          test -f benchmarks/skill_state_model_runner.py
+          test -f benchmarks/skill_state_model_analysis.py
+          test -f runtime/skill_state_http_transport.py
+          ! git status --short | grep -E '(^| )benchmarks/results/|(^| )benchmark-results/'
+
+          git config user.name "OpenAI"
+          git config user.email "noreply@openai.com"
+          git add \
+            benchmarks/skill_state_model_cases.py \
+            benchmarks/skill_state_model_runner.py \
+            benchmarks/skill_state_model_analysis.py \
+            runtime/skill_state_http_transport.py
+          git add benchmarks/_skill_state_model_*.py runtime/_skill_state_http_*.py 2>/dev/null || true
+          git add tests/test_skill_state_model_runner.py tests/test_skill_state_http_transport.py 2>/dev/null || true
+          git diff --cached --check
+          git commit -m "feat: add execution-state four-arm benchmark runner"
+          commit="$(git rev-parse HEAD)"
+          echo "RECOVERED_COMMIT=${commit}"
+          git show --stat --oneline --decorate=short --no-renames "${commit}"
+
+          git fetch origin "${TARGET_BRANCH}"
+          test "$(git rev-parse "origin/${TARGET_BRANCH}")" = "${EXPECTED_BASE}"
+          git push origin "${commit}:refs/heads/${TARGET_BRANCH}"
+          git ls-remote origin "refs/heads/${TARGET_BRANCH}"
