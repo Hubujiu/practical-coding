@@ -51,6 +51,12 @@ class SkillStateRuntimeTests(unittest.TestCase):
             with self.subTest(key=key), self.assertRaises(StateValidationError):
                 apply_state_patch(state, {"facts": {key: "large text"}})
 
+    def test_execution_state_and_manual_modes_cannot_enter_automatic_path(self) -> None:
+        state = initial_state("preserve route boundary", ["path remains automatic"] )
+        for node in ("execution_state", "decision", "clarification"):
+            with self.subTest(node=node), self.assertRaises(StateValidationError):
+                apply_state_patch(state, {"route": {"automatic_path": ["core", node]}})
+
     def test_transition_requires_exact_runtime_shape(self) -> None:
         state = initial_state("advance", ["one action selected"])
         successor, action = apply_transition(
