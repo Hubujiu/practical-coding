@@ -22,13 +22,16 @@ jobs:
         run: skills-ref validate ./practical-coding
       - name: Run benchmark harness tests
         working-directory: practical-coding
-        run: python -m unittest benchmarks.test_benchmarks benchmarks.test_stability benchmarks.test_catalog benchmarks.test_ladder_analysis benchmarks.test_progressive_validation benchmarks.test_tree_benchmarks benchmarks.test_evolution_workflow
+        run: python -m unittest benchmarks.test_benchmarks benchmarks.test_stability benchmarks.test_catalog benchmarks.test_ladder_analysis benchmarks.test_progressive_validation benchmarks.test_tree_benchmarks benchmarks.test_evolution_workflow benchmarks.test_skill_state_runtime
       - name: Validate tree topology contract
         working-directory: practical-coding
         run: python benchmarks/tree_validation.py --self-test
       - name: Validate explicit evolution workflow contract
         working-directory: practical-coding
         run: python benchmarks/evolution_workflow_validation.py --self-test --output benchmark-results/evolution-workflow-contract.json
+      - name: Validate execution-state runtime contract
+        working-directory: practical-coding
+        run: python benchmarks/skill_state_validation.py --self-test --output benchmark-results/skill-state-contract.json
       - name: Check manual-only Decision layout
         run: |
           test ! -e practical-coding/references/decision.md

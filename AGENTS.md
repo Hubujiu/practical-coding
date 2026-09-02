@@ -10,6 +10,7 @@ This repository is an Agent Skill. Apply [`SKILL.md`](SKILL.md) when working fro
 4. Current Debugging and Implementation nodes are leaves until benchmark evidence earns a child.
 5. Keep retrieval orthogonal. Unknown paths, callers, consumers, and data flow are retrieval questions, not execution-tree depth.
 6. Automatic routing must converge toward resolving the current blocker; it must not reopen deliberation.
+7. Keep explicit execution state orthogonal as well. It is a bounded current-task snapshot used only under state pressure, never an automatic node or a reason to deepen the tree.
 
 ## Root Router
 
@@ -19,6 +20,15 @@ This repository is an Agent Skill. Apply [`SKILL.md`](SKILL.md) when working fro
 | Unknown contract/invariant, coordinated guarantee, material risk boundary, or evidence requirement blocks safe execution | [`references/implementation.md`](references/implementation.md) |
 
 A known target and settled behavior/boundary/check stay at Core even when risk nouns are present. A read-only mapping request is Core plus Retrieval.
+
+## Execution state
+
+Use the rules in `SKILL.md` when a long multi-round task begins to require reconstruction from earlier observations. The deterministic adapter and schema live in [`runtime/skill_state.py`](runtime/skill_state.py); the architecture and host limitations are documented in [`docs/SKILL_STATE.md`](docs/SKILL_STATE.md).
+
+- Canonical state contains only future-relevant current facts, not reasoning, transcripts, raw tool output, or an append-only action log.
+- Apply nested merge patches on a copy; omitted keys survive and `null` deletes. Validate the complete candidate before committing it, so invalid output leaves the old state unchanged.
+- Keep ephemeral state outside the target repository unless the user explicitly requests a durable artifact.
+- Do not claim the paper's bounded prompt behavior unless the surrounding host request actually omits prior messages and sends only procedure + state + latest observation.
 
 ## Manual modes
 
@@ -40,5 +50,7 @@ Read [`references/navigation.md`](references/navigation.md) only for substantial
 `evolution/` is maintainer knowledge and must not enter ordinary runtime context. The tree is an experiment result, not a fixed taxonomy.
 
 Use [`benchmarks/tree_topology.json`](benchmarks/tree_topology.json), [`benchmarks/tree_validation.py`](benchmarks/tree_validation.py), and [`benchmarks/tree_analysis.py`](benchmarks/tree_analysis.py) for active topology work. Cases must not encode a gold automatic node or fixed numeric execution level. Derive minimum-sufficient nodes by capability ablation, then use repeated routing ambiguity or quality failures to propose add/split/merge/promote/collapse/remove changes.
+
+Execution-state changes use [`benchmarks/skill_state_validation.py`](benchmarks/skill_state_validation.py) for deterministic merge/rollback/budget mechanics, but that contract is not a substitute for the model-backed tree benchmark. Any runtime Skill wording change still requires the normal `n=1` iteration and frozen `n=3` non-regression gate.
 
 Iterations use n=1. Only a frozen candidate receives the complete n=3 baseline/no-skill comparison. Preserve v1.5 and rejected progressive-tree artifacts as historical evidence rather than rewriting them for the new topology.

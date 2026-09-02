@@ -11,6 +11,7 @@ This experiment treats progressive disclosure topology as a learned maintenance 
 5. Automatic routing may deepen execution to resolve a blocker but may not reopen deliberation.
 6. Retrieval is orthogonal. Retrieval breadth does not imply execution depth.
 7. Depth means disclosure depth only; branches do not need equal depth or symmetric children.
+8. Execution-state projection is also orthogonal. It may preserve current future-relevant facts inside any node, but it is not a task capability and never appears in an automatic path.
 
 ## Why the old E0-E3 result does not reject trees
 
@@ -71,6 +72,18 @@ Adaptive terminal nodes are compared with the derived minimum-sufficient set:
 
 These labels diagnose the tree. They do not justify adding benchmark case nouns to runtime prompts.
 
+## Cross-cutting runtime substrates
+
+A mechanism belongs outside the tree when it changes how every node executes rather than what task capability is selected. Execution-state projection is one such candidate:
+
+- activation is caused by state pressure inside a multi-round run, not by a Debugging/Implementation/task-domain label;
+- state cannot satisfy a task on its own, so a `Core -> State` capability ceiling is not meaningful;
+- deterministic tests should gate schema, merge, deletion, rollback, size, and prompt-construction mechanics;
+- model-backed tree tests must still rerun because substrate wording can change delivered quality, route behavior, and cost across every node;
+- a markdown Skill alone cannot prove bounded prompt growth when the surrounding host continues to append conversation history.
+
+Do not add a cross-cutting substrate as a child merely to make it visible in the diagram. Promote it into runtime wording only after its own mechanism gate passes, then accept/reject the whole candidate under the existing release non-regression gate.
+
 ## Mutation rules
 
 ### ADD / DEEPEN
@@ -103,6 +116,7 @@ Remove a node when it has no independent minimum-sufficient cases and no stable 
 - Use n=1 only for mechanism iteration and scorer correctness.
 - Freeze runtime wording, topology, cases, repositories, and scorer contracts before n=3.
 - Compare a topology mutation against its immediate parent topology, not only against old public releases.
+- Freeze a substrate-specific deterministic benchmark before implementing that substrate; do not let its scorer reward model prose.
 - Preserve raw outputs and topology manifests with results.
 - Do not edit a frozen case after seeing candidate output unless the oracle itself is demonstrably contradictory; record such corrections separately.
 - Do not reopen the rejected numeric E/R taxonomy merely to make the new tree look familiar.
@@ -117,4 +131,4 @@ Core
 └── Implementation
 ```
 
-Both children are current leaves. Decision and Clarification are manual-only. This is a starting hypothesis, not a claim that two children or depth 1 is optimal.
+Both children are current leaves. Decision and Clarification are manual-only. Execution state is a cross-cutting substrate, not a third child. This is a starting hypothesis, not a claim that two children or depth 1 is optimal.
