@@ -35,7 +35,7 @@ The model returns one runtime payload:
 }
 ```
 
-The host validates the patch before mutation. Omitted keys survive. A value of `null` deletes an obsolete key. Invalid JSON, unknown required structure, wrong types, forbidden narrative fields, or an oversized result leave the previous canonical state unchanged.
+The host validates the patch before mutation. Omitted keys survive. A value of `null` deletes an obsolete key. Invalid JSON, unknown required structure, wrong types, forbidden narrative fields, or an oversized result leave the previous canonical state unchanged. `schema_version`, `objective`, `success`, and `route` are host-owned control fields: model transitions cannot modify them, while an explicit host update may do so after new user input or a router decision.
 
 Reasoning may occur inside one model invocation, but it is transient computation. Do not place chain-of-thought, transcript copies, full tool output, or an action diary in `Σ`.
 
@@ -46,7 +46,7 @@ Reasoning may occur inside one model invocation, but it is transient computation
 | Field | Future-facing content |
 |---|---|
 | `objective`, `success` | Current outcome and observable completion conditions |
-| `route` | Active automatic path, retrieval mode, and explicit manual mode |
+| `route` | Host-owned active automatic path, retrieval mode, and explicit manual mode |
 | `working_set` | Current paths and symbols, not repository inventory |
 | `facts` | Authoritative current facts that later actions need |
 | `hypotheses` | Live and rejected hypotheses needed to avoid repetition |
@@ -78,7 +78,7 @@ For those cases, set `history.required=true` and keep bounded references to immu
 
 `build_prompt()` deliberately accepts no conversation-history argument. That makes accidental history replay visible in the adapter API, but a Skill file cannot force the surrounding product or API to discard prior messages. A host may use the state projection to reduce reconstruction while still retaining conversation history, but it must not claim horizon-independent prompt growth until the host-level request actually contains only `P + Σt + Ot`.
 
-The helper is zero-dependency and local:
+The helper is zero-dependency and local. Ordinary `apply`/`transition` operations reject host-owned control-field changes; `host-apply` is the explicit control-plane path for a router or new user instruction:
 
 ```powershell
 python runtime/skill_state.py init `

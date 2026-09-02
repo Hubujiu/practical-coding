@@ -28,6 +28,11 @@ MAX_NESTING_DEPTH = 6
 
 RETRIEVAL_MODES = frozenset({"NONE", "TARGETED", "BOUNDED", "STRUCTURAL"})
 MANUAL_MODES = frozenset({"none", "decision", "clarification"})
+AUTOMATIC_CHILDREN: dict[str, frozenset[str]] = {
+    "core": frozenset({"debugging", "implementation"}),
+    "debugging": frozenset(),
+    "implementation": frozenset(),
+}
 TOP_LEVEL_KEYS = frozenset(
     {
         "schema_version",
@@ -43,6 +48,7 @@ TOP_LEVEL_KEYS = frozenset(
         "history",
     }
 )
+HOST_OWNED_TOP_LEVEL_KEYS = frozenset({"schema_version", "objective", "success", "route"})
 FORBIDDEN_STATE_KEYS = frozenset(
     {
         "reasoning",
@@ -64,6 +70,8 @@ class StateValidationError(ValueError):
 def initial_state(objective: str, success: Sequence[str]) -> dict[str, Any]:
     """Create and validate a new compact coding-domain execution state."""
 
+    if isinstance(success, (str, bytes)):
+        raise StateValidationError("success must be a sequence of conditions, not one string")
     state: dict[str, Any] = {
         "schema_version": SCHEMA_VERSION,
         "objective": objective,
@@ -199,17 +207,32 @@ def validate_state(state: Mapping[str, Any]) -> None:
 
     route = _require_mapping(root["route"], "state.route", {"automatic_path", "retrieval", "manual"})
     path = _require_string_list(route["automatic_path"], "state.route.automatic_path", allow_empty=False, max_items=16)
-    if path[0].lower() != "core":
+    normalized_path = [node.lower() for node in path]
+    if path != normalized_path:
+        raise StateValidationError("state.route.automatic_path must use canonical lowercase node names")
+    if normalized_path[0] != "core":
         raise StateValidationError("state.route.automatic_path must start at core")
-    illegal_path_nodes = {node.lower() for node in path[1:]} & (set(MANUAL_MODES) | {"execution_state"})
+    illegal_path_nodes = set(normalized_path[1:]) & (set(MANUAL_MODES) | {"execution_state"})
     if illegal_path_nodes:
         raise StateValidationError(
             f"state.route.automatic_path contains non-automatic nodes: {sorted(illegal_path_nodes)}"
         )
+    unknown_path_nodes = [node for node in normalized_path if node not in AUTOMATIC_CHILDREN]
+    if unknown_path_nodes:
+        raise StateValidationError(
+            f"state.route.automatic_path contains unknown nodes: {sorted(set(unknown_path_nodes))}"
+        )
+    for parent, child in zip(normalized_path, normalized_path[1:]):
+        if child not in AUTOMATIC_CHILDREN[parent]:
+            raise StateValidationError(
+                f"state.route.automatic_path contains invalid edge: {parent} -> {child}"
+            )
     if route["retrieval"] not in RETRIEVAL_MODES:
         raise StateValidationError(f"state.route.retrieval must be one of {sorted(RETRIEVAL_MODES)}")
     if route["manual"] not in MANUAL_MODES:
         raise StateValidationError(f"state.route.manual must be one of {sorted(MANUAL_MODES)}")
+    if route["manual"] != "none" and normalized_path != ["core"]:
+        raise StateValidationError("manual modes are outside the automatic path; reset the path to core")
 
     working = _require_mapping(root["working_set"], "state.working_set", {"paths", "symbols"})
     _require_string_list(working["paths"], "state.working_set.paths")
@@ -257,9 +280,7 @@ def _merge_patch(target: Any, patch: Any) -> Any:
     return result
 
 
-def apply_state_patch(state: Mapping[str, Any], patch: Mapping[str, Any]) -> dict[str, Any]:
-    """Return a validated successor state without mutating ``state`` on failure."""
-
+def _apply_validated_patch(state: Mapping[str, Any], patch: Mapping[str, Any]) -> dict[str, Any]:
     validate_state(state)
     if not isinstance(patch, dict):
         raise StateValidationError("state patch must be an object")
@@ -269,6 +290,30 @@ def apply_state_patch(state: Mapping[str, Any], patch: Mapping[str, Any]) -> dic
         raise StateValidationError("state patch replaced the canonical state with a non-object")
     validate_state(candidate)
     return candidate
+
+
+def apply_state_patch(state: Mapping[str, Any], patch: Mapping[str, Any]) -> dict[str, Any]:
+    """Apply a model-owned patch without allowing task or routing control drift."""
+
+    if not isinstance(patch, dict):
+        raise StateValidationError("state patch must be an object")
+    controlled = sorted(set(patch) & HOST_OWNED_TOP_LEVEL_KEYS)
+    if controlled:
+        raise StateValidationError(
+            f"model state patch cannot change host-owned fields: {controlled}"
+        )
+    return _apply_validated_patch(state, patch)
+
+
+def apply_host_patch(state: Mapping[str, Any], patch: Mapping[str, Any]) -> dict[str, Any]:
+    """Apply an explicit host/user control update to objective, success, or route."""
+
+    if not isinstance(patch, dict):
+        raise StateValidationError("host patch must be an object")
+    extra = sorted(set(patch) - HOST_OWNED_TOP_LEVEL_KEYS)
+    if extra:
+        raise StateValidationError(f"host patch contains model-owned fields: {extra}")
+    return _apply_validated_patch(state, patch)
 
 
 def parse_transition(value: str | Mapping[str, Any]) -> tuple[dict[str, Any], str]:
@@ -359,10 +404,17 @@ def _parser() -> argparse.ArgumentParser:
     validate = subparsers.add_parser("validate", help="validate a state file")
     validate.add_argument("state", type=Path)
 
-    apply = subparsers.add_parser("apply", help="apply a JSON merge patch atomically")
+    apply = subparsers.add_parser("apply", help="apply a model-owned JSON merge patch atomically")
     apply.add_argument("state", type=Path)
     apply.add_argument("patch", type=Path)
     apply.add_argument("--output", type=Path, required=True)
+
+    host_apply = subparsers.add_parser(
+        "host-apply", help="explicitly update host-owned objective, success, or route fields"
+    )
+    host_apply.add_argument("state", type=Path)
+    host_apply.add_argument("patch", type=Path)
+    host_apply.add_argument("--output", type=Path, required=True)
 
     transition = subparsers.add_parser("transition", help="validate state_patch + action and write successor state")
     transition.add_argument("state", type=Path)
@@ -390,6 +442,11 @@ def main(argv: Sequence[str] | None = None) -> int:
             state = _read_json(args.state)
             patch = _read_json(args.patch)
             _atomic_write_json(args.output, apply_state_patch(state, patch))
+            return 0
+        if args.command == "host-apply":
+            state = _read_json(args.state)
+            patch = _read_json(args.patch)
+            _atomic_write_json(args.output, apply_host_patch(state, patch))
             return 0
         if args.command == "transition":
             state = _read_json(args.state)

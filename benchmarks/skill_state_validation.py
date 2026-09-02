@@ -106,7 +106,7 @@ def simulate_scaling(horizon: int, noise_events: int = 20) -> dict[str, Any]:
         "state_prompt_first_bytes": state_prompt_sizes[0],
         "state_prompt_last_bytes": state_prompt_sizes[-1],
         "state_prompt_max_bytes": max(state_prompt_sizes),
-        "state_prompt_growth_ratio": state_prompt_sizes[-1] / state_prompt_sizes[0],
+        "state_prompt_growth_ratio": max(state_prompt_sizes) / state_prompt_sizes[0],
         "history_prompt_first_bytes": history_prompt_sizes[0],
         "history_prompt_last_bytes": history_prompt_sizes[-1],
         "history_prompt_growth_ratio": history_prompt_sizes[-1] / history_prompt_sizes[0],
