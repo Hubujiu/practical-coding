@@ -122,3 +122,12 @@ Chronological maintenance log. Keep entries short; detailed evidence belongs in 
 - Timing was later removed from evaluation by the user and is retained only as telemetry. The rejection still follows from non-time metrics. Future tests should wait silently and use matched, isolated parallel work units of preferably at most five cells; the completed matrices are not selectively rerun.
 - Closing audit repaired platform wrapper and literal-path observation gaps as metrics 1.2, with 48 tests and a new 108-record offline replay. Direct costs, quality and frozen raw artifacts are unchanged; semantic limitations remain explicit.
 - Added durable mechanism knowledge in `retrieval-output-and-context-cost.md`, the rejection patch/record, and sanitized full results under `benchmarks/results/retrieval-convergence/`. Router unchanged; execution-state remains retired.
+
+## 2026-09-03 — continued independent retrieval experiments
+
+- Iteration3 (source reuse) rejected and fully rolled back: tail output/input medians 0.969126/0.607371; formal decision `Rejected`. See `../experiments/retrieval-convergence-20260903-3.md` and `../rejected/retrieval-convergence-20260903-3.md`.
+- Iteration4 (initial project-owned corpus) rejected and fully rolled back: tail output/input medians 0.398052/0.609382; formal decision `Rejected`. See `../experiments/retrieval-convergence-20260903-4.md` and `../rejected/retrieval-convergence-20260903-4.md`.
+- Iteration5 (producer output bounds) rejected and fully rolled back: tail output/input medians 0.804037/1.623653; formal decision `infrastructure_indeterminate`. See `../experiments/retrieval-convergence-20260903-5.md` and `../rejected/retrieval-convergence-20260903-5.md`.
+- Iteration6 (discriminating search anchors) rejected and fully rolled back: tail output/input medians 0.604239/0.934223; formal decision `Rejected`. See `../experiments/retrieval-convergence-20260903-6.md` and `../rejected/retrieval-convergence-20260903-6.md`.
+
+The user reopened the stop limit without changing quality/cost gates. Frozen sharding uses8 concurrent units of at most5cells; observation1.3 and the Windows shard-parent race repair were validated separately. Duration is telemetry. No rejected paragraph was adopted and no n=3 was justified.

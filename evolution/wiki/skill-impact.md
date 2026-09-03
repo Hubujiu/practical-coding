@@ -103,3 +103,42 @@ Experiments before this tracker was introduced remain authoritative in their exi
 - decision: `Rejected`
 - rationale: the mechanism produced no delivered-quality lift, materially increased cost in the completed matrix, and added substantial runtime/transport/benchmark complexity while not addressing the observed retrieval-output long tail. Active code and contracts were removed; historical records remain archived.
 - reconsideration: only through a new frozen experiment with independent evidence for a substantially simpler mechanism that solves a demonstrated long-horizon failure, preserves n>=3 quality, and reduces both uncached tokens and time.
+
+## 2026-09-03 — retrieval iteration3: source reuse
+
+- decision: **Rejected**, complete runtime rollback; target one Retrieval Policy paragraph, Router/cases/scorer unchanged
+- hypothesis: `evolution/experiments/retrieval-convergence-20260903-3.md`; exact diff/receipt: `evolution/rejected/retrieval-convergence-20260903-3.patch` and `.md`
+- baseline: `ffa6b655aa683bb891cc50e0cdb7efa7ae333cd8`; candidate Skill SHA256 `bd3e0a6fba41baab05ad3728a6eb12a7ada7f70fca7468ab7b67d034fcd1618d` (uncommitted candidate, no n=3)
+- paired n=1:54 cells per complete arm; formal gate `Rejected`; tail output/input paired medians `0.9691258414179335` / `0.6073711240722963`
+- failed gates: tail_output_ratio_le_070, tail_broad_after_read_halved, whole_file_read_bytes_not_increased, dependency_source_bytes_not_increased; quality, audit supplements and measurement caveats remain explicit in the experiment
+- artifact: `benchmarks/results/retrieval-convergence/20260903-iteration-3.json`; full raw matrices and audits retained at their referenced local paths
+
+
+## 2026-09-03 — retrieval iteration4: initial project-owned corpus
+
+- decision: **Rejected**, complete runtime rollback; target one Retrieval Policy paragraph, Router/cases/scorer unchanged
+- hypothesis: `evolution/experiments/retrieval-convergence-20260903-4.md`; exact diff/receipt: `evolution/rejected/retrieval-convergence-20260903-4.patch` and `.md`
+- baseline: `205f5fe76ee88b951f9a6690d2a7bfbe0bfe0d15`; candidate Skill SHA256 `5101397b3e65ad8f32248bbd8050ebc60ea3a738daa38ae92930c6a0fa0f0748` (uncommitted candidate, no n=3)
+- paired n=1:54 cells per complete arm; formal gate `Rejected`; tail output/input paired medians `0.39805234327449784` / `0.6093817203481083`
+- failed gates: quality, whole_file_read_bytes_not_increased; quality, audit supplements and measurement caveats remain explicit in the experiment
+- artifact: `benchmarks/results/retrieval-convergence/20260903-iteration-4.json`; full raw matrices and audits retained at their referenced local paths
+
+
+## 2026-09-03 — retrieval iteration5: producer output bounds
+
+- decision: **Rejected**, complete runtime rollback; target one Retrieval Policy paragraph, Router/cases/scorer unchanged
+- hypothesis: `evolution/experiments/retrieval-convergence-20260903-5.md`; exact diff/receipt: `evolution/rejected/retrieval-convergence-20260903-5.patch` and `.md`
+- baseline: `f0c5b6f81574a927091974197d776e9918fa9b4a`; candidate Skill SHA256 `325235a781a1de69103134088f3b5a73b3581afb8493bbf5161a2a7faca4704f` (uncommitted candidate, no n=3)
+- paired n=1:54 cells per complete arm; formal gate `infrastructure_indeterminate`; tail output/input paired medians `0.8040367530206265` / `1.6236526986802224`
+- failed gates: infrastructure, quality, tail_output_ratio_le_070, tail_broad_after_read_halved, duplicate_command_calls_not_increased, uncached_input_tokens_not_increased, tail_input_ratio_le_090, all_input_ratio_le_102; quality, audit supplements and measurement caveats remain explicit in the experiment
+- artifact: `benchmarks/results/retrieval-convergence/20260903-iteration-5.json`; full raw matrices and audits retained at their referenced local paths
+
+
+## 2026-09-03 — retrieval iteration6: discriminating search anchors
+
+- decision: **Rejected**, complete runtime rollback; target one Retrieval Policy paragraph, Router/cases/scorer unchanged
+- hypothesis: `evolution/experiments/retrieval-convergence-20260903-6.md`; exact diff/receipt: `evolution/rejected/retrieval-convergence-20260903-6.patch` and `.md`
+- baseline: `72d6d138228664c7ec2efc1fc8e12e3dba9b87a6`; candidate Skill SHA256 `491ae7780bbf86654bea8d044d379778d363004a899e52561137fcb1a40b91e7` (uncommitted candidate, no n=3)
+- paired n=1:54 cells per complete arm; formal gate `Rejected`; tail output/input paired medians `0.6042386832384489` / `0.9342233511533804`
+- failed gates: quality, tail_broad_after_read_halved, duplicate_command_calls_not_increased, tail_input_ratio_le_090; quality, audit supplements and measurement caveats remain explicit in the experiment
+- artifact: `benchmarks/results/retrieval-convergence/20260903-iteration-6.json`; full raw matrices and audits retained at their referenced local paths

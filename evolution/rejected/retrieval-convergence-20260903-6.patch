@@ -1,0 +1,13 @@
+diff --git a/SKILL.md b/SKILL.md
+index 0553abf..86d2445 100644
+--- a/SKILL.md
++++ b/SKILL.md
+@@ -63,6 +63,8 @@ Retrieval is orthogonal to the execution tree. Expand only because current evide
+ 4. For bounded exhaustive repository claims, use coverage-aware discovery and disclose gaps. For external contracts, use the smallest authoritative current source.
+ 5. Fall back without installing retrieval tooling; verify material conclusions in current source.
+ 
++When searching source, start with the most discriminating available anchor or required set of anchors; keep exact symbols, stable error fragments, and distinctive terms literal, using path constraints for filenames and regex only for known variations or required patterns. Add generic alternatives only when the specific search leaves needed evidence unresolved.
++
+ Once candidate paths or symbols are known, stop inventory and read only relevant symbols or bounded line ranges; do not dump whole files or repeat broad discovery. Batch independent bounded reads only while each result stays focused.
+ 
+ Routine lookup stays here. Load `references/navigation.md` only for substantial broad structural mapping or bounded exhaustive discovery. Retrieval does not become an execution-tree node merely because a reasoning node needs source evidence.

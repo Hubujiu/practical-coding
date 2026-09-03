@@ -1,0 +1,13 @@
+diff --git a/SKILL.md b/SKILL.md
+index 0553abf..fada5fe 100644
+--- a/SKILL.md
++++ b/SKILL.md
+@@ -65,6 +65,8 @@ Retrieval is orthogonal to the execution tree. Expand only because current evide
+ 
+ Once candidate paths or symbols are known, stop inventory and read only relevant symbols or bounded line ranges; do not dump whole files or repeat broad discovery. Batch independent bounded reads only while each result stays focused.
+ 
++Read each unchanged source range once: merge overlapping context windows, reuse successfully returned source, and fetch additional ranges only to resolve an uncovered contract, caller, or test question; reread when source changed or the earlier output was incomplete.
++
+ Routine lookup stays here. Load `references/navigation.md` only for substantial broad structural mapping or bounded exhaustive discovery. Retrieval does not become an execution-tree node merely because a reasoning node needs source evidence.
+ 
+ ## Isolation Gate
