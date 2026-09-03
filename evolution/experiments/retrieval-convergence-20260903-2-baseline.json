@@ -1,0 +1,66 @@
+{
+  "case_ids": [
+    "sa-sensitive-rejection-boundary",
+    "pp-running-after-throw",
+    "sa-memory-reset-concurrency"
+  ],
+  "selection": "top three ordinary adaptive tool_output_bytes, before candidate application",
+  "baseline_sha": "9d742b22fadda8bdd78f84bc58b955cf628a1cc0",
+  "baseline_run_head": "32132b173a670f27348f9d55b74272130926e147",
+  "results_sha256": "affd7d952fd76b0b885e1a2b35c00d32c377460ff6f5a4b8bb455e90fd06d9cb",
+  "gate_script_sha256": "9edfc13377d053e2121c65d0ef0de694b9d039a82f7b36f86185c9b1386cd2d9",
+  "rows": [
+    {
+      "task_id": "sa-sensitive-rejection-boundary",
+      "tool_output_bytes": 1233970,
+      "broad_calls_after_first_project_read": 0,
+      "whole_file_read_bytes": 176673,
+      "dependency_source_bytes": 153880,
+      "duplicate_command_calls": 0,
+      "outputs_over_64k": 1,
+      "input_tokens": 803523,
+      "cached_input_tokens": 726528,
+      "uncached_input_tokens": 76995,
+      "tool_calls": 17,
+      "duration_seconds": 163.38777050000135
+    },
+    {
+      "task_id": "pp-running-after-throw",
+      "tool_output_bytes": 592058,
+      "broad_calls_after_first_project_read": 0,
+      "whole_file_read_bytes": 101760,
+      "dependency_source_bytes": 0,
+      "duplicate_command_calls": 0,
+      "outputs_over_64k": 3,
+      "input_tokens": 422915,
+      "cached_input_tokens": 364800,
+      "uncached_input_tokens": 58115,
+      "tool_calls": 9,
+      "duration_seconds": 105.686893099999
+    },
+    {
+      "task_id": "sa-memory-reset-concurrency",
+      "tool_output_bytes": 152782,
+      "broad_calls_after_first_project_read": 0,
+      "whole_file_read_bytes": 17017,
+      "dependency_source_bytes": 22752,
+      "duplicate_command_calls": 0,
+      "outputs_over_64k": 0,
+      "input_tokens": 218514,
+      "cached_input_tokens": 176384,
+      "uncached_input_tokens": 42130,
+      "tool_calls": 13,
+      "duration_seconds": 80.6341360999977
+    }
+  ],
+  "determinate_cells": 54,
+  "passed_cells": 54,
+  "trace_passes": 54,
+  "explicit_manual_passes": 2,
+  "spontaneous_manual": 0,
+  "measured_events": 395,
+  "completed_tool_events": 395,
+  "unknown_output_events_over_16k": 0,
+  "shell_decode_failures": 0,
+  "coverage_audit": "Tail large discovery events checked against decoded commands. Recorded bytes include possible CLI truncation. Mixed category bytes overlap. No increase is required for the zero broad-after-read baseline; no 50-percent improvement claim is possible on that metric."
+}

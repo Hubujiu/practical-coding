@@ -48,4 +48,8 @@ Only full passage qualifies a frozen candidate for n=3. n=1 is diagnostic, never
 
 ## Results (not part of frozen hypothesis)
 
-Pending baseline.
+- Baseline complete: 54/54 determinate, 54/54 quality/trace passes, explicit manual 2/2, spontaneous manual 0; 395/395 tool events measured; no shell decode failure, usage gap or unknown output above 16 KiB.
+- Frozen tail receipt: `retrieval-convergence-20260903-2-baseline.json`; selected only from this baseline's ordinary adaptive cells, before candidate application. Case IDs: `sa-sensitive-rejection-boundary`, `pp-running-after-throw`, `sa-memory-reset-concurrency`.
+- Their recorded output is 1,233,970 / 592,058 / 152,782 bytes. Tail broad-after-read counts are all zero; the pre-frozen zero-baseline rule requires candidate zero and does not support a positive reduction claim.
+- Large-event audit confirms initial root text search in the sensitive-content task (1 MiB recorded) and broad/large discovery in the executor task. The memory-reset task's largest output is a scoped contextual search after reading source; its inclusion is determined by output ranking, not by tailoring the case set to the hypothesis.
+- Paired arithmetic was fixed before candidate execution in `benchmark-results/retrieval-iteration-2-gate.py`; its SHA-256 is preserved in the tail receipt. It rejects changed identities, missing cells, quality regressions and zero-to-positive metric regressions; large/mixed event and evidence audits remain separate requirements.
