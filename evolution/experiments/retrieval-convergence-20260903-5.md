@@ -1,6 +1,6 @@
 # Retrieval convergence — iteration 5: bound source output at the producer
 
-Status: **candidate-not-applied**
+Status: **Rejected and rolled back; recorded-output coverage also fails**
 
 ## Frozen hypothesis
 
@@ -44,3 +44,28 @@ Pre-freeze independent review confirmed the single producer-output mechanism. Th
 - Frozen ordinary adaptive tail: sensitive rejection1,359,773 bytes; memory map1,083,618; executor302,669. Complete hashes and audited values in `retrieval-convergence-20260903-5-baseline.json`.
 - Audited tail broad-after-source total1; whole-file286,583 bytes; dependency2,357,615 bytes. Initial vendored content was checked explicitly in both Super Agent tasks before freeze. Memory-map matching/range-loop outputs are bounded searches/reads, not whole-file despite automatic estimates.
 - Manual quality: sensitive and memory-map pass; executor acknowledges intentional Error behavior but omits startup recovery responsibility and subsequent INTERRUPTED state, so existing completeness requirement fails. Candidate still must pass that requirement. No baseline answer or oracle modified.
+
+
+### Complete candidate: rejected with explicit measurement limitation
+
+- Both54-cell matrices completed, model exits determinate: baseline53/54 and candidate54/54 machine passes; legal traces/manual discipline and clean final fixtures. Candidate manual memory-map and sensitive answers pass with disclosed caveats; executor fails the existing contract criterion by recommending FAILED/rejecting RUNNING despite intentional Error and received startup-recovery evidence. No automatic quality regression; machine scores do not establish full correctness.
+- Candidate exact Skill hash `325235a781a1de69103134088f3b5a73b3581afb8493bbf5161a2a7faca4704f`; actual run HEAD `67008e0e4f10a52ed9c36d4292f06b00d05eac0a` plus only the frozen paragraph. No candidate commit or n=3.
+- Formal gate decision is `infrastructure_indeterminate`: sensitive event46 is a file-change deletion record without any output payload, so this cell has47/48 measured outputs (97.9167%), below frozen99%. Keep output bytes/hash null and disclose the limitation; do not fabricate empty output, reinterpret the denominator, modify instrumentation mid-pair or selectively rerun the cell.
+- Maintainer disposition is nevertheless **Rejected**, based on independently recorded direct-cost and manual-quality failures. An infrastructure rerun cannot justify retaining this already cost-ineffective exact proposal; no acceptance or stable-benefit claim is made from this matrix.
+
+| Metric | Baseline | Candidate | Paired median ratio |
+|---|---:|---:|---:|
+| tool_output_bytes | 2746060 | 1609821 | 0.8040367530206265 |
+| input_tokens | 1243983 | 2125677 | 1.6236526986802224 |
+| uncached_input_tokens | 167247 | 179309 | 1.0603855016275923 |
+| tool_calls | 29 | 64 | 1.4 |
+| broad_calls_after_first_project_read | 1 | 1 | 1.0 |
+| duplicate_command_calls | 0 | 3 | 1.0 |
+| whole_file_read_bytes | 286583 | 103029 | 1.7179320562472382 |
+| dependency_source_bytes | 2357615 | 1144561 | 0.8743521010451178 |
+| outputs_over_64k | 5 | 3 | 0.5 |
+
+- All-cell input median 1.032019; tool-call median 1.000000. Tail output0.804037 fails0.70, input1.623653 fails0.90, tail uncached input and duplicates increase, and broad-after-source1 does not halve baseline1. Whole-file/dependency totals improve but do not compensate. Duration is telemetry only.
+- Sensitive candidate takes48 tool events, including repeated source discovery, dependency investigation and temporary extraction cleanup. Memory-map introduces custom range-loop/PowerShell syntax failures and repair calls; its initial Java content search still returns84,710 bytes. Output shaping is not consistently followed and extra rounds can dominate cumulative input.
+- Full sanitized results: `benchmarks/results/retrieval-convergence/20260903-iteration-5.json`. All original matrices/audits and candidate snapshot/patch are retained. Baseline's lexical test-evidence fail remains unchanged and separately qualified.
+- Rollback completed with `git restore --source=f0c5b6f81574a927091974197d776e9918fa9b4a -- SKILL.md`. The producer-output paragraph is absent. The reopened loop may consider only another independently supported mechanism, not reword or retry this candidate for favorable variance.

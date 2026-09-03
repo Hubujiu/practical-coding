@@ -41,3 +41,10 @@ Iteration4 tested selecting project-owned scope before content output without a 
 Retrieval availability and delivered coverage are different: finding a symbol does not prove it appears in the final artifact, and reading an invariant does not prove the diagnosis respects it. Continue using the original quality gate rather than adding case-specific exceptions. Source-corpus filtering alone has not established a complete improvement.
 
 A semantic audit must examine returned content, including minified third-party implementation outside conventional dependency directories. The iteration4 baseline initially missed one such mixed 1MiB event. A separate hash-bound supplement corrects its dependency attribution while preserving the frozen audit; independently failed gates leave the rejection unchanged.
+
+
+## Response bounds can increase cumulative work
+
+Iteration5 independently constrained returned row count/source-text width while preserving locators, omissions and required coverage. Its candidate reached54/54 machine passes versus53/54, but tail input median ratio1.623653 and tool median1.4 regressed while output ratio0.804037 missed the target. The executor still failed manual contract completeness. A file-change deletion event without an output payload also failed the fixed per-cell measurement-coverage gate; null metadata was preserved. The exact paragraph was rejected and rolled back, without selective retries or a new observer definition. Evidence: `../experiments/retrieval-convergence-20260903-5.md`.
+
+A smaller individual response is insufficient when repeated queries, manual shell formatting and retries replay more context. Separate guaranteed direct usage measurements, semantic attribution and unavailable output payloads; neither machine pass counts nor improved whole-file totals override other failed gates.
