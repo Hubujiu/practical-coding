@@ -1,6 +1,8 @@
 # Retrieval convergence — iteration 1: observation only
 
-Status: candidate-not-applied
+Status: **Inconclusive — infrastructure_indeterminate; loop terminated**
+
+Original frozen status: `candidate-not-applied`. The original hypothesis and thresholds below are unchanged.
 
 ## Frozen hypothesis (before implementation)
 
@@ -36,3 +38,17 @@ Status: candidate-not-applied
 - Coverage: 1,844/1,845 completed tool events have recorded output; 252 commands classified `other`, 421 have overlapping mixed categories, 41 possible truncations. These limitations remain explicit; byte counts do not claim untruncated/model-visible output. Duplicate identity is conservative normalized syntax; semantic-equivalence claims require command review.
 - Decision: **Accepted — instrumentation only**. No runtime quality or cost improvement claimed. Instrumentation must be committed before the fresh current-baseline n=1 below; the runtime Skill remains byte-identical to the remote starting baseline.
 - Next action: run the frozen current-only baseline to decide whether a separately frozen iteration 2 is justified. Any model/auth/fixture failure stops the entire loop.
+
+## Fresh baseline invalidates gate readiness
+
+- Frozen instrumentation commit: `6475c33cca967ffafadf09ee484ed84e2feb49a7`, pushed to `origin/experiment/retrieval-convergence` before termination.
+- The earlier deterministic/replay acceptance is **withdrawn as a cost-gate readiness claim**. It remains evidence of additive metadata and unchanged old verdicts only.
+- Fresh baseline artifact: `benchmark-results/retrieval-iteration-1-baseline-n1/`; identity in `manifest.json`, completed records in `partial-results.jsonl`, exact missing cells in `termination.json`, original cell transcripts retained. This is an interrupted diagnostic, not a complete baseline matrix.
+- Completed: 4/54 determinate, 4 quality passes and 4 valid traces; 50 missing cells, including an interrupted fifth cell. No explicit manual case completed, so manual-mode completeness remains unverified. Completed spontaneous manual count is zero.
+- Recorded output: 5/5 completed tool events measured, but 3/5 categorized `other`. Two source reads in the Core/Debugging ceiling cells were missed because CLI shell rendering used differently quoted fragments at the beginning/end of `-Command`. Their source-read flags and whole-file byte totals are therefore wrong. Complete byte coverage does not prove category or convergence coverage.
+- The first adaptive cell recorded 5,958 bytes, 26,212 input tokens, 14,180 uncached input tokens, one tool call and 26.57 seconds. There is no candidate pair, frozen tail set or cost result.
+- Action: stop the benchmark runner and its descendants; preserve all raw artifacts and the frozen instrumentation unchanged. No selective rerun, classification repair against these results, runtime patch, iteration 2 or n=3 was attempted.
+- Decision: **Inconclusive / infrastructure_indeterminate**. The instrumentation remains diagnostic and must not gate acceptance in its current version. Rejection/limitation record: `evolution/rejected/retrieval-instrumentation-20260903.md`.
+- Stop condition: n=1 measurement coverage is insufficient for the principal convergence metrics; the baseline artifact is incomplete and cannot establish the required gates. The user's infrastructure-stop rule takes precedence over starting another candidate.
+- Runtime rollback: no Skill candidate was applied. `SKILL.md`, all `references/`, topology and cases are unchanged from `d7c4a93a9d50b1305407d323b718b45e19b0f2fe`; AST comparison also confirms unchanged scoring, prompt construction and trace validation functions.
+- Future prerequisite: independent general shell-rendering fixtures and explicit classification coverage checks are needed before a new frozen instrumentation evaluation. This is not evidence against prompt-only retrieval convergence itself.

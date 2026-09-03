@@ -26,8 +26,13 @@ Experiments before this tracker was introduced remain authoritative in their exi
 - deterministic evidence: 41 tests pass, tree self-test passes; replay of 252 historical records preserves every original field
 - artifact: `benchmark-results/retrieval-iteration-1-instrumentation-replay/`; original results SHA-256 `fdba2d83ef600fb5e541f2e302b0a9ee7dc063e6a249cf740cba4949fb07776c`
 - coverage: recorded output available for 1,844/1,845 tool events; mixed category bytes overlap and possible truncation is flagged
-- decision: `Accepted` for observation only; no token, latency, output-saving or runtime-quality claim
-- follow-up: freeze the instrumentation commit, run a fresh current baseline, and require a new independent hypothesis before changing Retrieval Policy
+- initial deterministic decision: `Accepted` for observation only; subsequently **Inconclusive / infrastructure_indeterminate** for gate readiness
+- frozen instrumentation: `6475c33cca967ffafadf09ee484ed84e2feb49a7`
+- fresh artifact: `benchmark-results/retrieval-iteration-1-baseline-n1/`; 4/54 cells complete, all four quality/trace passes, 50 missing; explicit manual boundary untested
+- failure: current CLI mixed-quote command rendering hides two source reads; 5/5 output events measured but 3/5 classified `other`. Byte coverage alone cannot establish convergence metrics.
+- runtime outcome: no Skill candidate, no frozen tail, no paired comparison, no n=3, no cost claim; instrumentation and raw artifacts retained, runtime identical to the original baseline
+- termination: insufficient n=1 measurement coverage and incomplete baseline; loop stopped after one instrumentation iteration, with no candidate repair or second iteration
+- record: `evolution/rejected/retrieval-instrumentation-20260903.md`; require independently validated general command classification before future cost acceptance
 
 ## 2026-09-01 — explicit maintenance skills
 

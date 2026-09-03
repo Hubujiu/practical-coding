@@ -1,0 +1,414 @@
+{
+  "iteration": 1,
+  "decision": "Inconclusive",
+  "loop_status": "infrastructure_indeterminate",
+  "baseline_sha": "d7c4a93a9d50b1305407d323b718b45e19b0f2fe",
+  "instrumentation_sha": "6475c33cca967ffafadf09ee484ed84e2feb49a7",
+  "runtime_candidate_sha": null,
+  "hypothesis_file": "evolution/experiments/retrieval-convergence-20260903-1.md",
+  "benchmark_identity": {
+    "head": "6475c33cca967ffafadf09ee484ed84e2feb49a7",
+    "model": "gpt-5.6-luna",
+    "reasoning": "medium",
+    "harness_version": "1.0",
+    "retrieval_metrics_version": "1.0",
+    "timeout": 600.0,
+    "workers": 1,
+    "repetitions": 1,
+    "repositories": {
+      "personal-progress": {
+        "url": "https://github.com/Hubujiu/personal-progress.git",
+        "commit": "515c2e2193c3d547e04e65687da6666dc877ab61",
+        "local_name": "personal-progress"
+      },
+      "cover-atelier": {
+        "url": "https://github.com/Hubujiu/cover-atelier.git",
+        "commit": "fc3b12b3a944f45b5a1d19963e29307d95b120fb",
+        "local_name": "cover-atelier"
+      },
+      "super-agent": {
+        "url": "https://github.com/java-up-up/super-agent.git",
+        "commit": "d44edf063032a2d8797549411f11923aa4a83ec3",
+        "local_name": "super-agent"
+      }
+    },
+    "file_sha256": {
+      "tree_validation.py": "eed3bf15b6e3f0e0d0f2ba8728c9ab0c8392837ccc5f0d790490d8523efba4d2",
+      "tree_cases.py": "7547ce7ac1d99681a5372e463afb24995c0337371c0889f46d662b51fa31d039",
+      "tree_topology.json": "1f84e1547ba5475dcb7f7b3078ba122961537087c674700fe11f75c4e994fdb1",
+      "tree_analysis.py": "3a0f1fc189c0687b9fc200af9effc0ed51797c35826d190a5173bb5e4b7b1b38",
+      "run_benchmarks.py": "28eab7a11760686af2244996de2f56d0d71b72af5d7aaf68f4dbf6af5d92abf7",
+      "retrieval_metrics.py": "6570014c4a1e11db59f3b62632a46590deb81769b869c0cc53f1b01970613487",
+      "retrieval_analysis.py": "5f1c70b8d49c52f593c41896ce65a3fa9ab7a65b5b08b214696f65bdfab57948"
+    },
+    "runtime_file_sha256": {
+      "SKILL.md": "2990a7d3d5e00feb4ed127df5c1e23850851476e755cf6c30da6e43f279a5918",
+      "references/debugging.md": "8a57098d2149a3569db2008947ed2f906248f111d1e49b92ea242d7f4f5bfc09",
+      "references/delegation.md": "a077e5dfdd5e74f2259dcdedf3ae5b00f28c07f9658917975b4964d1f3970d8b",
+      "references/implementation.md": "42c29fc6047dc5c94505afb26435096d1cd44dd89b0ea94fea36c734661a5428",
+      "references/manual/clarification.md": "43aa52078d3c7e09610d841a1503fd0574b7cffd184dab50faf595c1d53d6c15",
+      "references/manual/decision.md": "363b62ee111cfdeebbf86e86be14f55db31c53fb65723525c94f10d8677e9300",
+      "references/navigation.md": "e5a4291f8ce944d85c77219593ffc75f2927a35bdf7e1b0d08229a57debdb572"
+    },
+    "codex_sha256": "83751f15cb6a0a7b97df67752c001e3fe1c20e18ffbfec3ff63567296205eb6c",
+    "codex_version": "codex-cli 0.145.0",
+    "python": "3.13.14 (tags/v3.13.14:fd17997, Jun 10 2026, 13:03:48) [MSC v.1944 64 bit (AMD64)]",
+    "platform": "Windows-11-10.0.22621-SP0",
+    "build_conditions": "read-only source evidence tasks; no harness dependency installation or build"
+  },
+  "baseline_artifact": "benchmark-results/retrieval-iteration-1-baseline-n1",
+  "candidate_artifact": "benchmark-results/retrieval-iteration-1-instrumentation-replay",
+  "deterministic_tests_passed": 41,
+  "tree_self_test_passed": true,
+  "historical_replay": {
+    "cells": 252,
+    "original_fields_unchanged": true,
+    "measured_events": 1844,
+    "tool_events": 1845,
+    "mixed_events": 421,
+    "possible_truncations": 41
+  },
+  "fresh_baseline": {
+    "status": "infrastructure_indeterminate",
+    "reason": "current CLI mixed-quote shell rendering can hide source reads from classifier; convergence metrics are not gate-ready",
+    "expected_cells": 54,
+    "completed_cells": 4,
+    "pass": 4,
+    "fail": 0,
+    "indeterminate_completed_cells": 0,
+    "missing_cells": [
+      [
+        "pp-lifecycle-map",
+        "adaptive",
+        1
+      ],
+      [
+        "pp-lifecycle-map",
+        "cap:core",
+        1
+      ],
+      [
+        "pp-lifecycle-map",
+        "cap:debugging",
+        1
+      ],
+      [
+        "pp-lifecycle-map",
+        "cap:implementation",
+        1
+      ],
+      [
+        "pp-running-after-throw",
+        "adaptive",
+        1
+      ],
+      [
+        "pp-running-after-throw",
+        "cap:core",
+        1
+      ],
+      [
+        "pp-running-after-throw",
+        "cap:debugging",
+        1
+      ],
+      [
+        "pp-running-after-throw",
+        "cap:implementation",
+        1
+      ],
+      [
+        "pp-token-rotation-boundary",
+        "adaptive",
+        1
+      ],
+      [
+        "pp-token-rotation-boundary",
+        "cap:core",
+        1
+      ],
+      [
+        "pp-token-rotation-boundary",
+        "cap:debugging",
+        1
+      ],
+      [
+        "pp-token-rotation-boundary",
+        "cap:implementation",
+        1
+      ],
+      [
+        "pp-compatibility-manual-decision",
+        "adaptive",
+        1
+      ],
+      [
+        "ca-export-format-known",
+        "adaptive",
+        1
+      ],
+      [
+        "ca-export-format-known",
+        "cap:core",
+        1
+      ],
+      [
+        "ca-export-format-known",
+        "cap:debugging",
+        1
+      ],
+      [
+        "ca-export-format-known",
+        "cap:implementation",
+        1
+      ],
+      [
+        "ca-cancel-download",
+        "adaptive",
+        1
+      ],
+      [
+        "ca-cancel-download",
+        "cap:core",
+        1
+      ],
+      [
+        "ca-cancel-download",
+        "cap:debugging",
+        1
+      ],
+      [
+        "ca-cancel-download",
+        "cap:implementation",
+        1
+      ],
+      [
+        "ca-new-format-existing-pattern",
+        "adaptive",
+        1
+      ],
+      [
+        "ca-new-format-existing-pattern",
+        "cap:core",
+        1
+      ],
+      [
+        "ca-new-format-existing-pattern",
+        "cap:debugging",
+        1
+      ],
+      [
+        "ca-new-format-existing-pattern",
+        "cap:implementation",
+        1
+      ],
+      [
+        "ca-avif-stall-evidence",
+        "adaptive",
+        1
+      ],
+      [
+        "ca-avif-stall-evidence",
+        "cap:core",
+        1
+      ],
+      [
+        "ca-avif-stall-evidence",
+        "cap:debugging",
+        1
+      ],
+      [
+        "ca-avif-stall-evidence",
+        "cap:implementation",
+        1
+      ],
+      [
+        "ca-export-filename-probe",
+        "adaptive",
+        1
+      ],
+      [
+        "ca-export-filename-probe",
+        "cap:core",
+        1
+      ],
+      [
+        "ca-export-filename-probe",
+        "cap:debugging",
+        1
+      ],
+      [
+        "ca-export-filename-probe",
+        "cap:implementation",
+        1
+      ],
+      [
+        "sa-memory-map",
+        "adaptive",
+        1
+      ],
+      [
+        "sa-memory-map",
+        "cap:core",
+        1
+      ],
+      [
+        "sa-memory-map",
+        "cap:debugging",
+        1
+      ],
+      [
+        "sa-memory-map",
+        "cap:implementation",
+        1
+      ],
+      [
+        "sa-sensitive-rejection-boundary",
+        "adaptive",
+        1
+      ],
+      [
+        "sa-sensitive-rejection-boundary",
+        "cap:core",
+        1
+      ],
+      [
+        "sa-sensitive-rejection-boundary",
+        "cap:debugging",
+        1
+      ],
+      [
+        "sa-sensitive-rejection-boundary",
+        "cap:implementation",
+        1
+      ],
+      [
+        "sa-memory-reset-concurrency",
+        "adaptive",
+        1
+      ],
+      [
+        "sa-memory-reset-concurrency",
+        "cap:core",
+        1
+      ],
+      [
+        "sa-memory-reset-concurrency",
+        "cap:debugging",
+        1
+      ],
+      [
+        "sa-memory-reset-concurrency",
+        "cap:implementation",
+        1
+      ],
+      [
+        "sa-memory-strategy-manual-decision",
+        "adaptive",
+        1
+      ],
+      [
+        "sa-module-compile-probe",
+        "adaptive",
+        1
+      ],
+      [
+        "sa-module-compile-probe",
+        "cap:core",
+        1
+      ],
+      [
+        "sa-module-compile-probe",
+        "cap:debugging",
+        1
+      ],
+      [
+        "sa-module-compile-probe",
+        "cap:implementation",
+        1
+      ]
+    ],
+    "measured_events": 5,
+    "tool_events": 5,
+    "unknown_events": 3,
+    "trace_pass": 4,
+    "spontaneous_manual": 0,
+    "explicit_manual_completed": 0,
+    "runtime_candidate_applied": false,
+    "raw_artifacts_preserved": true,
+    "rows": [
+      {
+        "task_id": "pp-known-contract",
+        "variant": "adaptive",
+        "repetition": 1,
+        "passed": true,
+        "input_tokens": 26212,
+        "cached_input_tokens": 12032,
+        "uncached_input_tokens": 14180,
+        "output_tokens": 915,
+        "tool_calls": 1,
+        "duration_seconds": 26.570226300002105,
+        "tool_output_bytes": 5958,
+        "whole_file_read_bytes": 5958,
+        "broad_calls_after_first_project_read": 0
+      },
+      {
+        "task_id": "pp-known-contract",
+        "variant": "cap:core",
+        "repetition": 1,
+        "passed": true,
+        "input_tokens": 26671,
+        "cached_input_tokens": 0,
+        "uncached_input_tokens": 26671,
+        "output_tokens": 952,
+        "tool_calls": 1,
+        "duration_seconds": 30.212880799997947,
+        "tool_output_bytes": 6198,
+        "whole_file_read_bytes": 0,
+        "broad_calls_after_first_project_read": 0
+      },
+      {
+        "task_id": "pp-known-contract",
+        "variant": "cap:debugging",
+        "repetition": 1,
+        "passed": true,
+        "input_tokens": 26673,
+        "cached_input_tokens": 12032,
+        "uncached_input_tokens": 14641,
+        "output_tokens": 939,
+        "tool_calls": 1,
+        "duration_seconds": 23.92735739999989,
+        "tool_output_bytes": 6198,
+        "whole_file_read_bytes": 0,
+        "broad_calls_after_first_project_read": 0
+      },
+      {
+        "task_id": "pp-known-contract",
+        "variant": "cap:implementation",
+        "repetition": 1,
+        "passed": true,
+        "input_tokens": 41720,
+        "cached_input_tokens": 26112,
+        "uncached_input_tokens": 15608,
+        "output_tokens": 1638,
+        "tool_calls": 2,
+        "duration_seconds": 43.0121831999968,
+        "tool_output_bytes": 6198,
+        "whole_file_read_bytes": 6198,
+        "broad_calls_after_first_project_read": 0
+      }
+    ]
+  },
+  "cost_results": {
+    "retrieval_output": "inconclusive: classification gaps",
+    "tokens": "no candidate comparison",
+    "tool_calls": "no candidate comparison",
+    "latency": "no candidate comparison"
+  },
+  "runtime_rollback_completed": true,
+  "runtime_patch_was_applied": false,
+  "router_topology_changed": false,
+  "execution_state_restored": false,
+  "reason_to_stop": "Insufficient n=1 convergence measurement coverage; baseline is incomplete; no runtime candidate may be applied.",
+  "remaining_uncertainty": "Shell rendering classification needs independent general validation; prompt-only retrieval optimization is untested."
+}

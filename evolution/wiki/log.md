@@ -105,3 +105,11 @@ Chronological maintenance log. Keep entries short; detailed evidence belongs in 
 - Adaptive passed 45/45 versus frozen v1.5 at 44/45 and no-skill at 44/45; release quality, trace, explicit manual, and zero-spontaneous-manual gates passed.
 - Cost did not improve against v1.5: mean tokens +18.67%, duration +6.40%, and tool calls +16.26%. The bounded-volume subhypothesis is therefore unconfirmed; acceptance rests on strict paired quality superiority.
 - Preserved `2026-09-02-tree-n3-b202f7a-delivery.md` and published the sanitized compact report under `benchmarks/results/evolvable-tree/`.
+
+## 2026-09-03 — retrieval instrumentation loop stopped
+
+- Starting remote baseline `d7c4a93a9d50b1305407d323b718b45e19b0f2fe`; instrumentation frozen at `6475c33cca967ffafadf09ee484ed84e2feb49a7` on `experiment/retrieval-convergence`.
+- Deterministic gate: 41 tests and tree self-test pass; 252 historical records replayed without changing any original field.
+- Fresh serial n=1 stopped at 4/54 completed cells after detecting missed source reads in mixed-quote CLI commands. All four completed cells passed quality/trace, but convergence measurement coverage is insufficient; the incomplete matrix is not a gate pass.
+- Final status `Inconclusive / infrastructure_indeterminate`; runtime Skill, topology, cases and scorers unchanged. No runtime candidate, tail set, n=3 or cost-saving claim. Instrumentation and raw receipts retained.
+- Record: `evolution/rejected/retrieval-instrumentation-20260903.md`; sanitized report under `benchmarks/results/retrieval-convergence/20260903-iteration-1.json`.
