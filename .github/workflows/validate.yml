@@ -28,7 +28,13 @@ jobs:
         run: python -m unittest benchmarks.test_benchmarks benchmarks.test_stability benchmarks.test_catalog benchmarks.test_ladder_analysis benchmarks.test_progressive_validation benchmarks.test_tree_benchmarks benchmarks.test_evolution_workflow
       - name: Run execution-state unit tests
         working-directory: practical-coding
-        run: python -m unittest tests.test_skill_state_hardening tests.test_skill_state_host benchmarks.test_skill_state_runtime
+        run: python -m unittest tests.test_skill_state_hardening tests.test_skill_state_host tests.test_skill_state_model_gate_hardening benchmarks.test_skill_state_runtime
+      - name: Validate execution-state model-gate infrastructure
+        working-directory: practical-coding
+        run: |
+          python benchmarks/skill_state_model_cases.py --self-test
+          python benchmarks/skill_state_model_runner.py --self-test
+          python benchmarks/skill_state_model_analysis.py --self-test
       - name: Validate tree topology contract
         working-directory: practical-coding
         run: python benchmarks/tree_validation.py --self-test

@@ -1,403 +1,187 @@
 #!/usr/bin/env python3
-"""Analyze execution-state four-arm results with quality-first gates."""
+"""Analyze four-arm results without mixing scorer or wire-profile identities.
+
+The ea8580f analysis implementation is retained in
+``benchmarks/_skill_state_model_analysis_impl.py``.  This entry point requires the
+repaired general scorer identity on every result row and validates supplied run
+manifests before any quality or cost gate is computed.
+"""
 
 from __future__ import annotations
 
-import argparse
-import json
-import math
-import random
-import statistics
-import tempfile
+import copy
+import sys
 from pathlib import Path
 from typing import Any, Mapping, Sequence
 
 HERE = Path(__file__).resolve().parent
-if str(HERE) not in __import__("sys").path:
-    __import__("sys").path.insert(0, str(HERE))
+ROOT = HERE.parent
+if str(HERE) not in sys.path:
+    sys.path.insert(0, str(HERE))
+if str(ROOT) not in sys.path:
+    sys.path.insert(0, str(ROOT))
 
-from skill_state_model_cases import (  # noqa: E402
-    ARM_FULL_HISTORY,
-    ARM_STATE_HISTORY_FREE,
-    ARM_STATE_SHADOW,
-    STATE_ARMS,
+import _skill_state_model_analysis_impl as _impl
+from skill_state_model_scoring import SCORER_CONTRACT_VERSION
+from runtime.skill_state_http_transport import (
+    WIRE_PROFILES,
+    validate_wire_profile_contract_manifest,
 )
 
-VERSION = "1.0"
-PASS, FAIL, PENDING = "PASS", "FAIL", "PENDING"
+ANALYSIS_SCHEMA_VERSION = "1.1"
 
-
-def read_json(path: Path) -> Any:
-    try:
-        return json.loads(path.read_text(encoding="utf-8"))
-    except (OSError, json.JSONDecodeError) as exc:
-        raise ValueError(f"cannot read JSON {path}: {exc}") from exc
-
-
-def read_jsonl(path: Path) -> list[dict[str, Any]]:
-    rows: list[dict[str, Any]] = []
-    try:
-        lines = path.read_text(encoding="utf-8").splitlines()
-    except OSError as exc:
-        raise ValueError(f"cannot read results {path}: {exc}") from exc
-    for number, line in enumerate(lines, 1):
-        if not line.strip():
-            continue
-        try:
-            row = json.loads(line)
-        except json.JSONDecodeError as exc:
-            raise ValueError(f"invalid JSONL at {path}:{number}: {exc}") from exc
-        if not isinstance(row, dict):
-            raise ValueError(f"result at {path}:{number} must be an object")
-        rows.append(row)
-    return rows
+_ORIGINAL_VALIDATE_ROWS = _impl.validate_rows
+_ORIGINAL_ANALYZE = _impl.analyze
+_ORIGINAL_SYNTHETIC_ROWS = _impl.synthetic_rows
+_ORIGINAL_SELF_TEST = _impl.self_test
 
 
 def validate_rows(rows: Sequence[Mapping[str, Any]]) -> None:
-    required = {"profile", "case_id", "arm", "repetition", "verdict"}
-    seen: set[tuple[str, str, str, int]] = set()
-    for index, row in enumerate(rows):
-        missing = required - set(row)
-        if missing:
-            raise ValueError(f"record {index} missing keys: {sorted(missing)}")
-        key = (str(row["profile"]), str(row["case_id"]), str(row["arm"]), int(row["repetition"]))
-        if key in seen:
-            raise ValueError(f"duplicate result cell: {key}")
-        seen.add(key)
+    _ORIGINAL_VALIDATE_ROWS(rows)
+    versions = {row.get("scorer_contract_version") for row in rows}
+    if versions != {SCORER_CONTRACT_VERSION}:
+        raise ValueError(
+            "results must all use scorer contract "
+            f"{SCORER_CONTRACT_VERSION}; observed={sorted(str(value) for value in versions)}"
+        )
+    profiles = {row.get("wire_profile") for row in rows}
+    unknown = {value for value in profiles if value not in WIRE_PROFILES}
+    if unknown:
+        raise ValueError(f"results contain unknown wire profiles: {sorted(str(value) for value in unknown)}")
 
 
-def status(values: Sequence[bool | None]) -> str:
-    if not values or any(value is None for value in values):
-        return PENDING
-    return FAIL if any(value is False for value in values) else PASS
-
-
-def sum_known(rows: Sequence[Mapping[str, Any]], key: str) -> int | float | None:
-    values = [row.get(key) for row in rows]
-    if not values or any(not isinstance(value, (int, float)) or isinstance(value, bool) for value in values):
-        return None
-    return sum(values)
-
-
-def arm_summary(rows: Sequence[Mapping[str, Any]]) -> dict[str, Any]:
-    result: dict[str, Any] = {}
-    for arm in sorted({str(row["arm"]) for row in rows}):
-        selected = [row for row in rows if row["arm"] == arm]
-        determinate = [row for row in selected if row.get("passed") is not None]
-        passed = sum(row.get("passed") is True for row in determinate)
-        result[arm] = {
-            "cells": len(selected),
-            "determinate": len(determinate),
-            "passed": passed,
-            "pass_rate": passed / len(determinate) if determinate else None,
-            "input_tokens_sum": sum_known(determinate, "input_tokens"),
-            "cached_input_tokens_sum": sum_known(determinate, "cached_input_tokens"),
-            "uncached_input_tokens_sum": sum_known(determinate, "uncached_input_tokens"),
-            "output_tokens_sum": sum_known(determinate, "output_tokens"),
-            "duration_seconds_sum": sum_known(determinate, "end_to_end_duration_seconds"),
-            "rejected_transitions": sum(int(row.get("rejected_transition_count") or 0) for row in selected),
-            "max_request_bytes": max((int(row.get("max_request_bytes") or 0) for row in selected), default=0),
-        }
-    return result
-
-
-def quality_gate(rows: Sequence[Mapping[str, Any]], margin: float) -> dict[str, Any]:
-    arms = arm_summary(rows)
-    full, history_free = arms.get(ARM_FULL_HISTORY), arms.get(ARM_STATE_HISTORY_FREE)
-    if full is None or history_free is None:
-        return {"status": PENDING, "reason": "required arms are missing", "margin": margin}
-    if full["determinate"] != full["cells"] or history_free["determinate"] != history_free["cells"]:
-        return {"status": PENDING, "reason": "required arm contains indeterminate cells", "margin": margin}
-    if full["pass_rate"] is None or history_free["pass_rate"] is None:
-        return {"status": PENDING, "reason": "pass rate unavailable", "margin": margin}
-    deltas = {ARM_STATE_HISTORY_FREE: history_free["pass_rate"] - full["pass_rate"]}
-    shadow = arms.get(ARM_STATE_SHADOW)
-    if shadow is not None:
-        if shadow["determinate"] != shadow["cells"] or shadow["pass_rate"] is None:
-            return {"status": PENDING, "reason": "state-shadow contains indeterminate cells", "margin": margin}
-        deltas[ARM_STATE_SHADOW] = shadow["pass_rate"] - full["pass_rate"]
-    failures = {arm: delta for arm, delta in deltas.items() if delta < -margin}
-    return {
-        "status": FAIL if failures else PASS,
-        "margin": margin,
-        "full_history_pass_rate": full["pass_rate"],
-        "deltas": deltas,
-        "failures": failures,
-    }
-
-
-def state_gate(rows: Sequence[Mapping[str, Any]]) -> dict[str, Any]:
-    selected = [row for row in rows if row["arm"] in STATE_ARMS]
-    values, failures = [], []
-    for row in selected:
-        score = row.get("state_score")
-        value = score.get("state_pass") if isinstance(score, Mapping) else None
-        values.append(value if isinstance(value, bool) else None)
-        if value is False:
-            failures.append({"case_id": row["case_id"], "arm": row["arm"], "repetition": row["repetition"]})
-    return {"status": status(values), "cells": len(selected), "failures": failures}
-
-
-def artifact_gate(rows: Sequence[Mapping[str, Any]]) -> dict[str, Any]:
-    selected = [
-        row for row in rows
-        if row["arm"] in STATE_ARMS
-        and isinstance(row.get("artifact_score"), Mapping)
-        and row["artifact_score"].get("required") is True
-    ]
-    values = [row["artifact_score"].get("artifact_pass") for row in selected]
-    return {
-        "status": status([value if isinstance(value, bool) else None for value in values]),
-        "cells": len(selected),
-        "failures": [
-            {"case_id": row["case_id"], "arm": row["arm"], "repetition": row["repetition"]}
-            for row in selected if row["artifact_score"].get("artifact_pass") is not True
-        ],
-    }
-
-
-def transport_gate(rows: Sequence[Mapping[str, Any]]) -> dict[str, Any]:
-    selected = [row for row in rows if row["arm"] == ARM_STATE_HISTORY_FREE]
-    values = [row.get("history_free_transport_gate") for row in selected]
-    return {
-        "status": status([value if isinstance(value, bool) else None for value in values]),
-        "cells": len(selected),
-        "failures": [
-            {"profile": row["profile"], "case_id": row["case_id"], "repetition": row["repetition"], "value": row.get("history_free_transport_gate")}
-            for row in selected if row.get("history_free_transport_gate") is not True
-        ],
-    }
-
-
-def pairs(rows: Sequence[Mapping[str, Any]], left: str, right: str, profile: str | None) -> list[tuple[Mapping[str, Any], Mapping[str, Any]]]:
-    indexed = {
-        (str(row["profile"]), str(row["case_id"]), int(row["repetition"]), str(row["arm"])): row
-        for row in rows if profile is None or row["profile"] == profile
-    }
-    result = []
-    for profile_name, case_id, repetition in sorted({key[:3] for key in indexed}):
-        a = indexed.get((profile_name, case_id, repetition, left))
-        b = indexed.get((profile_name, case_id, repetition, right))
-        if a is not None and b is not None:
-            result.append((a, b))
-    return result
-
-
-def bootstrap_ci(values: Sequence[float], samples: int) -> tuple[float, float] | None:
-    if len(values) < 2 or samples < 1:
-        return None
-    rng, medians = random.Random(20260902), []
-    for _ in range(samples):
-        medians.append(statistics.median(values[rng.randrange(len(values))] for _ in values))
-    medians.sort()
-    return (
-        medians[math.floor(0.025 * (len(medians) - 1))],
-        medians[math.ceil(0.975 * (len(medians) - 1))],
-    )
-
-
-def cost_gate(
-    rows: Sequence[Mapping[str, Any]], *, metric: str, threshold: float,
-    quality: str, samples: int, single_worker: bool,
+def _validate_manifests(
+    rows: Sequence[Mapping[str, Any]],
+    manifests: Sequence[Mapping[str, Any]],
 ) -> dict[str, Any]:
-    if quality != PASS:
-        return {"status": PENDING, "reason": "quality gate is not PASS", "metric": metric, "threshold": threshold}
-    profile = "standard" if any(row["profile"] == "standard" for row in rows) else None
-    compared, ratios = [], []
-    for history_free, full in pairs(rows, ARM_STATE_HISTORY_FREE, ARM_FULL_HISTORY, profile):
-        if single_worker and (history_free.get("workers") != 1 or full.get("workers") != 1):
-            continue
-        left, right = history_free.get(metric), full.get(metric)
-        if not isinstance(left, (int, float)) or isinstance(left, bool):
-            continue
-        if not isinstance(right, (int, float)) or isinstance(right, bool) or right <= 0:
-            continue
-        ratio = float(left) / float(right)
-        ratios.append(ratio)
-        compared.append({"case_id": history_free["case_id"], "repetition": history_free["repetition"], "history_free": left, "full_history": right, "ratio": ratio})
-    interval = bootstrap_ci(ratios, samples)
-    if interval is None:
-        return {"status": PENDING, "reason": "fewer than two comparable paired cells", "metric": metric, "threshold": threshold, "pairs": compared}
-    median = statistics.median(ratios)
-    return {
-        "status": PASS if median <= threshold and interval[1] < 1.0 else FAIL,
-        "metric": metric,
-        "threshold": threshold,
-        "pair_count": len(ratios),
-        "median_ratio": median,
-        "bootstrap_95_ci": list(interval),
-        "pairs": compared,
+    if not manifests:
+        return {
+            "supplied": False,
+            "validated": False,
+            "reason": "no run manifests supplied",
+            "manifest_sha256": [],
+        }
+
+    validated_digests: set[str] = set()
+    profile_contract_digests: set[str] = set()
+    profiles: set[str] = set()
+    for index, manifest_value in enumerate(manifests):
+        if not isinstance(manifest_value, Mapping):
+            raise ValueError(f"manifest {index} must be an object")
+        manifest = dict(manifest_value)
+        if manifest.get("scorer_contract_version") != SCORER_CONTRACT_VERSION:
+            raise ValueError(
+                f"manifest {index} does not use scorer contract {SCORER_CONTRACT_VERSION}"
+            )
+        profile = manifest.get("wire_profile")
+        if profile not in WIRE_PROFILES:
+            raise ValueError(f"manifest {index} has unknown wire profile {profile!r}")
+        contract = manifest.get("wire_profile_contract")
+        if not isinstance(contract, Mapping):
+            raise ValueError(f"manifest {index} is missing wire_profile_contract")
+        validated_contract = validate_wire_profile_contract_manifest(contract)
+        contract_digest = validated_contract["manifest_sha256"]
+        if manifest.get("wire_profile_contract_sha256") != contract_digest:
+            raise ValueError(f"manifest {index} wire-profile digest does not match its contract")
+        digest = manifest.get("manifest_sha256")
+        if not isinstance(digest, str) or not digest:
+            raise ValueError(f"manifest {index} has no manifest_sha256")
+        validated_digests.add(digest)
+        profile_contract_digests.add(contract_digest)
+        profiles.add(str(profile))
+
+    row_digests = {
+        row.get("runner_manifest_sha256")
+        for row in rows
+        if isinstance(row.get("runner_manifest_sha256"), str)
     }
-
-
-def bounded_gate(rows: Sequence[Mapping[str, Any]]) -> dict[str, Any]:
-    selected = [row for row in rows if row["profile"] == "bounded" and row["arm"] == ARM_STATE_HISTORY_FREE]
-    if not selected:
-        return {"status": PENDING, "reason": "bounded history-free results are missing"}
-    expected, observed = {10, 25, 50, 100}, {int(row.get("horizon") or 0) for row in selected}
-    by_horizon, failures = {}, []
-    for horizon in sorted(observed):
-        group = [row for row in selected if int(row.get("horizon") or 0) == horizon]
-        transport_pass = all(row.get("history_free_transport_gate") is True for row in group)
-        by_horizon[horizon] = {"cells": len(group), "max_request_bytes": max(int(row.get("max_request_bytes") or 0) for row in group), "transport_pass": transport_pass}
-        if not transport_pass:
-            failures.append({"horizon": horizon, "reason": "final outbound audit failed"})
-        for row in group:
-            for attempt in row.get("attempts") or []:
-                host = (attempt.get("transport_audit") or {}).get("host_body_audit") or {}
-                if host.get("historical_input_item_count") not in (0, None):
-                    failures.append({"horizon": horizon, "case_id": row["case_id"], "reason": "historical input detected"})
-                limit, size = host.get("wire_request_limit_bytes"), attempt.get("request_bytes")
-                if isinstance(limit, int) and isinstance(size, int) and size > limit:
-                    failures.append({"horizon": horizon, "case_id": row["case_id"], "reason": "request exceeded fixed bound"})
-    missing = expected - observed
+    if not row_digests:
+        raise ValueError("results do not contain runner_manifest_sha256")
+    missing = row_digests - validated_digests
     if missing:
-        return {"status": PENDING, "reason": f"missing horizons: {sorted(missing)}", "by_horizon": by_horizon, "failures": failures}
+        raise ValueError(
+            "result rows reference manifests that were not supplied: "
+            + ", ".join(sorted(missing))
+        )
     return {
-        "status": FAIL if failures else PASS,
-        "claim": "single client-visible request is bounded; cumulative T-step input remains O(T)",
-        "by_horizon": by_horizon,
-        "failures": failures,
+        "supplied": True,
+        "validated": True,
+        "manifest_sha256": sorted(validated_digests),
+        "wire_profiles": sorted(profiles),
+        "wire_profile_contract_sha256": sorted(profile_contract_digests),
+        "scorer_contract_version": SCORER_CONTRACT_VERSION,
     }
 
 
 def analyze(
-    rows: Sequence[Mapping[str, Any]], *, manifests: Sequence[Mapping[str, Any]] = (),
-    margin: float = 0.03, token_threshold: float = 0.80,
-    latency_threshold: float = 0.90, samples: int = 5000,
+    rows: Sequence[Mapping[str, Any]],
+    *,
+    manifests: Sequence[Mapping[str, Any]] = (),
+    margin: float = 0.03,
+    token_threshold: float = 0.80,
+    latency_threshold: float = 0.90,
+    samples: int = 5000,
 ) -> dict[str, Any]:
     validate_rows(rows)
-    quality = quality_gate(rows, margin)
-    state = state_gate(rows)
-    artifact = artifact_gate(rows)
-    transport = transport_gate(rows)
-    token = cost_gate(rows, metric="uncached_input_tokens", threshold=token_threshold, quality=quality["status"], samples=samples, single_worker=False)
-    latency = cost_gate(rows, metric="end_to_end_duration_seconds", threshold=latency_threshold, quality=quality["status"], samples=samples, single_worker=True)
-    bounded = bounded_gate(rows)
-    required = [quality["status"], state["status"], artifact["status"], transport["status"]]
-    overall = FAIL if FAIL in required else (PASS if all(value == PASS for value in required) else PENDING)
-    return {
-        "schema_version": VERSION,
-        "record_count": len(rows),
-        "profiles": sorted({str(row["profile"]) for row in rows}),
-        "cases": sorted({str(row["case_id"]) for row in rows}),
-        "arms": arm_summary(rows),
-        "manifests": [{key: manifest.get(key) for key in ("manifest_sha256", "candidate_commit", "profile", "runs", "workers", "model", "reasoning")} for manifest in manifests],
-        "gates": {
-            "quality_gate": quality,
-            "state_semantic_gate": state,
-            "history_pointer_gate": artifact,
-            "client_transport_gate": transport,
-            "token_gate": token,
-            "latency_gate": latency,
-            "bounded_context_gate": bounded,
-            "execution_state_model_gate": overall,
-        },
-        "claim_boundary": {
-            "history_free": "client-visible request only; provider-internal context is not established",
-            "complexity": "per-step request may be horizon-independent; cumulative T-step input is O(T)",
-            "cost": "token and latency require independent paired gates after quality passes",
-        },
-    }
-
-
-def release_summary(analysis: Mapping[str, Any]) -> dict[str, Any]:
-    gates = analysis["gates"]
-    return {
-        "schema_version": VERSION,
-        "status": gates["execution_state_model_gate"],
-        "profiles": analysis["profiles"],
-        "record_count": analysis["record_count"],
-        **{name: gates[name]["status"] for name in (
-            "quality_gate", "state_semantic_gate", "history_pointer_gate",
-            "client_transport_gate", "token_gate", "latency_gate", "bounded_context_gate",
-        )},
-        "claim_boundary": analysis["claim_boundary"],
-    }
-
-
-def markdown(analysis: Mapping[str, Any]) -> str:
-    gates = analysis["gates"]
-    lines = [
-        "# Execution-state 四臂模型门禁报告", "", "## 总结", "",
-        f"- 记录数：{analysis['record_count']}",
-        f"- Case 数：{len(analysis['cases'])}",
-        f"- execution_state_model_gate：**{gates['execution_state_model_gate']}**", "",
-        "## Arm 结果", "",
-        "| Arm | cells | determinate | passed | pass rate | uncached tokens | duration |",
-        "|---|---:|---:|---:|---:|---:|---:|",
-    ]
-    for arm, row in analysis["arms"].items():
-        rate = "—" if row["pass_rate"] is None else f"{row['pass_rate']:.3f}"
-        tokens = "—" if row["uncached_input_tokens_sum"] is None else str(row["uncached_input_tokens_sum"])
-        duration = "—" if row["duration_seconds_sum"] is None else f"{row['duration_seconds_sum']:.2f}s"
-        lines.append(f"| {arm} | {row['cells']} | {row['determinate']} | {row['passed']} | {rate} | {tokens} | {duration} |")
-    lines += ["", "## Gates", "", "| Gate | Status |", "|---|---|"]
-    for name in ("quality_gate", "state_semantic_gate", "history_pointer_gate", "client_transport_gate", "token_gate", "latency_gate", "bounded_context_gate"):
-        lines.append(f"| {name} | {gates[name]['status']} |")
-    lines += [
-        "", "## 解释边界", "",
-        "History-free 通过时，只证明捕获到的客户端请求未携带旧消息或会话句柄，并处于冻结 manifest 的固定上限内；不证明 provider 内部没有隐藏上下文。单步请求可相对 horizon 有界，但 T 步累计输入仍为 O(T)。Token 与耗时收益必须在质量通过后分别满足配对门禁。", "",
-    ]
-    return "\n".join(lines)
-
-
-def write_outputs(output: Path, analysis: Mapping[str, Any]) -> None:
-    output.mkdir(parents=True, exist_ok=True)
-    (output / "analysis.json").write_text(json.dumps(analysis, ensure_ascii=False, sort_keys=True, indent=2) + "\n", encoding="utf-8")
-    (output / "release-summary.json").write_text(json.dumps(release_summary(analysis), ensure_ascii=False, sort_keys=True, indent=2) + "\n", encoding="utf-8")
-    (output / "REPORT_ZH.md").write_text(markdown(analysis), encoding="utf-8")
+    manifest_identity = _validate_manifests(rows, manifests)
+    result = _ORIGINAL_ANALYZE(
+        rows,
+        manifests=manifests,
+        margin=margin,
+        token_threshold=token_threshold,
+        latency_threshold=latency_threshold,
+        samples=samples,
+    )
+    result["schema_version"] = ANALYSIS_SCHEMA_VERSION
+    result["scorer_contract_version"] = SCORER_CONTRACT_VERSION
+    result["wire_profiles"] = sorted({str(row["wire_profile"]) for row in rows})
+    result["manifest_identity"] = manifest_identity
+    if not manifest_identity["validated"]:
+        # Results can still be inspected, but an unbound analysis cannot become a
+        # formal execution-state model-gate pass.
+        result["gates"]["execution_state_model_gate"] = _impl.PENDING
+        result["manifest_identity"]["formal_gate_eligible"] = False
+    else:
+        result["manifest_identity"]["formal_gate_eligible"] = True
+    return result
 
 
 def synthetic_rows() -> list[dict[str, Any]]:
-    rows = []
-    for case_id in ("a", "b"):
-        for arm, tokens, duration in ((ARM_FULL_HISTORY, 1000, 10.0), (ARM_STATE_SHADOW, 1000, 10.0), (ARM_STATE_HISTORY_FREE, 600, 7.0), ("no-skill-full-history", 1100, 11.0)):
-            rows.append({"profile": "standard", "case_id": case_id, "arm": arm, "repetition": 1, "verdict": "pass", "passed": True, "workers": 1, "horizon": 8, "uncached_input_tokens": tokens, "end_to_end_duration_seconds": duration, "history_free_transport_gate": True if arm == ARM_STATE_HISTORY_FREE else None, "state_score": {"state_pass": True if arm in STATE_ARMS else None}, "artifact_score": {"required": case_id == "b" and arm in STATE_ARMS, "artifact_pass": True if case_id == "b" and arm in STATE_ARMS else None}, "attempts": []})
-    for horizon in (10, 25, 50, 100):
-        rows.append({"profile": "bounded", "case_id": f"h{horizon}", "arm": ARM_STATE_HISTORY_FREE, "repetition": 1, "verdict": "pass", "passed": True, "workers": 1, "horizon": horizon, "uncached_input_tokens": horizon * 100, "end_to_end_duration_seconds": float(horizon), "history_free_transport_gate": True, "state_score": {"state_pass": True}, "artifact_score": {"required": False, "artifact_pass": None}, "attempts": []})
+    rows = _ORIGINAL_SYNTHETIC_ROWS()
+    for row in rows:
+        row["scorer_contract_version"] = SCORER_CONTRACT_VERSION
+        row["wire_profile"] = "responses-json-v1"
+        row["runner_manifest_sha256"] = "synthetic-manifest"
     return rows
 
 
 def self_test() -> None:
-    result = analyze(synthetic_rows(), samples=200)
-    assert result["gates"]["quality_gate"]["status"] == PASS
-    assert result["gates"]["token_gate"]["status"] == PASS
-    assert result["gates"]["latency_gate"]["status"] == PASS
-    assert result["gates"]["bounded_context_gate"]["status"] == PASS
-    with tempfile.TemporaryDirectory() as directory:
-        write_outputs(Path(directory), result)
-    print("skill-state model analysis self-test: PASS")
+    _ORIGINAL_SELF_TEST()
+    rows = synthetic_rows()
+    result = analyze(rows, samples=200)
+    assert result["gates"]["quality_gate"]["status"] == _impl.PASS
+    assert result["gates"]["execution_state_model_gate"] == _impl.PENDING
+    assert result["manifest_identity"]["validated"] is False
+    try:
+        invalid = copy.deepcopy(rows)
+        invalid[0]["scorer_contract_version"] = "1.0"
+        analyze(invalid, samples=10)
+    except ValueError:
+        pass
+    else:
+        raise AssertionError("mixed scorer identities were not rejected")
+    print("skill-state model analysis identity hardening: PASS")
 
 
-def parser() -> argparse.ArgumentParser:
-    value = argparse.ArgumentParser(description=__doc__)
-    value.add_argument("results", nargs="*", type=Path)
-    value.add_argument("--manifest", action="append", type=Path, default=[])
-    value.add_argument("--output", type=Path)
-    value.add_argument("--quality-margin", type=float, default=0.03)
-    value.add_argument("--token-ratio-threshold", type=float, default=0.80)
-    value.add_argument("--latency-ratio-threshold", type=float, default=0.90)
-    value.add_argument("--bootstrap-samples", type=int, default=5000)
-    value.add_argument("--self-test", action="store_true")
-    return value
+_impl.validate_rows = validate_rows
+_impl.analyze = analyze
+_impl.synthetic_rows = synthetic_rows
+_impl.self_test = self_test
 
 
-def main(argv: Sequence[str] | None = None) -> int:
-    args = parser().parse_args(argv)
-    if args.self_test:
-        self_test()
-        return 0
-    if not args.results:
-        raise SystemExit("at least one results.jsonl path is required")
-    rows = [row for path in args.results for row in read_jsonl(path.resolve())]
-    manifests = [read_json(path.resolve()) for path in args.manifest]
-    result = analyze(rows, manifests=manifests, margin=args.quality_margin, token_threshold=args.token_ratio_threshold, latency_threshold=args.latency_ratio_threshold, samples=args.bootstrap_samples)
-    output = (args.output or Path("benchmark-results") / "skill-state-final").resolve()
-    write_outputs(output, result)
-    print(json.dumps(release_summary(result), ensure_ascii=False, indent=2))
-    return 1 if result["gates"]["execution_state_model_gate"] == FAIL else 0
+def __getattr__(name: str) -> Any:
+    return getattr(_impl, name)
 
 
 if __name__ == "__main__":
-    raise SystemExit(main())
+    raise SystemExit(_impl.main())
