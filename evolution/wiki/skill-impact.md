@@ -18,6 +18,17 @@ Each entry should include:
 
 Experiments before this tracker was introduced remain authoritative in their existing benchmark artifacts and `evolution/rejected/` records; do not invent missing scores retroactively.
 
+## 2026-09-03 — retrieval output instrumentation
+
+- hypothesis: `evolution/experiments/retrieval-convergence-20260903-1.md`
+- baseline: `d7c4a93a9d50b1305407d323b718b45e19b0f2fe`; branch `experiment/retrieval-convergence`
+- target: benchmark metadata only; runtime prompts, topology, cases and answer scorers unchanged
+- deterministic evidence: 41 tests pass, tree self-test passes; replay of 252 historical records preserves every original field
+- artifact: `benchmark-results/retrieval-iteration-1-instrumentation-replay/`; original results SHA-256 `fdba2d83ef600fb5e541f2e302b0a9ee7dc063e6a249cf740cba4949fb07776c`
+- coverage: recorded output available for 1,844/1,845 tool events; mixed category bytes overlap and possible truncation is flagged
+- decision: `Accepted` for observation only; no token, latency, output-saving or runtime-quality claim
+- follow-up: freeze the instrumentation commit, run a fresh current baseline, and require a new independent hypothesis before changing Retrieval Policy
+
 ## 2026-09-01 — explicit maintenance skills
 
 - hypothesis: `evolution/wiki/maintenance-trigger-isolation.md`

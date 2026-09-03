@@ -14,6 +14,7 @@ import concurrent.futures
 import datetime as dt
 import json
 import os
+import platform
 import re
 import shutil
 import statistics
@@ -27,6 +28,7 @@ if str(HERE) not in sys.path:
     sys.path.insert(0, str(HERE))
 
 import run_benchmarks as bench
+import retrieval_metrics
 from tree_cases import CASES, REPOSITORIES
 
 
@@ -404,6 +406,9 @@ def run_cell(
             record["passed"] = False
             record["routing_trace_error"] = True
         record["verdict"] = "pass" if record["passed"] else "fail"
+    record.update(retrieval_metrics.measure_transcript(
+        stdout, project_paths=args.project_paths[case["repository"]]
+    ))
     (cell / "answer.md").write_text(parsed["answer"] + "\n", encoding="utf-8")
     result_path.write_text(json.dumps(record, ensure_ascii=False, indent=2) + "\n", encoding="utf-8")
     return record
@@ -500,6 +505,33 @@ def main() -> int:
 
     eval_home = bench.prepare_eval_home(output / "eval-home")
     specs = build_specs(topology, args.runs, current_only=args.current_only, selected_cases=selected_cases)
+    args.project_paths = {}
+    for name, repository in repositories.items():
+        listing = bench.run_command(["git", "ls-tree", "-r", "--name-only", REPOSITORIES[name]["commit"]], repository)
+        if listing.returncode:
+            raise RuntimeError(f"cannot measure frozen project paths: {name}")
+        args.project_paths[name] = listing.stdout.splitlines()
+    measured_files = ["tree_validation.py", "tree_cases.py", "tree_topology.json", "tree_analysis.py",
+                      "run_benchmarks.py", "retrieval_metrics.py", "retrieval_analysis.py"]
+    codex_path = Path(bench.resolve_codex(args.codex))
+    manifest = {
+        "head": bench.run_command(["git", "rev-parse", "HEAD"], ROOT).stdout.strip(),
+        "git_status": bench.run_command(["git", "status", "--porcelain"], ROOT).stdout,
+        "baseline_ref": baseline_ref, "model": MODEL, "reasoning": REASONING,
+        "harness_version": VERSION, "retrieval_metrics_version": retrieval_metrics.VERSION,
+        "timeout": args.timeout, "workers": args.workers, "repetitions": args.runs,
+        "specs": specs, "repositories": REPOSITORIES,
+        "file_sha256": {name: bench.sha256(HERE / name) for name in measured_files},
+        "skill_bundle_sha256": bench.bundle_sha256(ROOT),
+        "runtime_file_sha256": {str(path.relative_to(ROOT)).replace("\\", "/"): bench.sha256(path)
+                                for path in [ROOT / "SKILL.md", *sorted((ROOT / "references").rglob("*.md"))]},
+        "codex_sha256": bench.sha256(codex_path),
+        "codex_version": bench.run_command([str(codex_path), "--version"], ROOT).stdout.strip(),
+        "python": sys.version, "platform": platform.platform(),
+        "path_sha256": retrieval_metrics.digest(os.environ.get("PATH", "").encode()),
+        "build_conditions": "read-only source evidence tasks; no harness dependency installation or build",
+    }
+    (output / "manifest.json").write_text(json.dumps(manifest, indent=2) + "\n", encoding="utf-8")
     records: list[dict[str, Any]] = []
     with concurrent.futures.ThreadPoolExecutor(max_workers=args.workers) as pool:
         futures = [pool.submit(run_cell, spec, args, topology, repositories, baseline_dir, eval_home, output) for spec in specs]
