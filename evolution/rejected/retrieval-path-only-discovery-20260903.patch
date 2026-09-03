@@ -1,0 +1,12 @@
+diff --git a/SKILL.md b/SKILL.md
+index 0553abf..aefafd2 100644
+--- a/SKILL.md
++++ b/SKILL.md
+@@ -59,6 +59,7 @@ Retrieval is orthogonal to the execution tree. Expand only because current evide
+ 
+ 1. Read a known path or symbol directly.
+ 2. Otherwise use an available bounded or ranked source search, falling back to filename, text, or symbol search.
++   When locating an unknown project source, request only candidate paths using a scoped filename query or filename-only text search for the named symbol or question. Inspect matching source lines only after candidate paths are known, using bounded reads.
+ 3. For unknown callers, dependencies, authoritative boundaries, or cross-file guarantees, prefer an available structural code index when it materially reduces exploration.
+ 4. For bounded exhaustive repository claims, use coverage-aware discovery and disclose gaps. For external contracts, use the smallest authoritative current source.
+ 5. Fall back without installing retrieval tooling; verify material conclusions in current source.

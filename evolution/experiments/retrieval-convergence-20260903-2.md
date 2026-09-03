@@ -1,6 +1,8 @@
 # Retrieval convergence — iteration 2: path-only discovery output
 
-Status: candidate-not-applied
+Status: **Rejected — candidate rolled back; cost-ineffective loop termination**
+
+The hypothesis and thresholds below were frozen at `32132b173a670f27348f9d55b74272130926e147`. Only this status and the results section were updated after evaluation.
 
 ## Frozen hypothesis
 
@@ -53,3 +55,20 @@ Only full passage qualifies a frozen candidate for n=3. n=1 is diagnostic, never
 - Their recorded output is 1,233,970 / 592,058 / 152,782 bytes. Tail broad-after-read counts are all zero; the pre-frozen zero-baseline rule requires candidate zero and does not support a positive reduction claim.
 - Large-event audit confirms initial root text search in the sensitive-content task (1 MiB recorded) and broad/large discovery in the executor task. The memory-reset task's largest output is a scoped contextual search after reading source; its inclusion is determined by output ranking, not by tailoring the case set to the hypothesis.
 - Paired arithmetic was fixed before candidate execution in `benchmark-results/retrieval-iteration-2-gate.py`; its SHA-256 is preserved in the tail receipt. It rejects changed identities, missing cells, quality regressions and zero-to-positive metric regressions; large/mixed event and evidence audits remain separate requirements.
+
+### Completed candidate and rejection
+
+- Both serial n=1 matrices completed 54/54 determinate cells; each has adaptive 15/15 and every ceiling 13/13, all traces valid, explicit manual 2/2, spontaneous manual 0, clean fixture worktrees, and no timeout. There is no observed quality regression in this matrix.
+- Baseline run HEAD: `32132b173a670f27348f9d55b74272130926e147`; candidate run HEAD: `af7dc97fd16ebad90052280819cc0c6a0008bb02` plus the one frozen, uncommitted `SKILL.md` line. Candidate SHA: none, because n=1 never qualified it for a candidate commit. Candidate Skill SHA-256: `bea25bccd96b52bce8a3f0d8f85995c50b6c5590cd7e23152b82091b1c38b7d3`.
+- Frozen tail paired median ratios: recorded output **0.415564**, input tokens **1.674233**, tool calls **1.411765**, serial duration **1.479779**. Tail uncached input totals increase from **177,240 to 182,403**. All-cell input median ratio is **1.064230** (limit 1.02); all-cell tool-call median ratio is **1.000000** (passes, despite total calls 395 to 456).
+- Frozen v1.1 tail mechanism totals: whole-file bytes 295,450 to 264,007; dependency-source bytes 176,632 to 214,215; duplicates 0 to 3; outputs over 64 KiB 4 to 1. Broad-after-read 0 to 1 is the automated result, with the source-path interpolation limitation below; do not present it as a complete count.
+- Completed-event output coverage is 395/395 baseline and 456/456 candidate, with no shell decoding or usage gap. Identity hashes match except the intended Skill line. A 20,980-byte candidate Maven test output was manually audited (24 passing tests); v1.1 does not recognize `.cmd` build wrappers. Final tail audit also found missed first source reads when a directory variable is interpolated into a source path. Automated arithmetic passes its numeric infrastructure check, but that alone does not establish complete semantic classification.
+- These observation limitations do not affect measured output bytes, input/cache usage, tool counts or duration. Those direct metrics independently and conclusively reject the candidate and trigger the user's **cost ineffective termination**: output falls while tail input, tools and duration all worsen. The frozen matrices and arithmetic remain unchanged; any observer repair is a separately identified offline replay, never a favorable replacement run.
+- Rollback completed with `git restore --source=9d742b22fadda8bdd78f84bc58b955cf628a1cc0 -- SKILL.md`; the active runtime, references and topology again match starting remote `d7c4a93a9d50b1305407d323b718b45e19b0f2fe`. Frozen candidate patch retained in `benchmark-results/retrieval-iteration-2-candidate-frozen/candidate.patch` and the rejection record.
+- No n=3, no third runtime hypothesis, no stable benefit claim. The complete queued matrix was allowed to finish to preserve a determinate artifact; no additional model run was started after the failing tail became known.
+
+### User instruction after the completed model runs
+
+The user subsequently removed duration from evaluation, requested silence while tests run, and permitted parallel work with preferably no more than five cells assigned to each worker. Preserve the original frozen protocol and receipts above as history; **duration is now telemetry only and is not a reason for the final decision**. Removing that gate still leaves failed tail input, tail uncached input, all-cell input, duplicate and dependency-output gates. Output falls while tail input and tool calls increase, so the cost-ineffective termination remains applicable under the updated cost definition. Do not repeat the already complete 108 model cells solely to change worker allocation. Future independently authorized evaluations should freeze matching baseline/candidate shards of at most five cells per work unit, with isolated outputs and silent waits.
+
+The subsequent observation-only 1.2 repair and offline replay are documented in `retrieval-observer-closeout-repair-20260903.md`; frozen v1.1 artifacts are untouched. Corrected broad-after-read estimates are baseline 1 / candidate 3; compound-command partial success remains a disclosed conservative counting limit. Direct costs and the rejection are unchanged. Full sanitized results: `benchmarks/results/retrieval-convergence/20260903-iteration-2.json`.

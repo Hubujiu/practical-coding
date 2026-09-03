@@ -113,3 +113,12 @@ Chronological maintenance log. Keep entries short; detailed evidence belongs in 
 - Fresh serial n=1 stopped at 4/54 completed cells after detecting missed source reads in mixed-quote CLI commands. All four completed cells passed quality/trace, but convergence measurement coverage is insufficient; the incomplete matrix is not a gate pass.
 - Final status `Inconclusive / infrastructure_indeterminate`; runtime Skill, topology, cases and scorers unchanged. No runtime candidate, tail set, n=3 or cost-saving claim. Instrumentation and raw receipts retained.
 - Record: `evolution/rejected/retrieval-instrumentation-20260903.md`; sanitized report under `benchmarks/results/retrieval-convergence/20260903-iteration-1.json`.
+
+## 2026-09-03 — user-directed observation repair and complete retrieval loop
+
+- Resumed the existing loop under the user's explicit instruction to repair instrumentation and continue. General shell argv decoding was fixed and frozen at `9d742b22fadda8bdd78f84bc58b955cf628a1cc0`; 45 tests and the 252-record unchanged-field replay closed iteration 1 as accepted observation infrastructure.
+- Froze one path-only discovery hypothesis for iteration 2. Fresh serial baseline/candidate each completed 54/54 quality passes with identical fixtures/model/scorer/instrumentation, legal traces, explicit manual 2/2 and spontaneous manual zero.
+- Rejected the candidate: frozen-tail paired median output -58.4% but input +67.4% and tools +41.2%; all-cell input +6.4% exceeds the 2% gate. Dependency output and duplicate counts also increase. Runtime wording was fully rolled back; no n=3 or third runtime candidate.
+- Timing was later removed from evaluation by the user and is retained only as telemetry. The rejection still follows from non-time metrics. Future tests should wait silently and use matched, isolated parallel work units of preferably at most five cells; the completed matrices are not selectively rerun.
+- Closing audit repaired platform wrapper and literal-path observation gaps as metrics 1.2, with 48 tests and a new 108-record offline replay. Direct costs, quality and frozen raw artifacts are unchanged; semantic limitations remain explicit.
+- Added durable mechanism knowledge in `retrieval-output-and-context-cost.md`, the rejection patch/record, and sanitized full results under `benchmarks/results/retrieval-convergence/`. Router unchanged; execution-state remains retired.

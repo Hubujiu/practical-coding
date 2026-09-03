@@ -13,7 +13,7 @@ import shlex
 from pathlib import Path
 from typing import Any, Iterable
 
-VERSION = "1.1"
+VERSION = "1.2"
 CATEGORIES = (
     "broad_inventory", "broad_search", "focused_search", "bounded_read",
     "whole_file_read", "dependency_source", "test_or_build", "other",
@@ -58,6 +58,39 @@ def command_body(command: str) -> tuple[str, str]:
                 return args[index + 1], "decoded_shell_argv"
             return command, "unsupported_shell_arguments"
     return command, "unsupported_shell_arguments"
+
+
+def literal_strings(script: str) -> list[str]:
+    """Expand local literal string variables for path matching, never execute.
+
+    Single quotes are literal. Unbound, environment, escaped and computed
+    double-quoted values remain unknown. This is not a general shell evaluator.
+    """
+    quoted = r"'(?:[^']|'')*'|\"(?:`.|[^\"])*\""
+    token = re.compile(r"(?P<variable>\$[a-z_]\w*)\s*=\s*(?P<value>" + quoted + r")?|(?P<string>" + quoted + r")", re.I)
+    variables: dict[str, str] = {}
+    values = []
+    for match in token.finditer(script):
+        variable = match.group("variable")
+        value = match.group("value") if variable else match.group("string")
+        if variable:
+            previous = variables.copy()
+            variables.pop(variable.lower(), None)
+        else:
+            previous = variables
+        if value is None:
+            continue
+        quote, value = value[0], value[1:-1]
+        if quote == '"':
+            value = re.sub(r"\$[a-z_]\w*", lambda m: previous.get(m[0].lower(), m[0]), value, flags=re.I)
+            if "$" in value or "`" in value:
+                continue
+        else:
+            value = value.replace("''", "'")
+        values.append(value)
+        if variable:
+            variables[variable.lower()] = value
+    return values
 
 
 def classify(command: str, project_paths: Iterable[str] = ()) -> list[str]:
@@ -109,7 +142,13 @@ def classify(command: str, project_paths: Iterable[str] = ()) -> list[str]:
         tags.add("bounded_read" if bounded and read_count <= 1 else "whole_file_read")
     if (read or invokes(search_pattern) or invokes("javap")) and re.search(r"(?:^|/|\s)(?:node_modules|site-packages|\.m2|\.gradle|vendor)(?:/|\b)|\bjavap\b|sources\.jar", text):
         tags.add("dependency_source")
-    if invokes(r"pytest|python\s+-m\s+(?:pytest|unittest)|(?:\./)?mvnw?|(?:\./)?gradlew?|tsc|make|cmake|(?:npm|pnpm|yarn|bun)\s+(?:run\s+)?(?:test|build|check|lint|typecheck)|(?:cargo|go|dotnet)\s+(?:test|build|check)"):
+    def program(names: str) -> str:
+        return r"(?:\./)?(?:" + names + r")(?:\.(?:cmd|bat|exe))?"
+    build = "|".join((program("pytest|mvnw?|gradlew?|tsc|make|cmake"),
+                      program("python") + r"\s+-m\s+(?:pytest|unittest)",
+                      program("npm|pnpm|yarn|bun") + r"\s+(?:run\s+)?(?:test|build|check|lint|typecheck)",
+                      program("cargo|go|dotnet") + r"\s+(?:test|build|check)"))
+    if invokes(build):
         tags.add("test_or_build")
     return [category for category in CATEGORIES if category in tags] or ["other"]
 
@@ -169,7 +208,8 @@ def measure_transcript(path: Path, *, project_paths: Iterable[str] = ()) -> dict
         seen.add(identity)
         # Only concrete source-content matches establish discovery; a file list
         # alone does not identify which of thousands of paths is a candidate.
-        mentioned = [p for p in sources if p in path_text(body)]
+        source_text = path_text(body + "\n" + "\n".join(literal_strings(body)))
+        mentioned = [p for p in sources if p in source_text]
         source_read = bool(mentioned and {"bounded_read", "whole_file_read"}.intersection(tags)
                            and "dependency_source" not in tags and item.get("exit_code", 0) == 0
                            and raw)

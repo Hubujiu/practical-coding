@@ -42,6 +42,17 @@ Experiments before this tracker was introduced remain authoritative in their exi
 - artifact: `benchmark-results/retrieval-iteration-1-repair-frozen-replay/`; unclassified bytes 0.68%, with coverage limits retained
 - decision: `Accepted` for repaired instrumentation; iteration 1 closed, no runtime patch or cost claim. The original interrupted-run report remains an invalid diagnostic, not a reused baseline.
 
+## 2026-09-03 — path-only retrieval discovery rejected
+
+- hypothesis: `evolution/experiments/retrieval-convergence-20260903-2.md`; rejection: `evolution/rejected/retrieval-path-only-discovery-20260903.md`
+- target: one `SKILL.md` Retrieval Policy line; baseline `9d742b22fadda8bdd78f84bc58b955cf628a1cc0`; candidate uncommitted on `af7dc97fd16ebad90052280819cc0c6a0008bb02`, exact rejected patch retained
+- artifacts: fresh `benchmark-results/retrieval-iteration-2-baseline-n1/` and `benchmark-results/retrieval-iteration-2-candidate-n1/`; 54/54 determinate quality passes each, all traces valid, explicit manual 2/2 each, spontaneous manual zero, clean fixtures
+- tail paired medians: recorded output -58.4%, input tokens +67.4%, tool calls +41.2%; tail uncached input total +2.9%; all-cell input paired median +6.4%, tool-call paired median unchanged
+- mechanism: dependency output and duplicate commands increase; whole-file output and >64 KiB events decrease. Output savings do not establish context savings.
+- decision: **Rejected**, runtime patch fully rolled back, no n=3 or third runtime candidate. Cost-ineffective termination applies; duration is telemetry only per the user's later instruction and does not determine the final decision.
+- observation closeout: 48 tests and tree self-test pass; metrics 1.2 fixes platform build wrappers and literal source-path interpolation. Offline replay of all 108 transcripts preserves every non-observation field and direct cost; original frozen 1.1 artifacts remain unchanged. Corrected tail broad-after-read estimates 1 -> 3 still fail; compound-command partial-success limitations remain disclosed.
+- durable lesson: `evolution/wiki/retrieval-output-and-context-cost.md`; sanitized report: `benchmarks/results/retrieval-convergence/20260903-iteration-2.json`
+
 ## 2026-09-01 — explicit maintenance skills
 
 - hypothesis: `evolution/wiki/maintenance-trigger-isolation.md`

@@ -63,6 +63,25 @@ class ClassificationTests(unittest.TestCase):
         command = '"C:\\tools\\pwsh.exe" -Command "rg -n needle ."'
         self.assertEqual(metrics.classify(command, PATHS), ["broad_search"])
 
+    def test_platform_build_launchers_and_command_payload_negatives(self):
+        for command in [r".\mvnw.cmd test", r"& .\gradlew.bat test", "npm.cmd run build",
+                        "python.exe -m unittest tests.test_example", "cargo.exe test", "pytest.exe tests"]:
+            with self.subTest(command=command):
+                self.assertEqual(metrics.classify(command, PATHS), ["test_or_build"])
+        for command in ["rg 'mvnw.cmd test|npm.cmd build' src", 'Write-Output "pytest.exe tests"',
+                        "mvnw.cmd.backup test", "npm.cmd install", "python.exe script.py"]:
+            with self.subTest(command=command):
+                self.assertNotIn("test_or_build", metrics.classify(command, PATHS))
+
+    def test_literal_interpolation_is_not_shell_evaluation(self):
+        self.assertIn("src/example.py", metrics.literal_strings('$root=\'src\'; $p="$root/example.py"'))
+        for script in ['$root=Get-Location; Get-Content "$root/example.py"',
+                       '$root=\'src\'; Get-Content \'$root/example.py\'',
+                       '$root=\'src\'; $root=Get-Location; Get-Content "$root/example.py"',
+                       'Get-Content "$env:ROOT/example.py"', 'Get-Content "$(Get-Location)/example.py"']:
+            with self.subTest(script=script):
+                self.assertNotIn("src/example.py", metrics.literal_strings(script))
+
     def test_duplicate_normalization_preserves_query_semantics(self):
         self.assertEqual(metrics.normalized("rg   'a b'  src"), metrics.normalized("rg 'a b' src"))
         self.assertNotEqual(metrics.normalized("rg 'a  b' src"), metrics.normalized("rg 'a b' src"))
@@ -154,6 +173,16 @@ class MeasurementTests(unittest.TestCase):
         self.assertEqual(result['duplicate_command_calls'], 1)
         self.assertEqual(result['broad_calls_after_first_project_read'], 1)
         self.assertEqual(result['measurement_coverage']['shell_decode_failures'], 0)
+
+    def test_interpolated_source_path_establishes_first_read(self):
+        script = '$root=\'src\'; $p="$root/example.py"; Get-Content $p'
+        result = self.measure([tool(shlex.join(['pwsh', '-Command', script]), 'body'), tool('rg needle .', 'match')])
+        self.assertTrue(result['retrieval_events'][0]['project_source_read'])
+        self.assertEqual(result['broad_calls_after_first_project_read'], 1)
+        for unknown in ['Get-Content "$root/example.py"', '$root=\'src\'; Get-Content \'$root/example.py\'']:
+            result = self.measure([tool(unknown, 'body'), tool('rg needle .', 'match')])
+            self.assertFalse(result['retrieval_events'][0]['project_source_read'])
+            self.assertEqual(result['broad_calls_after_first_project_read'], 0)
 
     def test_instrumentation_cannot_change_score_or_prompt(self):
         topology = tree.load_topology(tree.HERE / "tree_topology.json")
