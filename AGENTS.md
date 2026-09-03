@@ -10,7 +10,6 @@ This repository is an Agent Skill. Apply [`SKILL.md`](SKILL.md) when working fro
 4. Current Debugging and Implementation nodes are leaves until benchmark evidence earns a child.
 5. Keep retrieval orthogonal. Unknown paths, callers, consumers, and data flow are retrieval questions, not execution-tree depth.
 6. Automatic routing must converge toward resolving the current blocker; it must not reopen deliberation.
-7. Keep explicit execution state orthogonal as well. It is a bounded current-task snapshot used only under state pressure, never an automatic node or a reason to deepen the tree.
 
 ## Root Router
 
@@ -20,19 +19,6 @@ This repository is an Agent Skill. Apply [`SKILL.md`](SKILL.md) when working fro
 | Unknown contract/invariant, coordinated guarantee, material risk boundary, or evidence requirement blocks safe execution | [`references/implementation.md`](references/implementation.md) |
 
 A known target and settled behavior/boundary/check stay at Core even when risk nouns are present. A read-only mapping request is Core plus Retrieval.
-
-## Execution state
-
-Use the rules in `SKILL.md` when a long multi-round task begins to require reconstruction from earlier observations. The deterministic schema and transition adapter live in [`runtime/skill_state.py`](runtime/skill_state.py). The audited history-free request boundary lives in [`runtime/skill_state_host.py`](runtime/skill_state_host.py), with its exact limits and integration contract documented in [`docs/SKILL_STATE_HOST.md`](docs/SKILL_STATE_HOST.md). The overall architecture is documented in [`docs/SKILL_STATE.md`](docs/SKILL_STATE.md).
-
-- Canonical state contains only future-relevant current facts, not reasoning, transcripts, raw tool output, or an append-only action log.
-- Apply nested merge patches on an isolated copy; omitted keys survive and `null` deletes. Validate the complete candidate before committing it, so invalid output leaves the old state unchanged.
-- Treat a validated `action` as an untrusted proposal. State validation never authorizes a tool, command, argument, or side effect; the host must apply its normal authorization policy before execution.
-- The JSON envelope is a structural delimiter boundary, not proof against semantic prompt injection. Keep observation data untrusted and enforce host-owned controls and action policy outside the model.
-- A `state-history-free` claim requires an actual request with the frozen procedure in current instructions, exactly one current state/observation input, and no prior-response, conversation, prompt-reference, context-management, assistant, tool-history, contextual-header, cookie, proxy-session, or equivalent out-of-band history channel. Freeze the host manifest and observation injector, send the audited body bytes unchanged, and capture/re-audit the final outbound request if an SDK or proxy reconstructs it.
-- Retry only from the unchanged canonical state with the same procedure, state, and observation plus one bounded host validation error. Persist a valid successor before releasing its proposed action.
-- Keep ephemeral state outside the target repository unless the user explicitly requests a durable artifact.
-- Do not claim the paper's bounded prompt behavior, token benefit, or latency benefit from deterministic tests. Those claims require the dedicated paired model gate and actual captured requests.
 
 ## Manual modes
 
@@ -55,6 +41,6 @@ Read [`references/navigation.md`](references/navigation.md) only for substantial
 
 Use [`benchmarks/tree_topology.json`](benchmarks/tree_topology.json), [`benchmarks/tree_validation.py`](benchmarks/tree_validation.py), and [`benchmarks/tree_analysis.py`](benchmarks/tree_analysis.py) for active topology work. Cases must not encode a gold automatic node or fixed numeric execution level. Derive minimum-sufficient nodes by capability ablation, then use repeated routing ambiguity or quality failures to propose add/split/merge/promote/collapse/remove changes.
 
-Execution-state changes use [`benchmarks/skill_state_validation.py`](benchmarks/skill_state_validation.py) for deterministic merge/rollback/budget mechanics and the non-benchmark host tests for request-bound enforcement, but neither substitutes for the model-backed state gate. Any runtime Skill wording change still requires the normal `n=1` iteration and frozen `n=3` non-regression gate.
+Iterations use n=1. Only a frozen candidate receives the complete n=3 baseline/no-skill comparison. Preserve v1.5 and rejected experiments as historical evidence rather than rewriting them for the current topology.
 
-Iterations use n=1. Only a frozen candidate receives the complete n=3 baseline/no-skill comparison. Preserve v1.5 and rejected progressive-tree artifacts as historical evidence rather than rewriting them for the new topology.
+The execution-state/history-free proposal is retired. Its records are archived under [`evolution/rejected/execution-state/`](evolution/rejected/execution-state/); do not restore its runtime, host, transport, or model-gate files without a new frozen hypothesis and independent evidence that directly addresses the recorded quality-qualified cost failure.

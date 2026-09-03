@@ -11,19 +11,18 @@ The accepted v1.5 flat Event Router and the rejected fixed E/R ladder remain his
 3. Does adaptive disclosure stop at a minimum-sufficient node without spontaneous manual Decision or Clarification activation?
 4. Do repeated failures or sibling ambiguity justify growing, splitting, merging, promoting, collapsing, or removing a node?
 5. Does retrieval stop at the cheapest sufficient capability independently of execution depth?
-6. Under long-task state pressure, can a bounded validated execution snapshot replace history reconstruction without becoming a route or weakening delivered quality?
 
 ## Tree experiment
 
 The runtime topology is data, not a scorer constant:
 
-- `tree_topology.json` — current root, nodes, parent/child edges, depth, manual modes, cross-cutting substrates, and frozen baseline ref;
+- `tree_topology.json` — current root, nodes, parent/child edges, depth, manual modes, retrieval modes, and frozen baseline ref;
 - `tree_cases.py` — topology-neutral real-repository tasks; no expected automatic route or E0-E3 label;
 - `tree_validation.py` — runs no-skill, v1.5 baseline, adaptive candidate, and capability ceilings for every automatic node;
 - `tree_analysis.py` — derives minimum-sufficient node sets, adaptive disclosure diagnostics, node marginal lift, and topology-change candidates;
 - `TREE_EVOLUTION.md` — interpretation and mutation rules.
 
-Iteration uses `n=1` while changing topology, node content, runtime substrate wording, or scorer contracts:
+Iteration uses `n=1` while changing topology, node content, retrieval wording, or scorer contracts:
 
 ```powershell
 python benchmarks/tree_validation.py --self-test
@@ -33,7 +32,7 @@ python benchmarks/tree_analysis.py benchmark-results/tree-n1/results.jsonl `
   --output benchmark-results/tree-n1/analysis.json
 ```
 
-Only after the topology and runtime wording are frozen should the candidate run `n=3` with baseline/no-skill arms:
+Only after topology and runtime wording are frozen should the candidate run `n=3` with baseline/no-skill arms:
 
 ```powershell
 python benchmarks/tree_validation.py --runs 3 --workers 3 `
@@ -41,26 +40,6 @@ python benchmarks/tree_validation.py --runs 3 --workers 3 `
 python benchmarks/tree_analysis.py benchmark-results/tree-final/results.jsonl `
   --output benchmark-results/tree-final/analysis.json
 ```
-
-## Execution-state runtime contract
-
-The SKILL.state-inspired mechanism is a cross-cutting runtime substrate. It is intentionally absent from `automatic_nodes`, `manual_modes`, and adaptive `TREE_TRACE` paths. The tree decides which execution capability is available; execution state holds only the current future-relevant snapshot inside that capability.
-
-The deterministic gate is frozen in:
-
-- `runtime/skill_state.py` — coding-domain schema, validated merge patch, null deletion, rollback, transition parser, and history-free prompt builder;
-- `benchmarks/test_skill_state_runtime.py` — unit contracts for merge/deletion, schema and budget enforcement, exact transition shape, rollback, and bounded provenance references;
-- `benchmarks/skill_state_validation.py` — horizons 10/50/200 with irrelevant telemetry, append-only-history comparison, immediate stale-fact correction, and invalid-patch rollback;
-- `docs/SKILL_STATE.md` — architecture, activation boundary, and host-level limitations;
-- `evolution/experiments/skill-state-runtime-20260902.md` — hypothesis frozen before the runtime patch.
-
-```powershell
-python -m unittest benchmarks.test_skill_state_runtime
-python benchmarks/skill_state_validation.py --self-test `
-  --output benchmark-results/skill-state-contract.json
-```
-
-A perfect deterministic contract score is required. This proves implementation mechanics only: it does not reproduce the paper's model accuracy/token figures and cannot prove horizon-independent prompts for a host that still appends prior messages. Because `SKILL.md` wording affects all tasks, a passing state contract must still be followed by the same model-backed `n=1` iteration and frozen `n=3` release gate used for any runtime Skill change.
 
 ## Explicit evolution workflow benchmark
 
@@ -98,12 +77,11 @@ These are topology diagnostics. Persistent disagreement should first trigger a t
 
 Manual modes have a different contract: ordinary tasks must have zero spontaneous manual activation; explicit Decision or Clarification requests must load the corresponding `references/manual/` mode.
 
-Execution-state diagnostics have another contract: schema/merge/rollback mechanics are deterministic, while usefulness and overhead must be tested on model-backed long-horizon cases. Do not reinterpret state activation as an expected automatic route.
-
 ## Historical baselines
 
 - `progressive_validation.py`, `progressive_cases.py`, and `ladder_analysis.py` remain for reproducing the previous fixed E/R and flat Event Router experiments.
 - `results/progressive-tree/` and `../evolution/rejected/` preserve the rejected fixed-depth evidence.
 - `results/v1.5/` preserves the accepted flat-router evidence and is the baseline frozen by `tree_topology.json`.
+- `../evolution/rejected/execution-state/` preserves the retired execution-state/history-free experiment; its runtime and four-arm gate are not active.
 
-Do not silently rewrite historical case contracts to make the new tree appear better. New topology or runtime-substrate changes require a frozen candidate, appropriate mechanism ablation, and real-repository evidence.
+Do not silently rewrite historical case contracts to make the current tree appear better. New topology or retrieval-policy changes require a frozen candidate, appropriate mechanism ablation, and real-repository evidence.

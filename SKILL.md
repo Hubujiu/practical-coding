@@ -4,7 +4,7 @@ description: "Use for implementing, fixing, refactoring, or reviewing code with 
 license: MIT
 metadata:
   author: Hubujiu
-  version: "1.8"
+  version: "1.9"
 ---
 
 # Practical Coding
@@ -24,20 +24,6 @@ Use Core for every coding task. Core is the root of the automatic execution tree
 - Prefer deletion. Remove each new dependency, file, option, wrapper, comment, fallback, retry, test, or document not required by behavior, project contract, or verification.
 - Run the cheapest focused check once after the final edit. If no repository test exists, run one focused executable check, not a broad test runner. Prefer no-write check modes. Never repeat an unchanged check or replace a required build gate with diff inspection. Install declared dependencies only as a bounded prerequisite in isolation; otherwise report the missing prerequisite.
 - State only fresh evidence. Unless requested, finish with the outcome, changed surface, check, and remaining uncertainty—no process recap.
-
-## Execution State Projection
-
-Execution state is a cross-cutting runtime substrate, not a router node. Do not create it for a short self-contained task. Activate it only when the next action depends on facts from multiple earlier observations, a new observation can invalidate a stored fact, hypotheses/checks are beginning to repeat, or current work would otherwise require replaying raw tool output.
-
-- Treat the loaded Skill procedure as immutable `P`, the compact current coding state as `Σ`, and the latest observation as `O`. Derive the next transition from `P + Σ + O`, not from an accumulated narrative when the host can omit prior messages.
-- Keep only future-relevant objective/success, active route and retrieval mode, current paths/symbols, authoritative facts, live/rejected hypotheses needed to avoid repetition, current change surface, verification outcomes, next action, and bounded evidence pointers when history itself matters.
-- Update canonical state with a validated merge patch: omitted keys survive and `null` explicitly deletes obsolete keys. Validate before mutation; an invalid schema, type, or budget leaves the previous state intact. Objective, success criteria, schema version, and route/retrieval/manual control are host-owned; a model-proposed state patch cannot change them.
-- Never persist chain-of-thought, transcript copies, raw tool output, or an action diary in execution state. Replace stale facts instead of appending versions and retain compact outcomes or evidence pointers instead of logs.
-- Preserve bounded history artifacts when the schema is still being discovered, an earlier observation may have unrecognized future relevance, the task asks for audit/provenance/explanation, or concurrent writers lack deterministic conflict resolution.
-- State projection does not change automatic depth, retrieval breadth, or manual-mode eligibility. A host that still appends prior messages may use the projection to reduce reconstruction, but must not claim bounded horizon-independent prompt growth.
-- A validated transition releases only a proposed action. The host must independently authorize its tool, arguments, and side effects; JSON framing prevents structural delimiter escape but does not make hostile observation text semantically trustworthy.
-- A host claiming `state-history-free` must use an audited request boundary equivalent to `runtime/skill_state_host.py`: the frozen procedure in current instructions; one current state/observation input only; no prior-response, conversation, prompt-reference, context-management, assistant/tool-history, contextual-header, cookie, proxy-session, or equivalent out-of-band history channel; a frozen procedure/tools/options/limits manifest and observation injector; a hard final request bound; retries from the unchanged canonical state; and durable successor persistence before action release. If the final outbound request and current-only observation provenance cannot be audited, treat the run as state shadow rather than history-free.
-- Do not infer token or latency benefit from state size or synthetic prompt bytes. Only a quality-qualified paired model run using actual captured requests may support those claims.
 
 ## Root Router
 
@@ -90,7 +76,7 @@ Core and one small routed node use no worker. Use `references/delegation.md` onl
 Runtime agents do not read `evolution/`. The tree is not a fixed taxonomy.
 
 - Every runtime node owns its behavior, current depth, and only its immediate-child router; a leaf says so explicitly.
-- Cross-cutting substrates such as execution-state projection remain outside the automatic topology; evaluate their runtime contract separately, then rerun delivered-quality regressions because their wording can still affect every node.
+- Retrieval policy and maintenance workflows remain outside the automatic topology and require their own evidence; they must not be introduced as automatic nodes merely to expose more process.
 - On an `experiment/*` branch, a proposed child may be staged only to collect controlled parent-versus-child and adaptive-routing evidence. Staging is not promotion.
 - Promote a staged child into a release topology only when a repeatable pre-load signal exists and parent-versus-child ablation shows quality-qualified net lift across multiple tasks or repositories.
 - Merge siblings when their boundary is persistently ambiguous and separation adds no net value.

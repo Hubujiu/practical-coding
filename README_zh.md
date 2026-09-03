@@ -40,7 +40,7 @@ Core 是树根，只知道自己的直接子节点。一个模块被加载后，
 
 ## 手动模式
 
-Decision 不再属于自动 Router。
+Decision 不属于自动 Router。
 
 - [`references/manual/decision.md`](references/manual/decision.md) 只有在用户当前明确要求“比较方案、技术选型、推荐架构/依赖/API/数据模型”等决策分析时才加载；
 - [`references/manual/clarification.md`](references/manual/clarification.md) 只有在用户明确要求先采访、grill、提问或澄清需求时才加载。
@@ -59,19 +59,11 @@ Decision 不再属于自动 Router。
 
 [`references/navigation.md`](references/navigation.md) 只用于较重的检索过程。Codebase Memory、LSP/AST、排序搜索和普通搜索都是可选能力，不是依赖。
 
-## Execution state
-
-长任务可以使用有界的当前状态投影，但它不是 Router 节点。[`runtime/skill_state.py`](runtime/skill_state.py) 负责校验 coding-domain state 与 merge transition；[`runtime/skill_state_host.py`](runtime/skill_state_host.py) 负责构造并审计 true history-free host 所需的“仅一个当前输入”实际请求。
-
-Host 边界会冻结 procedure、model、tools、options 和 limits；拒绝 prior-response、conversation、prompt-reference、context-management、旧 assistant/tool input 等历史通道；每次重试都从未改变的 canonical state 开始；只有 successor 已成功持久化后才释放 action。通过 state 校验的 action 仍然必须经过产品自己的工具、参数、权限和副作用授权。
-
-如果 state projection 启用时旧消息仍附加在请求中，它只是 **state shadow**，不能称为 history-free。确定性 byte limit 可以证明捕获到的客户端请求有固定上界，但 token、耗时和真实交付质量收益仍需运行 [`benchmarks/SKILL_STATE_MODEL_GATE.md`](benchmarks/SKILL_STATE_MODEL_GATE.md) 的四臂模型实验。详细契约见 [`docs/SKILL_STATE.md`](docs/SKILL_STATE.md) 和 [`docs/SKILL_STATE_HOST.md`](docs/SKILL_STATE_HOST.md)。
-
 ## Benchmark 驱动树演化
 
-Benchmark 不再用于证明一棵预先写死的树“路由正确”，而是用于决定树应该如何生长、拆分、合并、提升、折叠或删除节点。
+Benchmark 不用于证明一棵预先写死的树“路由正确”，而是用于决定树应该如何生长、拆分、合并、提升、折叠或删除节点。
 
-当前拓扑放在 [`benchmarks/tree_topology.json`](benchmarks/tree_topology.json)。新的 [`benchmarks/tree_cases.py`](benchmarks/tree_cases.py) 不再保存 expected automatic route、E0-E3 或固定 capability path。
+当前拓扑放在 [`benchmarks/tree_topology.json`](benchmarks/tree_topology.json)。新的 [`benchmarks/tree_cases.py`](benchmarks/tree_cases.py) 不保存 expected automatic route、E0-E3 或固定 capability path。
 
 [`benchmarks/tree_validation.py`](benchmarks/tree_validation.py) 会让普通任务分别在 Core 和每个 root-to-node capability ceiling 下运行，再运行 adaptive candidate。随后 [`benchmarks/tree_analysis.py`](benchmarks/tree_analysis.py) 根据稳定通过的 ceiling 推导任务的 **minimum-sufficient node set**。Adaptive Router 与这个集合不一致时，首先视为 topology 证据，而不是直接判模型失败。
 
@@ -83,11 +75,11 @@ Benchmark 不再用于证明一棵预先写死的树“路由正确”，而是�
 - **删除**：节点没有独立的 minimum-sufficient 案例，也没有相对 parent 的稳定增益；
 - **拆分**：某个叶子节点出现重复失败簇，并且能在加载前识别出稳定边界。
 
-Depth 只表示渐进披露深度，不代表固定的任务复杂度等级。不同分支完全可以有不同深度。
+Depth 只表示渐进披露深度，不代表固定的任务复杂度等级。不同分支可以有不同深度。
 
 ## 验证
 
-修改 runtime、topology、case 或 scorer 时只跑 `n=1`；冻结候选后再跑 `n=3`。
+修改 Skill 文案、topology、case 或 scorer 时只跑 `n=1`；冻结候选后再跑 `n=3`。
 
 ```powershell
 pwsh -NoProfile -File benchmarks/run.ps1 -TreeSelfTest
@@ -109,6 +101,8 @@ python benchmarks/tree_analysis.py benchmark-results/tree-final/results.jsonl `
 
 已接受的 v1.5 扁平 Debugging/Decision/Implementation Event Router 继续作为历史 baseline，保存在 [`benchmarks/results/v1.5/`](benchmarks/results/v1.5/) 和 [`evolution/experiments/event-router-restoration.md`](evolution/experiments/event-router-restoration.md)。被拒绝的固定 E/R 深度与专家叶子实验继续保存在 [`evolution/rejected/`](evolution/rejected/) 和 [`benchmarks/results/progressive-tree/`](benchmarks/results/progressive-tree/)。历史结果不会为了适配新树而重写。
 
-已发布的 `b82b38d` 配对 n=3 报告位于 [`benchmarks/results/evolvable-tree/`](benchmarks/results/evolvable-tree/)：adaptive、冻结 v1.5 与 no-skill 均为 45/45，252/252 个 cell 全部可判定，因此 release quality gate 通过。Adaptive 的平均 token、时长和工具调用仍高于冻结 v1.5，所以该报告不声称成本改善。
+Execution-state/history-free 实验也已废弃。其原因和保留的实验记录位于 [`evolution/rejected/execution-state/`](evolution/rejected/execution-state/)；它不再属于活动 Skill、runtime、topology 或 benchmark 链。
+
+已发布的配对 n=3 报告位于 [`benchmarks/results/evolvable-tree/`](benchmarks/results/evolvable-tree/)：adaptive、冻结 v1.5 与 no-skill 均为 45/45，252/252 个 cell 全部可判定，因此 release quality gate 通过。Adaptive 的平均 token、时长和工具调用仍高于冻结 v1.5，所以该报告不声称成本改善。
 
 MIT License。第三方归属见 `THIRD_PARTY_NOTICES.md`。

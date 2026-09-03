@@ -40,7 +40,7 @@ Automatic routing is convergent: it may deepen execution to resolve a blocker, b
 
 ## Manual modes
 
-Decision is no longer an automatic route.
+Decision is not an automatic route.
 
 - [`references/manual/decision.md`](references/manual/decision.md) loads only when the current user explicitly asks to compare options, select a technology/architecture/dependency/API/data model, or perform decision analysis.
 - [`references/manual/clarification.md`](references/manual/clarification.md) loads only when the current user explicitly asks to be interviewed, grilled, questioned, or to clarify requirements before implementation.
@@ -58,14 +58,6 @@ Retrieval remains orthogonal to the execution tree. Use the cheapest available c
 5. verify material conclusions against current source.
 
 [`references/navigation.md`](references/navigation.md) is the optional detailed procedure for substantial retrieval. Codebase Memory, LSP/AST, ranked search, and ordinary search are capabilities, not required dependencies.
-
-## Execution state
-
-Long tasks may use a bounded current-state projection without adding a router node. [`runtime/skill_state.py`](runtime/skill_state.py) validates the coding-domain state and merge transitions. [`runtime/skill_state_host.py`](runtime/skill_state_host.py) builds and audits the exact one-current-input request needed by a true history-free host.
-
-The host boundary freezes procedure, model, tools, options, and limits; rejects prior-response, conversation, prompt-reference, context-management, assistant, and tool-history channels; retries from the unchanged canonical state; and withholds an action until the valid successor is persisted. A validated action remains subject to the surrounding product's normal authorization policy.
-
-A state projection used while prior messages remain attached is **state shadow**, not history-free execution. Deterministic byte limits can establish a bounded captured client request, but token, latency, and delivered-quality benefits remain pending until the four-arm model protocol in [`benchmarks/SKILL_STATE_MODEL_GATE.md`](benchmarks/SKILL_STATE_MODEL_GATE.md) is run. See [`docs/SKILL_STATE.md`](docs/SKILL_STATE.md) and [`docs/SKILL_STATE_HOST.md`](docs/SKILL_STATE_HOST.md).
 
 ## Benchmark-driven tree evolution
 
@@ -87,7 +79,7 @@ Depth describes disclosure depth only. It is not a fixed complexity scale, and d
 
 ## Validation
 
-Use `n=1` while changing runtime wording, topology, cases, or scoring. Freeze the candidate before `n=3` comparison.
+Use `n=1` while changing Skill wording, topology, cases, or scoring. Freeze the candidate before `n=3` comparison.
 
 ```powershell
 pwsh -NoProfile -File benchmarks/run.ps1 -TreeSelfTest
@@ -109,6 +101,8 @@ python benchmarks/tree_analysis.py benchmark-results/tree-final/results.jsonl `
 
 The accepted v1.5 flat Debugging/Decision/Implementation Event Router remains historical baseline evidence under [`benchmarks/results/v1.5/`](benchmarks/results/v1.5/) and [`evolution/experiments/event-router-restoration.md`](evolution/experiments/event-router-restoration.md). The rejected fixed E/R depth and specialist-leaf experiment remains under [`evolution/rejected/`](evolution/rejected/) and [`benchmarks/results/progressive-tree/`](benchmarks/results/progressive-tree/). Historical reports are not rewritten to fit the new topology.
 
-The published `b82b38d` paired n=3 tree report is under [`benchmarks/results/evolvable-tree/`](benchmarks/results/evolvable-tree/): adaptive, frozen v1.5, and no-skill each passed 45/45 across 252/252 determinate cells, so the release quality gate passed. Adaptive still used more average tokens, time, and tool calls than frozen v1.5; the report therefore makes no cost-improvement claim.
+The execution-state/history-free experiment is also retired. Its rationale and preserved experiment records are under [`evolution/rejected/execution-state/`](evolution/rejected/execution-state/); it is not part of the active Skill, runtime, topology, or benchmark chain.
+
+The published paired n=3 tree report is under [`benchmarks/results/evolvable-tree/`](benchmarks/results/evolvable-tree/): adaptive, frozen v1.5, and no-skill each passed 45/45 across 252/252 determinate cells, so the release quality gate passed. Adaptive still used more average tokens, time, and tool calls than frozen v1.5; the report therefore makes no cost-improvement claim.
 
 MIT License. See `THIRD_PARTY_NOTICES.md` for attribution.

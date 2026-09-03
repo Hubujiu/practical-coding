@@ -1,6 +1,6 @@
 interface:
   display_name: "Practical Coding"
   short_description: "Small correct changes with progressive local routing"
-  default_prompt: "Use $practical-coding. Apply Core as the automatic root, route only an unresolved Debugging or Implementation blocker, let each loaded node own only its local next-level router, and keep retrieval orthogonal. Decision and Clarification are explicit-only manual modes. Under long-task state pressure, project only future-relevant facts into bounded validated execution state without making it a route. Treat the projection as state shadow unless the host uses an audited one-current-input request with no prior-response, conversation, prompt-reference, or hidden history channel."
+  default_prompt: "Use $practical-coding. Apply Core as the automatic root, route only an unresolved Debugging or Implementation blocker, let each loaded node own only its local next-level router, and keep retrieval orthogonal. Decision and Clarification are explicit-only manual modes. Stop broad inventory after candidate paths or symbols are known, inspect only bounded relevant source, and run the cheapest focused check that can falsify the material claim."
 policy:
   allow_implicit_invocation: true

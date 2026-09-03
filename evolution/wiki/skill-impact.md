@@ -54,3 +54,17 @@ Experiments before this tracker was introduced remain authoritative in their exi
 - adaptive versus v1.5 cost: tokens 258,061.64 vs 217,460.96; duration 76.82s vs 72.20s; tools 8.42 vs 7.24
 - decision: `Accepted`
 - rationale: the frozen primary release gate requires strict paired delivered-quality superiority and no regression against no-skill; both comparators were exceeded by one cell with perfect discipline. The proposed cost mechanism was not confirmed and the regression remains an explicit limitation, not an acceptance claim.
+
+## 2026-09-03 — execution-state/history-free experiment
+
+- experiments: archived under `evolution/rejected/execution-state/`
+- target: cross-cutting explicit execution-state runtime, history-free host/transport, and four-arm model gate
+- final measured candidate baseline: `e6cc9caa456767b3e05dbff59474aa7014146cbf`; final pre-retirement branch head: `215334db7bb914bd9f0346a2b09654fc89accc96`
+- standard n=1 matrix: 24/24 determinate; full-history 6/6; state-history-free 6/6; state-shadow 5/6; no-skill-full-history 6/6
+- transport: captured state-history-free client transport gate passed
+- state semantic diagnostic: shadow retained `h-cache` in both active and rejected lifecycle partitions; later deterministic hardening was not model-rerun before retirement
+- cost versus full-history: uncached input tokens 78,118 vs 50,736 (`+54.0%`); duration 172.60s vs 154.57s (`+11.7%`)
+- incomplete claims: formal n>=3, token, latency, and bounded-horizon gates remained pending
+- decision: `Rejected`
+- rationale: the mechanism produced no delivered-quality lift, materially increased cost in the completed matrix, and added substantial runtime/transport/benchmark complexity while not addressing the observed retrieval-output long tail. Active code and contracts were removed; historical records remain archived.
+- reconsideration: only through a new frozen experiment with independent evidence for a substantially simpler mechanism that solves a demonstrated long-horizon failure, preserves n>=3 quality, and reduces both uncached tokens and time.

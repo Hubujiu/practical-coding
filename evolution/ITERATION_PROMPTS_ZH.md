@@ -15,13 +15,13 @@
 
 1. 先读取并遵守 AGENTS.md、SKILL.md、evolution/skills/evolve-skill/SKILL.md。
 2. 读取 evolution/wiki/index.md、evolution/wiki/skill-impact.md，以及与本次机制直接相关的少量 wiki、receipt、experiment 和 benchmark 结果。不要把整个 evolution/ 塞进上下文。
-3. 读取 benchmarks/tree_topology.json、benchmarks/TREE_EVOLUTION.md 和当前相关 benchmark 契约。若候选涉及执行状态，还必须读取 docs/SKILL_STATE.md、docs/SKILL_STATE_HOST.md 与 benchmarks/SKILL_STATE_MODEL_GATE.md。
+3. 读取 benchmarks/tree_topology.json、benchmarks/TREE_EVOLUTION.md 和当前相关 benchmark 契约。
 4. 记录当前分支 HEAD、工作树状态、模型、reasoning 配置、harness、case 集、scorer 版本和重复次数。只在 experiment/evolvable-router-tree 上工作，不合并 PR。
-5. 从累计证据中只选择一个原子假设；目标只能是一个节点、一个父子边界、一个检索边界、一个跨切面运行时机制或一个评测缺陷。多个相互独立的问题必须拆成后续迭代。
+5. 从累计证据中只选择一个原子假设；目标只能是一个节点、一个父子边界、一个检索边界或一个评测缺陷。多个相互独立的问题必须拆成后续迭代。
 6. 在看到候选结果之前，先在 evolution/experiments/ 写下冻结假设：证据指针、因果机制、可观察的预加载/激活信号、准确目标、候选补丁形状、预期收益、明确反证条件、baseline ref、评测方案和接受门槛。
 7. 在修改运行时 Skill 之前冻结或新增 benchmark。新增能力至少要有正例和边界/负例；case 不得写入“正确自动路由节点”，scorer 不得奖励候选措辞，也不得在看到候选结果后偷偷改变门槛。
 8. 先在冻结 benchmark 上运行 baseline n=1 并保存完整 artifact；再应用最小候选补丁，并使用完全相同的模型、工具、case、scorer、超时和环境运行 candidate n=1。
-9. 同时运行所有相关确定性测试和现有回归。确定性测试通过只能证明结构、解析或状态契约成立，不能代替真实模型任务质量。
+9. 同时运行所有相关确定性测试和现有回归。确定性测试通过只能证明结构或解析契约成立，不能代替真实模型任务质量。
 10. 若 n=1 暴露候选缺陷，可以回到一个新的假设重新开始；不得连续修补同一候选直到迎合 held-out。只有冻结候选才运行配对 n>=3 的 baseline/candidate/no-skill 发布矩阵。
 11. 接受顺序必须是：交付正确性、安全性、兼容性、可达性和必要检查不下降；自动路径仍是有效父子路径；Decision 与 Clarification 仍为零自发触发；新增 benchmark 不下降；所有必须门禁可判定。只有质量打平后才比较输入 token、时长、工具调用和平均加载深度。
 12. 若任一必要质量门禁下降或证据不完整，回滚运行时候选。保留冻结 benchmark、原始 artifact 和机制知识，并将拒绝原因写入 evolution/rejected/ 与 evolution/wiki/skill-impact.md。
@@ -33,9 +33,9 @@
 - Core 只拥有直接子节点；加载节点只知道自己的直接子节点，不允许 Core 跨级选择后代。
 - Decision 和 Clarification 永远只能由当前用户显式请求触发，不得学习为自动 fallback。
 - Retrieval 与执行树正交；不要为了让路由更好看而扩大检索。
-- execution state 是跨切面运行时 substrate，不是自动节点、手动模式或检索模式。
 - 不保留对称层级、固定深度或历史节点名；add/split/merge/promote/collapse/remove 都必须由质量合格后的净收益决定。
 - 不得用 token 节省补偿正确性或安全性下降。
+- 已记录在 evolution/rejected/ 的方案不得在没有新独立证据直接解决其失败机制时复活。
 ```
 
 ## 2. 先把当前会话沉淀到 wiki
@@ -64,31 +64,8 @@
 最终按轮次列出假设、证据、结果、决定和 commit，不得把多轮修改压成一个无法归因的补丁。
 ```
 
-## 4. 专门迭代 SKILL.state 融合
-
-arXiv:2608.26263 的核心是用显式、可验证的当前执行状态替代不断增长的追加式历史。它不是“再写一段总结”，也不是给 Router 增加一个状态节点。
-
-```text
-只评估 Practical Coding 中的 execution-state substrate，不修改自动 Router 拓扑，除非独立的树 benchmark 另有证据。
-
-按 benchmarks/SKILL_STATE_MODEL_GATE.md 冻结并比较四个 arm：full history、state shadow、state history-free、no-skill full history。前三个 arm 必须使用相同的自动路由、检索策略、工具、任务、观察序列和交付 scorer。
-
-先运行 `python -m unittest tests.test_skill_state_hardening tests.test_skill_state_host benchmarks.test_skill_state_runtime` 与 `python benchmarks/skill_state_validation.py --self-test`，验证严格 JSON 解析、隔离快照、schema、merge、null deletion、host-owned 控制字段、invalid transition rollback、结构化数据边界、state byte budget、冻结 manifest、one-current-input 请求、无历史句柄、重试回滚和持久化后才释放 action。确定性 contract 只能证明这些机械边界；它不能证明模型会过滤噪音、识别纠正信息、保留未来相关事实、抵抗语义 prompt injection 或选择安全动作。随后再运行真实模型任务。
-
-state-history-free arm 必须通过 runtime/skill_state_host.py 或等价的实际传输边界构造请求：冻结 procedure/model/tools/options/limits manifest 和 observation injector；把 procedure 放入当前 instructions；唯一 user input 只包含 Σ、当前 O 和可选的有界 validation error；禁止 previous_response_id、conversation、prompt reference、context management、旧 assistant/tool item、上下文 header/cookie、proxy session 等历史通道，也不得把累计历史改名塞入 O。每个实际 outbound request 必须与 manifest 重审计并保存 SHA-256、原始脱敏请求、原始响应、observation identity、provider token usage 和 transport timing。如果 SDK 或代理重建请求且无法截获最终 body、header 与会话状态，该 arm 只能记为 state shadow，不能记为 history-free。
-
-所有通过状态验证的 action 仍只是提案；host 必须先持久化 successor，再独立校验工具、参数、权限、工作目录和副作用。不得把 state validation 当作执行授权。
-
-重点测量：交付质量、重复命令/检查/假设、过早覆盖或删除、陈旧事实恢复步数、invalid patch 重试、每步真实请求 token、累计 uncached input token、输出 token、端到端时长和工具调用。只有实际 host 请求完全省略旧消息、历史句柄和 server-side conversation reference，并且所有可变组成部分与完整 request 都受冻结上限约束时，才允许声称“单步客户端可见输入相对任务步数有界”；整个 T 步任务的累计输入仍是 O(T)。State shadow 只能声称减少状态重建，不能声称有界上下文。
-
-必须包含 history-required 对照：审计/溯源任务、动态发现 schema 的任务、早期信息在当时无法判断未来相关性的任务。此类任务应保留有界不可变 artifact 指针或退出 history-free，而不是强行丢弃历史；artifact 字符串通过 schema 校验不等于其不可变、可访问或足够完整，host 必须验证这些属性。
-
-本轮只允许一个候选，例如：激活条件、schema 字段、patch 所有权、history escape hatch、core 中披露量或 host adapter。冻结后按 n=1 调试、n>=3 配对门禁；质量下降则回滚，不得用 token 降低换取正确率下降。
-```
-
 ## 推荐调用顺序
 
 1. 会话产生了可复用经验时，先单独运行“session-to-wiki”。
 2. 累计证据足够时，在新请求中运行“一次原子迭代”。
-3. 候选涉及长任务状态时，附加“专门迭代 SKILL.state 融合”的约束。
-4. 只有冻结候选通过完整配对门禁后，才把它称为已接受的 Skill 改进。
+3. 只有冻结候选通过完整配对门禁后，才把它称为已接受的 Skill 改进。

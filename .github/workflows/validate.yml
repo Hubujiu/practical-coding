@@ -26,30 +26,45 @@ jobs:
       - name: Run benchmark harness unit tests
         working-directory: practical-coding
         run: python -m unittest benchmarks.test_benchmarks benchmarks.test_stability benchmarks.test_catalog benchmarks.test_ladder_analysis benchmarks.test_progressive_validation benchmarks.test_tree_benchmarks benchmarks.test_evolution_workflow
-      - name: Run execution-state unit tests
-        working-directory: practical-coding
-        run: python -m unittest tests.test_skill_state_hardening tests.test_skill_state_host tests.test_skill_state_hypothesis_invariant tests.test_skill_state_model_gate_hardening tests.test_skill_state_model_gate_roles benchmarks.test_skill_state_runtime
-      - name: Validate execution-state model-gate infrastructure
-        working-directory: practical-coding
-        run: |
-          python benchmarks/skill_state_model_cases.py --self-test
-          python benchmarks/skill_state_model_runner.py --self-test
-          python benchmarks/skill_state_model_analysis.py --self-test
       - name: Validate tree topology contract
         working-directory: practical-coding
         run: python benchmarks/tree_validation.py --self-test
       - name: Validate explicit evolution workflow contract
         working-directory: practical-coding
         run: python benchmarks/evolution_workflow_validation.py --self-test --output benchmark-results/evolution-workflow-contract.json
-      - name: Validate execution-state runtime contract
-        working-directory: practical-coding
-        run: python benchmarks/skill_state_validation.py --self-test --output benchmark-results/skill-state-contract.json
       - name: Check manual-only Decision layout
         run: |
           test ! -e practical-coding/references/decision.md
           test -e practical-coding/references/manual/decision.md
       - name: Check Codex default_prompt references the skill as $skill-name
         run: grep -qF '$practical-coding' practical-coding/agents/openai.yaml
+      - name: Ensure retired execution-state experiment is absent
+        run: |
+          retired_files="$({
+            find practical-coding/runtime practical-coding/tests practical-coding/benchmarks \
+              -maxdepth 1 -type f \
+              \( -name '*skill_state*' -o -name 'test_skill_state*' \) \
+              -print 2>/dev/null || true
+            find practical-coding/evolution/experiments \
+              -maxdepth 1 -type f -name 'skill-state-*' -print 2>/dev/null || true
+          })"
+          if test -n "$retired_files"; then
+            printf 'retired execution-state files remain on an active surface:\n%s\n' "$retired_files"
+            exit 1
+          fi
+          test ! -e practical-coding/docs/SKILL_STATE.md
+          test ! -e practical-coding/docs/SKILL_STATE_HOST.md
+          test ! -e practical-coding/docs/SKILL_STATE_INVARIANTS.md
+          test -e practical-coding/evolution/rejected/execution-state/README.md
+          ! grep -R -E \
+            'runtime/skill_state|SKILL_STATE_MODEL_GATE|state-history-free|Execution State Projection|"execution_state"' \
+            practical-coding/SKILL.md \
+            practical-coding/AGENTS.md \
+            practical-coding/README.md \
+            practical-coding/README_zh.md \
+            practical-coding/agents/openai.yaml \
+            practical-coding/benchmarks/README.md \
+            practical-coding/benchmarks/tree_topology.json
       - name: Ensure legacy local graph runtime is not reintroduced
         run: |
           test ! -e practical-coding/runtime/codebase_memory.py
