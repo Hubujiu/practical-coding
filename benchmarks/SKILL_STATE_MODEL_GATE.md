@@ -93,3 +93,15 @@ Keep semantic state failures distinct from format failures:
 - no cost reduction while history remains attached: expected host-boundary limitation, not proof against the mechanism.
 
 Record rejected variants and mechanism-level lessons in `evolution/`; do not patch the router boundary merely to force a favorable state result.
+
+## Gate roles and formal status
+
+The four arms have different decision roles and must not be pooled into one undifferentiated veto:
+
+- **Blocking candidate:** `state-history-free`, compared directly with `full-history` for delivered quality, state semantics, immutable history pointers, and final outbound transport.
+- **Diagnostic only:** `state-shadow`. Report its quality and state failures because they can reveal projection/update pressure, but do not let this arm veto a history-free candidate that independently passes. Shadow still participates in the requirement that a formal four-arm matrix be complete and determinate.
+- **Absolute reference:** `no-skill-full-history`. It supplies context for the value and overhead of the Skill but is not the execution-state ablation baseline.
+
+An `n=1` run is iteration evidence. It may show a blocking candidate defect, but it cannot make the formal composite model gate pass. A formal decision requires a complete paired standard matrix at `n>=3`. The stronger claim evaluated by `execution_state_model_gate` additionally requires the frozen token, latency, and bounded-context gates; those claims remain separate in the report so quality preservation is not confused with efficiency or horizon independence.
+
+Changing these role definitions or any acceptance threshold invalidates the affected formal result. Preserve the old result as evidence, freeze the new analysis identity, and rerun rather than relabeling an existing matrix.
