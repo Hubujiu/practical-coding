@@ -1,6 +1,6 @@
 # Retrieval convergence — iteration 6: preserve discriminating search anchors
 
-Status: **candidate-not-applied**
+Status: **Rejected and rolled back**
 
 ## Frozen hypothesis
 
@@ -42,3 +42,29 @@ Pre-freeze independent review preserved required multi-symbol sets, known spelli
 Fresh54/54 cells complete,53 machine passes,54 valid routing/manual contracts, no spontaneous manual activation or dirty fixtures. All424 outputs measured with no decode/usage gaps. The failed cap:debugging executor cell omits required Error-test evidence and misreads the intended Error/RUNNING/startup-recovery boundary; raw fail and source audit are retained.
 
 Frozen tail (before candidate): pp-running-after-throw371,153 bytes; sa-sensitive-rejection-boundary283,531; pp-token-rotation-boundary186,855. Audited whole-file total174,396 bytes, dependency-source94,225, broad-after-source1. Manual quality is false/true/false respectively: executor misses startup INTERRUPTED recovery; token assumes stateless authentication makes this explicitly single-node application safe for a rolling multi-instance replacement. These are known quality failures, not unresolved attribution. All tail output hashes verified; no unresolved audit items. The tracked baseline JSON freezes result, audit and pre-existing gate-script hashes.
+
+### Complete candidate: rejected
+
+Both54-cell arms complete and comparable; baseline53/candidate54 machine passes, no paired machine regression. Candidate411/411 outputs measured, no decode/malformed/usage gaps; all routing/manual contracts valid and fixtures clean. Exact candidate Skill hash `491ae7780bbf86654bea8d044d379778d363004a899e52561137fcb1a40b91e7`, run HEAD `a5f02d0a4253e16eaf060e093a0c63c0211d52a6` plus only the frozen paragraph. No n=3.
+
+| Tail metric | Baseline total | Candidate total | Paired median ratio |
+|---|---:|---:|---:|
+| tool_output_bytes | 841539 | 659448 | 0.6042386832384489 |
+| input_tokens | 2286242 | 1392532 | 0.9342233511533804 |
+| uncached_input_tokens | 187810 | 163220 | 0.8415560315696629 |
+| tool_calls | 53 | 39 | 0.9130434782608695 |
+| broad_calls_after_first_project_read | 1 | 1 | 1.0 |
+| duplicate_command_calls | 0 | 1 | 1.0 |
+| whole_file_read_bytes | 174396 | 90770 | 0.7220171293561725 |
+| dependency_source_bytes | 94225 | 76431 | 1.0 |
+| outputs_over_64k | 3 | 2 | 0.5 |
+
+Output0.604239 passes, input0.934223 fails0.90. Broad-after-source1 does not halve baseline1; duplicate commands increase. Whole-file/dependency/uncached totals improve. All-cell input0.936193 and tools1.0 pass; duration remains telemetry. Formal decision: Rejected.
+
+Manual tail quality remains false/true/false. Executor misdiagnoses intended Error/RUNNING and omits startup INTERRUPTED recovery, while naming an unsubstantiated test; actual class suite25/0 is preserved. Token correctly acknowledges a single instance cannot restart without interruption but still bases the proposed guarantee on existing multi-instance deployment without resolving the explicit single-node lifecycle contract. Sensitive passes with a minor non-substantive link-format defect. All audit hashes and raw answers are retained.
+
+The proposed query-specificity mechanism was not consistently followed: token initial search still ORs11 general terms,188,987bytes (63.1%of its output); executor root+module searches emit183,901bytes (82%). A later executor read repeats137 lines already returned. Lower tool count or source-file bytes does not ensure sufficient input reduction or correct use of the contract.
+
+Material unknown output outside the tail (sensitive cap:core event9) is a successful source-JAR read with two full classes plus a partial class:18,583bytes conservatively whole/dependency, verified from raw output and archive lengths. Its separate audit preserves automatic estimates. Sensitive adaptive initial source includes vendored UID implementation even with Java/XML filtering; full mixed-event attribution is retained.
+
+Sanitized results: `benchmarks/results/retrieval-convergence/20260903-iteration-6.json`. Full matrices/audits and exact candidate snapshot/patch remain under benchmark-results. Rollback: `git restore --source=72d6d138228664c7ec2efc1fc8e12e3dba9b87a6 -- SKILL.md`; original runtime restored. No threshold/scorer/case/Router change.

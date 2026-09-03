@@ -1,0 +1,5601 @@
+{
+  "iteration": 6,
+  "disposition": "Rejected and rolled back",
+  "gate_decision": "Rejected",
+  "candidate_commit": null,
+  "candidate_skill_sha256": "491ae7780bbf86654bea8d044d379778d363004a899e52561137fcb1a40b91e7",
+  "baseline_ref": "72d6d138228664c7ec2efc1fc8e12e3dba9b87a6",
+  "baseline_artifact": "benchmark-results/retrieval-iteration-6-baseline-n1",
+  "candidate_artifact": "benchmark-results/retrieval-iteration-6-candidate-n1",
+  "raw_sha256": {
+    "baseline": "4763fbfffb711a1163f0d3b0e1acfc90510f22c86b236332a1762805f67cb648",
+    "candidate": "b9e6ccc123a2abef5b4d91e7d62d733079d9d1c729935b24939ab83731a16394"
+  },
+  "comparison": {
+    "decision": "Rejected",
+    "identities": {
+      "baseline_ref": true,
+      "model": true,
+      "reasoning": true,
+      "harness_version": true,
+      "retrieval_metrics_version": true,
+      "timeout": true,
+      "workers": true,
+      "workers_per_shard": true,
+      "max_cells_per_shard": true,
+      "repetitions": true,
+      "specs": true,
+      "repositories": true,
+      "file_sha256": true,
+      "baseline_runtime_file_sha256": true,
+      "baseline_bundle_sha256": true,
+      "topology_sha256": true,
+      "codex_sha256": true,
+      "codex_version": true,
+      "python": true,
+      "platform": true,
+      "path_sha256": true,
+      "build_conditions": true,
+      "exact_cells": true,
+      "shard_assignment": true,
+      "only_skill_changed": true,
+      "frozen_candidate": true
+    },
+    "gates": {
+      "infrastructure": true,
+      "quality": false,
+      "tail_output_ratio_le_070": true,
+      "tail_broad_after_read_halved": false,
+      "duplicate_command_calls_not_increased": false,
+      "whole_file_read_bytes_not_increased": true,
+      "dependency_source_bytes_not_increased": true,
+      "outputs_over_64k_not_increased": true,
+      "uncached_input_tokens_not_increased": true,
+      "tail_input_ratio_le_090": false,
+      "all_input_ratio_le_102": true,
+      "all_tool_calls_ratio_le_100": true
+    },
+    "quality_regressions": [],
+    "tail_quality_audits": [
+      {
+        "task_id": "pp-running-after-throw",
+        "baseline_quality_ok": false,
+        "candidate_quality_ok": false
+      },
+      {
+        "task_id": "pp-token-rotation-boundary",
+        "baseline_quality_ok": false,
+        "candidate_quality_ok": false
+      },
+      {
+        "task_id": "sa-sensitive-rejection-boundary",
+        "baseline_quality_ok": true,
+        "candidate_quality_ok": true
+      }
+    ],
+    "all": {
+      "tool_output_bytes": {
+        "baseline_sum": 8794597,
+        "candidate_sum": 6254182,
+        "median_ratio": 0.9590016436322124,
+        "per_pair": [
+          {
+            "task_id": "ca-avif-stall-evidence",
+            "variant": "adaptive",
+            "repetition": 1,
+            "baseline": 65461,
+            "candidate": 57823,
+            "ratio": 0.8833198392936252
+          },
+          {
+            "task_id": "ca-avif-stall-evidence",
+            "variant": "cap:core",
+            "repetition": 1,
+            "baseline": 88033,
+            "candidate": 49544,
+            "ratio": 0.5627889541421967
+          },
+          {
+            "task_id": "ca-avif-stall-evidence",
+            "variant": "cap:debugging",
+            "repetition": 1,
+            "baseline": 68867,
+            "candidate": 80852,
+            "ratio": 1.1740311034312516
+          },
+          {
+            "task_id": "ca-avif-stall-evidence",
+            "variant": "cap:implementation",
+            "repetition": 1,
+            "baseline": 94892,
+            "candidate": 65922,
+            "ratio": 0.6947055600050583
+          },
+          {
+            "task_id": "ca-cancel-download",
+            "variant": "adaptive",
+            "repetition": 1,
+            "baseline": 80540,
+            "candidate": 79638,
+            "ratio": 0.9888005959771542
+          },
+          {
+            "task_id": "ca-cancel-download",
+            "variant": "cap:core",
+            "repetition": 1,
+            "baseline": 64771,
+            "candidate": 69344,
+            "ratio": 1.0706025844899723
+          },
+          {
+            "task_id": "ca-cancel-download",
+            "variant": "cap:debugging",
+            "repetition": 1,
+            "baseline": 53872,
+            "candidate": 72776,
+            "ratio": 1.350905850905851
+          },
+          {
+            "task_id": "ca-cancel-download",
+            "variant": "cap:implementation",
+            "repetition": 1,
+            "baseline": 65407,
+            "candidate": 60352,
+            "ratio": 0.9227146941458865
+          },
+          {
+            "task_id": "ca-export-filename-probe",
+            "variant": "adaptive",
+            "repetition": 1,
+            "baseline": 4605,
+            "candidate": 13244,
+            "ratio": 2.87600434310532
+          },
+          {
+            "task_id": "ca-export-filename-probe",
+            "variant": "cap:core",
+            "repetition": 1,
+            "baseline": 5955,
+            "candidate": 11405,
+            "ratio": 1.9151973131821998
+          },
+          {
+            "task_id": "ca-export-filename-probe",
+            "variant": "cap:debugging",
+            "repetition": 1,
+            "baseline": 5180,
+            "candidate": 3441,
+            "ratio": 0.6642857142857143
+          },
+          {
+            "task_id": "ca-export-filename-probe",
+            "variant": "cap:implementation",
+            "repetition": 1,
+            "baseline": 3682,
+            "candidate": 5577,
+            "ratio": 1.5146659424225963
+          },
+          {
+            "task_id": "ca-export-format-known",
+            "variant": "adaptive",
+            "repetition": 1,
+            "baseline": 1973,
+            "candidate": 1040,
+            "ratio": 0.5271160669031931
+          },
+          {
+            "task_id": "ca-export-format-known",
+            "variant": "cap:core",
+            "repetition": 1,
+            "baseline": 1107,
+            "candidate": 1040,
+            "ratio": 0.9394760614272809
+          },
+          {
+            "task_id": "ca-export-format-known",
+            "variant": "cap:debugging",
+            "repetition": 1,
+            "baseline": 1040,
+            "candidate": 933,
+            "ratio": 0.8971153846153846
+          },
+          {
+            "task_id": "ca-export-format-known",
+            "variant": "cap:implementation",
+            "repetition": 1,
+            "baseline": 933,
+            "candidate": 1040,
+            "ratio": 1.1146838156484458
+          },
+          {
+            "task_id": "ca-new-format-existing-pattern",
+            "variant": "adaptive",
+            "repetition": 1,
+            "baseline": 101056,
+            "candidate": 64725,
+            "ratio": 0.640486462951235
+          },
+          {
+            "task_id": "ca-new-format-existing-pattern",
+            "variant": "cap:core",
+            "repetition": 1,
+            "baseline": 77590,
+            "candidate": 76646,
+            "ratio": 0.9878334836963526
+          },
+          {
+            "task_id": "ca-new-format-existing-pattern",
+            "variant": "cap:debugging",
+            "repetition": 1,
+            "baseline": 66074,
+            "candidate": 68890,
+            "ratio": 1.042618881859733
+          },
+          {
+            "task_id": "ca-new-format-existing-pattern",
+            "variant": "cap:implementation",
+            "repetition": 1,
+            "baseline": 92909,
+            "candidate": 82146,
+            "ratio": 0.8841554639485949
+          },
+          {
+            "task_id": "pp-compatibility-manual-decision",
+            "variant": "adaptive",
+            "repetition": 1,
+            "baseline": 1118421,
+            "candidate": 1145843,
+            "ratio": 1.0245184952714586
+          },
+          {
+            "task_id": "pp-known-contract",
+            "variant": "adaptive",
+            "repetition": 1,
+            "baseline": 11364,
+            "candidate": 6198,
+            "ratio": 0.5454065469904963
+          },
+          {
+            "task_id": "pp-known-contract",
+            "variant": "cap:core",
+            "repetition": 1,
+            "baseline": 6198,
+            "candidate": 5406,
+            "ratio": 0.872216844143272
+          },
+          {
+            "task_id": "pp-known-contract",
+            "variant": "cap:debugging",
+            "repetition": 1,
+            "baseline": 5406,
+            "candidate": 7399,
+            "ratio": 1.3686644469108398
+          },
+          {
+            "task_id": "pp-known-contract",
+            "variant": "cap:implementation",
+            "repetition": 1,
+            "baseline": 6198,
+            "candidate": 5958,
+            "ratio": 0.9612778315585673
+          },
+          {
+            "task_id": "pp-lifecycle-map",
+            "variant": "adaptive",
+            "repetition": 1,
+            "baseline": 113893,
+            "candidate": 116051,
+            "ratio": 1.0189476087204656
+          },
+          {
+            "task_id": "pp-lifecycle-map",
+            "variant": "cap:core",
+            "repetition": 1,
+            "baseline": 96283,
+            "candidate": 141708,
+            "ratio": 1.4717862966463446
+          },
+          {
+            "task_id": "pp-lifecycle-map",
+            "variant": "cap:debugging",
+            "repetition": 1,
+            "baseline": 98001,
+            "candidate": 137911,
+            "ratio": 1.4072407424414037
+          },
+          {
+            "task_id": "pp-lifecycle-map",
+            "variant": "cap:implementation",
+            "repetition": 1,
+            "baseline": 103552,
+            "candidate": 117238,
+            "ratio": 1.1321654820766378
+          },
+          {
+            "task_id": "pp-running-after-throw",
+            "variant": "adaptive",
+            "repetition": 1,
+            "baseline": 371153,
+            "candidate": 224265,
+            "ratio": 0.6042386832384489
+          },
+          {
+            "task_id": "pp-running-after-throw",
+            "variant": "cap:core",
+            "repetition": 1,
+            "baseline": 211701,
+            "candidate": 237694,
+            "ratio": 1.1227816590379829
+          },
+          {
+            "task_id": "pp-running-after-throw",
+            "variant": "cap:debugging",
+            "repetition": 1,
+            "baseline": 375483,
+            "candidate": 189735,
+            "ratio": 0.5053091617996021
+          },
+          {
+            "task_id": "pp-running-after-throw",
+            "variant": "cap:implementation",
+            "repetition": 1,
+            "baseline": 412819,
+            "candidate": 133912,
+            "ratio": 0.32438429432753824
+          },
+          {
+            "task_id": "pp-token-rotation-boundary",
+            "variant": "adaptive",
+            "repetition": 1,
+            "baseline": 186855,
+            "candidate": 299299,
+            "ratio": 1.601771427042359
+          },
+          {
+            "task_id": "pp-token-rotation-boundary",
+            "variant": "cap:core",
+            "repetition": 1,
+            "baseline": 159358,
+            "candidate": 197082,
+            "ratio": 1.23672485849471
+          },
+          {
+            "task_id": "pp-token-rotation-boundary",
+            "variant": "cap:debugging",
+            "repetition": 1,
+            "baseline": 271140,
+            "candidate": 254617,
+            "ratio": 0.9390610016965405
+          },
+          {
+            "task_id": "pp-token-rotation-boundary",
+            "variant": "cap:implementation",
+            "repetition": 1,
+            "baseline": 320142,
+            "candidate": 125078,
+            "ratio": 0.39069537892560174
+          },
+          {
+            "task_id": "sa-memory-map",
+            "variant": "adaptive",
+            "repetition": 1,
+            "baseline": 55535,
+            "candidate": 49217,
+            "ratio": 0.8862339065454218
+          },
+          {
+            "task_id": "sa-memory-map",
+            "variant": "cap:core",
+            "repetition": 1,
+            "baseline": 66958,
+            "candidate": 39670,
+            "ratio": 0.5924609456674333
+          },
+          {
+            "task_id": "sa-memory-map",
+            "variant": "cap:debugging",
+            "repetition": 1,
+            "baseline": 51825,
+            "candidate": 67862,
+            "ratio": 1.3094452484322239
+          },
+          {
+            "task_id": "sa-memory-map",
+            "variant": "cap:implementation",
+            "repetition": 1,
+            "baseline": 70372,
+            "candidate": 159407,
+            "ratio": 2.265204911044165
+          },
+          {
+            "task_id": "sa-memory-reset-concurrency",
+            "variant": "adaptive",
+            "repetition": 1,
+            "baseline": 160682,
+            "candidate": 119509,
+            "ratio": 0.7437609688701908
+          },
+          {
+            "task_id": "sa-memory-reset-concurrency",
+            "variant": "cap:core",
+            "repetition": 1,
+            "baseline": 70404,
+            "candidate": 60891,
+            "ratio": 0.8648798363729333
+          },
+          {
+            "task_id": "sa-memory-reset-concurrency",
+            "variant": "cap:debugging",
+            "repetition": 1,
+            "baseline": 146636,
+            "candidate": 69671,
+            "ratio": 0.4751288905862135
+          },
+          {
+            "task_id": "sa-memory-reset-concurrency",
+            "variant": "cap:implementation",
+            "repetition": 1,
+            "baseline": 128482,
+            "candidate": 122922,
+            "ratio": 0.9567254557058577
+          },
+          {
+            "task_id": "sa-memory-strategy-manual-decision",
+            "variant": "adaptive",
+            "repetition": 1,
+            "baseline": 1238674,
+            "candidate": 228816,
+            "ratio": 0.1847265705100777
+          },
+          {
+            "task_id": "sa-module-compile-probe",
+            "variant": "adaptive",
+            "repetition": 1,
+            "baseline": 18763,
+            "candidate": 33875,
+            "ratio": 1.805414912327453
+          },
+          {
+            "task_id": "sa-module-compile-probe",
+            "variant": "cap:core",
+            "repetition": 1,
+            "baseline": 11215,
+            "candidate": 19493,
+            "ratio": 1.7381185911725368
+          },
+          {
+            "task_id": "sa-module-compile-probe",
+            "variant": "cap:debugging",
+            "repetition": 1,
+            "baseline": 10285,
+            "candidate": 51061,
+            "ratio": 4.964608653378707
+          },
+          {
+            "task_id": "sa-module-compile-probe",
+            "variant": "cap:implementation",
+            "repetition": 1,
+            "baseline": 18759,
+            "candidate": 15878,
+            "ratio": 0.8464203848819234
+          },
+          {
+            "task_id": "sa-sensitive-rejection-boundary",
+            "variant": "adaptive",
+            "repetition": 1,
+            "baseline": 283531,
+            "candidate": 135884,
+            "ratio": 0.4792562365314551
+          },
+          {
+            "task_id": "sa-sensitive-rejection-boundary",
+            "variant": "cap:core",
+            "repetition": 1,
+            "baseline": 137965,
+            "candidate": 187051,
+            "ratio": 1.3557858877251476
+          },
+          {
+            "task_id": "sa-sensitive-rejection-boundary",
+            "variant": "cap:debugging",
+            "repetition": 1,
+            "baseline": 216971,
+            "candidate": 485346,
+            "ratio": 2.236916454272691
+          },
+          {
+            "task_id": "sa-sensitive-rejection-boundary",
+            "variant": "cap:implementation",
+            "repetition": 1,
+            "baseline": 1295626,
+            "candidate": 195857,
+            "ratio": 0.1511678524512475
+          }
+        ]
+      },
+      "input_tokens": {
+        "baseline_sum": 15929737,
+        "candidate_sum": 14908180,
+        "median_ratio": 0.93619345284614,
+        "per_pair": [
+          {
+            "task_id": "ca-avif-stall-evidence",
+            "variant": "adaptive",
+            "repetition": 1,
+            "baseline": 201599,
+            "candidate": 115625,
+            "ratio": 0.5735395512874568
+          },
+          {
+            "task_id": "ca-avif-stall-evidence",
+            "variant": "cap:core",
+            "repetition": 1,
+            "baseline": 235150,
+            "candidate": 157572,
+            "ratio": 0.6700914310014884
+          },
+          {
+            "task_id": "ca-avif-stall-evidence",
+            "variant": "cap:debugging",
+            "repetition": 1,
+            "baseline": 184763,
+            "candidate": 152425,
+            "ratio": 0.8249757797827487
+          },
+          {
+            "task_id": "ca-avif-stall-evidence",
+            "variant": "cap:implementation",
+            "repetition": 1,
+            "baseline": 197781,
+            "candidate": 172763,
+            "ratio": 0.87350655523028
+          },
+          {
+            "task_id": "ca-cancel-download",
+            "variant": "adaptive",
+            "repetition": 1,
+            "baseline": 135102,
+            "candidate": 506243,
+            "ratio": 3.747116993086705
+          },
+          {
+            "task_id": "ca-cancel-download",
+            "variant": "cap:core",
+            "repetition": 1,
+            "baseline": 217950,
+            "candidate": 215153,
+            "ratio": 0.9871667813718743
+          },
+          {
+            "task_id": "ca-cancel-download",
+            "variant": "cap:debugging",
+            "repetition": 1,
+            "baseline": 386120,
+            "candidate": 205099,
+            "ratio": 0.5311794260851549
+          },
+          {
+            "task_id": "ca-cancel-download",
+            "variant": "cap:implementation",
+            "repetition": 1,
+            "baseline": 206040,
+            "candidate": 345344,
+            "ratio": 1.676101727819841
+          },
+          {
+            "task_id": "ca-export-filename-probe",
+            "variant": "adaptive",
+            "repetition": 1,
+            "baseline": 67591,
+            "candidate": 75604,
+            "ratio": 1.1185512864138716
+          },
+          {
+            "task_id": "ca-export-filename-probe",
+            "variant": "cap:core",
+            "repetition": 1,
+            "baseline": 147138,
+            "candidate": 74614,
+            "ratio": 0.5071021761883402
+          },
+          {
+            "task_id": "ca-export-filename-probe",
+            "variant": "cap:debugging",
+            "repetition": 1,
+            "baseline": 84066,
+            "candidate": 68041,
+            "ratio": 0.80937596650251
+          },
+          {
+            "task_id": "ca-export-filename-probe",
+            "variant": "cap:implementation",
+            "repetition": 1,
+            "baseline": 53623,
+            "candidate": 69757,
+            "ratio": 1.3008783544374616
+          },
+          {
+            "task_id": "ca-export-format-known",
+            "variant": "adaptive",
+            "repetition": 1,
+            "baseline": 38215,
+            "candidate": 25192,
+            "ratio": 0.6592175847180427
+          },
+          {
+            "task_id": "ca-export-format-known",
+            "variant": "cap:core",
+            "repetition": 1,
+            "baseline": 25329,
+            "candidate": 25404,
+            "ratio": 1.0029610328082434
+          },
+          {
+            "task_id": "ca-export-format-known",
+            "variant": "cap:debugging",
+            "repetition": 1,
+            "baseline": 25219,
+            "candidate": 25371,
+            "ratio": 1.006027201712994
+          },
+          {
+            "task_id": "ca-export-format-known",
+            "variant": "cap:implementation",
+            "repetition": 1,
+            "baseline": 25116,
+            "candidate": 25430,
+            "ratio": 1.0125019907628603
+          },
+          {
+            "task_id": "ca-new-format-existing-pattern",
+            "variant": "adaptive",
+            "repetition": 1,
+            "baseline": 215381,
+            "candidate": 158780,
+            "ratio": 0.7372052316592457
+          },
+          {
+            "task_id": "ca-new-format-existing-pattern",
+            "variant": "cap:core",
+            "repetition": 1,
+            "baseline": 183155,
+            "candidate": 129744,
+            "ratio": 0.7083836095110698
+          },
+          {
+            "task_id": "ca-new-format-existing-pattern",
+            "variant": "cap:debugging",
+            "repetition": 1,
+            "baseline": 146498,
+            "candidate": 178580,
+            "ratio": 1.2189927507542766
+          },
+          {
+            "task_id": "ca-new-format-existing-pattern",
+            "variant": "cap:implementation",
+            "repetition": 1,
+            "baseline": 192167,
+            "candidate": 184231,
+            "ratio": 0.9587025868125121
+          },
+          {
+            "task_id": "pp-compatibility-manual-decision",
+            "variant": "adaptive",
+            "repetition": 1,
+            "baseline": 599075,
+            "candidate": 277985,
+            "ratio": 0.46402370320911407
+          },
+          {
+            "task_id": "pp-known-contract",
+            "variant": "adaptive",
+            "repetition": 1,
+            "baseline": 41542,
+            "candidate": 26759,
+            "ratio": 0.6441432766838381
+          },
+          {
+            "task_id": "pp-known-contract",
+            "variant": "cap:core",
+            "repetition": 1,
+            "baseline": 26726,
+            "candidate": 26223,
+            "ratio": 0.9811793758886478
+          },
+          {
+            "task_id": "pp-known-contract",
+            "variant": "cap:debugging",
+            "repetition": 1,
+            "baseline": 26090,
+            "candidate": 41286,
+            "ratio": 1.5824453813721733
+          },
+          {
+            "task_id": "pp-known-contract",
+            "variant": "cap:implementation",
+            "repetition": 1,
+            "baseline": 26721,
+            "candidate": 26554,
+            "ratio": 0.993750233898432
+          },
+          {
+            "task_id": "pp-lifecycle-map",
+            "variant": "adaptive",
+            "repetition": 1,
+            "baseline": 222485,
+            "candidate": 124134,
+            "ratio": 0.5579432321280087
+          },
+          {
+            "task_id": "pp-lifecycle-map",
+            "variant": "cap:core",
+            "repetition": 1,
+            "baseline": 124435,
+            "candidate": 255109,
+            "ratio": 2.050138626592197
+          },
+          {
+            "task_id": "pp-lifecycle-map",
+            "variant": "cap:debugging",
+            "repetition": 1,
+            "baseline": 200043,
+            "candidate": 177801,
+            "ratio": 0.8888139050104228
+          },
+          {
+            "task_id": "pp-lifecycle-map",
+            "variant": "cap:implementation",
+            "repetition": 1,
+            "baseline": 183068,
+            "candidate": 155085,
+            "ratio": 0.8471442305591365
+          },
+          {
+            "task_id": "pp-running-after-throw",
+            "variant": "adaptive",
+            "repetition": 1,
+            "baseline": 458127,
+            "candidate": 433849,
+            "ratio": 0.9470059612290915
+          },
+          {
+            "task_id": "pp-running-after-throw",
+            "variant": "cap:core",
+            "repetition": 1,
+            "baseline": 467176,
+            "candidate": 465814,
+            "ratio": 0.9970846105108139
+          },
+          {
+            "task_id": "pp-running-after-throw",
+            "variant": "cap:debugging",
+            "repetition": 1,
+            "baseline": 567804,
+            "candidate": 396612,
+            "ratio": 0.6985015956210242
+          },
+          {
+            "task_id": "pp-running-after-throw",
+            "variant": "cap:implementation",
+            "repetition": 1,
+            "baseline": 393282,
+            "candidate": 432061,
+            "ratio": 1.0986035465645516
+          },
+          {
+            "task_id": "pp-token-rotation-boundary",
+            "variant": "adaptive",
+            "repetition": 1,
+            "baseline": 541712,
+            "candidate": 506080,
+            "ratio": 0.9342233511533804
+          },
+          {
+            "task_id": "pp-token-rotation-boundary",
+            "variant": "cap:core",
+            "repetition": 1,
+            "baseline": 440897,
+            "candidate": 661898,
+            "ratio": 1.5012531271476104
+          },
+          {
+            "task_id": "pp-token-rotation-boundary",
+            "variant": "cap:debugging",
+            "repetition": 1,
+            "baseline": 481464,
+            "candidate": 511881,
+            "ratio": 1.0631760630078262
+          },
+          {
+            "task_id": "pp-token-rotation-boundary",
+            "variant": "cap:implementation",
+            "repetition": 1,
+            "baseline": 574079,
+            "candidate": 430370,
+            "ratio": 0.7496703415383597
+          },
+          {
+            "task_id": "sa-memory-map",
+            "variant": "adaptive",
+            "repetition": 1,
+            "baseline": 130558,
+            "candidate": 97350,
+            "ratio": 0.7456456134438334
+          },
+          {
+            "task_id": "sa-memory-map",
+            "variant": "cap:core",
+            "repetition": 1,
+            "baseline": 161779,
+            "candidate": 85309,
+            "ratio": 0.5273181315251052
+          },
+          {
+            "task_id": "sa-memory-map",
+            "variant": "cap:debugging",
+            "repetition": 1,
+            "baseline": 125629,
+            "candidate": 63990,
+            "ratio": 0.5093569159986946
+          },
+          {
+            "task_id": "sa-memory-map",
+            "variant": "cap:implementation",
+            "repetition": 1,
+            "baseline": 143024,
+            "candidate": 137540,
+            "ratio": 0.9616567848752657
+          },
+          {
+            "task_id": "sa-memory-reset-concurrency",
+            "variant": "adaptive",
+            "repetition": 1,
+            "baseline": 510894,
+            "candidate": 451587,
+            "ratio": 0.883915254436341
+          },
+          {
+            "task_id": "sa-memory-reset-concurrency",
+            "variant": "cap:core",
+            "repetition": 1,
+            "baseline": 307476,
+            "candidate": 246339,
+            "ratio": 0.8011649689731881
+          },
+          {
+            "task_id": "sa-memory-reset-concurrency",
+            "variant": "cap:debugging",
+            "repetition": 1,
+            "baseline": 543790,
+            "candidate": 282857,
+            "ratio": 0.520158517074606
+          },
+          {
+            "task_id": "sa-memory-reset-concurrency",
+            "variant": "cap:implementation",
+            "repetition": 1,
+            "baseline": 902776,
+            "candidate": 670074,
+            "ratio": 0.7422372770210993
+          },
+          {
+            "task_id": "sa-memory-strategy-manual-decision",
+            "variant": "adaptive",
+            "repetition": 1,
+            "baseline": 222088,
+            "candidate": 244398,
+            "ratio": 1.1004556752278376
+          },
+          {
+            "task_id": "sa-module-compile-probe",
+            "variant": "adaptive",
+            "repetition": 1,
+            "baseline": 111050,
+            "candidate": 165327,
+            "ratio": 1.4887618190004503
+          },
+          {
+            "task_id": "sa-module-compile-probe",
+            "variant": "cap:core",
+            "repetition": 1,
+            "baseline": 72834,
+            "candidate": 80708,
+            "ratio": 1.1081088502622403
+          },
+          {
+            "task_id": "sa-module-compile-probe",
+            "variant": "cap:debugging",
+            "repetition": 1,
+            "baseline": 71993,
+            "candidate": 142074,
+            "ratio": 1.9734418624032892
+          },
+          {
+            "task_id": "sa-module-compile-probe",
+            "variant": "cap:implementation",
+            "repetition": 1,
+            "baseline": 80438,
+            "candidate": 75464,
+            "ratio": 0.9381635545388995
+          },
+          {
+            "task_id": "sa-sensitive-rejection-boundary",
+            "variant": "adaptive",
+            "repetition": 1,
+            "baseline": 1286403,
+            "candidate": 452603,
+            "ratio": 0.3518360886907136
+          },
+          {
+            "task_id": "sa-sensitive-rejection-boundary",
+            "variant": "cap:core",
+            "repetition": 1,
+            "baseline": 530474,
+            "candidate": 984124,
+            "ratio": 1.8551785761413377
+          },
+          {
+            "task_id": "sa-sensitive-rejection-boundary",
+            "variant": "cap:debugging",
+            "repetition": 1,
+            "baseline": 1443436,
+            "candidate": 2413884,
+            "ratio": 1.6723179967799058
+          },
+          {
+            "task_id": "sa-sensitive-rejection-boundary",
+            "variant": "cap:implementation",
+            "repetition": 1,
+            "baseline": 942366,
+            "candidate": 454079,
+            "ratio": 0.48184993940783094
+          }
+        ]
+      },
+      "cached_input_tokens": {
+        "baseline_sum": 14109440,
+        "candidate_sum": 13059328,
+        "median_ratio": 0.9107425385080989,
+        "per_pair": [
+          {
+            "task_id": "ca-avif-stall-evidence",
+            "variant": "adaptive",
+            "repetition": 1,
+            "baseline": 173056,
+            "candidate": 90880,
+            "ratio": 0.5251479289940828
+          },
+          {
+            "task_id": "ca-avif-stall-evidence",
+            "variant": "cap:core",
+            "repetition": 1,
+            "baseline": 201728,
+            "candidate": 135424,
+            "ratio": 0.6713197969543148
+          },
+          {
+            "task_id": "ca-avif-stall-evidence",
+            "variant": "cap:debugging",
+            "repetition": 1,
+            "baseline": 155648,
+            "candidate": 117248,
+            "ratio": 0.7532894736842105
+          },
+          {
+            "task_id": "ca-avif-stall-evidence",
+            "variant": "cap:implementation",
+            "repetition": 1,
+            "baseline": 164096,
+            "candidate": 142592,
+            "ratio": 0.8689547581903276
+          },
+          {
+            "task_id": "ca-cancel-download",
+            "variant": "adaptive",
+            "repetition": 1,
+            "baseline": 101888,
+            "candidate": 458496,
+            "ratio": 4.5
+          },
+          {
+            "task_id": "ca-cancel-download",
+            "variant": "cap:core",
+            "repetition": 1,
+            "baseline": 186112,
+            "candidate": 180992,
+            "ratio": 0.9724896836313618
+          },
+          {
+            "task_id": "ca-cancel-download",
+            "variant": "cap:debugging",
+            "repetition": 1,
+            "baseline": 350464,
+            "candidate": 175104,
+            "ratio": 0.4996347699050402
+          },
+          {
+            "task_id": "ca-cancel-download",
+            "variant": "cap:implementation",
+            "repetition": 1,
+            "baseline": 175104,
+            "candidate": 312064,
+            "ratio": 1.7821637426900585
+          },
+          {
+            "task_id": "ca-export-filename-probe",
+            "variant": "adaptive",
+            "repetition": 1,
+            "baseline": 59136,
+            "candidate": 57088,
+            "ratio": 0.9653679653679653
+          },
+          {
+            "task_id": "ca-export-filename-probe",
+            "variant": "cap:core",
+            "repetition": 1,
+            "baseline": 129536,
+            "candidate": 65280,
+            "ratio": 0.5039525691699605
+          },
+          {
+            "task_id": "ca-export-filename-probe",
+            "variant": "cap:debugging",
+            "repetition": 1,
+            "baseline": 70144,
+            "candidate": 59136,
+            "ratio": 0.843065693430657
+          },
+          {
+            "task_id": "ca-export-filename-probe",
+            "variant": "cap:implementation",
+            "repetition": 1,
+            "baseline": 47104,
+            "candidate": 47104,
+            "ratio": 1.0
+          },
+          {
+            "task_id": "ca-export-format-known",
+            "variant": "adaptive",
+            "repetition": 1,
+            "baseline": 29952,
+            "candidate": 17920,
+            "ratio": 0.5982905982905983
+          },
+          {
+            "task_id": "ca-export-format-known",
+            "variant": "cap:core",
+            "repetition": 1,
+            "baseline": 17920,
+            "candidate": 20992,
+            "ratio": 1.1714285714285715
+          },
+          {
+            "task_id": "ca-export-format-known",
+            "variant": "cap:debugging",
+            "repetition": 1,
+            "baseline": 20992,
+            "candidate": 20992,
+            "ratio": 1.0
+          },
+          {
+            "task_id": "ca-export-format-known",
+            "variant": "cap:implementation",
+            "repetition": 1,
+            "baseline": 20992,
+            "candidate": 20992,
+            "ratio": 1.0
+          },
+          {
+            "task_id": "ca-new-format-existing-pattern",
+            "variant": "adaptive",
+            "repetition": 1,
+            "baseline": 182272,
+            "candidate": 127232,
+            "ratio": 0.6980337078651685
+          },
+          {
+            "task_id": "ca-new-format-existing-pattern",
+            "variant": "cap:core",
+            "repetition": 1,
+            "baseline": 152832,
+            "candidate": 81664,
+            "ratio": 0.5343383584589615
+          },
+          {
+            "task_id": "ca-new-format-existing-pattern",
+            "variant": "cap:debugging",
+            "repetition": 1,
+            "baseline": 114944,
+            "candidate": 145408,
+            "ratio": 1.265033407572383
+          },
+          {
+            "task_id": "ca-new-format-existing-pattern",
+            "variant": "cap:implementation",
+            "repetition": 1,
+            "baseline": 156928,
+            "candidate": 155648,
+            "ratio": 0.9918433931484503
+          },
+          {
+            "task_id": "pp-compatibility-manual-decision",
+            "variant": "adaptive",
+            "repetition": 1,
+            "baseline": 544000,
+            "candidate": 230400,
+            "ratio": 0.4235294117647059
+          },
+          {
+            "task_id": "pp-known-contract",
+            "variant": "adaptive",
+            "repetition": 1,
+            "baseline": 34048,
+            "candidate": 20992,
+            "ratio": 0.6165413533834586
+          },
+          {
+            "task_id": "pp-known-contract",
+            "variant": "cap:core",
+            "repetition": 1,
+            "baseline": 20992,
+            "candidate": 20992,
+            "ratio": 1.0
+          },
+          {
+            "task_id": "pp-known-contract",
+            "variant": "cap:debugging",
+            "repetition": 1,
+            "baseline": 20992,
+            "candidate": 20992,
+            "ratio": 1.0
+          },
+          {
+            "task_id": "pp-known-contract",
+            "variant": "cap:implementation",
+            "repetition": 1,
+            "baseline": 20992,
+            "candidate": 20992,
+            "ratio": 1.0
+          },
+          {
+            "task_id": "pp-lifecycle-map",
+            "variant": "adaptive",
+            "repetition": 1,
+            "baseline": 186368,
+            "candidate": 89856,
+            "ratio": 0.48214285714285715
+          },
+          {
+            "task_id": "pp-lifecycle-map",
+            "variant": "cap:core",
+            "repetition": 1,
+            "baseline": 79616,
+            "candidate": 216064,
+            "ratio": 2.7138263665594855
+          },
+          {
+            "task_id": "pp-lifecycle-map",
+            "variant": "cap:debugging",
+            "repetition": 1,
+            "baseline": 166912,
+            "candidate": 140800,
+            "ratio": 0.843558282208589
+          },
+          {
+            "task_id": "pp-lifecycle-map",
+            "variant": "cap:implementation",
+            "repetition": 1,
+            "baseline": 146688,
+            "candidate": 112128,
+            "ratio": 0.7643979057591623
+          },
+          {
+            "task_id": "pp-running-after-throw",
+            "variant": "adaptive",
+            "repetition": 1,
+            "baseline": 411392,
+            "candidate": 395008,
+            "ratio": 0.9601742377100186
+          },
+          {
+            "task_id": "pp-running-after-throw",
+            "variant": "cap:core",
+            "repetition": 1,
+            "baseline": 424704,
+            "candidate": 414720,
+            "ratio": 0.976491862567812
+          },
+          {
+            "task_id": "pp-running-after-throw",
+            "variant": "cap:debugging",
+            "repetition": 1,
+            "baseline": 520448,
+            "candidate": 355328,
+            "ratio": 0.6827348745696016
+          },
+          {
+            "task_id": "pp-running-after-throw",
+            "variant": "cap:implementation",
+            "repetition": 1,
+            "baseline": 351488,
+            "candidate": 390656,
+            "ratio": 1.1114348142753094
+          },
+          {
+            "task_id": "pp-token-rotation-boundary",
+            "variant": "adaptive",
+            "repetition": 1,
+            "baseline": 487936,
+            "candidate": 455168,
+            "ratio": 0.9328436516264428
+          },
+          {
+            "task_id": "pp-token-rotation-boundary",
+            "variant": "cap:core",
+            "repetition": 1,
+            "baseline": 395264,
+            "candidate": 608000,
+            "ratio": 1.5382124352331605
+          },
+          {
+            "task_id": "pp-token-rotation-boundary",
+            "variant": "cap:debugging",
+            "repetition": 1,
+            "baseline": 431104,
+            "candidate": 456448,
+            "ratio": 1.0587885985748218
+          },
+          {
+            "task_id": "pp-token-rotation-boundary",
+            "variant": "cap:implementation",
+            "repetition": 1,
+            "baseline": 485376,
+            "candidate": 387584,
+            "ratio": 0.7985232067510548
+          },
+          {
+            "task_id": "sa-memory-map",
+            "variant": "adaptive",
+            "repetition": 1,
+            "baseline": 108032,
+            "candidate": 63232,
+            "ratio": 0.5853080568720379
+          },
+          {
+            "task_id": "sa-memory-map",
+            "variant": "cap:core",
+            "repetition": 1,
+            "baseline": 135168,
+            "candidate": 68352,
+            "ratio": 0.5056818181818182
+          },
+          {
+            "task_id": "sa-memory-map",
+            "variant": "cap:debugging",
+            "repetition": 1,
+            "baseline": 103680,
+            "candidate": 42240,
+            "ratio": 0.4074074074074074
+          },
+          {
+            "task_id": "sa-memory-map",
+            "variant": "cap:implementation",
+            "repetition": 1,
+            "baseline": 114944,
+            "candidate": 102144,
+            "ratio": 0.888641425389755
+          },
+          {
+            "task_id": "sa-memory-reset-concurrency",
+            "variant": "adaptive",
+            "repetition": 1,
+            "baseline": 463360,
+            "candidate": 391168,
+            "ratio": 0.8441988950276244
+          },
+          {
+            "task_id": "sa-memory-reset-concurrency",
+            "variant": "cap:core",
+            "repetition": 1,
+            "baseline": 259072,
+            "candidate": 216064,
+            "ratio": 0.83399209486166
+          },
+          {
+            "task_id": "sa-memory-reset-concurrency",
+            "variant": "cap:debugging",
+            "repetition": 1,
+            "baseline": 496640,
+            "candidate": 238592,
+            "ratio": 0.48041237113402063
+          },
+          {
+            "task_id": "sa-memory-reset-concurrency",
+            "variant": "cap:implementation",
+            "repetition": 1,
+            "baseline": 842240,
+            "candidate": 599296,
+            "ratio": 0.7115501519756839
+          },
+          {
+            "task_id": "sa-memory-strategy-manual-decision",
+            "variant": "adaptive",
+            "repetition": 1,
+            "baseline": 179456,
+            "candidate": 205824,
+            "ratio": 1.1469329529243937
+          },
+          {
+            "task_id": "sa-module-compile-probe",
+            "variant": "adaptive",
+            "repetition": 1,
+            "baseline": 90368,
+            "candidate": 144128,
+            "ratio": 1.594900849858357
+          },
+          {
+            "task_id": "sa-module-compile-probe",
+            "variant": "cap:core",
+            "repetition": 1,
+            "baseline": 63232,
+            "candidate": 65280,
+            "ratio": 1.0323886639676114
+          },
+          {
+            "task_id": "sa-module-compile-probe",
+            "variant": "cap:debugging",
+            "repetition": 1,
+            "baseline": 63232,
+            "candidate": 120320,
+            "ratio": 1.902834008097166
+          },
+          {
+            "task_id": "sa-module-compile-probe",
+            "variant": "cap:implementation",
+            "repetition": 1,
+            "baseline": 68352,
+            "candidate": 65280,
+            "ratio": 0.9550561797752809
+          },
+          {
+            "task_id": "sa-sensitive-rejection-boundary",
+            "variant": "adaptive",
+            "repetition": 1,
+            "baseline": 1199104,
+            "candidate": 379136,
+            "ratio": 0.31618274978650723
+          },
+          {
+            "task_id": "sa-sensitive-rejection-boundary",
+            "variant": "cap:core",
+            "repetition": 1,
+            "baseline": 475136,
+            "candidate": 917504,
+            "ratio": 1.9310344827586208
+          },
+          {
+            "task_id": "sa-sensitive-rejection-boundary",
+            "variant": "cap:debugging",
+            "repetition": 1,
+            "baseline": 1357568,
+            "candidate": 2283008,
+            "ratio": 1.6816896096549123
+          },
+          {
+            "task_id": "sa-sensitive-rejection-boundary",
+            "variant": "cap:implementation",
+            "repetition": 1,
+            "baseline": 850688,
+            "candidate": 389376,
+            "ratio": 0.4577189286789046
+          }
+        ]
+      },
+      "uncached_input_tokens": {
+        "baseline_sum": 1820297,
+        "candidate_sum": 1848852,
+        "median_ratio": 0.9807712524920771,
+        "per_pair": [
+          {
+            "task_id": "ca-avif-stall-evidence",
+            "variant": "adaptive",
+            "repetition": 1,
+            "baseline": 28543,
+            "candidate": 24745,
+            "ratio": 0.8669376029149003
+          },
+          {
+            "task_id": "ca-avif-stall-evidence",
+            "variant": "cap:core",
+            "repetition": 1,
+            "baseline": 33422,
+            "candidate": 22148,
+            "ratio": 0.6626772784393513
+          },
+          {
+            "task_id": "ca-avif-stall-evidence",
+            "variant": "cap:debugging",
+            "repetition": 1,
+            "baseline": 29115,
+            "candidate": 35177,
+            "ratio": 1.2082088270650868
+          },
+          {
+            "task_id": "ca-avif-stall-evidence",
+            "variant": "cap:implementation",
+            "repetition": 1,
+            "baseline": 33685,
+            "candidate": 30171,
+            "ratio": 0.8956805699866409
+          },
+          {
+            "task_id": "ca-cancel-download",
+            "variant": "adaptive",
+            "repetition": 1,
+            "baseline": 33214,
+            "candidate": 47747,
+            "ratio": 1.4375564520985127
+          },
+          {
+            "task_id": "ca-cancel-download",
+            "variant": "cap:core",
+            "repetition": 1,
+            "baseline": 31838,
+            "candidate": 34161,
+            "ratio": 1.0729631258244865
+          },
+          {
+            "task_id": "ca-cancel-download",
+            "variant": "cap:debugging",
+            "repetition": 1,
+            "baseline": 35656,
+            "candidate": 29995,
+            "ratio": 0.8412328920798744
+          },
+          {
+            "task_id": "ca-cancel-download",
+            "variant": "cap:implementation",
+            "repetition": 1,
+            "baseline": 30936,
+            "candidate": 33280,
+            "ratio": 1.0757693302301525
+          },
+          {
+            "task_id": "ca-export-filename-probe",
+            "variant": "adaptive",
+            "repetition": 1,
+            "baseline": 8455,
+            "candidate": 18516,
+            "ratio": 2.189946777054997
+          },
+          {
+            "task_id": "ca-export-filename-probe",
+            "variant": "cap:core",
+            "repetition": 1,
+            "baseline": 17602,
+            "candidate": 9334,
+            "ratio": 0.5302806499261448
+          },
+          {
+            "task_id": "ca-export-filename-probe",
+            "variant": "cap:debugging",
+            "repetition": 1,
+            "baseline": 13922,
+            "candidate": 8905,
+            "ratio": 0.6396351098980032
+          },
+          {
+            "task_id": "ca-export-filename-probe",
+            "variant": "cap:implementation",
+            "repetition": 1,
+            "baseline": 6519,
+            "candidate": 22653,
+            "ratio": 3.474919466175794
+          },
+          {
+            "task_id": "ca-export-format-known",
+            "variant": "adaptive",
+            "repetition": 1,
+            "baseline": 8263,
+            "candidate": 7272,
+            "ratio": 0.8800677719956432
+          },
+          {
+            "task_id": "ca-export-format-known",
+            "variant": "cap:core",
+            "repetition": 1,
+            "baseline": 7409,
+            "candidate": 4412,
+            "ratio": 0.5954919692266163
+          },
+          {
+            "task_id": "ca-export-format-known",
+            "variant": "cap:debugging",
+            "repetition": 1,
+            "baseline": 4227,
+            "candidate": 4379,
+            "ratio": 1.0359593092027444
+          },
+          {
+            "task_id": "ca-export-format-known",
+            "variant": "cap:implementation",
+            "repetition": 1,
+            "baseline": 4124,
+            "candidate": 4438,
+            "ratio": 1.0761396702230843
+          },
+          {
+            "task_id": "ca-new-format-existing-pattern",
+            "variant": "adaptive",
+            "repetition": 1,
+            "baseline": 33109,
+            "candidate": 31548,
+            "ratio": 0.9528526986619952
+          },
+          {
+            "task_id": "ca-new-format-existing-pattern",
+            "variant": "cap:core",
+            "repetition": 1,
+            "baseline": 30323,
+            "candidate": 48080,
+            "ratio": 1.5855950928338225
+          },
+          {
+            "task_id": "ca-new-format-existing-pattern",
+            "variant": "cap:debugging",
+            "repetition": 1,
+            "baseline": 31554,
+            "candidate": 33172,
+            "ratio": 1.0512771756354187
+          },
+          {
+            "task_id": "ca-new-format-existing-pattern",
+            "variant": "cap:implementation",
+            "repetition": 1,
+            "baseline": 35239,
+            "candidate": 28583,
+            "ratio": 0.8111183631771617
+          },
+          {
+            "task_id": "pp-compatibility-manual-decision",
+            "variant": "adaptive",
+            "repetition": 1,
+            "baseline": 55075,
+            "candidate": 47585,
+            "ratio": 0.8640036314117113
+          },
+          {
+            "task_id": "pp-known-contract",
+            "variant": "adaptive",
+            "repetition": 1,
+            "baseline": 7494,
+            "candidate": 5767,
+            "ratio": 0.7695489725113424
+          },
+          {
+            "task_id": "pp-known-contract",
+            "variant": "cap:core",
+            "repetition": 1,
+            "baseline": 5734,
+            "candidate": 5231,
+            "ratio": 0.9122776421346355
+          },
+          {
+            "task_id": "pp-known-contract",
+            "variant": "cap:debugging",
+            "repetition": 1,
+            "baseline": 5098,
+            "candidate": 20294,
+            "ratio": 3.980776775205963
+          },
+          {
+            "task_id": "pp-known-contract",
+            "variant": "cap:implementation",
+            "repetition": 1,
+            "baseline": 5729,
+            "candidate": 5562,
+            "ratio": 0.9708500610926863
+          },
+          {
+            "task_id": "pp-lifecycle-map",
+            "variant": "adaptive",
+            "repetition": 1,
+            "baseline": 36117,
+            "candidate": 34278,
+            "ratio": 0.949082149680206
+          },
+          {
+            "task_id": "pp-lifecycle-map",
+            "variant": "cap:core",
+            "repetition": 1,
+            "baseline": 44819,
+            "candidate": 39045,
+            "ratio": 0.8711707088511569
+          },
+          {
+            "task_id": "pp-lifecycle-map",
+            "variant": "cap:debugging",
+            "repetition": 1,
+            "baseline": 33131,
+            "candidate": 37001,
+            "ratio": 1.1168090308170595
+          },
+          {
+            "task_id": "pp-lifecycle-map",
+            "variant": "cap:implementation",
+            "repetition": 1,
+            "baseline": 36380,
+            "candidate": 42957,
+            "ratio": 1.1807861462341946
+          },
+          {
+            "task_id": "pp-running-after-throw",
+            "variant": "adaptive",
+            "repetition": 1,
+            "baseline": 46735,
+            "candidate": 38841,
+            "ratio": 0.8310901893655719
+          },
+          {
+            "task_id": "pp-running-after-throw",
+            "variant": "cap:core",
+            "repetition": 1,
+            "baseline": 42472,
+            "candidate": 51094,
+            "ratio": 1.2030043322659634
+          },
+          {
+            "task_id": "pp-running-after-throw",
+            "variant": "cap:debugging",
+            "repetition": 1,
+            "baseline": 47356,
+            "candidate": 41284,
+            "ratio": 0.8717797111242503
+          },
+          {
+            "task_id": "pp-running-after-throw",
+            "variant": "cap:implementation",
+            "repetition": 1,
+            "baseline": 41794,
+            "candidate": 41405,
+            "ratio": 0.9906924438914677
+          },
+          {
+            "task_id": "pp-token-rotation-boundary",
+            "variant": "adaptive",
+            "repetition": 1,
+            "baseline": 53776,
+            "candidate": 50912,
+            "ratio": 0.9467420410592086
+          },
+          {
+            "task_id": "pp-token-rotation-boundary",
+            "variant": "cap:core",
+            "repetition": 1,
+            "baseline": 45633,
+            "candidate": 53898,
+            "ratio": 1.181118927092236
+          },
+          {
+            "task_id": "pp-token-rotation-boundary",
+            "variant": "cap:debugging",
+            "repetition": 1,
+            "baseline": 50360,
+            "candidate": 55433,
+            "ratio": 1.100734710087371
+          },
+          {
+            "task_id": "pp-token-rotation-boundary",
+            "variant": "cap:implementation",
+            "repetition": 1,
+            "baseline": 88703,
+            "candidate": 42786,
+            "ratio": 0.4823512169825147
+          },
+          {
+            "task_id": "sa-memory-map",
+            "variant": "adaptive",
+            "repetition": 1,
+            "baseline": 22526,
+            "candidate": 34118,
+            "ratio": 1.514605344934742
+          },
+          {
+            "task_id": "sa-memory-map",
+            "variant": "cap:core",
+            "repetition": 1,
+            "baseline": 26611,
+            "candidate": 16957,
+            "ratio": 0.6372176919319078
+          },
+          {
+            "task_id": "sa-memory-map",
+            "variant": "cap:debugging",
+            "repetition": 1,
+            "baseline": 21949,
+            "candidate": 21750,
+            "ratio": 0.9909335277233587
+          },
+          {
+            "task_id": "sa-memory-map",
+            "variant": "cap:implementation",
+            "repetition": 1,
+            "baseline": 28080,
+            "candidate": 35396,
+            "ratio": 1.2605413105413106
+          },
+          {
+            "task_id": "sa-memory-reset-concurrency",
+            "variant": "adaptive",
+            "repetition": 1,
+            "baseline": 47534,
+            "candidate": 60419,
+            "ratio": 1.271069129465225
+          },
+          {
+            "task_id": "sa-memory-reset-concurrency",
+            "variant": "cap:core",
+            "repetition": 1,
+            "baseline": 48404,
+            "candidate": 30275,
+            "ratio": 0.6254648376167259
+          },
+          {
+            "task_id": "sa-memory-reset-concurrency",
+            "variant": "cap:debugging",
+            "repetition": 1,
+            "baseline": 47150,
+            "candidate": 44265,
+            "ratio": 0.93881230116649
+          },
+          {
+            "task_id": "sa-memory-reset-concurrency",
+            "variant": "cap:implementation",
+            "repetition": 1,
+            "baseline": 60536,
+            "candidate": 70778,
+            "ratio": 1.169188582000793
+          },
+          {
+            "task_id": "sa-memory-strategy-manual-decision",
+            "variant": "adaptive",
+            "repetition": 1,
+            "baseline": 42632,
+            "candidate": 38574,
+            "ratio": 0.9048132857947082
+          },
+          {
+            "task_id": "sa-module-compile-probe",
+            "variant": "adaptive",
+            "repetition": 1,
+            "baseline": 20682,
+            "candidate": 21199,
+            "ratio": 1.0249975824388358
+          },
+          {
+            "task_id": "sa-module-compile-probe",
+            "variant": "cap:core",
+            "repetition": 1,
+            "baseline": 9602,
+            "candidate": 15428,
+            "ratio": 1.6067485940429078
+          },
+          {
+            "task_id": "sa-module-compile-probe",
+            "variant": "cap:debugging",
+            "repetition": 1,
+            "baseline": 8761,
+            "candidate": 21754,
+            "ratio": 2.4830498801506677
+          },
+          {
+            "task_id": "sa-module-compile-probe",
+            "variant": "cap:implementation",
+            "repetition": 1,
+            "baseline": 12086,
+            "candidate": 10184,
+            "ratio": 0.8426278338573556
+          },
+          {
+            "task_id": "sa-sensitive-rejection-boundary",
+            "variant": "adaptive",
+            "repetition": 1,
+            "baseline": 87299,
+            "candidate": 73467,
+            "ratio": 0.8415560315696629
+          },
+          {
+            "task_id": "sa-sensitive-rejection-boundary",
+            "variant": "cap:core",
+            "repetition": 1,
+            "baseline": 55338,
+            "candidate": 66620,
+            "ratio": 1.2038743720409122
+          },
+          {
+            "task_id": "sa-sensitive-rejection-boundary",
+            "variant": "cap:debugging",
+            "repetition": 1,
+            "baseline": 85868,
+            "candidate": 130876,
+            "ratio": 1.5241533516560302
+          },
+          {
+            "task_id": "sa-sensitive-rejection-boundary",
+            "variant": "cap:implementation",
+            "repetition": 1,
+            "baseline": 91678,
+            "candidate": 64703,
+            "ratio": 0.7057636510395079
+          }
+        ]
+      },
+      "output_tokens": {
+        "baseline_sum": 173802,
+        "candidate_sum": 169535,
+        "median_ratio": 0.9867230878307963,
+        "per_pair": [
+          {
+            "task_id": "ca-avif-stall-evidence",
+            "variant": "adaptive",
+            "repetition": 1,
+            "baseline": 3765,
+            "candidate": 4189,
+            "ratio": 1.1126162018592298
+          },
+          {
+            "task_id": "ca-avif-stall-evidence",
+            "variant": "cap:core",
+            "repetition": 1,
+            "baseline": 3659,
+            "candidate": 3446,
+            "ratio": 0.9417873735993441
+          },
+          {
+            "task_id": "ca-avif-stall-evidence",
+            "variant": "cap:debugging",
+            "repetition": 1,
+            "baseline": 4644,
+            "candidate": 3484,
+            "ratio": 0.7502153316106804
+          },
+          {
+            "task_id": "ca-avif-stall-evidence",
+            "variant": "cap:implementation",
+            "repetition": 1,
+            "baseline": 3605,
+            "candidate": 3917,
+            "ratio": 1.0865464632454924
+          },
+          {
+            "task_id": "ca-cancel-download",
+            "variant": "adaptive",
+            "repetition": 1,
+            "baseline": 2962,
+            "candidate": 3899,
+            "ratio": 1.3163403106009453
+          },
+          {
+            "task_id": "ca-cancel-download",
+            "variant": "cap:core",
+            "repetition": 1,
+            "baseline": 3598,
+            "candidate": 4247,
+            "ratio": 1.180377987770984
+          },
+          {
+            "task_id": "ca-cancel-download",
+            "variant": "cap:debugging",
+            "repetition": 1,
+            "baseline": 3667,
+            "candidate": 3540,
+            "ratio": 0.9653667848377421
+          },
+          {
+            "task_id": "ca-cancel-download",
+            "variant": "cap:implementation",
+            "repetition": 1,
+            "baseline": 3653,
+            "candidate": 4622,
+            "ratio": 1.2652614289624966
+          },
+          {
+            "task_id": "ca-export-filename-probe",
+            "variant": "adaptive",
+            "repetition": 1,
+            "baseline": 1182,
+            "candidate": 1153,
+            "ratio": 0.9754653130287648
+          },
+          {
+            "task_id": "ca-export-filename-probe",
+            "variant": "cap:core",
+            "repetition": 1,
+            "baseline": 1641,
+            "candidate": 1141,
+            "ratio": 0.6953077391834247
+          },
+          {
+            "task_id": "ca-export-filename-probe",
+            "variant": "cap:debugging",
+            "repetition": 1,
+            "baseline": 1426,
+            "candidate": 1245,
+            "ratio": 0.8730715287517532
+          },
+          {
+            "task_id": "ca-export-filename-probe",
+            "variant": "cap:implementation",
+            "repetition": 1,
+            "baseline": 1120,
+            "candidate": 1410,
+            "ratio": 1.2589285714285714
+          },
+          {
+            "task_id": "ca-export-format-known",
+            "variant": "adaptive",
+            "repetition": 1,
+            "baseline": 672,
+            "candidate": 504,
+            "ratio": 0.75
+          },
+          {
+            "task_id": "ca-export-format-known",
+            "variant": "cap:core",
+            "repetition": 1,
+            "baseline": 648,
+            "candidate": 596,
+            "ratio": 0.9197530864197531
+          },
+          {
+            "task_id": "ca-export-format-known",
+            "variant": "cap:debugging",
+            "repetition": 1,
+            "baseline": 457,
+            "candidate": 573,
+            "ratio": 1.2538293216630196
+          },
+          {
+            "task_id": "ca-export-format-known",
+            "variant": "cap:implementation",
+            "repetition": 1,
+            "baseline": 455,
+            "candidate": 625,
+            "ratio": 1.3736263736263736
+          },
+          {
+            "task_id": "ca-new-format-existing-pattern",
+            "variant": "adaptive",
+            "repetition": 1,
+            "baseline": 2702,
+            "candidate": 2612,
+            "ratio": 0.9666913397483345
+          },
+          {
+            "task_id": "ca-new-format-existing-pattern",
+            "variant": "cap:core",
+            "repetition": 1,
+            "baseline": 2751,
+            "candidate": 2415,
+            "ratio": 0.8778625954198473
+          },
+          {
+            "task_id": "ca-new-format-existing-pattern",
+            "variant": "cap:debugging",
+            "repetition": 1,
+            "baseline": 2816,
+            "candidate": 3496,
+            "ratio": 1.2414772727272727
+          },
+          {
+            "task_id": "ca-new-format-existing-pattern",
+            "variant": "cap:implementation",
+            "repetition": 1,
+            "baseline": 3325,
+            "candidate": 3433,
+            "ratio": 1.0324812030075188
+          },
+          {
+            "task_id": "pp-compatibility-manual-decision",
+            "variant": "adaptive",
+            "repetition": 1,
+            "baseline": 3156,
+            "candidate": 2803,
+            "ratio": 0.888149556400507
+          },
+          {
+            "task_id": "pp-known-contract",
+            "variant": "adaptive",
+            "repetition": 1,
+            "baseline": 1199,
+            "candidate": 1006,
+            "ratio": 0.8390325271059216
+          },
+          {
+            "task_id": "pp-known-contract",
+            "variant": "cap:core",
+            "repetition": 1,
+            "baseline": 888,
+            "candidate": 786,
+            "ratio": 0.8851351351351351
+          },
+          {
+            "task_id": "pp-known-contract",
+            "variant": "cap:debugging",
+            "repetition": 1,
+            "baseline": 931,
+            "candidate": 1466,
+            "ratio": 1.5746509129967776
+          },
+          {
+            "task_id": "pp-known-contract",
+            "variant": "cap:implementation",
+            "repetition": 1,
+            "baseline": 976,
+            "candidate": 971,
+            "ratio": 0.9948770491803278
+          },
+          {
+            "task_id": "pp-lifecycle-map",
+            "variant": "adaptive",
+            "repetition": 1,
+            "baseline": 3083,
+            "candidate": 2848,
+            "ratio": 0.9237755433019786
+          },
+          {
+            "task_id": "pp-lifecycle-map",
+            "variant": "cap:core",
+            "repetition": 1,
+            "baseline": 2650,
+            "candidate": 4125,
+            "ratio": 1.5566037735849056
+          },
+          {
+            "task_id": "pp-lifecycle-map",
+            "variant": "cap:debugging",
+            "repetition": 1,
+            "baseline": 3930,
+            "candidate": 3273,
+            "ratio": 0.832824427480916
+          },
+          {
+            "task_id": "pp-lifecycle-map",
+            "variant": "cap:implementation",
+            "repetition": 1,
+            "baseline": 3222,
+            "candidate": 3183,
+            "ratio": 0.9878957169459963
+          },
+          {
+            "task_id": "pp-running-after-throw",
+            "variant": "adaptive",
+            "repetition": 1,
+            "baseline": 3406,
+            "candidate": 3002,
+            "ratio": 0.8813857897827363
+          },
+          {
+            "task_id": "pp-running-after-throw",
+            "variant": "cap:core",
+            "repetition": 1,
+            "baseline": 2832,
+            "candidate": 3044,
+            "ratio": 1.0748587570621468
+          },
+          {
+            "task_id": "pp-running-after-throw",
+            "variant": "cap:debugging",
+            "repetition": 1,
+            "baseline": 3911,
+            "candidate": 3362,
+            "ratio": 0.8596266939401688
+          },
+          {
+            "task_id": "pp-running-after-throw",
+            "variant": "cap:implementation",
+            "repetition": 1,
+            "baseline": 2686,
+            "candidate": 3465,
+            "ratio": 1.2900223380491438
+          },
+          {
+            "task_id": "pp-token-rotation-boundary",
+            "variant": "adaptive",
+            "repetition": 1,
+            "baseline": 6861,
+            "candidate": 3900,
+            "ratio": 0.5684302579798863
+          },
+          {
+            "task_id": "pp-token-rotation-boundary",
+            "variant": "cap:core",
+            "repetition": 1,
+            "baseline": 3800,
+            "candidate": 4447,
+            "ratio": 1.170263157894737
+          },
+          {
+            "task_id": "pp-token-rotation-boundary",
+            "variant": "cap:debugging",
+            "repetition": 1,
+            "baseline": 4321,
+            "candidate": 4793,
+            "ratio": 1.1092339736172183
+          },
+          {
+            "task_id": "pp-token-rotation-boundary",
+            "variant": "cap:implementation",
+            "repetition": 1,
+            "baseline": 4561,
+            "candidate": 4685,
+            "ratio": 1.0271870203902653
+          },
+          {
+            "task_id": "sa-memory-map",
+            "variant": "adaptive",
+            "repetition": 1,
+            "baseline": 2801,
+            "candidate": 2556,
+            "ratio": 0.9125312388432703
+          },
+          {
+            "task_id": "sa-memory-map",
+            "variant": "cap:core",
+            "repetition": 1,
+            "baseline": 2186,
+            "candidate": 1606,
+            "ratio": 0.7346752058554438
+          },
+          {
+            "task_id": "sa-memory-map",
+            "variant": "cap:debugging",
+            "repetition": 1,
+            "baseline": 2181,
+            "candidate": 1035,
+            "ratio": 0.47455295735900965
+          },
+          {
+            "task_id": "sa-memory-map",
+            "variant": "cap:implementation",
+            "repetition": 1,
+            "baseline": 2243,
+            "candidate": 3520,
+            "ratio": 1.5693267944716898
+          },
+          {
+            "task_id": "sa-memory-reset-concurrency",
+            "variant": "adaptive",
+            "repetition": 1,
+            "baseline": 5899,
+            "candidate": 5470,
+            "ratio": 0.9272758094592304
+          },
+          {
+            "task_id": "sa-memory-reset-concurrency",
+            "variant": "cap:core",
+            "repetition": 1,
+            "baseline": 4360,
+            "candidate": 4297,
+            "ratio": 0.9855504587155963
+          },
+          {
+            "task_id": "sa-memory-reset-concurrency",
+            "variant": "cap:debugging",
+            "repetition": 1,
+            "baseline": 5781,
+            "candidate": 4422,
+            "ratio": 0.7649195640892579
+          },
+          {
+            "task_id": "sa-memory-reset-concurrency",
+            "variant": "cap:implementation",
+            "repetition": 1,
+            "baseline": 6738,
+            "candidate": 5879,
+            "ratio": 0.8725140991392104
+          },
+          {
+            "task_id": "sa-memory-strategy-manual-decision",
+            "variant": "adaptive",
+            "repetition": 1,
+            "baseline": 1962,
+            "candidate": 2297,
+            "ratio": 1.170744138634047
+          },
+          {
+            "task_id": "sa-module-compile-probe",
+            "variant": "adaptive",
+            "repetition": 1,
+            "baseline": 1423,
+            "candidate": 1975,
+            "ratio": 1.387912860154603
+          },
+          {
+            "task_id": "sa-module-compile-probe",
+            "variant": "cap:core",
+            "repetition": 1,
+            "baseline": 1259,
+            "candidate": 1381,
+            "ratio": 1.096902303415409
+          },
+          {
+            "task_id": "sa-module-compile-probe",
+            "variant": "cap:debugging",
+            "repetition": 1,
+            "baseline": 1539,
+            "candidate": 1538,
+            "ratio": 0.9993502274204028
+          },
+          {
+            "task_id": "sa-module-compile-probe",
+            "variant": "cap:implementation",
+            "repetition": 1,
+            "baseline": 1276,
+            "candidate": 1317,
+            "ratio": 1.0321316614420062
+          },
+          {
+            "task_id": "sa-sensitive-rejection-boundary",
+            "variant": "adaptive",
+            "repetition": 1,
+            "baseline": 8836,
+            "candidate": 6323,
+            "ratio": 0.7155952919873246
+          },
+          {
+            "task_id": "sa-sensitive-rejection-boundary",
+            "variant": "cap:core",
+            "repetition": 1,
+            "baseline": 7484,
+            "candidate": 7725,
+            "ratio": 1.0322020309994655
+          },
+          {
+            "task_id": "sa-sensitive-rejection-boundary",
+            "variant": "cap:debugging",
+            "repetition": 1,
+            "baseline": 9369,
+            "candidate": 11209,
+            "ratio": 1.196392357775643
+          },
+          {
+            "task_id": "sa-sensitive-rejection-boundary",
+            "variant": "cap:implementation",
+            "repetition": 1,
+            "baseline": 7304,
+            "candidate": 5279,
+            "ratio": 0.7227546549835706
+          }
+        ]
+      },
+      "tool_calls": {
+        "baseline_sum": 424,
+        "candidate_sum": 411,
+        "median_ratio": 1.0,
+        "per_pair": [
+          {
+            "task_id": "ca-avif-stall-evidence",
+            "variant": "adaptive",
+            "repetition": 1,
+            "baseline": 7,
+            "candidate": 4,
+            "ratio": 0.5714285714285714
+          },
+          {
+            "task_id": "ca-avif-stall-evidence",
+            "variant": "cap:core",
+            "repetition": 1,
+            "baseline": 7,
+            "candidate": 6,
+            "ratio": 0.8571428571428571
+          },
+          {
+            "task_id": "ca-avif-stall-evidence",
+            "variant": "cap:debugging",
+            "repetition": 1,
+            "baseline": 19,
+            "candidate": 5,
+            "ratio": 0.2631578947368421
+          },
+          {
+            "task_id": "ca-avif-stall-evidence",
+            "variant": "cap:implementation",
+            "repetition": 1,
+            "baseline": 6,
+            "candidate": 6,
+            "ratio": 1.0
+          },
+          {
+            "task_id": "ca-cancel-download",
+            "variant": "adaptive",
+            "repetition": 1,
+            "baseline": 5,
+            "candidate": 11,
+            "ratio": 2.2
+          },
+          {
+            "task_id": "ca-cancel-download",
+            "variant": "cap:core",
+            "repetition": 1,
+            "baseline": 8,
+            "candidate": 15,
+            "ratio": 1.875
+          },
+          {
+            "task_id": "ca-cancel-download",
+            "variant": "cap:debugging",
+            "repetition": 1,
+            "baseline": 9,
+            "candidate": 7,
+            "ratio": 0.7777777777777778
+          },
+          {
+            "task_id": "ca-cancel-download",
+            "variant": "cap:implementation",
+            "repetition": 1,
+            "baseline": 7,
+            "candidate": 8,
+            "ratio": 1.1428571428571428
+          },
+          {
+            "task_id": "ca-export-filename-probe",
+            "variant": "adaptive",
+            "repetition": 1,
+            "baseline": 4,
+            "candidate": 4,
+            "ratio": 1.0
+          },
+          {
+            "task_id": "ca-export-filename-probe",
+            "variant": "cap:core",
+            "repetition": 1,
+            "baseline": 6,
+            "candidate": 4,
+            "ratio": 0.6666666666666666
+          },
+          {
+            "task_id": "ca-export-filename-probe",
+            "variant": "cap:debugging",
+            "repetition": 1,
+            "baseline": 5,
+            "candidate": 4,
+            "ratio": 0.8
+          },
+          {
+            "task_id": "ca-export-filename-probe",
+            "variant": "cap:implementation",
+            "repetition": 1,
+            "baseline": 3,
+            "candidate": 4,
+            "ratio": 1.3333333333333333
+          },
+          {
+            "task_id": "ca-export-format-known",
+            "variant": "adaptive",
+            "repetition": 1,
+            "baseline": 2,
+            "candidate": 1,
+            "ratio": 0.5
+          },
+          {
+            "task_id": "ca-export-format-known",
+            "variant": "cap:core",
+            "repetition": 1,
+            "baseline": 1,
+            "candidate": 1,
+            "ratio": 1.0
+          },
+          {
+            "task_id": "ca-export-format-known",
+            "variant": "cap:debugging",
+            "repetition": 1,
+            "baseline": 1,
+            "candidate": 1,
+            "ratio": 1.0
+          },
+          {
+            "task_id": "ca-export-format-known",
+            "variant": "cap:implementation",
+            "repetition": 1,
+            "baseline": 1,
+            "candidate": 1,
+            "ratio": 1.0
+          },
+          {
+            "task_id": "ca-new-format-existing-pattern",
+            "variant": "adaptive",
+            "repetition": 1,
+            "baseline": 7,
+            "candidate": 6,
+            "ratio": 0.8571428571428571
+          },
+          {
+            "task_id": "ca-new-format-existing-pattern",
+            "variant": "cap:core",
+            "repetition": 1,
+            "baseline": 6,
+            "candidate": 4,
+            "ratio": 0.6666666666666666
+          },
+          {
+            "task_id": "ca-new-format-existing-pattern",
+            "variant": "cap:debugging",
+            "repetition": 1,
+            "baseline": 6,
+            "candidate": 7,
+            "ratio": 1.1666666666666667
+          },
+          {
+            "task_id": "ca-new-format-existing-pattern",
+            "variant": "cap:implementation",
+            "repetition": 1,
+            "baseline": 6,
+            "candidate": 17,
+            "ratio": 2.8333333333333335
+          },
+          {
+            "task_id": "pp-compatibility-manual-decision",
+            "variant": "adaptive",
+            "repetition": 1,
+            "baseline": 9,
+            "candidate": 13,
+            "ratio": 1.4444444444444444
+          },
+          {
+            "task_id": "pp-known-contract",
+            "variant": "adaptive",
+            "repetition": 1,
+            "baseline": 2,
+            "candidate": 1,
+            "ratio": 0.5
+          },
+          {
+            "task_id": "pp-known-contract",
+            "variant": "cap:core",
+            "repetition": 1,
+            "baseline": 1,
+            "candidate": 1,
+            "ratio": 1.0
+          },
+          {
+            "task_id": "pp-known-contract",
+            "variant": "cap:debugging",
+            "repetition": 1,
+            "baseline": 1,
+            "candidate": 2,
+            "ratio": 2.0
+          },
+          {
+            "task_id": "pp-known-contract",
+            "variant": "cap:implementation",
+            "repetition": 1,
+            "baseline": 1,
+            "candidate": 1,
+            "ratio": 1.0
+          },
+          {
+            "task_id": "pp-lifecycle-map",
+            "variant": "adaptive",
+            "repetition": 1,
+            "baseline": 7,
+            "candidate": 4,
+            "ratio": 0.5714285714285714
+          },
+          {
+            "task_id": "pp-lifecycle-map",
+            "variant": "cap:core",
+            "repetition": 1,
+            "baseline": 4,
+            "candidate": 7,
+            "ratio": 1.75
+          },
+          {
+            "task_id": "pp-lifecycle-map",
+            "variant": "cap:debugging",
+            "repetition": 1,
+            "baseline": 7,
+            "candidate": 5,
+            "ratio": 0.7142857142857143
+          },
+          {
+            "task_id": "pp-lifecycle-map",
+            "variant": "cap:implementation",
+            "repetition": 1,
+            "baseline": 6,
+            "candidate": 5,
+            "ratio": 0.8333333333333334
+          },
+          {
+            "task_id": "pp-running-after-throw",
+            "variant": "adaptive",
+            "repetition": 1,
+            "baseline": 8,
+            "candidate": 9,
+            "ratio": 1.125
+          },
+          {
+            "task_id": "pp-running-after-throw",
+            "variant": "cap:core",
+            "repetition": 1,
+            "baseline": 8,
+            "candidate": 7,
+            "ratio": 0.875
+          },
+          {
+            "task_id": "pp-running-after-throw",
+            "variant": "cap:debugging",
+            "repetition": 1,
+            "baseline": 9,
+            "candidate": 8,
+            "ratio": 0.8888888888888888
+          },
+          {
+            "task_id": "pp-running-after-throw",
+            "variant": "cap:implementation",
+            "repetition": 1,
+            "baseline": 6,
+            "candidate": 9,
+            "ratio": 1.5
+          },
+          {
+            "task_id": "pp-token-rotation-boundary",
+            "variant": "adaptive",
+            "repetition": 1,
+            "baseline": 22,
+            "candidate": 9,
+            "ratio": 0.4090909090909091
+          },
+          {
+            "task_id": "pp-token-rotation-boundary",
+            "variant": "cap:core",
+            "repetition": 1,
+            "baseline": 6,
+            "candidate": 9,
+            "ratio": 1.5
+          },
+          {
+            "task_id": "pp-token-rotation-boundary",
+            "variant": "cap:debugging",
+            "repetition": 1,
+            "baseline": 6,
+            "candidate": 16,
+            "ratio": 2.6666666666666665
+          },
+          {
+            "task_id": "pp-token-rotation-boundary",
+            "variant": "cap:implementation",
+            "repetition": 1,
+            "baseline": 15,
+            "candidate": 9,
+            "ratio": 0.6
+          },
+          {
+            "task_id": "sa-memory-map",
+            "variant": "adaptive",
+            "repetition": 1,
+            "baseline": 5,
+            "candidate": 4,
+            "ratio": 0.8
+          },
+          {
+            "task_id": "sa-memory-map",
+            "variant": "cap:core",
+            "repetition": 1,
+            "baseline": 6,
+            "candidate": 4,
+            "ratio": 0.6666666666666666
+          },
+          {
+            "task_id": "sa-memory-map",
+            "variant": "cap:debugging",
+            "repetition": 1,
+            "baseline": 5,
+            "candidate": 2,
+            "ratio": 0.4
+          },
+          {
+            "task_id": "sa-memory-map",
+            "variant": "cap:implementation",
+            "repetition": 1,
+            "baseline": 5,
+            "candidate": 4,
+            "ratio": 0.8
+          },
+          {
+            "task_id": "sa-memory-reset-concurrency",
+            "variant": "adaptive",
+            "repetition": 1,
+            "baseline": 13,
+            "candidate": 14,
+            "ratio": 1.0769230769230769
+          },
+          {
+            "task_id": "sa-memory-reset-concurrency",
+            "variant": "cap:core",
+            "repetition": 1,
+            "baseline": 10,
+            "candidate": 10,
+            "ratio": 1.0
+          },
+          {
+            "task_id": "sa-memory-reset-concurrency",
+            "variant": "cap:debugging",
+            "repetition": 1,
+            "baseline": 14,
+            "candidate": 10,
+            "ratio": 0.7142857142857143
+          },
+          {
+            "task_id": "sa-memory-reset-concurrency",
+            "variant": "cap:implementation",
+            "repetition": 1,
+            "baseline": 22,
+            "candidate": 18,
+            "ratio": 0.8181818181818182
+          },
+          {
+            "task_id": "sa-memory-strategy-manual-decision",
+            "variant": "adaptive",
+            "repetition": 1,
+            "baseline": 13,
+            "candidate": 7,
+            "ratio": 0.5384615384615384
+          },
+          {
+            "task_id": "sa-module-compile-probe",
+            "variant": "adaptive",
+            "repetition": 1,
+            "baseline": 5,
+            "candidate": 6,
+            "ratio": 1.2
+          },
+          {
+            "task_id": "sa-module-compile-probe",
+            "variant": "cap:core",
+            "repetition": 1,
+            "baseline": 4,
+            "candidate": 4,
+            "ratio": 1.0
+          },
+          {
+            "task_id": "sa-module-compile-probe",
+            "variant": "cap:debugging",
+            "repetition": 1,
+            "baseline": 4,
+            "candidate": 4,
+            "ratio": 1.0
+          },
+          {
+            "task_id": "sa-module-compile-probe",
+            "variant": "cap:implementation",
+            "repetition": 1,
+            "baseline": 4,
+            "candidate": 4,
+            "ratio": 1.0
+          },
+          {
+            "task_id": "sa-sensitive-rejection-boundary",
+            "variant": "adaptive",
+            "repetition": 1,
+            "baseline": 23,
+            "candidate": 21,
+            "ratio": 0.9130434782608695
+          },
+          {
+            "task_id": "sa-sensitive-rejection-boundary",
+            "variant": "cap:core",
+            "repetition": 1,
+            "baseline": 14,
+            "candidate": 22,
+            "ratio": 1.5714285714285714
+          },
+          {
+            "task_id": "sa-sensitive-rejection-boundary",
+            "variant": "cap:debugging",
+            "repetition": 1,
+            "baseline": 27,
+            "candidate": 33,
+            "ratio": 1.2222222222222223
+          },
+          {
+            "task_id": "sa-sensitive-rejection-boundary",
+            "variant": "cap:implementation",
+            "repetition": 1,
+            "baseline": 16,
+            "candidate": 13,
+            "ratio": 0.8125
+          }
+        ]
+      },
+      "broad_calls_after_first_project_read": {
+        "baseline_sum": 20,
+        "candidate_sum": 19,
+        "median_ratio": 1.0,
+        "per_pair": [
+          {
+            "task_id": "ca-avif-stall-evidence",
+            "variant": "adaptive",
+            "repetition": 1,
+            "baseline": 0,
+            "candidate": 0,
+            "ratio": 1.0
+          },
+          {
+            "task_id": "ca-avif-stall-evidence",
+            "variant": "cap:core",
+            "repetition": 1,
+            "baseline": 0,
+            "candidate": 0,
+            "ratio": 1.0
+          },
+          {
+            "task_id": "ca-avif-stall-evidence",
+            "variant": "cap:debugging",
+            "repetition": 1,
+            "baseline": 0,
+            "candidate": 0,
+            "ratio": 1.0
+          },
+          {
+            "task_id": "ca-avif-stall-evidence",
+            "variant": "cap:implementation",
+            "repetition": 1,
+            "baseline": 0,
+            "candidate": 0,
+            "ratio": 1.0
+          },
+          {
+            "task_id": "ca-cancel-download",
+            "variant": "adaptive",
+            "repetition": 1,
+            "baseline": 1,
+            "candidate": 0,
+            "ratio": 0.0
+          },
+          {
+            "task_id": "ca-cancel-download",
+            "variant": "cap:core",
+            "repetition": 1,
+            "baseline": 0,
+            "candidate": 0,
+            "ratio": 1.0
+          },
+          {
+            "task_id": "ca-cancel-download",
+            "variant": "cap:debugging",
+            "repetition": 1,
+            "baseline": 0,
+            "candidate": 1,
+            "ratio": "unbounded"
+          },
+          {
+            "task_id": "ca-cancel-download",
+            "variant": "cap:implementation",
+            "repetition": 1,
+            "baseline": 0,
+            "candidate": 0,
+            "ratio": 1.0
+          },
+          {
+            "task_id": "ca-export-filename-probe",
+            "variant": "adaptive",
+            "repetition": 1,
+            "baseline": 0,
+            "candidate": 1,
+            "ratio": "unbounded"
+          },
+          {
+            "task_id": "ca-export-filename-probe",
+            "variant": "cap:core",
+            "repetition": 1,
+            "baseline": 0,
+            "candidate": 0,
+            "ratio": 1.0
+          },
+          {
+            "task_id": "ca-export-filename-probe",
+            "variant": "cap:debugging",
+            "repetition": 1,
+            "baseline": 0,
+            "candidate": 0,
+            "ratio": 1.0
+          },
+          {
+            "task_id": "ca-export-filename-probe",
+            "variant": "cap:implementation",
+            "repetition": 1,
+            "baseline": 0,
+            "candidate": 0,
+            "ratio": 1.0
+          },
+          {
+            "task_id": "ca-export-format-known",
+            "variant": "adaptive",
+            "repetition": 1,
+            "baseline": 0,
+            "candidate": 0,
+            "ratio": 1.0
+          },
+          {
+            "task_id": "ca-export-format-known",
+            "variant": "cap:core",
+            "repetition": 1,
+            "baseline": 0,
+            "candidate": 0,
+            "ratio": 1.0
+          },
+          {
+            "task_id": "ca-export-format-known",
+            "variant": "cap:debugging",
+            "repetition": 1,
+            "baseline": 0,
+            "candidate": 0,
+            "ratio": 1.0
+          },
+          {
+            "task_id": "ca-export-format-known",
+            "variant": "cap:implementation",
+            "repetition": 1,
+            "baseline": 0,
+            "candidate": 0,
+            "ratio": 1.0
+          },
+          {
+            "task_id": "ca-new-format-existing-pattern",
+            "variant": "adaptive",
+            "repetition": 1,
+            "baseline": 0,
+            "candidate": 0,
+            "ratio": 1.0
+          },
+          {
+            "task_id": "ca-new-format-existing-pattern",
+            "variant": "cap:core",
+            "repetition": 1,
+            "baseline": 0,
+            "candidate": 0,
+            "ratio": 1.0
+          },
+          {
+            "task_id": "ca-new-format-existing-pattern",
+            "variant": "cap:debugging",
+            "repetition": 1,
+            "baseline": 0,
+            "candidate": 0,
+            "ratio": 1.0
+          },
+          {
+            "task_id": "ca-new-format-existing-pattern",
+            "variant": "cap:implementation",
+            "repetition": 1,
+            "baseline": 0,
+            "candidate": 0,
+            "ratio": 1.0
+          },
+          {
+            "task_id": "pp-compatibility-manual-decision",
+            "variant": "adaptive",
+            "repetition": 1,
+            "baseline": 0,
+            "candidate": 1,
+            "ratio": "unbounded"
+          },
+          {
+            "task_id": "pp-known-contract",
+            "variant": "adaptive",
+            "repetition": 1,
+            "baseline": 0,
+            "candidate": 0,
+            "ratio": 1.0
+          },
+          {
+            "task_id": "pp-known-contract",
+            "variant": "cap:core",
+            "repetition": 1,
+            "baseline": 0,
+            "candidate": 0,
+            "ratio": 1.0
+          },
+          {
+            "task_id": "pp-known-contract",
+            "variant": "cap:debugging",
+            "repetition": 1,
+            "baseline": 0,
+            "candidate": 0,
+            "ratio": 1.0
+          },
+          {
+            "task_id": "pp-known-contract",
+            "variant": "cap:implementation",
+            "repetition": 1,
+            "baseline": 0,
+            "candidate": 0,
+            "ratio": 1.0
+          },
+          {
+            "task_id": "pp-lifecycle-map",
+            "variant": "adaptive",
+            "repetition": 1,
+            "baseline": 0,
+            "candidate": 0,
+            "ratio": 1.0
+          },
+          {
+            "task_id": "pp-lifecycle-map",
+            "variant": "cap:core",
+            "repetition": 1,
+            "baseline": 0,
+            "candidate": 0,
+            "ratio": 1.0
+          },
+          {
+            "task_id": "pp-lifecycle-map",
+            "variant": "cap:debugging",
+            "repetition": 1,
+            "baseline": 1,
+            "candidate": 0,
+            "ratio": 0.0
+          },
+          {
+            "task_id": "pp-lifecycle-map",
+            "variant": "cap:implementation",
+            "repetition": 1,
+            "baseline": 0,
+            "candidate": 0,
+            "ratio": 1.0
+          },
+          {
+            "task_id": "pp-running-after-throw",
+            "variant": "adaptive",
+            "repetition": 1,
+            "baseline": 0,
+            "candidate": 0,
+            "ratio": 1.0
+          },
+          {
+            "task_id": "pp-running-after-throw",
+            "variant": "cap:core",
+            "repetition": 1,
+            "baseline": 0,
+            "candidate": 0,
+            "ratio": 1.0
+          },
+          {
+            "task_id": "pp-running-after-throw",
+            "variant": "cap:debugging",
+            "repetition": 1,
+            "baseline": 0,
+            "candidate": 0,
+            "ratio": 1.0
+          },
+          {
+            "task_id": "pp-running-after-throw",
+            "variant": "cap:implementation",
+            "repetition": 1,
+            "baseline": 0,
+            "candidate": 0,
+            "ratio": 1.0
+          },
+          {
+            "task_id": "pp-token-rotation-boundary",
+            "variant": "adaptive",
+            "repetition": 1,
+            "baseline": 0,
+            "candidate": 1,
+            "ratio": "unbounded"
+          },
+          {
+            "task_id": "pp-token-rotation-boundary",
+            "variant": "cap:core",
+            "repetition": 1,
+            "baseline": 0,
+            "candidate": 0,
+            "ratio": 1.0
+          },
+          {
+            "task_id": "pp-token-rotation-boundary",
+            "variant": "cap:debugging",
+            "repetition": 1,
+            "baseline": 0,
+            "candidate": 1,
+            "ratio": "unbounded"
+          },
+          {
+            "task_id": "pp-token-rotation-boundary",
+            "variant": "cap:implementation",
+            "repetition": 1,
+            "baseline": 1,
+            "candidate": 0,
+            "ratio": 0.0
+          },
+          {
+            "task_id": "sa-memory-map",
+            "variant": "adaptive",
+            "repetition": 1,
+            "baseline": 1,
+            "candidate": 0,
+            "ratio": 0.0
+          },
+          {
+            "task_id": "sa-memory-map",
+            "variant": "cap:core",
+            "repetition": 1,
+            "baseline": 0,
+            "candidate": 0,
+            "ratio": 1.0
+          },
+          {
+            "task_id": "sa-memory-map",
+            "variant": "cap:debugging",
+            "repetition": 1,
+            "baseline": 0,
+            "candidate": 0,
+            "ratio": 1.0
+          },
+          {
+            "task_id": "sa-memory-map",
+            "variant": "cap:implementation",
+            "repetition": 1,
+            "baseline": 0,
+            "candidate": 1,
+            "ratio": "unbounded"
+          },
+          {
+            "task_id": "sa-memory-reset-concurrency",
+            "variant": "adaptive",
+            "repetition": 1,
+            "baseline": 4,
+            "candidate": 5,
+            "ratio": 1.25
+          },
+          {
+            "task_id": "sa-memory-reset-concurrency",
+            "variant": "cap:core",
+            "repetition": 1,
+            "baseline": 1,
+            "candidate": 1,
+            "ratio": 1.0
+          },
+          {
+            "task_id": "sa-memory-reset-concurrency",
+            "variant": "cap:debugging",
+            "repetition": 1,
+            "baseline": 1,
+            "candidate": 0,
+            "ratio": 0.0
+          },
+          {
+            "task_id": "sa-memory-reset-concurrency",
+            "variant": "cap:implementation",
+            "repetition": 1,
+            "baseline": 2,
+            "candidate": 0,
+            "ratio": 0.0
+          },
+          {
+            "task_id": "sa-memory-strategy-manual-decision",
+            "variant": "adaptive",
+            "repetition": 1,
+            "baseline": 0,
+            "candidate": 0,
+            "ratio": 1.0
+          },
+          {
+            "task_id": "sa-module-compile-probe",
+            "variant": "adaptive",
+            "repetition": 1,
+            "baseline": 0,
+            "candidate": 0,
+            "ratio": 1.0
+          },
+          {
+            "task_id": "sa-module-compile-probe",
+            "variant": "cap:core",
+            "repetition": 1,
+            "baseline": 0,
+            "candidate": 0,
+            "ratio": 1.0
+          },
+          {
+            "task_id": "sa-module-compile-probe",
+            "variant": "cap:debugging",
+            "repetition": 1,
+            "baseline": 0,
+            "candidate": 0,
+            "ratio": 1.0
+          },
+          {
+            "task_id": "sa-module-compile-probe",
+            "variant": "cap:implementation",
+            "repetition": 1,
+            "baseline": 0,
+            "candidate": 0,
+            "ratio": 1.0
+          },
+          {
+            "task_id": "sa-sensitive-rejection-boundary",
+            "variant": "adaptive",
+            "repetition": 1,
+            "baseline": 2,
+            "candidate": 0,
+            "ratio": 0.0
+          },
+          {
+            "task_id": "sa-sensitive-rejection-boundary",
+            "variant": "cap:core",
+            "repetition": 1,
+            "baseline": 1,
+            "candidate": 2,
+            "ratio": 2.0
+          },
+          {
+            "task_id": "sa-sensitive-rejection-boundary",
+            "variant": "cap:debugging",
+            "repetition": 1,
+            "baseline": 1,
+            "candidate": 2,
+            "ratio": 2.0
+          },
+          {
+            "task_id": "sa-sensitive-rejection-boundary",
+            "variant": "cap:implementation",
+            "repetition": 1,
+            "baseline": 4,
+            "candidate": 3,
+            "ratio": 0.75
+          }
+        ]
+      },
+      "duplicate_command_calls": {
+        "baseline_sum": 6,
+        "candidate_sum": 5,
+        "median_ratio": 1.0,
+        "per_pair": [
+          {
+            "task_id": "ca-avif-stall-evidence",
+            "variant": "adaptive",
+            "repetition": 1,
+            "baseline": 0,
+            "candidate": 0,
+            "ratio": 1.0
+          },
+          {
+            "task_id": "ca-avif-stall-evidence",
+            "variant": "cap:core",
+            "repetition": 1,
+            "baseline": 0,
+            "candidate": 0,
+            "ratio": 1.0
+          },
+          {
+            "task_id": "ca-avif-stall-evidence",
+            "variant": "cap:debugging",
+            "repetition": 1,
+            "baseline": 3,
+            "candidate": 0,
+            "ratio": 0.0
+          },
+          {
+            "task_id": "ca-avif-stall-evidence",
+            "variant": "cap:implementation",
+            "repetition": 1,
+            "baseline": 0,
+            "candidate": 0,
+            "ratio": 1.0
+          },
+          {
+            "task_id": "ca-cancel-download",
+            "variant": "adaptive",
+            "repetition": 1,
+            "baseline": 0,
+            "candidate": 1,
+            "ratio": "unbounded"
+          },
+          {
+            "task_id": "ca-cancel-download",
+            "variant": "cap:core",
+            "repetition": 1,
+            "baseline": 0,
+            "candidate": 0,
+            "ratio": 1.0
+          },
+          {
+            "task_id": "ca-cancel-download",
+            "variant": "cap:debugging",
+            "repetition": 1,
+            "baseline": 0,
+            "candidate": 0,
+            "ratio": 1.0
+          },
+          {
+            "task_id": "ca-cancel-download",
+            "variant": "cap:implementation",
+            "repetition": 1,
+            "baseline": 1,
+            "candidate": 0,
+            "ratio": 0.0
+          },
+          {
+            "task_id": "ca-export-filename-probe",
+            "variant": "adaptive",
+            "repetition": 1,
+            "baseline": 0,
+            "candidate": 0,
+            "ratio": 1.0
+          },
+          {
+            "task_id": "ca-export-filename-probe",
+            "variant": "cap:core",
+            "repetition": 1,
+            "baseline": 1,
+            "candidate": 0,
+            "ratio": 0.0
+          },
+          {
+            "task_id": "ca-export-filename-probe",
+            "variant": "cap:debugging",
+            "repetition": 1,
+            "baseline": 0,
+            "candidate": 0,
+            "ratio": 1.0
+          },
+          {
+            "task_id": "ca-export-filename-probe",
+            "variant": "cap:implementation",
+            "repetition": 1,
+            "baseline": 0,
+            "candidate": 0,
+            "ratio": 1.0
+          },
+          {
+            "task_id": "ca-export-format-known",
+            "variant": "adaptive",
+            "repetition": 1,
+            "baseline": 0,
+            "candidate": 0,
+            "ratio": 1.0
+          },
+          {
+            "task_id": "ca-export-format-known",
+            "variant": "cap:core",
+            "repetition": 1,
+            "baseline": 0,
+            "candidate": 0,
+            "ratio": 1.0
+          },
+          {
+            "task_id": "ca-export-format-known",
+            "variant": "cap:debugging",
+            "repetition": 1,
+            "baseline": 0,
+            "candidate": 0,
+            "ratio": 1.0
+          },
+          {
+            "task_id": "ca-export-format-known",
+            "variant": "cap:implementation",
+            "repetition": 1,
+            "baseline": 0,
+            "candidate": 0,
+            "ratio": 1.0
+          },
+          {
+            "task_id": "ca-new-format-existing-pattern",
+            "variant": "adaptive",
+            "repetition": 1,
+            "baseline": 0,
+            "candidate": 0,
+            "ratio": 1.0
+          },
+          {
+            "task_id": "ca-new-format-existing-pattern",
+            "variant": "cap:core",
+            "repetition": 1,
+            "baseline": 0,
+            "candidate": 0,
+            "ratio": 1.0
+          },
+          {
+            "task_id": "ca-new-format-existing-pattern",
+            "variant": "cap:debugging",
+            "repetition": 1,
+            "baseline": 0,
+            "candidate": 0,
+            "ratio": 1.0
+          },
+          {
+            "task_id": "ca-new-format-existing-pattern",
+            "variant": "cap:implementation",
+            "repetition": 1,
+            "baseline": 0,
+            "candidate": 2,
+            "ratio": "unbounded"
+          },
+          {
+            "task_id": "pp-compatibility-manual-decision",
+            "variant": "adaptive",
+            "repetition": 1,
+            "baseline": 0,
+            "candidate": 1,
+            "ratio": "unbounded"
+          },
+          {
+            "task_id": "pp-known-contract",
+            "variant": "adaptive",
+            "repetition": 1,
+            "baseline": 0,
+            "candidate": 0,
+            "ratio": 1.0
+          },
+          {
+            "task_id": "pp-known-contract",
+            "variant": "cap:core",
+            "repetition": 1,
+            "baseline": 0,
+            "candidate": 0,
+            "ratio": 1.0
+          },
+          {
+            "task_id": "pp-known-contract",
+            "variant": "cap:debugging",
+            "repetition": 1,
+            "baseline": 0,
+            "candidate": 0,
+            "ratio": 1.0
+          },
+          {
+            "task_id": "pp-known-contract",
+            "variant": "cap:implementation",
+            "repetition": 1,
+            "baseline": 0,
+            "candidate": 0,
+            "ratio": 1.0
+          },
+          {
+            "task_id": "pp-lifecycle-map",
+            "variant": "adaptive",
+            "repetition": 1,
+            "baseline": 0,
+            "candidate": 0,
+            "ratio": 1.0
+          },
+          {
+            "task_id": "pp-lifecycle-map",
+            "variant": "cap:core",
+            "repetition": 1,
+            "baseline": 0,
+            "candidate": 0,
+            "ratio": 1.0
+          },
+          {
+            "task_id": "pp-lifecycle-map",
+            "variant": "cap:debugging",
+            "repetition": 1,
+            "baseline": 0,
+            "candidate": 0,
+            "ratio": 1.0
+          },
+          {
+            "task_id": "pp-lifecycle-map",
+            "variant": "cap:implementation",
+            "repetition": 1,
+            "baseline": 0,
+            "candidate": 0,
+            "ratio": 1.0
+          },
+          {
+            "task_id": "pp-running-after-throw",
+            "variant": "adaptive",
+            "repetition": 1,
+            "baseline": 0,
+            "candidate": 0,
+            "ratio": 1.0
+          },
+          {
+            "task_id": "pp-running-after-throw",
+            "variant": "cap:core",
+            "repetition": 1,
+            "baseline": 0,
+            "candidate": 0,
+            "ratio": 1.0
+          },
+          {
+            "task_id": "pp-running-after-throw",
+            "variant": "cap:debugging",
+            "repetition": 1,
+            "baseline": 0,
+            "candidate": 0,
+            "ratio": 1.0
+          },
+          {
+            "task_id": "pp-running-after-throw",
+            "variant": "cap:implementation",
+            "repetition": 1,
+            "baseline": 0,
+            "candidate": 0,
+            "ratio": 1.0
+          },
+          {
+            "task_id": "pp-token-rotation-boundary",
+            "variant": "adaptive",
+            "repetition": 1,
+            "baseline": 0,
+            "candidate": 0,
+            "ratio": 1.0
+          },
+          {
+            "task_id": "pp-token-rotation-boundary",
+            "variant": "cap:core",
+            "repetition": 1,
+            "baseline": 0,
+            "candidate": 0,
+            "ratio": 1.0
+          },
+          {
+            "task_id": "pp-token-rotation-boundary",
+            "variant": "cap:debugging",
+            "repetition": 1,
+            "baseline": 0,
+            "candidate": 0,
+            "ratio": 1.0
+          },
+          {
+            "task_id": "pp-token-rotation-boundary",
+            "variant": "cap:implementation",
+            "repetition": 1,
+            "baseline": 1,
+            "candidate": 0,
+            "ratio": 0.0
+          },
+          {
+            "task_id": "sa-memory-map",
+            "variant": "adaptive",
+            "repetition": 1,
+            "baseline": 0,
+            "candidate": 0,
+            "ratio": 1.0
+          },
+          {
+            "task_id": "sa-memory-map",
+            "variant": "cap:core",
+            "repetition": 1,
+            "baseline": 0,
+            "candidate": 0,
+            "ratio": 1.0
+          },
+          {
+            "task_id": "sa-memory-map",
+            "variant": "cap:debugging",
+            "repetition": 1,
+            "baseline": 0,
+            "candidate": 0,
+            "ratio": 1.0
+          },
+          {
+            "task_id": "sa-memory-map",
+            "variant": "cap:implementation",
+            "repetition": 1,
+            "baseline": 0,
+            "candidate": 0,
+            "ratio": 1.0
+          },
+          {
+            "task_id": "sa-memory-reset-concurrency",
+            "variant": "adaptive",
+            "repetition": 1,
+            "baseline": 0,
+            "candidate": 0,
+            "ratio": 1.0
+          },
+          {
+            "task_id": "sa-memory-reset-concurrency",
+            "variant": "cap:core",
+            "repetition": 1,
+            "baseline": 0,
+            "candidate": 0,
+            "ratio": 1.0
+          },
+          {
+            "task_id": "sa-memory-reset-concurrency",
+            "variant": "cap:debugging",
+            "repetition": 1,
+            "baseline": 0,
+            "candidate": 0,
+            "ratio": 1.0
+          },
+          {
+            "task_id": "sa-memory-reset-concurrency",
+            "variant": "cap:implementation",
+            "repetition": 1,
+            "baseline": 0,
+            "candidate": 0,
+            "ratio": 1.0
+          },
+          {
+            "task_id": "sa-memory-strategy-manual-decision",
+            "variant": "adaptive",
+            "repetition": 1,
+            "baseline": 0,
+            "candidate": 0,
+            "ratio": 1.0
+          },
+          {
+            "task_id": "sa-module-compile-probe",
+            "variant": "adaptive",
+            "repetition": 1,
+            "baseline": 0,
+            "candidate": 0,
+            "ratio": 1.0
+          },
+          {
+            "task_id": "sa-module-compile-probe",
+            "variant": "cap:core",
+            "repetition": 1,
+            "baseline": 0,
+            "candidate": 0,
+            "ratio": 1.0
+          },
+          {
+            "task_id": "sa-module-compile-probe",
+            "variant": "cap:debugging",
+            "repetition": 1,
+            "baseline": 0,
+            "candidate": 0,
+            "ratio": 1.0
+          },
+          {
+            "task_id": "sa-module-compile-probe",
+            "variant": "cap:implementation",
+            "repetition": 1,
+            "baseline": 0,
+            "candidate": 0,
+            "ratio": 1.0
+          },
+          {
+            "task_id": "sa-sensitive-rejection-boundary",
+            "variant": "adaptive",
+            "repetition": 1,
+            "baseline": 0,
+            "candidate": 1,
+            "ratio": "unbounded"
+          },
+          {
+            "task_id": "sa-sensitive-rejection-boundary",
+            "variant": "cap:core",
+            "repetition": 1,
+            "baseline": 0,
+            "candidate": 0,
+            "ratio": 1.0
+          },
+          {
+            "task_id": "sa-sensitive-rejection-boundary",
+            "variant": "cap:debugging",
+            "repetition": 1,
+            "baseline": 0,
+            "candidate": 0,
+            "ratio": 1.0
+          },
+          {
+            "task_id": "sa-sensitive-rejection-boundary",
+            "variant": "cap:implementation",
+            "repetition": 1,
+            "baseline": 0,
+            "candidate": 0,
+            "ratio": 1.0
+          }
+        ]
+      },
+      "whole_file_read_bytes": {
+        "baseline_sum": 1974525,
+        "candidate_sum": 1583340,
+        "median_ratio": 0.9503769464929241,
+        "per_pair": [
+          {
+            "task_id": "ca-avif-stall-evidence",
+            "variant": "adaptive",
+            "repetition": 1,
+            "baseline": 6606,
+            "candidate": 16315,
+            "ratio": 2.469724492885256
+          },
+          {
+            "task_id": "ca-avif-stall-evidence",
+            "variant": "cap:core",
+            "repetition": 1,
+            "baseline": 11269,
+            "candidate": 25263,
+            "ratio": 2.2418138255390896
+          },
+          {
+            "task_id": "ca-avif-stall-evidence",
+            "variant": "cap:debugging",
+            "repetition": 1,
+            "baseline": 34488,
+            "candidate": 18258,
+            "ratio": 0.5294015309672929
+          },
+          {
+            "task_id": "ca-avif-stall-evidence",
+            "variant": "cap:implementation",
+            "repetition": 1,
+            "baseline": 37924,
+            "candidate": 38171,
+            "ratio": 1.0065130260521042
+          },
+          {
+            "task_id": "ca-cancel-download",
+            "variant": "adaptive",
+            "repetition": 1,
+            "baseline": 60105,
+            "candidate": 44363,
+            "ratio": 0.7380916729057483
+          },
+          {
+            "task_id": "ca-cancel-download",
+            "variant": "cap:core",
+            "repetition": 1,
+            "baseline": 41510,
+            "candidate": 7229,
+            "ratio": 0.17415080703444952
+          },
+          {
+            "task_id": "ca-cancel-download",
+            "variant": "cap:debugging",
+            "repetition": 1,
+            "baseline": 6373,
+            "candidate": 47730,
+            "ratio": 7.489408441864114
+          },
+          {
+            "task_id": "ca-cancel-download",
+            "variant": "cap:implementation",
+            "repetition": 1,
+            "baseline": 16395,
+            "candidate": 30891,
+            "ratio": 1.8841720036596523
+          },
+          {
+            "task_id": "ca-export-filename-probe",
+            "variant": "adaptive",
+            "repetition": 1,
+            "baseline": 1598,
+            "candidate": 9381,
+            "ratio": 5.870463078848561
+          },
+          {
+            "task_id": "ca-export-filename-probe",
+            "variant": "cap:core",
+            "repetition": 1,
+            "baseline": 1598,
+            "candidate": 9381,
+            "ratio": 5.870463078848561
+          },
+          {
+            "task_id": "ca-export-filename-probe",
+            "variant": "cap:debugging",
+            "repetition": 1,
+            "baseline": 2377,
+            "candidate": 1598,
+            "ratio": 0.6722759781236853
+          },
+          {
+            "task_id": "ca-export-filename-probe",
+            "variant": "cap:implementation",
+            "repetition": 1,
+            "baseline": 1618,
+            "candidate": 1679,
+            "ratio": 1.0377008652657602
+          },
+          {
+            "task_id": "ca-export-format-known",
+            "variant": "adaptive",
+            "repetition": 1,
+            "baseline": 1973,
+            "candidate": 1040,
+            "ratio": 0.5271160669031931
+          },
+          {
+            "task_id": "ca-export-format-known",
+            "variant": "cap:core",
+            "repetition": 1,
+            "baseline": 1107,
+            "candidate": 1040,
+            "ratio": 0.9394760614272809
+          },
+          {
+            "task_id": "ca-export-format-known",
+            "variant": "cap:debugging",
+            "repetition": 1,
+            "baseline": 1040,
+            "candidate": 933,
+            "ratio": 0.8971153846153846
+          },
+          {
+            "task_id": "ca-export-format-known",
+            "variant": "cap:implementation",
+            "repetition": 1,
+            "baseline": 933,
+            "candidate": 1040,
+            "ratio": 1.1146838156484458
+          },
+          {
+            "task_id": "ca-new-format-existing-pattern",
+            "variant": "adaptive",
+            "repetition": 1,
+            "baseline": 81574,
+            "candidate": 58744,
+            "ratio": 0.7201314144212617
+          },
+          {
+            "task_id": "ca-new-format-existing-pattern",
+            "variant": "cap:core",
+            "repetition": 1,
+            "baseline": 46895,
+            "candidate": 0,
+            "ratio": 0.0
+          },
+          {
+            "task_id": "ca-new-format-existing-pattern",
+            "variant": "cap:debugging",
+            "repetition": 1,
+            "baseline": 20350,
+            "candidate": 36873,
+            "ratio": 1.8119410319410318
+          },
+          {
+            "task_id": "ca-new-format-existing-pattern",
+            "variant": "cap:implementation",
+            "repetition": 1,
+            "baseline": 0,
+            "candidate": 61134,
+            "ratio": "unbounded"
+          },
+          {
+            "task_id": "pp-compatibility-manual-decision",
+            "variant": "adaptive",
+            "repetition": 1,
+            "baseline": 2575,
+            "candidate": 23278,
+            "ratio": 9.04
+          },
+          {
+            "task_id": "pp-known-contract",
+            "variant": "adaptive",
+            "repetition": 1,
+            "baseline": 11364,
+            "candidate": 6198,
+            "ratio": 0.5454065469904963
+          },
+          {
+            "task_id": "pp-known-contract",
+            "variant": "cap:core",
+            "repetition": 1,
+            "baseline": 6198,
+            "candidate": 5406,
+            "ratio": 0.872216844143272
+          },
+          {
+            "task_id": "pp-known-contract",
+            "variant": "cap:debugging",
+            "repetition": 1,
+            "baseline": 5406,
+            "candidate": 7399,
+            "ratio": 1.3686644469108398
+          },
+          {
+            "task_id": "pp-known-contract",
+            "variant": "cap:implementation",
+            "repetition": 1,
+            "baseline": 6198,
+            "candidate": 5958,
+            "ratio": 0.9612778315585673
+          },
+          {
+            "task_id": "pp-lifecycle-map",
+            "variant": "adaptive",
+            "repetition": 1,
+            "baseline": 58652,
+            "candidate": 0,
+            "ratio": 0.0
+          },
+          {
+            "task_id": "pp-lifecycle-map",
+            "variant": "cap:core",
+            "repetition": 1,
+            "baseline": 80800,
+            "candidate": 24604,
+            "ratio": 0.3045049504950495
+          },
+          {
+            "task_id": "pp-lifecycle-map",
+            "variant": "cap:debugging",
+            "repetition": 1,
+            "baseline": 80992,
+            "candidate": 23585,
+            "ratio": 0.2912016001580403
+          },
+          {
+            "task_id": "pp-lifecycle-map",
+            "variant": "cap:implementation",
+            "repetition": 1,
+            "baseline": 19877,
+            "candidate": 27733,
+            "ratio": 1.3952306686119635
+          },
+          {
+            "task_id": "pp-running-after-throw",
+            "variant": "adaptive",
+            "repetition": 1,
+            "baseline": 101381,
+            "candidate": 31630,
+            "ratio": 0.3119913987828094
+          },
+          {
+            "task_id": "pp-running-after-throw",
+            "variant": "cap:core",
+            "repetition": 1,
+            "baseline": 87793,
+            "candidate": 60268,
+            "ratio": 0.6864784208308179
+          },
+          {
+            "task_id": "pp-running-after-throw",
+            "variant": "cap:debugging",
+            "repetition": 1,
+            "baseline": 107772,
+            "candidate": 66430,
+            "ratio": 0.6163938685372824
+          },
+          {
+            "task_id": "pp-running-after-throw",
+            "variant": "cap:implementation",
+            "repetition": 1,
+            "baseline": 84661,
+            "candidate": 24853,
+            "ratio": 0.2935590177295331
+          },
+          {
+            "task_id": "pp-token-rotation-boundary",
+            "variant": "adaptive",
+            "repetition": 1,
+            "baseline": 23536,
+            "candidate": 69028,
+            "ratio": 2.932868796736914
+          },
+          {
+            "task_id": "pp-token-rotation-boundary",
+            "variant": "cap:core",
+            "repetition": 1,
+            "baseline": 0,
+            "candidate": 6277,
+            "ratio": "unbounded"
+          },
+          {
+            "task_id": "pp-token-rotation-boundary",
+            "variant": "cap:debugging",
+            "repetition": 1,
+            "baseline": 135014,
+            "candidate": 44781,
+            "ratio": 0.3316767150073326
+          },
+          {
+            "task_id": "pp-token-rotation-boundary",
+            "variant": "cap:implementation",
+            "repetition": 1,
+            "baseline": 113484,
+            "candidate": 29141,
+            "ratio": 0.25678509745867256
+          },
+          {
+            "task_id": "sa-memory-map",
+            "variant": "adaptive",
+            "repetition": 1,
+            "baseline": 0,
+            "candidate": 2769,
+            "ratio": "unbounded"
+          },
+          {
+            "task_id": "sa-memory-map",
+            "variant": "cap:core",
+            "repetition": 1,
+            "baseline": 0,
+            "candidate": 30161,
+            "ratio": "unbounded"
+          },
+          {
+            "task_id": "sa-memory-map",
+            "variant": "cap:debugging",
+            "repetition": 1,
+            "baseline": 31298,
+            "candidate": 0,
+            "ratio": 0.0
+          },
+          {
+            "task_id": "sa-memory-map",
+            "variant": "cap:implementation",
+            "repetition": 1,
+            "baseline": 36481,
+            "candidate": 0,
+            "ratio": 0.0
+          },
+          {
+            "task_id": "sa-memory-reset-concurrency",
+            "variant": "adaptive",
+            "repetition": 1,
+            "baseline": 4714,
+            "candidate": 37424,
+            "ratio": 7.938905388205346
+          },
+          {
+            "task_id": "sa-memory-reset-concurrency",
+            "variant": "cap:core",
+            "repetition": 1,
+            "baseline": 32136,
+            "candidate": 32189,
+            "ratio": 1.0016492407269106
+          },
+          {
+            "task_id": "sa-memory-reset-concurrency",
+            "variant": "cap:debugging",
+            "repetition": 1,
+            "baseline": 35851,
+            "candidate": 50468,
+            "ratio": 1.4077152659618979
+          },
+          {
+            "task_id": "sa-memory-reset-concurrency",
+            "variant": "cap:implementation",
+            "repetition": 1,
+            "baseline": 28783,
+            "candidate": 23277,
+            "ratio": 0.8087065281589827
+          },
+          {
+            "task_id": "sa-memory-strategy-manual-decision",
+            "variant": "adaptive",
+            "repetition": 1,
+            "baseline": 40222,
+            "candidate": 35499,
+            "ratio": 0.8825766993187808
+          },
+          {
+            "task_id": "sa-module-compile-probe",
+            "variant": "adaptive",
+            "repetition": 1,
+            "baseline": 7384,
+            "candidate": 10989,
+            "ratio": 1.4882177681473456
+          },
+          {
+            "task_id": "sa-module-compile-probe",
+            "variant": "cap:core",
+            "repetition": 1,
+            "baseline": 0,
+            "candidate": 0,
+            "ratio": 1.0
+          },
+          {
+            "task_id": "sa-module-compile-probe",
+            "variant": "cap:debugging",
+            "repetition": 1,
+            "baseline": 0,
+            "candidate": 0,
+            "ratio": 1.0
+          },
+          {
+            "task_id": "sa-module-compile-probe",
+            "variant": "cap:implementation",
+            "repetition": 1,
+            "baseline": 0,
+            "candidate": 0,
+            "ratio": 1.0
+          },
+          {
+            "task_id": "sa-sensitive-rejection-boundary",
+            "variant": "adaptive",
+            "repetition": 1,
+            "baseline": 131449,
+            "candidate": 23394,
+            "ratio": 0.17797016333330798
+          },
+          {
+            "task_id": "sa-sensitive-rejection-boundary",
+            "variant": "cap:core",
+            "repetition": 1,
+            "baseline": 66342,
+            "candidate": 0,
+            "ratio": 0.0
+          },
+          {
+            "task_id": "sa-sensitive-rejection-boundary",
+            "variant": "cap:debugging",
+            "repetition": 1,
+            "baseline": 110248,
+            "candidate": 428563,
+            "ratio": 3.8872632610115376
+          },
+          {
+            "task_id": "sa-sensitive-rejection-boundary",
+            "variant": "cap:implementation",
+            "repetition": 1,
+            "baseline": 148181,
+            "candidate": 40975,
+            "ratio": 0.2765199317051444
+          }
+        ]
+      },
+      "dependency_source_bytes": {
+        "baseline_sum": 707359,
+        "candidate_sum": 824088,
+        "median_ratio": 1.0,
+        "per_pair": [
+          {
+            "task_id": "ca-avif-stall-evidence",
+            "variant": "adaptive",
+            "repetition": 1,
+            "baseline": 0,
+            "candidate": 0,
+            "ratio": 1.0
+          },
+          {
+            "task_id": "ca-avif-stall-evidence",
+            "variant": "cap:core",
+            "repetition": 1,
+            "baseline": 0,
+            "candidate": 0,
+            "ratio": 1.0
+          },
+          {
+            "task_id": "ca-avif-stall-evidence",
+            "variant": "cap:debugging",
+            "repetition": 1,
+            "baseline": 0,
+            "candidate": 0,
+            "ratio": 1.0
+          },
+          {
+            "task_id": "ca-avif-stall-evidence",
+            "variant": "cap:implementation",
+            "repetition": 1,
+            "baseline": 0,
+            "candidate": 0,
+            "ratio": 1.0
+          },
+          {
+            "task_id": "ca-cancel-download",
+            "variant": "adaptive",
+            "repetition": 1,
+            "baseline": 0,
+            "candidate": 5514,
+            "ratio": "unbounded"
+          },
+          {
+            "task_id": "ca-cancel-download",
+            "variant": "cap:core",
+            "repetition": 1,
+            "baseline": 229,
+            "candidate": 0,
+            "ratio": 0.0
+          },
+          {
+            "task_id": "ca-cancel-download",
+            "variant": "cap:debugging",
+            "repetition": 1,
+            "baseline": 1601,
+            "candidate": 0,
+            "ratio": 0.0
+          },
+          {
+            "task_id": "ca-cancel-download",
+            "variant": "cap:implementation",
+            "repetition": 1,
+            "baseline": 0,
+            "candidate": 0,
+            "ratio": 1.0
+          },
+          {
+            "task_id": "ca-export-filename-probe",
+            "variant": "adaptive",
+            "repetition": 1,
+            "baseline": 0,
+            "candidate": 0,
+            "ratio": 1.0
+          },
+          {
+            "task_id": "ca-export-filename-probe",
+            "variant": "cap:core",
+            "repetition": 1,
+            "baseline": 0,
+            "candidate": 0,
+            "ratio": 1.0
+          },
+          {
+            "task_id": "ca-export-filename-probe",
+            "variant": "cap:debugging",
+            "repetition": 1,
+            "baseline": 0,
+            "candidate": 0,
+            "ratio": 1.0
+          },
+          {
+            "task_id": "ca-export-filename-probe",
+            "variant": "cap:implementation",
+            "repetition": 1,
+            "baseline": 0,
+            "candidate": 1152,
+            "ratio": "unbounded"
+          },
+          {
+            "task_id": "ca-export-format-known",
+            "variant": "adaptive",
+            "repetition": 1,
+            "baseline": 0,
+            "candidate": 0,
+            "ratio": 1.0
+          },
+          {
+            "task_id": "ca-export-format-known",
+            "variant": "cap:core",
+            "repetition": 1,
+            "baseline": 0,
+            "candidate": 0,
+            "ratio": 1.0
+          },
+          {
+            "task_id": "ca-export-format-known",
+            "variant": "cap:debugging",
+            "repetition": 1,
+            "baseline": 0,
+            "candidate": 0,
+            "ratio": 1.0
+          },
+          {
+            "task_id": "ca-export-format-known",
+            "variant": "cap:implementation",
+            "repetition": 1,
+            "baseline": 0,
+            "candidate": 0,
+            "ratio": 1.0
+          },
+          {
+            "task_id": "ca-new-format-existing-pattern",
+            "variant": "adaptive",
+            "repetition": 1,
+            "baseline": 0,
+            "candidate": 0,
+            "ratio": 1.0
+          },
+          {
+            "task_id": "ca-new-format-existing-pattern",
+            "variant": "cap:core",
+            "repetition": 1,
+            "baseline": 0,
+            "candidate": 0,
+            "ratio": 1.0
+          },
+          {
+            "task_id": "ca-new-format-existing-pattern",
+            "variant": "cap:debugging",
+            "repetition": 1,
+            "baseline": 0,
+            "candidate": 0,
+            "ratio": 1.0
+          },
+          {
+            "task_id": "ca-new-format-existing-pattern",
+            "variant": "cap:implementation",
+            "repetition": 1,
+            "baseline": 0,
+            "candidate": 0,
+            "ratio": 1.0
+          },
+          {
+            "task_id": "pp-compatibility-manual-decision",
+            "variant": "adaptive",
+            "repetition": 1,
+            "baseline": 0,
+            "candidate": 0,
+            "ratio": 1.0
+          },
+          {
+            "task_id": "pp-known-contract",
+            "variant": "adaptive",
+            "repetition": 1,
+            "baseline": 0,
+            "candidate": 0,
+            "ratio": 1.0
+          },
+          {
+            "task_id": "pp-known-contract",
+            "variant": "cap:core",
+            "repetition": 1,
+            "baseline": 0,
+            "candidate": 0,
+            "ratio": 1.0
+          },
+          {
+            "task_id": "pp-known-contract",
+            "variant": "cap:debugging",
+            "repetition": 1,
+            "baseline": 0,
+            "candidate": 0,
+            "ratio": 1.0
+          },
+          {
+            "task_id": "pp-known-contract",
+            "variant": "cap:implementation",
+            "repetition": 1,
+            "baseline": 0,
+            "candidate": 0,
+            "ratio": 1.0
+          },
+          {
+            "task_id": "pp-lifecycle-map",
+            "variant": "adaptive",
+            "repetition": 1,
+            "baseline": 0,
+            "candidate": 0,
+            "ratio": 1.0
+          },
+          {
+            "task_id": "pp-lifecycle-map",
+            "variant": "cap:core",
+            "repetition": 1,
+            "baseline": 0,
+            "candidate": 0,
+            "ratio": 1.0
+          },
+          {
+            "task_id": "pp-lifecycle-map",
+            "variant": "cap:debugging",
+            "repetition": 1,
+            "baseline": 0,
+            "candidate": 0,
+            "ratio": 1.0
+          },
+          {
+            "task_id": "pp-lifecycle-map",
+            "variant": "cap:implementation",
+            "repetition": 1,
+            "baseline": 0,
+            "candidate": 0,
+            "ratio": 1.0
+          },
+          {
+            "task_id": "pp-running-after-throw",
+            "variant": "adaptive",
+            "repetition": 1,
+            "baseline": 0,
+            "candidate": 0,
+            "ratio": 1.0
+          },
+          {
+            "task_id": "pp-running-after-throw",
+            "variant": "cap:core",
+            "repetition": 1,
+            "baseline": 0,
+            "candidate": 0,
+            "ratio": 1.0
+          },
+          {
+            "task_id": "pp-running-after-throw",
+            "variant": "cap:debugging",
+            "repetition": 1,
+            "baseline": 0,
+            "candidate": 0,
+            "ratio": 1.0
+          },
+          {
+            "task_id": "pp-running-after-throw",
+            "variant": "cap:implementation",
+            "repetition": 1,
+            "baseline": 0,
+            "candidate": 0,
+            "ratio": 1.0
+          },
+          {
+            "task_id": "pp-token-rotation-boundary",
+            "variant": "adaptive",
+            "repetition": 1,
+            "baseline": 0,
+            "candidate": 0,
+            "ratio": 1.0
+          },
+          {
+            "task_id": "pp-token-rotation-boundary",
+            "variant": "cap:core",
+            "repetition": 1,
+            "baseline": 0,
+            "candidate": 0,
+            "ratio": 1.0
+          },
+          {
+            "task_id": "pp-token-rotation-boundary",
+            "variant": "cap:debugging",
+            "repetition": 1,
+            "baseline": 136126,
+            "candidate": 0,
+            "ratio": 0.0
+          },
+          {
+            "task_id": "pp-token-rotation-boundary",
+            "variant": "cap:implementation",
+            "repetition": 1,
+            "baseline": 0,
+            "candidate": 0,
+            "ratio": 1.0
+          },
+          {
+            "task_id": "sa-memory-map",
+            "variant": "adaptive",
+            "repetition": 1,
+            "baseline": 0,
+            "candidate": 0,
+            "ratio": 1.0
+          },
+          {
+            "task_id": "sa-memory-map",
+            "variant": "cap:core",
+            "repetition": 1,
+            "baseline": 0,
+            "candidate": 0,
+            "ratio": 1.0
+          },
+          {
+            "task_id": "sa-memory-map",
+            "variant": "cap:debugging",
+            "repetition": 1,
+            "baseline": 0,
+            "candidate": 0,
+            "ratio": 1.0
+          },
+          {
+            "task_id": "sa-memory-map",
+            "variant": "cap:implementation",
+            "repetition": 1,
+            "baseline": 0,
+            "candidate": 0,
+            "ratio": 1.0
+          },
+          {
+            "task_id": "sa-memory-reset-concurrency",
+            "variant": "adaptive",
+            "repetition": 1,
+            "baseline": 45937,
+            "candidate": 32335,
+            "ratio": 0.7038988179463178
+          },
+          {
+            "task_id": "sa-memory-reset-concurrency",
+            "variant": "cap:core",
+            "repetition": 1,
+            "baseline": 8597,
+            "candidate": 10142,
+            "ratio": 1.1797138536698848
+          },
+          {
+            "task_id": "sa-memory-reset-concurrency",
+            "variant": "cap:debugging",
+            "repetition": 1,
+            "baseline": 47624,
+            "candidate": 17724,
+            "ratio": 0.37216529480933985
+          },
+          {
+            "task_id": "sa-memory-reset-concurrency",
+            "variant": "cap:implementation",
+            "repetition": 1,
+            "baseline": 34058,
+            "candidate": 76442,
+            "ratio": 2.244465323859299
+          },
+          {
+            "task_id": "sa-memory-strategy-manual-decision",
+            "variant": "adaptive",
+            "repetition": 1,
+            "baseline": 0,
+            "candidate": 0,
+            "ratio": 1.0
+          },
+          {
+            "task_id": "sa-module-compile-probe",
+            "variant": "adaptive",
+            "repetition": 1,
+            "baseline": 0,
+            "candidate": 0,
+            "ratio": 1.0
+          },
+          {
+            "task_id": "sa-module-compile-probe",
+            "variant": "cap:core",
+            "repetition": 1,
+            "baseline": 0,
+            "candidate": 0,
+            "ratio": 1.0
+          },
+          {
+            "task_id": "sa-module-compile-probe",
+            "variant": "cap:debugging",
+            "repetition": 1,
+            "baseline": 0,
+            "candidate": 0,
+            "ratio": 1.0
+          },
+          {
+            "task_id": "sa-module-compile-probe",
+            "variant": "cap:implementation",
+            "repetition": 1,
+            "baseline": 0,
+            "candidate": 0,
+            "ratio": 1.0
+          },
+          {
+            "task_id": "sa-sensitive-rejection-boundary",
+            "variant": "adaptive",
+            "repetition": 1,
+            "baseline": 107228,
+            "candidate": 50884,
+            "ratio": 0.4745402320289477
+          },
+          {
+            "task_id": "sa-sensitive-rejection-boundary",
+            "variant": "cap:core",
+            "repetition": 1,
+            "baseline": 63477,
+            "candidate": 80112,
+            "ratio": 1.2620634245474738
+          },
+          {
+            "task_id": "sa-sensitive-rejection-boundary",
+            "variant": "cap:debugging",
+            "repetition": 1,
+            "baseline": 121076,
+            "candidate": 420090,
+            "ratio": 3.469638904489742
+          },
+          {
+            "task_id": "sa-sensitive-rejection-boundary",
+            "variant": "cap:implementation",
+            "repetition": 1,
+            "baseline": 141406,
+            "candidate": 129693,
+            "ratio": 0.9171675883625872
+          }
+        ]
+      },
+      "outputs_over_64k": {
+        "baseline_sum": 17,
+        "candidate_sum": 13,
+        "median_ratio": 1.0,
+        "per_pair": [
+          {
+            "task_id": "ca-avif-stall-evidence",
+            "variant": "adaptive",
+            "repetition": 1,
+            "baseline": 0,
+            "candidate": 0,
+            "ratio": 1.0
+          },
+          {
+            "task_id": "ca-avif-stall-evidence",
+            "variant": "cap:core",
+            "repetition": 1,
+            "baseline": 0,
+            "candidate": 0,
+            "ratio": 1.0
+          },
+          {
+            "task_id": "ca-avif-stall-evidence",
+            "variant": "cap:debugging",
+            "repetition": 1,
+            "baseline": 0,
+            "candidate": 0,
+            "ratio": 1.0
+          },
+          {
+            "task_id": "ca-avif-stall-evidence",
+            "variant": "cap:implementation",
+            "repetition": 1,
+            "baseline": 0,
+            "candidate": 0,
+            "ratio": 1.0
+          },
+          {
+            "task_id": "ca-cancel-download",
+            "variant": "adaptive",
+            "repetition": 1,
+            "baseline": 0,
+            "candidate": 0,
+            "ratio": 1.0
+          },
+          {
+            "task_id": "ca-cancel-download",
+            "variant": "cap:core",
+            "repetition": 1,
+            "baseline": 0,
+            "candidate": 0,
+            "ratio": 1.0
+          },
+          {
+            "task_id": "ca-cancel-download",
+            "variant": "cap:debugging",
+            "repetition": 1,
+            "baseline": 0,
+            "candidate": 0,
+            "ratio": 1.0
+          },
+          {
+            "task_id": "ca-cancel-download",
+            "variant": "cap:implementation",
+            "repetition": 1,
+            "baseline": 0,
+            "candidate": 0,
+            "ratio": 1.0
+          },
+          {
+            "task_id": "ca-export-filename-probe",
+            "variant": "adaptive",
+            "repetition": 1,
+            "baseline": 0,
+            "candidate": 0,
+            "ratio": 1.0
+          },
+          {
+            "task_id": "ca-export-filename-probe",
+            "variant": "cap:core",
+            "repetition": 1,
+            "baseline": 0,
+            "candidate": 0,
+            "ratio": 1.0
+          },
+          {
+            "task_id": "ca-export-filename-probe",
+            "variant": "cap:debugging",
+            "repetition": 1,
+            "baseline": 0,
+            "candidate": 0,
+            "ratio": 1.0
+          },
+          {
+            "task_id": "ca-export-filename-probe",
+            "variant": "cap:implementation",
+            "repetition": 1,
+            "baseline": 0,
+            "candidate": 0,
+            "ratio": 1.0
+          },
+          {
+            "task_id": "ca-export-format-known",
+            "variant": "adaptive",
+            "repetition": 1,
+            "baseline": 0,
+            "candidate": 0,
+            "ratio": 1.0
+          },
+          {
+            "task_id": "ca-export-format-known",
+            "variant": "cap:core",
+            "repetition": 1,
+            "baseline": 0,
+            "candidate": 0,
+            "ratio": 1.0
+          },
+          {
+            "task_id": "ca-export-format-known",
+            "variant": "cap:debugging",
+            "repetition": 1,
+            "baseline": 0,
+            "candidate": 0,
+            "ratio": 1.0
+          },
+          {
+            "task_id": "ca-export-format-known",
+            "variant": "cap:implementation",
+            "repetition": 1,
+            "baseline": 0,
+            "candidate": 0,
+            "ratio": 1.0
+          },
+          {
+            "task_id": "ca-new-format-existing-pattern",
+            "variant": "adaptive",
+            "repetition": 1,
+            "baseline": 0,
+            "candidate": 0,
+            "ratio": 1.0
+          },
+          {
+            "task_id": "ca-new-format-existing-pattern",
+            "variant": "cap:core",
+            "repetition": 1,
+            "baseline": 0,
+            "candidate": 0,
+            "ratio": 1.0
+          },
+          {
+            "task_id": "ca-new-format-existing-pattern",
+            "variant": "cap:debugging",
+            "repetition": 1,
+            "baseline": 0,
+            "candidate": 0,
+            "ratio": 1.0
+          },
+          {
+            "task_id": "ca-new-format-existing-pattern",
+            "variant": "cap:implementation",
+            "repetition": 1,
+            "baseline": 0,
+            "candidate": 0,
+            "ratio": 1.0
+          },
+          {
+            "task_id": "pp-compatibility-manual-decision",
+            "variant": "adaptive",
+            "repetition": 1,
+            "baseline": 1,
+            "candidate": 2,
+            "ratio": 2.0
+          },
+          {
+            "task_id": "pp-known-contract",
+            "variant": "adaptive",
+            "repetition": 1,
+            "baseline": 0,
+            "candidate": 0,
+            "ratio": 1.0
+          },
+          {
+            "task_id": "pp-known-contract",
+            "variant": "cap:core",
+            "repetition": 1,
+            "baseline": 0,
+            "candidate": 0,
+            "ratio": 1.0
+          },
+          {
+            "task_id": "pp-known-contract",
+            "variant": "cap:debugging",
+            "repetition": 1,
+            "baseline": 0,
+            "candidate": 0,
+            "ratio": 1.0
+          },
+          {
+            "task_id": "pp-known-contract",
+            "variant": "cap:implementation",
+            "repetition": 1,
+            "baseline": 0,
+            "candidate": 0,
+            "ratio": 1.0
+          },
+          {
+            "task_id": "pp-lifecycle-map",
+            "variant": "adaptive",
+            "repetition": 1,
+            "baseline": 0,
+            "candidate": 0,
+            "ratio": 1.0
+          },
+          {
+            "task_id": "pp-lifecycle-map",
+            "variant": "cap:core",
+            "repetition": 1,
+            "baseline": 0,
+            "candidate": 0,
+            "ratio": 1.0
+          },
+          {
+            "task_id": "pp-lifecycle-map",
+            "variant": "cap:debugging",
+            "repetition": 1,
+            "baseline": 0,
+            "candidate": 0,
+            "ratio": 1.0
+          },
+          {
+            "task_id": "pp-lifecycle-map",
+            "variant": "cap:implementation",
+            "repetition": 1,
+            "baseline": 0,
+            "candidate": 0,
+            "ratio": 1.0
+          },
+          {
+            "task_id": "pp-running-after-throw",
+            "variant": "adaptive",
+            "repetition": 1,
+            "baseline": 2,
+            "candidate": 1,
+            "ratio": 0.5
+          },
+          {
+            "task_id": "pp-running-after-throw",
+            "variant": "cap:core",
+            "repetition": 1,
+            "baseline": 1,
+            "candidate": 1,
+            "ratio": 1.0
+          },
+          {
+            "task_id": "pp-running-after-throw",
+            "variant": "cap:debugging",
+            "repetition": 1,
+            "baseline": 2,
+            "candidate": 1,
+            "ratio": 0.5
+          },
+          {
+            "task_id": "pp-running-after-throw",
+            "variant": "cap:implementation",
+            "repetition": 1,
+            "baseline": 2,
+            "candidate": 0,
+            "ratio": 0.0
+          },
+          {
+            "task_id": "pp-token-rotation-boundary",
+            "variant": "adaptive",
+            "repetition": 1,
+            "baseline": 0,
+            "candidate": 1,
+            "ratio": "unbounded"
+          },
+          {
+            "task_id": "pp-token-rotation-boundary",
+            "variant": "cap:core",
+            "repetition": 1,
+            "baseline": 0,
+            "candidate": 1,
+            "ratio": "unbounded"
+          },
+          {
+            "task_id": "pp-token-rotation-boundary",
+            "variant": "cap:debugging",
+            "repetition": 1,
+            "baseline": 1,
+            "candidate": 1,
+            "ratio": 1.0
+          },
+          {
+            "task_id": "pp-token-rotation-boundary",
+            "variant": "cap:implementation",
+            "repetition": 1,
+            "baseline": 2,
+            "candidate": 0,
+            "ratio": 0.0
+          },
+          {
+            "task_id": "sa-memory-map",
+            "variant": "adaptive",
+            "repetition": 1,
+            "baseline": 0,
+            "candidate": 0,
+            "ratio": 1.0
+          },
+          {
+            "task_id": "sa-memory-map",
+            "variant": "cap:core",
+            "repetition": 1,
+            "baseline": 0,
+            "candidate": 0,
+            "ratio": 1.0
+          },
+          {
+            "task_id": "sa-memory-map",
+            "variant": "cap:debugging",
+            "repetition": 1,
+            "baseline": 0,
+            "candidate": 0,
+            "ratio": 1.0
+          },
+          {
+            "task_id": "sa-memory-map",
+            "variant": "cap:implementation",
+            "repetition": 1,
+            "baseline": 0,
+            "candidate": 1,
+            "ratio": "unbounded"
+          },
+          {
+            "task_id": "sa-memory-reset-concurrency",
+            "variant": "adaptive",
+            "repetition": 1,
+            "baseline": 1,
+            "candidate": 0,
+            "ratio": 0.0
+          },
+          {
+            "task_id": "sa-memory-reset-concurrency",
+            "variant": "cap:core",
+            "repetition": 1,
+            "baseline": 0,
+            "candidate": 0,
+            "ratio": 1.0
+          },
+          {
+            "task_id": "sa-memory-reset-concurrency",
+            "variant": "cap:debugging",
+            "repetition": 1,
+            "baseline": 1,
+            "candidate": 0,
+            "ratio": 0.0
+          },
+          {
+            "task_id": "sa-memory-reset-concurrency",
+            "variant": "cap:implementation",
+            "repetition": 1,
+            "baseline": 0,
+            "candidate": 0,
+            "ratio": 1.0
+          },
+          {
+            "task_id": "sa-memory-strategy-manual-decision",
+            "variant": "adaptive",
+            "repetition": 1,
+            "baseline": 2,
+            "candidate": 2,
+            "ratio": 1.0
+          },
+          {
+            "task_id": "sa-module-compile-probe",
+            "variant": "adaptive",
+            "repetition": 1,
+            "baseline": 0,
+            "candidate": 0,
+            "ratio": 1.0
+          },
+          {
+            "task_id": "sa-module-compile-probe",
+            "variant": "cap:core",
+            "repetition": 1,
+            "baseline": 0,
+            "candidate": 0,
+            "ratio": 1.0
+          },
+          {
+            "task_id": "sa-module-compile-probe",
+            "variant": "cap:debugging",
+            "repetition": 1,
+            "baseline": 0,
+            "candidate": 0,
+            "ratio": 1.0
+          },
+          {
+            "task_id": "sa-module-compile-probe",
+            "variant": "cap:implementation",
+            "repetition": 1,
+            "baseline": 0,
+            "candidate": 0,
+            "ratio": 1.0
+          },
+          {
+            "task_id": "sa-sensitive-rejection-boundary",
+            "variant": "adaptive",
+            "repetition": 1,
+            "baseline": 1,
+            "candidate": 0,
+            "ratio": 0.0
+          },
+          {
+            "task_id": "sa-sensitive-rejection-boundary",
+            "variant": "cap:core",
+            "repetition": 1,
+            "baseline": 0,
+            "candidate": 0,
+            "ratio": 1.0
+          },
+          {
+            "task_id": "sa-sensitive-rejection-boundary",
+            "variant": "cap:debugging",
+            "repetition": 1,
+            "baseline": 0,
+            "candidate": 1,
+            "ratio": "unbounded"
+          },
+          {
+            "task_id": "sa-sensitive-rejection-boundary",
+            "variant": "cap:implementation",
+            "repetition": 1,
+            "baseline": 1,
+            "candidate": 1,
+            "ratio": 1.0
+          }
+        ]
+      }
+    },
+    "tail_automatic_estimates": {
+      "tool_output_bytes": {
+        "baseline_sum": 841539,
+        "candidate_sum": 659448,
+        "median_ratio": 0.6042386832384489,
+        "per_pair": [
+          {
+            "task_id": "pp-running-after-throw",
+            "variant": "adaptive",
+            "repetition": 1,
+            "baseline": 371153,
+            "candidate": 224265,
+            "ratio": 0.6042386832384489
+          },
+          {
+            "task_id": "pp-token-rotation-boundary",
+            "variant": "adaptive",
+            "repetition": 1,
+            "baseline": 186855,
+            "candidate": 299299,
+            "ratio": 1.601771427042359
+          },
+          {
+            "task_id": "sa-sensitive-rejection-boundary",
+            "variant": "adaptive",
+            "repetition": 1,
+            "baseline": 283531,
+            "candidate": 135884,
+            "ratio": 0.4792562365314551
+          }
+        ]
+      },
+      "input_tokens": {
+        "baseline_sum": 2286242,
+        "candidate_sum": 1392532,
+        "median_ratio": 0.9342233511533804,
+        "per_pair": [
+          {
+            "task_id": "pp-running-after-throw",
+            "variant": "adaptive",
+            "repetition": 1,
+            "baseline": 458127,
+            "candidate": 433849,
+            "ratio": 0.9470059612290915
+          },
+          {
+            "task_id": "pp-token-rotation-boundary",
+            "variant": "adaptive",
+            "repetition": 1,
+            "baseline": 541712,
+            "candidate": 506080,
+            "ratio": 0.9342233511533804
+          },
+          {
+            "task_id": "sa-sensitive-rejection-boundary",
+            "variant": "adaptive",
+            "repetition": 1,
+            "baseline": 1286403,
+            "candidate": 452603,
+            "ratio": 0.3518360886907136
+          }
+        ]
+      },
+      "cached_input_tokens": {
+        "baseline_sum": 2098432,
+        "candidate_sum": 1229312,
+        "median_ratio": 0.9328436516264428,
+        "per_pair": [
+          {
+            "task_id": "pp-running-after-throw",
+            "variant": "adaptive",
+            "repetition": 1,
+            "baseline": 411392,
+            "candidate": 395008,
+            "ratio": 0.9601742377100186
+          },
+          {
+            "task_id": "pp-token-rotation-boundary",
+            "variant": "adaptive",
+            "repetition": 1,
+            "baseline": 487936,
+            "candidate": 455168,
+            "ratio": 0.9328436516264428
+          },
+          {
+            "task_id": "sa-sensitive-rejection-boundary",
+            "variant": "adaptive",
+            "repetition": 1,
+            "baseline": 1199104,
+            "candidate": 379136,
+            "ratio": 0.31618274978650723
+          }
+        ]
+      },
+      "uncached_input_tokens": {
+        "baseline_sum": 187810,
+        "candidate_sum": 163220,
+        "median_ratio": 0.8415560315696629,
+        "per_pair": [
+          {
+            "task_id": "pp-running-after-throw",
+            "variant": "adaptive",
+            "repetition": 1,
+            "baseline": 46735,
+            "candidate": 38841,
+            "ratio": 0.8310901893655719
+          },
+          {
+            "task_id": "pp-token-rotation-boundary",
+            "variant": "adaptive",
+            "repetition": 1,
+            "baseline": 53776,
+            "candidate": 50912,
+            "ratio": 0.9467420410592086
+          },
+          {
+            "task_id": "sa-sensitive-rejection-boundary",
+            "variant": "adaptive",
+            "repetition": 1,
+            "baseline": 87299,
+            "candidate": 73467,
+            "ratio": 0.8415560315696629
+          }
+        ]
+      },
+      "output_tokens": {
+        "baseline_sum": 19103,
+        "candidate_sum": 13225,
+        "median_ratio": 0.7155952919873246,
+        "per_pair": [
+          {
+            "task_id": "pp-running-after-throw",
+            "variant": "adaptive",
+            "repetition": 1,
+            "baseline": 3406,
+            "candidate": 3002,
+            "ratio": 0.8813857897827363
+          },
+          {
+            "task_id": "pp-token-rotation-boundary",
+            "variant": "adaptive",
+            "repetition": 1,
+            "baseline": 6861,
+            "candidate": 3900,
+            "ratio": 0.5684302579798863
+          },
+          {
+            "task_id": "sa-sensitive-rejection-boundary",
+            "variant": "adaptive",
+            "repetition": 1,
+            "baseline": 8836,
+            "candidate": 6323,
+            "ratio": 0.7155952919873246
+          }
+        ]
+      },
+      "tool_calls": {
+        "baseline_sum": 53,
+        "candidate_sum": 39,
+        "median_ratio": 0.9130434782608695,
+        "per_pair": [
+          {
+            "task_id": "pp-running-after-throw",
+            "variant": "adaptive",
+            "repetition": 1,
+            "baseline": 8,
+            "candidate": 9,
+            "ratio": 1.125
+          },
+          {
+            "task_id": "pp-token-rotation-boundary",
+            "variant": "adaptive",
+            "repetition": 1,
+            "baseline": 22,
+            "candidate": 9,
+            "ratio": 0.4090909090909091
+          },
+          {
+            "task_id": "sa-sensitive-rejection-boundary",
+            "variant": "adaptive",
+            "repetition": 1,
+            "baseline": 23,
+            "candidate": 21,
+            "ratio": 0.9130434782608695
+          }
+        ]
+      },
+      "broad_calls_after_first_project_read": {
+        "baseline_sum": 2,
+        "candidate_sum": 1,
+        "median_ratio": 1.0,
+        "per_pair": [
+          {
+            "task_id": "pp-running-after-throw",
+            "variant": "adaptive",
+            "repetition": 1,
+            "baseline": 0,
+            "candidate": 0,
+            "ratio": 1.0
+          },
+          {
+            "task_id": "pp-token-rotation-boundary",
+            "variant": "adaptive",
+            "repetition": 1,
+            "baseline": 0,
+            "candidate": 1,
+            "ratio": "unbounded"
+          },
+          {
+            "task_id": "sa-sensitive-rejection-boundary",
+            "variant": "adaptive",
+            "repetition": 1,
+            "baseline": 2,
+            "candidate": 0,
+            "ratio": 0.0
+          }
+        ]
+      },
+      "duplicate_command_calls": {
+        "baseline_sum": 0,
+        "candidate_sum": 1,
+        "median_ratio": 1.0,
+        "per_pair": [
+          {
+            "task_id": "pp-running-after-throw",
+            "variant": "adaptive",
+            "repetition": 1,
+            "baseline": 0,
+            "candidate": 0,
+            "ratio": 1.0
+          },
+          {
+            "task_id": "pp-token-rotation-boundary",
+            "variant": "adaptive",
+            "repetition": 1,
+            "baseline": 0,
+            "candidate": 0,
+            "ratio": 1.0
+          },
+          {
+            "task_id": "sa-sensitive-rejection-boundary",
+            "variant": "adaptive",
+            "repetition": 1,
+            "baseline": 0,
+            "candidate": 1,
+            "ratio": "unbounded"
+          }
+        ]
+      },
+      "whole_file_read_bytes": {
+        "baseline_sum": 256366,
+        "candidate_sum": 124052,
+        "median_ratio": 0.3119913987828094,
+        "per_pair": [
+          {
+            "task_id": "pp-running-after-throw",
+            "variant": "adaptive",
+            "repetition": 1,
+            "baseline": 101381,
+            "candidate": 31630,
+            "ratio": 0.3119913987828094
+          },
+          {
+            "task_id": "pp-token-rotation-boundary",
+            "variant": "adaptive",
+            "repetition": 1,
+            "baseline": 23536,
+            "candidate": 69028,
+            "ratio": 2.932868796736914
+          },
+          {
+            "task_id": "sa-sensitive-rejection-boundary",
+            "variant": "adaptive",
+            "repetition": 1,
+            "baseline": 131449,
+            "candidate": 23394,
+            "ratio": 0.17797016333330798
+          }
+        ]
+      },
+      "dependency_source_bytes": {
+        "baseline_sum": 107228,
+        "candidate_sum": 50884,
+        "median_ratio": 1.0,
+        "per_pair": [
+          {
+            "task_id": "pp-running-after-throw",
+            "variant": "adaptive",
+            "repetition": 1,
+            "baseline": 0,
+            "candidate": 0,
+            "ratio": 1.0
+          },
+          {
+            "task_id": "pp-token-rotation-boundary",
+            "variant": "adaptive",
+            "repetition": 1,
+            "baseline": 0,
+            "candidate": 0,
+            "ratio": 1.0
+          },
+          {
+            "task_id": "sa-sensitive-rejection-boundary",
+            "variant": "adaptive",
+            "repetition": 1,
+            "baseline": 107228,
+            "candidate": 50884,
+            "ratio": 0.4745402320289477
+          }
+        ]
+      },
+      "outputs_over_64k": {
+        "baseline_sum": 3,
+        "candidate_sum": 2,
+        "median_ratio": 0.5,
+        "per_pair": [
+          {
+            "task_id": "pp-running-after-throw",
+            "variant": "adaptive",
+            "repetition": 1,
+            "baseline": 2,
+            "candidate": 1,
+            "ratio": 0.5
+          },
+          {
+            "task_id": "pp-token-rotation-boundary",
+            "variant": "adaptive",
+            "repetition": 1,
+            "baseline": 0,
+            "candidate": 1,
+            "ratio": "unbounded"
+          },
+          {
+            "task_id": "sa-sensitive-rejection-boundary",
+            "variant": "adaptive",
+            "repetition": 1,
+            "baseline": 1,
+            "candidate": 0,
+            "ratio": 0.0
+          }
+        ]
+      }
+    },
+    "tail_audited": {
+      "tool_output_bytes": {
+        "baseline_sum": 841539,
+        "candidate_sum": 659448,
+        "median_ratio": 0.6042386832384489,
+        "per_pair": [
+          {
+            "task_id": "pp-running-after-throw",
+            "variant": "adaptive",
+            "repetition": 1,
+            "baseline": 371153,
+            "candidate": 224265,
+            "ratio": 0.6042386832384489
+          },
+          {
+            "task_id": "pp-token-rotation-boundary",
+            "variant": "adaptive",
+            "repetition": 1,
+            "baseline": 186855,
+            "candidate": 299299,
+            "ratio": 1.601771427042359
+          },
+          {
+            "task_id": "sa-sensitive-rejection-boundary",
+            "variant": "adaptive",
+            "repetition": 1,
+            "baseline": 283531,
+            "candidate": 135884,
+            "ratio": 0.4792562365314551
+          }
+        ]
+      },
+      "input_tokens": {
+        "baseline_sum": 2286242,
+        "candidate_sum": 1392532,
+        "median_ratio": 0.9342233511533804,
+        "per_pair": [
+          {
+            "task_id": "pp-running-after-throw",
+            "variant": "adaptive",
+            "repetition": 1,
+            "baseline": 458127,
+            "candidate": 433849,
+            "ratio": 0.9470059612290915
+          },
+          {
+            "task_id": "pp-token-rotation-boundary",
+            "variant": "adaptive",
+            "repetition": 1,
+            "baseline": 541712,
+            "candidate": 506080,
+            "ratio": 0.9342233511533804
+          },
+          {
+            "task_id": "sa-sensitive-rejection-boundary",
+            "variant": "adaptive",
+            "repetition": 1,
+            "baseline": 1286403,
+            "candidate": 452603,
+            "ratio": 0.3518360886907136
+          }
+        ]
+      },
+      "cached_input_tokens": {
+        "baseline_sum": 2098432,
+        "candidate_sum": 1229312,
+        "median_ratio": 0.9328436516264428,
+        "per_pair": [
+          {
+            "task_id": "pp-running-after-throw",
+            "variant": "adaptive",
+            "repetition": 1,
+            "baseline": 411392,
+            "candidate": 395008,
+            "ratio": 0.9601742377100186
+          },
+          {
+            "task_id": "pp-token-rotation-boundary",
+            "variant": "adaptive",
+            "repetition": 1,
+            "baseline": 487936,
+            "candidate": 455168,
+            "ratio": 0.9328436516264428
+          },
+          {
+            "task_id": "sa-sensitive-rejection-boundary",
+            "variant": "adaptive",
+            "repetition": 1,
+            "baseline": 1199104,
+            "candidate": 379136,
+            "ratio": 0.31618274978650723
+          }
+        ]
+      },
+      "uncached_input_tokens": {
+        "baseline_sum": 187810,
+        "candidate_sum": 163220,
+        "median_ratio": 0.8415560315696629,
+        "per_pair": [
+          {
+            "task_id": "pp-running-after-throw",
+            "variant": "adaptive",
+            "repetition": 1,
+            "baseline": 46735,
+            "candidate": 38841,
+            "ratio": 0.8310901893655719
+          },
+          {
+            "task_id": "pp-token-rotation-boundary",
+            "variant": "adaptive",
+            "repetition": 1,
+            "baseline": 53776,
+            "candidate": 50912,
+            "ratio": 0.9467420410592086
+          },
+          {
+            "task_id": "sa-sensitive-rejection-boundary",
+            "variant": "adaptive",
+            "repetition": 1,
+            "baseline": 87299,
+            "candidate": 73467,
+            "ratio": 0.8415560315696629
+          }
+        ]
+      },
+      "output_tokens": {
+        "baseline_sum": 19103,
+        "candidate_sum": 13225,
+        "median_ratio": 0.7155952919873246,
+        "per_pair": [
+          {
+            "task_id": "pp-running-after-throw",
+            "variant": "adaptive",
+            "repetition": 1,
+            "baseline": 3406,
+            "candidate": 3002,
+            "ratio": 0.8813857897827363
+          },
+          {
+            "task_id": "pp-token-rotation-boundary",
+            "variant": "adaptive",
+            "repetition": 1,
+            "baseline": 6861,
+            "candidate": 3900,
+            "ratio": 0.5684302579798863
+          },
+          {
+            "task_id": "sa-sensitive-rejection-boundary",
+            "variant": "adaptive",
+            "repetition": 1,
+            "baseline": 8836,
+            "candidate": 6323,
+            "ratio": 0.7155952919873246
+          }
+        ]
+      },
+      "tool_calls": {
+        "baseline_sum": 53,
+        "candidate_sum": 39,
+        "median_ratio": 0.9130434782608695,
+        "per_pair": [
+          {
+            "task_id": "pp-running-after-throw",
+            "variant": "adaptive",
+            "repetition": 1,
+            "baseline": 8,
+            "candidate": 9,
+            "ratio": 1.125
+          },
+          {
+            "task_id": "pp-token-rotation-boundary",
+            "variant": "adaptive",
+            "repetition": 1,
+            "baseline": 22,
+            "candidate": 9,
+            "ratio": 0.4090909090909091
+          },
+          {
+            "task_id": "sa-sensitive-rejection-boundary",
+            "variant": "adaptive",
+            "repetition": 1,
+            "baseline": 23,
+            "candidate": 21,
+            "ratio": 0.9130434782608695
+          }
+        ]
+      },
+      "broad_calls_after_first_project_read": {
+        "baseline_sum": 1,
+        "candidate_sum": 1,
+        "median_ratio": 1.0,
+        "per_pair": [
+          {
+            "task_id": "pp-running-after-throw",
+            "variant": "adaptive",
+            "repetition": 1,
+            "baseline": 0,
+            "candidate": 0,
+            "ratio": 1.0
+          },
+          {
+            "task_id": "pp-token-rotation-boundary",
+            "variant": "adaptive",
+            "repetition": 1,
+            "baseline": 1,
+            "candidate": 1,
+            "ratio": 1.0
+          },
+          {
+            "task_id": "sa-sensitive-rejection-boundary",
+            "variant": "adaptive",
+            "repetition": 1,
+            "baseline": 0,
+            "candidate": 0,
+            "ratio": 1.0
+          }
+        ]
+      },
+      "duplicate_command_calls": {
+        "baseline_sum": 0,
+        "candidate_sum": 1,
+        "median_ratio": 1.0,
+        "per_pair": [
+          {
+            "task_id": "pp-running-after-throw",
+            "variant": "adaptive",
+            "repetition": 1,
+            "baseline": 0,
+            "candidate": 0,
+            "ratio": 1.0
+          },
+          {
+            "task_id": "pp-token-rotation-boundary",
+            "variant": "adaptive",
+            "repetition": 1,
+            "baseline": 0,
+            "candidate": 0,
+            "ratio": 1.0
+          },
+          {
+            "task_id": "sa-sensitive-rejection-boundary",
+            "variant": "adaptive",
+            "repetition": 1,
+            "baseline": 0,
+            "candidate": 1,
+            "ratio": "unbounded"
+          }
+        ]
+      },
+      "whole_file_read_bytes": {
+        "baseline_sum": 174396,
+        "candidate_sum": 90770,
+        "median_ratio": 0.7220171293561725,
+        "per_pair": [
+          {
+            "task_id": "pp-running-after-throw",
+            "variant": "adaptive",
+            "repetition": 1,
+            "baseline": 91872,
+            "candidate": 3221,
+            "ratio": 0.03505964820619993
+          },
+          {
+            "task_id": "pp-token-rotation-boundary",
+            "variant": "adaptive",
+            "repetition": 1,
+            "baseline": 28348,
+            "candidate": 48433,
+            "ratio": 1.708515591928884
+          },
+          {
+            "task_id": "sa-sensitive-rejection-boundary",
+            "variant": "adaptive",
+            "repetition": 1,
+            "baseline": 54176,
+            "candidate": 39116,
+            "ratio": 0.7220171293561725
+          }
+        ]
+      },
+      "dependency_source_bytes": {
+        "baseline_sum": 94225,
+        "candidate_sum": 76431,
+        "median_ratio": 1.0,
+        "per_pair": [
+          {
+            "task_id": "pp-running-after-throw",
+            "variant": "adaptive",
+            "repetition": 1,
+            "baseline": 0,
+            "candidate": 0,
+            "ratio": 1.0
+          },
+          {
+            "task_id": "pp-token-rotation-boundary",
+            "variant": "adaptive",
+            "repetition": 1,
+            "baseline": 0,
+            "candidate": 0,
+            "ratio": 1.0
+          },
+          {
+            "task_id": "sa-sensitive-rejection-boundary",
+            "variant": "adaptive",
+            "repetition": 1,
+            "baseline": 94225,
+            "candidate": 76431,
+            "ratio": 0.8111541522950385
+          }
+        ]
+      },
+      "outputs_over_64k": {
+        "baseline_sum": 3,
+        "candidate_sum": 2,
+        "median_ratio": 0.5,
+        "per_pair": [
+          {
+            "task_id": "pp-running-after-throw",
+            "variant": "adaptive",
+            "repetition": 1,
+            "baseline": 2,
+            "candidate": 1,
+            "ratio": 0.5
+          },
+          {
+            "task_id": "pp-token-rotation-boundary",
+            "variant": "adaptive",
+            "repetition": 1,
+            "baseline": 0,
+            "candidate": 1,
+            "ratio": "unbounded"
+          },
+          {
+            "task_id": "sa-sensitive-rejection-boundary",
+            "variant": "adaptive",
+            "repetition": 1,
+            "baseline": 1,
+            "candidate": 0,
+            "ratio": 0.0
+          }
+        ]
+      }
+    },
+    "duration_is_gating": false
+  },
+  "notes": [
+    "54/54 determinate cells per arm; baseline53/candidate54 machine passes;411/411 candidate outputs measured.",
+    "Manual tail quality executor=false, sensitive=true, token=false; real source contradictions remain despite machine passes.",
+    "Material non-tail unknown event9 in sensitive cap:core audited as mixed full dependency classes plus partial class,18583bytes; raw counters unchanged.",
+    "No n3; rejected paragraph completely restored before another mechanism."
+  ]
+}

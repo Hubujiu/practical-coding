@@ -48,3 +48,10 @@ A semantic audit must examine returned content, including minified third-party i
 Iteration5 independently constrained returned row count/source-text width while preserving locators, omissions and required coverage. Its candidate reached54/54 machine passes versus53/54, but tail input median ratio1.623653 and tool median1.4 regressed while output ratio0.804037 missed the target. The executor still failed manual contract completeness. A file-change deletion event without an output payload also failed the fixed per-cell measurement-coverage gate; null metadata was preserved. The exact paragraph was rejected and rolled back, without selective retries or a new observer definition. Evidence: `../experiments/retrieval-convergence-20260903-5.md`.
 
 A smaller individual response is insufficient when repeated queries, manual shell formatting and retries replay more context. Separate guaranteed direct usage measurements, semantic attribution and unavailable output payloads; neither machine pass counts nor improved whole-file totals override other failed gates.
+
+
+## Specific anchors do not guarantee query discipline
+
+Iteration6 independently requested discriminating literal anchors with justified fallback. Both n=1 matrices completed; candidate54/54 machine passes and output median0.604239 improved over the53-pass baseline. Input0.934223 missed0.90, broad-after-source did not halve and duplicates increased; two tail answers still misused or omitted governing contracts. The paragraph was rejected and fully rolled back, with no n=3. Evidence: `../experiments/retrieval-convergence-20260903-6.md`.
+
+Inspect the executed query rather than assuming wording compliance: two tail runs retained generic OR searches that dominated returned content. Actual source evidence also must govern the final claim; locating a test or a stateless-authentication property cannot establish a different lifecycle guarantee. Preserve these distinct quality failures instead of trading them for improved output or tool counts.
