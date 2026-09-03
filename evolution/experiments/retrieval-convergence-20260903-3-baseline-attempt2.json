@@ -1,0 +1,97 @@
+{
+  "case_ids": [
+    "sa-sensitive-rejection-boundary",
+    "sa-memory-reset-concurrency",
+    "pp-running-after-throw"
+  ],
+  "selection": "Preserved pre-candidate attempt1 calibration tail for complete infrastructure rerun; no candidate-driven reselection",
+  "original_tail_sha256": "64b69091c68c8c7cad500bc1e9093793e2f44c3c8d8c7070725ec6a6cddcf98b",
+  "baseline_sha": "ffa6b655aa683bb891cc50e0cdb7efa7ae333cd8",
+  "results_sha256": "d63b2596c3b403b5a0f473a7b5f0917ce0565251215a7215b4ae991cfd86ee6f",
+  "gate_script_sha256": "ba26de7d317e5413836a1e82301776461c406748b7e5abd50279ba8174445377",
+  "audit_sha256": {
+    "sa-sensitive-rejection-boundary": "a72c9a4baf3afb6564480b6bad2a68a5b261f9cbf5df12927f1731eb0fa17406",
+    "sa-memory-reset-concurrency": "1e83e0da68c294c3e47fc34a1665bff02d14676b7bcdac01653b44352021813d",
+    "pp-running-after-throw": "6125bcee1e6bc35076831ee13f20dd86c52c3ace46ca898fdc01a1de08100ba9"
+  },
+  "automatic_rows": [
+    {
+      "task_id": "sa-sensitive-rejection-boundary",
+      "tool_output_bytes": 1277866,
+      "input_tokens": 1595876,
+      "uncached_input_tokens": 91620,
+      "tool_calls": 27,
+      "whole_file_read_bytes": 32954,
+      "dependency_source_bytes": 151754,
+      "broad_calls_after_first_project_read": 1,
+      "duplicate_command_calls": 0,
+      "outputs_over_64k": 2
+    },
+    {
+      "task_id": "sa-memory-reset-concurrency",
+      "tool_output_bytes": 1135286,
+      "input_tokens": 646514,
+      "uncached_input_tokens": 54642,
+      "tool_calls": 15,
+      "whole_file_read_bytes": 9685,
+      "dependency_source_bytes": 66097,
+      "broad_calls_after_first_project_read": 0,
+      "duplicate_command_calls": 0,
+      "outputs_over_64k": 1
+    },
+    {
+      "task_id": "pp-running-after-throw",
+      "tool_output_bytes": 383356,
+      "input_tokens": 376919,
+      "uncached_input_tokens": 59223,
+      "tool_calls": 22,
+      "whole_file_read_bytes": 40462,
+      "dependency_source_bytes": 0,
+      "broad_calls_after_first_project_read": 1,
+      "duplicate_command_calls": 2,
+      "outputs_over_64k": 2
+    }
+  ],
+  "audited_rows": [
+    {
+      "task_id": "sa-sensitive-rejection-boundary",
+      "tool_output_bytes": 1277866,
+      "input_tokens": 1595876,
+      "uncached_input_tokens": 91620,
+      "tool_calls": 27,
+      "whole_file_read_bytes": 66847,
+      "dependency_source_bytes": 175379,
+      "broad_calls_after_first_project_read": 0,
+      "duplicate_command_calls": 0,
+      "outputs_over_64k": 2,
+      "manual_quality_ok": true
+    },
+    {
+      "task_id": "sa-memory-reset-concurrency",
+      "tool_output_bytes": 1135286,
+      "input_tokens": 646514,
+      "uncached_input_tokens": 54642,
+      "tool_calls": 15,
+      "whole_file_read_bytes": 43629,
+      "dependency_source_bytes": 1105832,
+      "broad_calls_after_first_project_read": 0,
+      "duplicate_command_calls": 0,
+      "outputs_over_64k": 1,
+      "manual_quality_ok": true
+    },
+    {
+      "task_id": "pp-running-after-throw",
+      "tool_output_bytes": 383356,
+      "input_tokens": 376919,
+      "uncached_input_tokens": 59223,
+      "tool_calls": 22,
+      "whole_file_read_bytes": 26743,
+      "dependency_source_bytes": 0,
+      "broad_calls_after_first_project_read": 0,
+      "duplicate_command_calls": 2,
+      "outputs_over_64k": 2,
+      "manual_quality_ok": false
+    }
+  ],
+  "quality_note": "54 machine passes; supplemental pp manual quality false for misdiagnosing intended Error/crash recovery contract. Candidate must meet unchanged manual criterion."
+}
