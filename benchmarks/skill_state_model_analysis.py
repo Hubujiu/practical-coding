@@ -11,10 +11,19 @@ must cover every frozen standard case, not the legacy placeholder IDs ``a`` and
 from __future__ import annotations
 
 import copy
+import sys
+from pathlib import Path
 from typing import Any
 
-import _skill_state_model_analysis_roles_impl as _roles
-from _skill_state_model_analysis_roles_impl import *  # noqa: F401,F403
+HERE = Path(__file__).resolve().parent
+ROOT = HERE.parent
+if str(HERE) not in sys.path:
+    sys.path.insert(0, str(HERE))
+if str(ROOT) not in sys.path:
+    sys.path.insert(0, str(ROOT))
+
+import _skill_state_model_analysis_roles_impl as _roles  # noqa: E402
+from _skill_state_model_analysis_roles_impl import *  # noqa: E402,F401,F403
 
 _BASE_SYNTHETIC_ROWS = _roles.synthetic_rows
 
