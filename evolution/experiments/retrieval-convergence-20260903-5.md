@@ -37,3 +37,10 @@ On any failure preserve evidence, reject and fully restore this paragraph before
 ## Results (outside the frozen hypothesis)
 
 Pre-freeze independent review confirmed the single producer-output mechanism. The exact paragraph preserves full locators, explicit omission signals, continued access to the same contract and unchanged required verification scope. Pending fresh baseline; candidate not applied.
+
+
+- Fresh baseline completed54/54 determinate with53 machine passes. The sole `ca-cancel-download/adaptive` failure is frozen lexical test-evidence matching: the answer discusses an existing cancellation test but misses `focused|suite|existing test|.test.`. Preserve original fail and audit rather than altering scorer or rerunning. Model exit0, no timeout, fixture unchanged; missing vitest is separately disclosed.
+- All54 traces/manual contracts valid, spontaneous manual0, dirty fixtures0;388/388 outputs measured, no decode/malformed/usage gaps or unknown output over16KiB. Actual baseline HEAD `1af8121`.
+- Frozen ordinary adaptive tail: sensitive rejection1,359,773 bytes; memory map1,083,618; executor302,669. Complete hashes and audited values in `retrieval-convergence-20260903-5-baseline.json`.
+- Audited tail broad-after-source total1; whole-file286,583 bytes; dependency2,357,615 bytes. Initial vendored content was checked explicitly in both Super Agent tasks before freeze. Memory-map matching/range-loop outputs are bounded searches/reads, not whole-file despite automatic estimates.
+- Manual quality: sensitive and memory-map pass; executor acknowledges intentional Error behavior but omits startup recovery responsibility and subsequent INTERRUPTED state, so existing completeness requirement fails. Candidate still must pass that requirement. No baseline answer or oracle modified.
