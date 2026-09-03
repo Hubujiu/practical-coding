@@ -36,3 +36,9 @@ On failure preserve evidence and restore the entire paragraph before another ind
 ## Results (outside the frozen hypothesis)
 
 Pre-freeze independent review preserved required multi-symbol sets, known spelling/casing variants, stable error fragments, path constraints and necessary regex patterns. This remains one query-specificity mechanism with no mandatory failed preliminary query. Pending fresh baseline; candidate not applied.
+
+### Baseline receipt
+
+Fresh54/54 cells complete,53 machine passes,54 valid routing/manual contracts, no spontaneous manual activation or dirty fixtures. All424 outputs measured with no decode/usage gaps. The failed cap:debugging executor cell omits required Error-test evidence and misreads the intended Error/RUNNING/startup-recovery boundary; raw fail and source audit are retained.
+
+Frozen tail (before candidate): pp-running-after-throw371,153 bytes; sa-sensitive-rejection-boundary283,531; pp-token-rotation-boundary186,855. Audited whole-file total174,396 bytes, dependency-source94,225, broad-after-source1. Manual quality is false/true/false respectively: executor misses startup INTERRUPTED recovery; token assumes stateless authentication makes this explicitly single-node application safe for a rolling multi-instance replacement. These are known quality failures, not unresolved attribution. All tail output hashes verified; no unresolved audit items. The tracked baseline JSON freezes result, audit and pre-existing gate-script hashes.
