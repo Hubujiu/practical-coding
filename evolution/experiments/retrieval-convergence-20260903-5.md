@@ -1,0 +1,39 @@
+# Retrieval convergence — iteration 5: bound source output at the producer
+
+Status: **candidate-not-applied**
+
+## Frozen hypothesis
+
+- Baseline SHA: `f0c5b6f81574a927091974197d776e9918fa9b4a`; runtime remains the original accepted tree at `d7c4a93a9d50b1305407d323b718b45e19b0f2fe`. Iteration4 initial-corpus candidate was rejected and fully rolled back before this independent proposal.
+- Evidence: complete iteration4 baseline/candidate and reviewed output metadata; no held-out or selectively rerun cells. Baseline memory-map event1 returned1,048,576 bytes across553 recorded lines, with one line750,662 bytes long. A line-count-only limit cannot control that width. Baseline executor event2 returned173,191 bytes/1,015 lines (maximum955 bytes per line); event3 returned76,797 bytes/1,509 lines despite no line exceeding141 bytes. A line-width-only limit cannot control that height. These are different retrieval questions in different repositories, not a special-case path or symbol rule.
+- Causal mechanism: source output needs bounds on both returned rows and row width before entering model context. Limiting only scope or reusing earlier source does not prevent an individual response from dominating later input or hiding contracts in noise. Compact excerpts preserve named locations and the relevant contract; an omitted fact remains an explicit evidence gap.
+- Observable trigger: a source content search or source read is about to emit text into context. Apply output shaping within that existing command/tool, not a mandatory preliminary locating call. The rule is independent of project/vendor classification and does not change which authoritative source is eligible.
+- Exact runtime surface: one paragraph in `SKILL.md` Retrieval Policy, immediately before the existing paragraph beginning “Once candidate paths or symbols are known”. All rejected paragraphs remain absent.
+- Exact proposed paragraph: **Bound the returned line count and source-text width before source-search or read output enters context; preserve complete path-and-line locators and mark omissions. If a needed contract is cut off, retrieve its missing portion in bounded excerpts, and never treat omitted content as checked. These limits apply to displayed output, not required search, test, or coverage scope.**
+- Required evidence is not optional: source needed for a requested caller/contract/filename/path/verification claim must still be obtained. Bounds constrain one response, not total evidence coverage, test execution, correctness requirements or access to a necessary dependency boundary. A result with omissions cannot establish an exhaustive or negative claim. No case-specific text, numeric benchmark metric target, extra runtime helper, installed tooling or new automatic/manual route.
+- Expected effect: reduce first and subsequent oversized source responses and whole-file bytes, preserving complete delivered artifacts. Additional focused pages may increase tool rounds; all overhead gates remain mandatory. No benefit is presumed.
+- Falsifiers: required behavior/contracts are cut off and ignored; path provenance is lost; quality or caller/verification coverage decreases; oversized output moves to another tool; extra pagination/replayed context outweighs savings; or any unchanged gate fails. Do not reword this candidate after observing its outputs.
+
+## Frozen evaluation and semantic audit
+
+- Same repaired sharded harness, observation1.3, unchanged model/scorer/cases/fixtures: `gpt-5.6-luna`, reasoning medium, Codex CLI0.145.0, Python3.13.14, timeout600, workers8, fresh isolated shards of at most5 cells. Both arms use identical conditions and assignments; no retry/resume/selective replacement.
+- Fresh complete current-only n=1:54 cells (15adaptive and3ceilings for13ordinary cases). Baseline `benchmark-results/retrieval-iteration-5-baseline-n1`; candidate `benchmark-results/retrieval-iteration-5-candidate-n1`. Baseline runs before the paragraph is applied. Freeze its top3 ordinary adaptive output case IDs using CASES manual_request flags, result hash, audit hashes and arithmetic before candidate execution.
+- Require complete comparable/determinate matrices; no cell timeouts/scorer crash/usage/decode gaps, >=99% measured completed outputs, and audit of material unknown events. Preserve raw estimates and original transcripts.
+- Same semantic audit contract as iteration4 and `retrieval-continuation-20260903.md`: actual returned project source establishes first read; filename inventory does not. Only later completed repo-wide operations count as after-read broad; partial successful events count only for proven returned content. Explicit reads that actually return a full file count as whole even with generous caps; filtered/bounded source matches remain searches. Full bytecode implementation dumps count as whole/dependency; names/signatures alone are not full implementation. Policy-rejected operations are not executed source reads. Retain full mixed-event bytes for each applicable category.
+- Audit returned content for vendored implementation regardless of directory spelling, including first broad outputs; do not infer dependency solely from a glob that excludes it. This applies the established contract and closes the observed manual-audit omission without changing observer or raw metrics. Freeze any required audit before candidate; preserve later discoveries as transparent supplements, never silent replacements.
+- All candidate tail answers must satisfy the original request and authoritative contracts, not only machine required-symbol checks. Preserve exact source paths requested in mappings, requested filename/type/caller items, and intentional Error/crash/startup recovery semantics. These are existing quality obligations, not new case/scorer edits.
+
+## Mandatory non-time gates
+
+1. Complete infrastructure, comparable identities and determinate semantic audits.
+2. No paired machine quality regression in adaptive or required ceilings; legal traces, correct explicit manual, spontaneous manual zero, clean fixtures and candidate manual tail quality passes.
+3. Tail paired median output ratio<=0.70; audited broad-after-source total<=50%baseline (baseline0 requires candidate0 and supports no positive reduction claim); tail exact duplicates, whole-file bytes, dependency-source bytes and >64KiB events do not increase.
+4. Tail paired median input ratio<=0.90, uncached-input total no increase; all54 paired input median<=1.02 and tool-call median<=1.00. Preserve zero-to-positive regressions, never omit them. Duration telemetry only; cached fluctuations cannot substitute for input-work reduction.
+
+Only full n=1 passage permits an exact committed candidate and the complete paired n=3 matrix of252cells (51shards, at most8concurrent and5cells each). Immediate baseline and no-skill comparisons are mandatory, all cells determinate, no adaptive quality regression against either, perfect trace/manual discipline and clean fixtures, and necessary requested/contract/test evidence retained. Compare all45 adaptive/baseline pairs for fixed overhead and9frozen-tail pairs for cost; apply the same thresholds/non-increase counters, with improvement across at least2repetitions and more than1tail task. No separate serial latency gate.
+
+On any failure preserve evidence, reject and fully restore this paragraph before another independently justified hypothesis. On complete passage update wiki/impact/log, sanitize records, commit/push/verify and stop successfully. Until-success continuation does not relax any quality, cost, topology or retirement requirement.
+
+## Results (outside the frozen hypothesis)
+
+Pre-freeze independent review confirmed the single producer-output mechanism. The exact paragraph preserves full locators, explicit omission signals, continued access to the same contract and unchanged required verification scope. Pending fresh baseline; candidate not applied.
