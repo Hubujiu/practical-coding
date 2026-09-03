@@ -1,6 +1,6 @@
 # Retrieval convergence — iteration 4: select the source corpus before content search
 
-Status: **candidate-not-applied**
+Status: **Rejected after complete paired n=1; runtime rolled back**
 
 ## Frozen hypothesis
 
@@ -48,3 +48,28 @@ Pre-freeze independent review confirmed the mechanism is source-corpus selection
 - Tail audited broad-after-source total=1 (sensitive event5 repo-wide test inventory). Whole-file total=149,429 bytes, dependency total=1,164,816. Raw automatic estimates remain distinct.
 - Supplemental manual quality: memory-map true; executor false (misdiagnoses intentional Error/startup-recovery contract); sensitive false (unsupported and factually incorrect repo-wide test-dependency absence claim, contradicted by chat-module POM). Candidate must meet unchanged accuracy requirements, not merely preserve machine passes.
 - The sole non-tail other-category output over16 KiB is sensitive cap:core event7: successful extraction of three complete dependency source files (29,602 bytes). Its output size/hash is complete and its semantic category audited as whole/dependency in `audit-nontail-unknown.json`; no raw reclassification or observer mutation.
+
+
+### Complete candidate: rejected and rolled back
+
+- Baseline 54/54, candidate 53/54 machine passes; both complete/determinate with matched frozen identities, legal traces/manual discipline and clean fixtures. Candidate `ca-new-format-existing-pattern / cap:debugging / r001` omits required filename-mapping evidence from its final report despite having read the implementation/callers/tests. It is a delivery failure, not inaccessible source, timeout or scorer repair opportunity. Preserve the original fail and `audit-failed-cell.json`.
+- Candidate manual tail quality: sensitive true; memory-map false (literal `...` links instead of requested source paths); executor false (calls intended Error behavior a defect and proposes FAILED assertions inconsistent with its contract). Machine passes do not override these findings.
+- Exact candidate Skill hash `5101397b3e65ad8f32248bbd8050ebc60ea3a738daa38ae92930c6a0fa0f0748`; actual run HEAD `3b4352124c3f579171ddace29eb815724e964447` plus this one paragraph. No candidate commit and no n=3.
+
+| Metric | Baseline | Candidate | Paired median ratio |
+|---|---:|---:|---:|
+| tool_output_bytes | 2604833 | 1300442 | 0.39805234327449784 |
+| input_tokens | 1374987 | 587130 | 0.6093817203481083 |
+| uncached_input_tokens | 159243 | 116858 | 0.6735329684969973 |
+| tool_calls | 29 | 20 | 0.8333333333333334 |
+| broad_calls_after_first_project_read | 1 | 0 | 1.0 |
+| duplicate_command_calls | 0 | 0 | 1.0 |
+| whole_file_read_bytes | 149429 | 164112 | 0.9726086956521739 |
+| dependency_source_bytes | 1164816 | 1048576 | 1.0 |
+| outputs_over_64k | 4 | 2 | 0.5 |
+
+- All-cell input median ratio 1.000565, tool-call median 1.000000. Output and input gates pass, but quality and whole-file non-increase fail. The matrix is diagnostic only; no stable benefit claim. Duration did not participate.
+- A post-candidate semantic cross-check found the frozen sensitive baseline audit omitted actual vendored implementation from its first broad 1 MiB output. Preserve that audit/hash and arithmetic. The separately hashed supplement raises that cell's dependency bytes from116,240 to1,164,816 and tail total from1,164,816 to2,213,392; candidate tail is1,048,576. Dependency non-increase already passed before correction, and the independently failed quality/whole-file gates are unaffected. This is a transparent attribution correction, not a favorable replacement run or a changed threshold.
+- Candidate's sole non-tail unknown output over16 KiB (sensitive cap:implementation event8,65,169 bytes) is a targeted dependency content search with overlapping bounded windows. First archive entry succeeds despite aggregate exit1; keep that distinction and raw bytes/hash in `audit-nontail-unknown.json`.
+- Full sanitized results: `benchmarks/results/retrieval-convergence/20260903-iteration-4.json`. Raw matrices, all audits, correction supplement and exact candidate bytes/patch remain immutable in their original artifact directories.
+- Rollback completed with `git restore --source=205f5fe76ee88b951f9a6690d2a7bfbe0bfe0d15 -- SKILL.md`. The initial-corpus paragraph is not retained or reworded. Further work requires another independently justified and pre-frozen mechanism.

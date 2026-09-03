@@ -32,3 +32,12 @@ The independently frozen source-reuse rule (iteration 3) improved tail input and
 Measure initial output volume separately from later convergence, and retain semantic event audits beside exact-command estimates. A changed command can reread the same source; a lower tool count can still emit more whole-file bytes. All mandatory quality and cost gates must pass together. The current user excludes duration from acceptance.
 
 The first sharded candidate attempt also exposed a Windows parent-creation race: Python path resolution retained an extended prefix rejected by Git. Creating the shared shard parent before child launch fixed the general race. The incomplete artifact was preserved and both complete arms rerun with frozen repaired infrastructure; selectively filling failed cells was not used.
+
+
+## Initial corpus selection still needs complete delivery
+
+Iteration4 tested selecting project-owned scope before content output without a mandatory filename-first round. Its complete paired n=1 reduced tail output/input medians to0.398052/0.609382, but a required filename-mapping item was omitted after it had been read, two manually reviewed answers remained incomplete/incorrect, and whole-file output increased. The paragraph was rejected and rolled back; no n=3 followed. Evidence: `../experiments/retrieval-convergence-20260903-4.md`.
+
+Retrieval availability and delivered coverage are different: finding a symbol does not prove it appears in the final artifact, and reading an invariant does not prove the diagnosis respects it. Continue using the original quality gate rather than adding case-specific exceptions. Source-corpus filtering alone has not established a complete improvement.
+
+A semantic audit must examine returned content, including minified third-party implementation outside conventional dependency directories. The iteration4 baseline initially missed one such mixed 1MiB event. A separate hash-bound supplement corrects its dependency attribution while preserving the frozen audit; independently failed gates leave the rejection unchanged.
