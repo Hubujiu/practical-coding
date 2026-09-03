@@ -110,12 +110,16 @@ class SkillStateModelGateRoleTests(unittest.TestCase):
                 clone = copy.deepcopy(row)
                 clone["repetition"] = repetition
                 rows.append(clone)
+
+        case_ids = list(analysis.EXPECTED_STANDARD_CASE_IDS)
+        self.assertGreaterEqual(len(case_ids), 2)
+        unpaired_case, indeterminate_case = case_ids[:2]
         rows = [
             row
             for row in rows
             if not (
                 row["arm"] == ARM_STATE_SHADOW
-                and row["case_id"] == "a"
+                and row["case_id"] == unpaired_case
                 and row["repetition"] == 3
             )
         ]
@@ -123,7 +127,7 @@ class SkillStateModelGateRoleTests(unittest.TestCase):
             row
             for row in rows
             if row["arm"] == ARM_STATE_HISTORY_FREE
-            and row["case_id"] == "b"
+            and row["case_id"] == indeterminate_case
             and row["repetition"] == 2
         )
         candidate["passed"] = None
