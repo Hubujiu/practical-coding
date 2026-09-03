@@ -34,6 +34,14 @@ Experiments before this tracker was introduced remain authoritative in their exi
 - termination: insufficient n=1 measurement coverage and incomplete baseline; loop stopped after one instrumentation iteration, with no candidate repair or second iteration
 - record: `evolution/rejected/retrieval-instrumentation-20260903.md`; require independently validated general command classification before future cost acceptance
 
+### User-directed repair and continuation
+
+- repair hypothesis: `evolution/experiments/retrieval-instrumentation-repair-20260903.md`
+- decoder 1.1 uses standard shell-word argv decoding, with separate command scope and pipeline-filter handling; archive stream reads are recognized as source retrieval
+- verification: 45 tests and tree self-test pass; final replay 252 records preserves original fields, shell decode failures 0, original missed source reads recovered
+- artifact: `benchmark-results/retrieval-iteration-1-repair-frozen-replay/`; unclassified bytes 0.68%, with coverage limits retained
+- decision: `Accepted` for repaired instrumentation; iteration 1 closed, no runtime patch or cost claim. The original interrupted-run report remains an invalid diagnostic, not a reused baseline.
+
 ## 2026-09-01 — explicit maintenance skills
 
 - hypothesis: `evolution/wiki/maintenance-trigger-isolation.md`

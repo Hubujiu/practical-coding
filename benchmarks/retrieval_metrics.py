@@ -9,10 +9,11 @@ from __future__ import annotations
 import hashlib
 import json
 import re
+import shlex
 from pathlib import Path
 from typing import Any, Iterable
 
-VERSION = "1.0"
+VERSION = "1.1"
 CATEGORIES = (
     "broad_inventory", "broad_search", "focused_search", "bounded_read",
     "whole_file_read", "dependency_source", "test_or_build", "other",
@@ -27,6 +28,7 @@ def digest(data: bytes) -> str:
 
 
 def normalized(command: str) -> str:
+    command, _ = command_body(command)
     # Preserve quoted payloads: collapsing their whitespace changes queries.
     parts = re.split(r"('(?:[^']|'')*'|\"(?:\\.|[^\"])*\")", command.strip())
     return "".join(part if index % 2 else re.sub(r"\s+", " ", part)
@@ -37,43 +39,75 @@ def path_text(value: str) -> str:
     return re.sub(r"/+", "/", value.replace("\\", "/"))
 
 
+def command_body(command: str) -> tuple[str, str]:
+    """Decode CLI shell-word rendering, without executing the command.
+
+    Raw scripts are already scripts, not argv. Only unwrap recognized shell
+    executables; an argument that merely contains '-Command' is not a launcher.
+    """
+    launcher = re.match(r'^\s*[\'\"]?(?:[^\r\n]*[/\\])?(?:pwsh|powershell|bash|sh)(?:\.exe)?[\'\"]?\s', command, re.I)
+    if not launcher:
+        return command, "raw_script"
+    try:
+        args = shlex.split(command)
+    except ValueError:
+        return command, "invalid_shell_rendering"
+    for index, arg in enumerate(args[1:], 1):
+        if arg.lower() in {"-command", "-c", "-lc"}:
+            if len(args) == index + 2:
+                return args[index + 1], "decoded_shell_argv"
+            return command, "unsupported_shell_arguments"
+    return command, "unsupported_shell_arguments"
+
+
 def classify(command: str, project_paths: Iterable[str] = ()) -> list[str]:
     """Conservative command-shape tags, including all observed mixed categories.
 
     A repository-wide glob is still broad. A pipe limiting returned lines does
     not make the underlying search scoped. Unrecognized commands remain other.
     """
-    text = path_text(command).lower()
-    # Unwrap the CLI's shell executable so its path cannot look like a scope.
-    parts = re.split(r"\s-(?:command|c)\s+", text, maxsplit=1)
-    text = parts[-1]
-    if len(parts) > 1 and text[:1] in {"'", '"'} and text[-1:] == text[:1]:
-        text = text[1:-1]
+    body, decoding = command_body(command)
+    if decoding in {"invalid_shell_rendering", "unsupported_shell_arguments"}:
+        return ["other"]
+    text = path_text(body).lower()
+    # Mask quoted payloads for command-position detection, retaining character
+    # positions. Paths/scopes and read bounds still use the unmasked script.
+    executable_text = re.sub(r"'(?:[^']|'')*'|\"(?:`.|[^\"])*\"", lambda m: " " * len(m[0]), text)
     # Command positions, not arbitrary words in search patterns or symbol names.
     position = r"(?:^|[;|({}\n]|=)\s*(?:&\s*)?"
+    ending = r"(?=\s|[;|)}]|$)"
     def invokes(pattern: str) -> bool:
-        return bool(re.search(position + r"(?:" + pattern + r")(?=\s|$)", text))
-    inventory = invokes(r"rg\s+--files|git\s+ls-files|get-childitem|gci|ls|dir|find")
-    search = invokes(r"rg(?!\s+--files)|grep|select-string|search_code|search_files")
-    read = invokes(r"get-content|gc|cat|type|read_file|readfile|sed|head|tail") or bool(re.search(r"\.read_(text|bytes)\(", text))
+        return bool(re.search(position + r"(?:" + pattern + r")" + ending, executable_text))
+    inventory_pattern = r"rg\s+--files|git\s+ls-files|get-childitem|gci|ls|dir|find"
+    search_pattern = r"rg(?!\s+--files)|grep|select-string|search_code|search_files"
+    read = invokes(r"get-content|gc|cat|type|read_file|readfile|sed|head|tail") or bool(re.search(r"\.(?:read_(?:text|bytes)|readtoend|readline|readalltext|readalllines)\(", executable_text))
     bounded = bool(re.search(r"-(?:head|tail|totalcount|first|last|skip)\b|\bselect-object\s+-index|\[\s*\d+\s*\.\.\s*\d+\s*\]|\b(head|tail)\s+-\w*\d+|\bsed\b|\bread_file\b.*\b(start_line|end_line|limit)\b|\$\w+\s+-[lg][et]\s+\d+", text))
     # Concrete source paths or literal directory operands (not glob patterns).
     paths = [path_text(p).lower() for p in project_paths]
-    scoped = any(p in text for p in paths if p)
     directories = {p.split("/", 1)[0] for p in paths if "/" in p}
-    scoped = scoped or any(re.search(r"(?:^|\s)['\"]?" + re.escape(p) + r"/?['\"]?(?=\s|[;|]|$)", text) for p in directories)
-    scoped = scoped or bool(re.search(r"(?<![\w*])(?:[\w.-]+/)+[\w.-]+(?![\w*])", text))
-    root_operand = bool(re.search(r"(?:^|\s)['\"]?\./?['\"]?(?=\s|[;|]|$)", text))
     tags: set[str] = set()
-    if inventory:
-        tags.add("broad_inventory" if root_operand or not scoped else "focused_search")
-    if search:
-        tags.add("broad_search" if root_operand or not scoped else "focused_search")
+    for pattern, broad_category in ((inventory_pattern, "broad_inventory"), (search_pattern, "broad_search")):
+        for match in re.finditer(position + r"(?:" + pattern + r")" + ending, executable_text):
+            delimiter = re.search(r"[;|}\n]", executable_text[match.end():])
+            end = match.end() + delimiter.start() if delimiter else len(text)
+            segment = text[match.start():end]
+            # Resolve literal scope variables within this script only. Pipeline
+            # filters consume their predecessor's output, not the repository.
+            assignments = dict(re.findall(r"(\$[a-z_]\w*)\s*=\s*['\"]([^'\"\r\n]*)['\"]", text[:match.start()]))
+            for variable, value in assignments.items():
+                segment = re.sub(re.escape(variable) + r"\b", lambda _: value, segment)
+            scoped = any(p in segment for p in paths if p)
+            scoped |= any(re.search(r"(?:^|\s)['\"]?" + re.escape(p) + r"/?['\"]?(?=\s|$)", segment) for p in directories)
+            scoped |= bool(re.search(r"(?<![\w*])(?:[\w.-]+/)+[\w.-]+(?![\w*])", segment))
+            root_operand = bool(re.search(r"(?:^|\s)['\"]?\./?['\"]?(?=\s|$)", segment))
+            if broad_category == "broad_search" and match[0].lstrip().startswith("|") and not root_operand:
+                scoped = True
+            tags.add(broad_category if root_operand or not scoped else "focused_search")
     if read:
         # A limit somewhere in a compound call cannot prove every read bounded.
-        read_count = len(re.findall(position + r"(get-content|gc|cat|type|read_file|readfile)\b", text))
+        read_count = len(re.findall(position + r"(get-content|gc|cat|type|read_file|readfile)\b", executable_text))
         tags.add("bounded_read" if bounded and read_count <= 1 else "whole_file_read")
-    if (read or search or invokes("javap")) and re.search(r"(?:^|/|\s)(?:node_modules|site-packages|\.m2|\.gradle|vendor)(?:/|\b)|\bjavap\b|sources\.jar", text):
+    if (read or invokes(search_pattern) or invokes("javap")) and re.search(r"(?:^|/|\s)(?:node_modules|site-packages|\.m2|\.gradle|vendor)(?:/|\b)|\bjavap\b|sources\.jar", text):
         tags.add("dependency_source")
     if invokes(r"pytest|python\s+-m\s+(?:pytest|unittest)|(?:\./)?mvnw?|(?:\./)?gradlew?|tsc|make|cmake|(?:npm|pnpm|yarn|bun)\s+(?:run\s+)?(?:test|build|check|lint|typecheck)|(?:cargo|go|dotnet)\s+(?:test|build|check)"):
         tags.add("test_or_build")
@@ -125,6 +159,7 @@ def measure_transcript(path: Path, *, project_paths: Iterable[str] = ()) -> dict
             if "arguments" in item:
                 command += " " + json.dumps(item["arguments"], sort_keys=True, ensure_ascii=False)
         tags = classify(command, paths)
+        body, decoding = command_body(command)
         raw, representation = output_data(item)
         output = raw.decode("utf-8") if raw is not None else ""
         size = len(raw) if raw is not None else None
@@ -134,7 +169,7 @@ def measure_transcript(path: Path, *, project_paths: Iterable[str] = ()) -> dict
         seen.add(identity)
         # Only concrete source-content matches establish discovery; a file list
         # alone does not identify which of thousands of paths is a candidate.
-        mentioned = [p for p in sources if p in path_text(command)]
+        mentioned = [p for p in sources if p in path_text(body)]
         source_read = bool(mentioned and {"bounded_read", "whole_file_read"}.intersection(tags)
                            and "dependency_source" not in tags and item.get("exit_code", 0) == 0
                            and raw)
@@ -145,6 +180,7 @@ def measure_transcript(path: Path, *, project_paths: Iterable[str] = ()) -> dict
             "sequence": len(events) + 1, "transcript_line": line_number,
             "item_id": item.get("id"), "tool_type": item["type"], "command": command,
             "command_sha256": digest(identity.encode()), "category": tags[0], "categories": tags,
+            "command_decoding": decoding,
             "output_bytes": size, "output_lines": lines, "output_sha256": digest(raw) if raw is not None else None,
             "output_representation": representation, "duplicate_command": duplicate,
             "large_output": size is not None and size > 16384,
@@ -177,6 +213,8 @@ def measure_transcript(path: Path, *, project_paths: Iterable[str] = ()) -> dict
             "output_event_ratio": measured / len(events) if events else None,
             "missing_output_events": len(events) - measured, "malformed_transcript_lines": malformed,
             "unknown_category_events": sum(e["categories"] == ["other"] for e in events),
+            "shell_decode_failures": sum(e["command_decoding"] in {"invalid_shell_rendering", "unsupported_shell_arguments"} for e in events),
+            "unclassified_output_bytes": sum(e["output_bytes"] or 0 for e in events if e["categories"] == ["other"]),
             "mixed_category_events": sum(e["mixed_category_attribution"] for e in events),
             "possible_truncation_events": sum(e["possible_truncation"] for e in events),
             "usage_seen": usage_seen, "missing_usage_fields": missing_usage,

@@ -3,6 +3,7 @@ from __future__ import annotations
 import argparse
 import copy
 import json
+import shlex
 import tempfile
 import unittest
 from pathlib import Path
@@ -43,6 +44,15 @@ class ClassificationTests(unittest.TestCase):
             ("rg -n 'cat|get-content|type|npm test' src/example.py", {"focused_search"}),
             ('Write-Output "Get-Content src/example.py"', {"other"}),
             ("Get-Content src/example.py; rg needle .", {"whole_file_read", "broad_search"}),
+            ("Get-Content src/example.py; rg needle", {"whole_file_read", "broad_search"}),
+            ("Write-Output 'files'; rg --files; git status --short", {"broad_inventory"}),
+            ("rg needle src; rg another", {"focused_search", "broad_search"}),
+            ("Get-Content src/example.py | Select-String needle", {"whole_file_read", "focused_search"}),
+            ("rg --files | rg needle", {"broad_inventory", "focused_search"}),
+            ("$root='src'; rg needle $root", {"focused_search"}),
+            ("$root='.'; rg needle $root", {"broad_search"}),
+            ("$jar='.m2/lib-sources.jar'; $reader.ReadToEnd()", {"whole_file_read", "dependency_source"}),
+            ("$s='ReadToEnd()'; Write-Output $s", {"other"}),
             ("Get-Content src/example.py -Head 3; Get-Content src/other.py", {"whole_file_read"}),
         ]
         for command, expected in examples:
@@ -56,6 +66,30 @@ class ClassificationTests(unittest.TestCase):
     def test_duplicate_normalization_preserves_query_semantics(self):
         self.assertEqual(metrics.normalized("rg   'a b'  src"), metrics.normalized("rg 'a b' src"))
         self.assertNotEqual(metrics.normalized("rg 'a  b' src"), metrics.normalized("rg 'a b' src"))
+
+    def test_shell_argument_round_trip_for_general_quote_combinations(self):
+        scripts = [
+            "Get-Content 'src/example.py' | ForEach-Object { '{0}: {1}' -f $n, $_ }",
+            'Get-Content "src/example.py"; $label = "a`"b"',
+            "$p='src/example.py'; Get-Content $p; Write-Output \"don't\"",
+            "Get-Content src/example.py; Write-Output 'a\"b'",
+        ]
+        for script in scripts:
+            with self.subTest(script=script):
+                wrapped = shlex.join([r'C:\tools\pwsh.exe', '-NoProfile', '-Command', script])
+                self.assertEqual(metrics.command_body(wrapped), (script, 'decoded_shell_argv'))
+                self.assertIn('whole_file_read', metrics.classify(wrapped, PATHS))
+                self.assertEqual(metrics.normalized(wrapped), metrics.normalized(script))
+
+    def test_command_words_inside_payloads_are_not_executed_commands(self):
+        for script in ["rg 'a|cat src/example.py; npm test' src/example.py", "rg 'get-content src/example.py' src"]:
+            self.assertEqual(metrics.classify(shlex.join(['pwsh', '-Command', script]), PATHS), ['focused_search'])
+        self.assertEqual(metrics.command_body("Write-Output 'pwsh -Command cat' ")[1], 'raw_script')
+
+    def test_malformed_and_multi_argument_launchers_are_explicit_gaps(self):
+        self.assertEqual(metrics.command_body('pwsh -Command "unterminated')[1], 'invalid_shell_rendering')
+        self.assertEqual(metrics.command_body('pwsh -Command cat src/example.py')[1], 'unsupported_shell_arguments')
+        self.assertEqual(metrics.classify('pwsh -Command "unterminated', PATHS), ['other'])
 
 
 class MeasurementTests(unittest.TestCase):
@@ -111,6 +145,15 @@ class MeasurementTests(unittest.TestCase):
         self.assertEqual(result["whole_file_read_bytes"], 3)
         self.assertEqual(result["test_or_build_bytes"], 3)
         self.assertEqual(result["measurement_coverage"]["mixed_category_events"], 1)
+
+    def test_wrapped_source_read_establishes_convergence_and_duplicate_identity(self):
+        script = "Get-Content 'src/example.py'; Write-Output \"don't\""
+        wrapped = shlex.join([r'C:\tools\pwsh.exe', '-Command', script])
+        result = self.measure([tool(wrapped, 'body'), tool(script, 'body'), tool('rg needle .', 'match')])
+        self.assertTrue(result['retrieval_events'][0]['project_source_read'])
+        self.assertEqual(result['duplicate_command_calls'], 1)
+        self.assertEqual(result['broad_calls_after_first_project_read'], 1)
+        self.assertEqual(result['measurement_coverage']['shell_decode_failures'], 0)
 
     def test_instrumentation_cannot_change_score_or_prompt(self):
         topology = tree.load_topology(tree.HERE / "tree_topology.json")
