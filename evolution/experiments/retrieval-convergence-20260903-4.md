@@ -41,3 +41,10 @@ On failure preserve evidence, reject and restore the entire paragraph before an 
 ## Results (outside the frozen hypothesis)
 
 Pre-freeze independent review confirmed the mechanism is source-corpus selection rather than an added locating stage. The exact paragraph incorporates explicit task-target and insufficient-clue/initial-scope boundaries to preserve required generated/dependency and cross-language evidence. Pending fresh baseline. Candidate not applied.
+
+
+- Fresh baseline complete: 54/54 machine passes, legal traces/manual discipline, clean fixtures, no timeouts/usage/decode/malformed gaps; 381/381 outputs measured. Actual run HEAD `143a6b7` with accepted runtime unchanged.
+- Frozen ordinary adaptive tail: sensitive rejection 1,223,881 bytes; memory map 1,086,855; executor 294,097. Manual Decision tasks are excluded using their CASES manual_request flag. Complete result/audit/arithmetic hashes: `retrieval-convergence-20260903-4-baseline.json`.
+- Tail audited broad-after-source total=1 (sensitive event5 repo-wide test inventory). Whole-file total=149,429 bytes, dependency total=1,164,816. Raw automatic estimates remain distinct.
+- Supplemental manual quality: memory-map true; executor false (misdiagnoses intentional Error/startup-recovery contract); sensitive false (unsupported and factually incorrect repo-wide test-dependency absence claim, contradicted by chat-module POM). Candidate must meet unchanged accuracy requirements, not merely preserve machine passes.
+- The sole non-tail other-category output over16 KiB is sensitive cap:core event7: successful extraction of three complete dependency source files (29,602 bytes). Its output size/hash is complete and its semantic category audited as whole/dependency in `audit-nontail-unknown.json`; no raw reclassification or observer mutation.

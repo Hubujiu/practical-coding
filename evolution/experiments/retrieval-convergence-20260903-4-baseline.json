@@ -1,0 +1,97 @@
+{
+  "case_ids": [
+    "sa-sensitive-rejection-boundary",
+    "sa-memory-map",
+    "pp-running-after-throw"
+  ],
+  "selection": "top3 ordinary adaptive tool_output_bytes; manual_request cases excluded by frozen CASES",
+  "baseline_sha": "205f5fe76ee88b951f9a6690d2a7bfbe0bfe0d15",
+  "results_sha256": "febd15659547c358e13552d2f4217b9e91fb422b7fe25a1fd354afaeeb4717d9",
+  "gate_script_sha256": "3c34cc467fc94888eae5c24559b5fed045d4d7f6b5c072c04bf1352d74f40bcb",
+  "audit_sha256": {
+    "sa-sensitive-rejection-boundary": "5b421a4cfeab2410a629c313ad6f03131b6c7447fa0dd1c90231cff5dee0da01",
+    "sa-memory-map": "9fb3ae6384028ce6692ce6190252f4fe6ccef51da84578f733895fc53b1873bb",
+    "pp-running-after-throw": "44b806c178b85848a9da6bba7cddcd2904a9e90f8504a5f309d4ab7d9be46fa7"
+  },
+  "nontail_unknown_audit_sha256": "7948907b4ae20953c5075e8ab2a52849899e1833688d2907eb564b1cb210db15",
+  "automatic_rows": [
+    {
+      "task_id": "sa-sensitive-rejection-boundary",
+      "tool_output_bytes": 1223881,
+      "input_tokens": 852206,
+      "uncached_input_tokens": 81646,
+      "tool_calls": 15,
+      "whole_file_read_bytes": 63068,
+      "dependency_source_bytes": 88498,
+      "broad_calls_after_first_project_read": 6,
+      "duplicate_command_calls": 0,
+      "outputs_over_64k": 1
+    },
+    {
+      "task_id": "sa-memory-map",
+      "tool_output_bytes": 1086855,
+      "input_tokens": 194952,
+      "uncached_input_tokens": 28808,
+      "tool_calls": 6,
+      "whole_file_read_bytes": 32200,
+      "dependency_source_bytes": 0,
+      "broad_calls_after_first_project_read": 0,
+      "duplicate_command_calls": 0,
+      "outputs_over_64k": 1
+    },
+    {
+      "task_id": "pp-running-after-throw",
+      "tool_output_bytes": 294097,
+      "input_tokens": 327829,
+      "uncached_input_tokens": 48789,
+      "tool_calls": 8,
+      "whole_file_read_bytes": 101361,
+      "dependency_source_bytes": 0,
+      "broad_calls_after_first_project_read": 0,
+      "duplicate_command_calls": 0,
+      "outputs_over_64k": 2
+    }
+  ],
+  "audited_rows": [
+    {
+      "task_id": "sa-sensitive-rejection-boundary",
+      "tool_output_bytes": 1223881,
+      "input_tokens": 852206,
+      "uncached_input_tokens": 81646,
+      "tool_calls": 15,
+      "whole_file_read_bytes": 28821,
+      "dependency_source_bytes": 116240,
+      "broad_calls_after_first_project_read": 1,
+      "duplicate_command_calls": 0,
+      "outputs_over_64k": 1,
+      "manual_quality_ok": false
+    },
+    {
+      "task_id": "sa-memory-map",
+      "tool_output_bytes": 1086855,
+      "input_tokens": 194952,
+      "uncached_input_tokens": 28808,
+      "tool_calls": 6,
+      "whole_file_read_bytes": 32200,
+      "dependency_source_bytes": 1048576,
+      "broad_calls_after_first_project_read": 0,
+      "duplicate_command_calls": 0,
+      "outputs_over_64k": 1,
+      "manual_quality_ok": true
+    },
+    {
+      "task_id": "pp-running-after-throw",
+      "tool_output_bytes": 294097,
+      "input_tokens": 327829,
+      "uncached_input_tokens": 48789,
+      "tool_calls": 8,
+      "whole_file_read_bytes": 88408,
+      "dependency_source_bytes": 0,
+      "broad_calls_after_first_project_read": 0,
+      "duplicate_command_calls": 0,
+      "outputs_over_64k": 2,
+      "manual_quality_ok": false
+    }
+  ],
+  "quality_note": "All54 machine passes; manual sensitive=false (incorrect repo-wide test-dependency absence), memory-map=true, executor=false (misdiagnosed intended Error/startup contract). Candidate must pass same established accuracy requirements; no oracle/raw changes."
+}
