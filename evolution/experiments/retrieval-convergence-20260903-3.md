@@ -1,6 +1,6 @@
 # Retrieval convergence — iteration 3: reuse successful source evidence
 
-Status: candidate-not-applied
+Status: **Infrastructure-indeterminate attempt; runtime reverted pending full paired rerun**
 
 ## Frozen hypothesis
 
@@ -48,3 +48,17 @@ On failure, preserve the raw complete matrices and rejected patch, restore `SKIL
 - Tail attribution audits are complete. First project source is event 2 in all three cells. Audited broad-after-read counts are 0/1/0. Audited whole-file and dependency attribution retain full output bytes for mixed operations; raw automatic estimates are preserved separately. No non-tail unknown category output exceeds 16 KiB.
 - Supplemental manual quality: sensitive-content and memory-reset pass. The executor answer accurately distinguishes Error and RuntimeException, but omits the intended crash marker and startup recovery contract despite receiving that evidence. Its machine pass is retained as a limited oracle result, not treated as proof of full correctness. The candidate must satisfy the manual completeness criterion already frozen above, in addition to no automated regression; this does not change cases, scorer, thresholds or baseline answers.
 - The non-time gate arithmetic and baseline audit hashes were frozen before candidate application. Candidate pending.
+
+### First candidate attempt: fixture creation failure
+
+- The complete candidate launch finished, but shard 1 exited on a Git fixture-clone error while preparing `pp-lifecycle-map / cap:core / r001`: `could not create work tree dir ... Invalid argument`. The launcher correctly refused an aggregate and performed no selective retry.
+- Raw partial status is preserved in `benchmark-results/retrieval-iteration-3-candidate-n1/incomplete-attempt.json`. This attempt cannot qualify the candidate; no candidate cost conclusion or n=3 follows from it.
+- The exact runtime paragraph remained unchanged throughout execution, then was restored to baseline while the general Windows fixture issue is diagnosed. The original patch and SHA remain in `benchmark-results/retrieval-iteration-3-candidate-frozen/`.
+- Any necessary infrastructure repair will be frozen and verified before fresh complete baseline and candidate matrices. Preserve the exact runtime hypothesis, thresholds, and already frozen calibration case IDs; do not choose replacement cases from candidate outcomes. This is infrastructure remediation, not permission to tune the candidate or selectively fill missing cells.
+
+### Infrastructure repair and complete attempt 2
+
+- Reproduced the failure without a model: while Python 3.13 resolves a missing shard path, concurrent creation of its shared parent changes Windows error 3 to 2 and leaves the Win32 extended prefix. Git rejects that prefix even for a 157-character destination; long-path configuration is not a remedy. Evidence: `benchmark-results/clone-path-probe-20260903-a/{resolution-probe,probe}.json`.
+- The only production repair creates `output/shards` once before launching children. Each child still requires its own absent output directory. No prompt, runner cell, scorer, case, retry, or workspace shortening changes. The launch-boundary regression and existing shard/tree tests pass (39 tests).
+- Attempt 2 uses fresh `retrieval-iteration-3-{baseline,candidate}-n1-attempt2` directories, the same eight concurrent shards and five-cell limit, and the repaired frozen infrastructure in both arms. Both complete matrices are rerun. First-attempt artifacts remain immutable.
+- Preserve the original calibration tail IDs (sensitive rejection, memory reset, running-after-throw), exact source-reuse paragraph, all non-time gates and manual quality criteria. Fresh receipts bind the new baseline/audits to the unchanged gate arithmetic. No partial candidate results are used for tuning or tail replacement.

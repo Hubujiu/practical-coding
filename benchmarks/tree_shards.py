@@ -153,6 +153,7 @@ def launch(args: Any) -> tuple[Path, dict[str, Any]]:
             "baseline_ref": args.baseline_ref or topology.get("baseline_ref"), "topology": topology,
             "topology_sha256": validation.bench.sha256(args.topology.resolve())}
     output.mkdir(parents=True, exist_ok=False)
+    (output / "shards").mkdir()
     logs = output / "logs"
     logs.mkdir()
     write_json(output / "plan.json", plan)

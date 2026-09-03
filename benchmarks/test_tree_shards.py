@@ -100,6 +100,25 @@ class TreeShardTests(unittest.TestCase):
                 self.assertEqual(len(list((output / "logs").glob("*.stdout.txt"))), count)
                 self.assertTrue(all(Path(row["cell_directory"]).is_dir() for row in rows))
 
+    def test_shared_parent_exists_before_each_fresh_shard_resolves_its_path(self):
+        with tempfile.TemporaryDirectory() as temp:
+            args = self.args(Path(temp) / "fresh", cases=True)
+            seen = []
+
+            def fake_process(command, **kwargs):
+                output = Path(command[command.index("--output") + 1])
+                self.assertTrue(output.parent.is_dir())
+                self.assertFalse(output.exists())
+                # A concurrently created parent can make Windows resolve() retain
+                # a Win32 extended prefix that git clone rejects as a destination.
+                self.assertFalse(str(output.resolve()).startswith("\\\\?\\"))
+                seen.append(output.name)
+                return self.fake_shard(command)
+
+            with mock.patch.object(shards.subprocess, "run", side_effect=fake_process):
+                shards.launch(args)
+            self.assertCountEqual(seen, ["shard-000", "shard-001"])
+
     def test_invalid_bounds_and_existing_output_rejected_before_process_launch(self):
         with tempfile.TemporaryDirectory() as temp, mock.patch.object(shards.subprocess, "run") as process:
             output = Path(temp)
