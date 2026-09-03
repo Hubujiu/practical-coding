@@ -43,4 +43,8 @@ On failure, preserve the raw complete matrices and rejected patch, restore `SKIL
 
 ## Results (outside the frozen hypothesis)
 
-Pending baseline.
+- Fresh sharded baseline complete: 54/54 determinate machine passes, all 54 traces legal, explicit manual 2/2, spontaneous manual zero, no dirty fixture or timeout; all 393 completed tool outputs measured, no decoding/usage gap. Actual run HEAD `eead15a43ee486d961821c9b0b3bdfded4c53295`.
+- Frozen tail: `sa-sensitive-rejection-boundary` (1,547,000 bytes), `sa-memory-reset-concurrency` (1,092,290), `pp-running-after-throw` (358,600), selected before candidate application. Full result/gate/audit hashes are in `retrieval-convergence-20260903-3-baseline.json`.
+- Tail attribution audits are complete. First project source is event 2 in all three cells. Audited broad-after-read counts are 0/1/0. Audited whole-file and dependency attribution retain full output bytes for mixed operations; raw automatic estimates are preserved separately. No non-tail unknown category output exceeds 16 KiB.
+- Supplemental manual quality: sensitive-content and memory-reset pass. The executor answer accurately distinguishes Error and RuntimeException, but omits the intended crash marker and startup recovery contract despite receiving that evidence. Its machine pass is retained as a limited oracle result, not treated as proof of full correctness. The candidate must satisfy the manual completeness criterion already frozen above, in addition to no automated regression; this does not change cases, scorer, thresholds or baseline answers.
+- The non-time gate arithmetic and baseline audit hashes were frozen before candidate application. Candidate pending.
