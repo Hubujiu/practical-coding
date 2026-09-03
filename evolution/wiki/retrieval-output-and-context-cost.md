@@ -23,3 +23,12 @@ Freeze quality, task/case identities, input-token and tool-call gates before can
 Audit the highest-output unknown calls and the few events that determine convergence. Treat classifiers as conservative command-shape observations; do not silently relabel failed commands, infer arbitrary shell values or rewrite old artifacts. General observer repairs use positive/negative tests and new offline replay artifacts, with any changed derived counters disclosed.
 
 This n=1 rejection does not prove every prompt-only retrieval policy is ineffective. It establishes that this frozen rule did not earn adoption and triggered the loop's cost stop condition. New runtime experimentation needs an independent mechanism and explicit continuation authority; the current rejection is not grounds to restore execution-state, alter the router or introduce a retrieval service.
+
+
+## Source reuse does not bound initial output
+
+The independently frozen source-reuse rule (iteration 3) improved tail input and tool rounds at n=1 but reduced paired median output by only 3.1%. First discovery still returned 1 MiB of unrelated vendored content, source could still be reread using a changed command, and audited whole-file/dependency output and reopened broad search increased. It was rejected and rolled back; there is no n=3 benefit claim. Evidence: `../experiments/retrieval-convergence-20260903-3.md` and `../../benchmarks/results/retrieval-convergence/20260903-iteration-3.json`.
+
+Measure initial output volume separately from later convergence, and retain semantic event audits beside exact-command estimates. A changed command can reread the same source; a lower tool count can still emit more whole-file bytes. All mandatory quality and cost gates must pass together. The current user excludes duration from acceptance.
+
+The first sharded candidate attempt also exposed a Windows parent-creation race: Python path resolution retained an extended prefix rejected by Git. Creating the shared shard parent before child launch fixed the general race. The incomplete artifact was preserved and both complete arms rerun with frozen repaired infrastructure; selectively filling failed cells was not used.

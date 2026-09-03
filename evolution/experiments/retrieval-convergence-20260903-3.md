@@ -1,6 +1,6 @@
 # Retrieval convergence — iteration 3: reuse successful source evidence
 
-Status: **Infrastructure-indeterminate attempt; runtime reverted pending full paired rerun**
+Status: **Rejected after complete repaired n=1; runtime rolled back**
 
 ## Frozen hypothesis
 
@@ -64,3 +64,25 @@ On failure, preserve the raw complete matrices and rejected patch, restore `SKIL
 - Preserve the original calibration tail IDs (sensitive rejection, memory reset, running-after-throw), exact source-reuse paragraph, all non-time gates and manual quality criteria. Fresh receipts bind the new baseline/audits to the unchanged gate arithmetic. No partial candidate results are used for tuning or tail replacement.
 
 - Attempt 2 baseline completed: 54/54 machine passes, legal traces and manual discipline, no dirty fixtures, timeout, usage/decoding/malformed gap or unknown output over 16 KiB. The same frozen tail remains the top three by output (1,277,866 / 1,135,286 / 383,356 bytes). All three attribution audits are complete; audited broad-after-read is zero in each, so candidate must remain zero and cannot claim a positive broad reduction. Supplemental executor quality remains false; other two true. Complete receipts are frozen in `retrieval-convergence-20260903-3-baseline-attempt2.json`.
+
+### Complete attempt 2: rejected and rolled back
+
+- Both complete matrices: 54/54 determinate machine passes; all trace/manual/clean-fixture/measurement and manifest identity gates pass. Candidate manual tail quality is 3/3; executor improves over the baseline by explicitly recognizing intentional Error escape and startup recovery. Preserve its residual wording caveat in the audit.
+- Candidate exact Skill hash remains `bd3e0a6fba41baab05ad3728a6eb12a7ada7f70fca7468ab7b67d034fcd1618d`; actual candidate run HEAD is `7bfbe25` plus only that frozen paragraph. No candidate commit, because n=1 did not qualify.
+- Frozen gate decision: **Rejected**. No n=3. Duration did not participate.
+
+| Required metric | Baseline | Candidate | Result |
+|---|---:|---:|---|
+| tool_output_bytes | 2796508 | 2711995 | paired median ratio 0.9691258414179335 |
+| input_tokens | 2619309 | 1532169 | paired median ratio 0.6073711240722963 |
+| uncached_input_tokens | 205485 | 190217 | paired median ratio 0.9491413808824274 |
+| tool_calls | 64 | 31 | paired median ratio 0.45454545454545453 |
+| broad_calls_after_first_project_read | 0 | 2 | paired median ratio 1.0 |
+| duplicate_command_calls | 2 | 0 | paired median ratio 1.0 |
+| whole_file_read_bytes | 137219 | 207917 | paired median ratio 1.149396043915744 |
+| dependency_source_bytes | 1281211 | 1297272 | paired median ratio 1.0 |
+| outputs_over_64k | 5 | 4 | paired median ratio 1.0 |
+
+- All-cell paired medians: input ratio 0.999539; tool-call ratio 1.000000. Tail input improves, but output ratio 0.969126 fails 0.70; audited broad-after-read rises from zero to two, and whole-file/dependency totals increase. The first discovery dump remains dominant. Zero exact duplicate commands does not mean zero semantic rereads (executor event 6 rereads 163 source lines).
+- Full sanitized results: `benchmarks/results/retrieval-convergence/20260903-iteration-3.json`. Complete raw transcripts, manifests, original incomplete attempt and all six tail audits remain in their unique original directories.
+- Rollback: `git restore --source=ffa6b65 -- SKILL.md`; runtime/references/topology remain the accepted starting tree. The candidate is not retained or reworded. Next work requires a separately frozen independent mechanism under the user's continuation authorization.
