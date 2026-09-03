@@ -184,6 +184,94 @@ class MeasurementTests(unittest.TestCase):
             self.assertFalse(result['retrieval_events'][0]['project_source_read'])
             self.assertEqual(result['broad_calls_after_first_project_read'], 0)
 
+    def test_literal_and_array_search_scopes_require_audit_without_evaluation(self):
+        for script in ['$root=\'src\'; rg needle "$root/subdir"',
+                       "$roots=@('src','tests'); rg needle $roots",
+                       "rg needle 'src','tests'",
+                       '$root=\'src\'; $root=Get-Location; rg needle $root']:
+            with self.subTest(script=script):
+                result = self.measure([tool(script, 'match')])
+                self.assertIn('search_scope_requires_audit', result['retrieval_events'][0]['convergence_uncertainty'])
+                self.assertTrue(result['measurement_coverage']['convergence_requires_manual_audit'])
+        for script in ["rg needle src", "rg needle .", "rg '$literal,pattern' src"]:
+            with self.subTest(script=script):
+                result = self.measure([tool(script, 'match')])
+                self.assertEqual(result['retrieval_events'][0]['convergence_uncertainty'], [])
+                self.assertFalse(result['measurement_coverage']['convergence_requires_manual_audit'])
+
+    def test_failed_compound_read_keeps_observation_but_exposes_unknown_boundary(self):
+        result = self.measure([tool('Get-Content src/example.py; rg absent src', 'source body', exit_code=1),
+                               tool('rg needle .', '')])
+        first, after = result['retrieval_events']
+        self.assertFalse(first['project_source_read'])
+        self.assertIn('compound_exit_status', first['convergence_uncertainty'])
+        self.assertTrue(first['project_source_read_uncertain'])
+        self.assertFalse(after['after_first_project_read'])
+        self.assertTrue(after['after_first_project_read_uncertain'])
+        self.assertTrue(after['after_project_candidate_uncertain'])
+        self.assertEqual(result['broad_calls_after_first_project_read'], 0)
+        self.assertTrue(result['measurement_coverage']['convergence_requires_manual_audit'])
+
+    def test_mixed_dependency_and_unattributed_path_reads_require_audit(self):
+        scripts = ['Get-Content src/example.py; Get-Content node_modules/lib/index.js',
+                   "$unused='src/example.py'; Get-Content README.md",
+                   'Get-Content README.md | Select-String src/example.py',
+                   'Get-Content "$root/src/example.py"',
+                   'Get-Content "$unknown/file.py"']
+        for script in scripts:
+            with self.subTest(script=script):
+                result = self.measure([tool(script, 'body'), tool('rg needle .', '')])
+                self.assertTrue(result['retrieval_events'][0]['project_source_read_uncertain'])
+                self.assertTrue(result['retrieval_events'][1]['after_first_project_read_uncertain'])
+                self.assertTrue(result['measurement_coverage']['convergence_requires_manual_audit'])
+        mixed = self.measure([tool(scripts[0], 'body')])['retrieval_events'][0]
+        self.assertFalse(mixed['project_source_read'])
+        self.assertIn('mixed_project_dependency_read', mixed['convergence_uncertainty'])
+
+    def test_same_event_order_is_flagged_and_later_simple_read_resolves_future_boundary(self):
+        result = self.measure([tool('Get-Content src/example.py; rg needle .', 'source body'),
+                               tool('Get-Content src/other.py', 'other body'),
+                               tool('rg needle .', '')])
+        first, second, third = result['retrieval_events']
+        self.assertIn('intra_event_convergence_order', first['convergence_uncertainty'])
+        self.assertFalse(first['after_first_project_read'])
+        self.assertTrue(second['after_first_project_read_uncertain'])
+        self.assertTrue(third['after_first_project_read'])
+        self.assertFalse(third['after_first_project_read_uncertain'])
+        self.assertFalse(third['after_project_candidate_uncertain'])
+        self.assertEqual(result['broad_calls_after_first_project_read'], 1)
+        self.assertEqual(result['measurement_coverage']['convergence_uncertain_events'], 1)
+
+    def test_simple_success_and_failure_do_not_gain_compound_uncertainty(self):
+        for exit_code in [0, 1]:
+            with self.subTest(exit_code=exit_code):
+                result = self.measure([tool('Get-Content src/example.py', 'body', exit_code=exit_code),
+                                       tool('rg needle .', '')])
+                first, after = result['retrieval_events']
+                self.assertEqual(first['project_source_read'], exit_code == 0)
+                self.assertFalse(first['project_source_read_uncertain'])
+                self.assertFalse(after['after_first_project_read_uncertain'])
+                self.assertEqual(result['retrieval_metrics_version'], '1.3')
+                self.assertFalse(result['measurement_coverage']['convergence_requires_manual_audit'])
+                self.assertTrue(result['measurement_coverage']['convergence_counts_are_estimates'])
+
+    def test_uncertainty_does_not_change_recorded_bytes_or_hashes(self):
+        body = '中文\nsource body\n'
+        result = self.measure([tool('Get-Content src/example.py; rg absent src', body, exit_code=1)])
+        event = result['retrieval_events'][0]
+        self.assertEqual(result['tool_output_bytes'], len(body.encode('utf-8')))
+        self.assertEqual(event['output_sha256'], metrics.digest(body.encode('utf-8')))
+        self.assertTrue(event['convergence_uncertainty'])
+
+    def test_unknown_categories_and_undecoded_commands_require_manual_audit(self):
+        for command in ['python custom_reader.py', 'pwsh -Command cat src/example.py']:
+            with self.subTest(command=command):
+                result = self.measure([tool(command, 'body')])
+                self.assertTrue(result['measurement_coverage']['convergence_requires_manual_audit'])
+        undecoded = self.measure([tool('pwsh -Command cat src/example.py', 'body'), tool('rg needle .', '')])
+        self.assertIn('undecoded_command', undecoded['retrieval_events'][0]['convergence_uncertainty'])
+        self.assertTrue(undecoded['retrieval_events'][1]['after_first_project_read_uncertain'])
+
     def test_instrumentation_cannot_change_score_or_prompt(self):
         topology = tree.load_topology(tree.HERE / "tree_topology.json")
         case = tree.CASES[0]

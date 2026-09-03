@@ -33,6 +33,7 @@ from tree_cases import CASES, REPOSITORIES
 
 
 VERSION = "1.0"
+SHARD_SIZE = 5
 MODEL = bench.MODEL
 REASONING = bench.REASONING
 TRACE_RE = re.compile(
@@ -312,6 +313,13 @@ def build_specs(topology: dict[str, Any], runs: int, *, current_only: bool, sele
     return specs
 
 
+def select_shard(specs: list[tuple[str, str, int]], index: int, count: int) -> list[tuple[str, str, int]]:
+    expected_count = (len(specs) + SHARD_SIZE - 1) // SHARD_SIZE
+    if count != expected_count or not 0 <= index < count:
+        raise ValueError(f"expected {expected_count} shards with an index in [0, {expected_count})")
+    return specs[index * SHARD_SIZE:(index + 1) * SHARD_SIZE]
+
+
 def run_cell(
     spec: tuple[str, str, int],
     args: argparse.Namespace,
@@ -447,10 +455,10 @@ def summary(records: list[dict[str, Any]], runs: int) -> dict[str, Any]:
     }
 
 
-def parse_args() -> argparse.Namespace:
+def parse_args(argv: list[str] | None = None, *, default_workers: int = 3) -> argparse.Namespace:
     parser = argparse.ArgumentParser(description=__doc__)
     parser.add_argument("--runs", type=int, default=3)
-    parser.add_argument("--workers", type=int, default=3)
+    parser.add_argument("--workers", type=int, default=default_workers)
     parser.add_argument("--output", type=Path)
     parser.add_argument("--repository-root", type=Path, default=ROOT.parent)
     parser.add_argument("--repository", action="append", default=[], help="override a source as NAME=PATH")
@@ -460,8 +468,10 @@ def parse_args() -> argparse.Namespace:
     parser.add_argument("--timeout", type=float, default=600)
     parser.add_argument("--case", action="append", default=[])
     parser.add_argument("--current-only", action="store_true")
+    parser.add_argument("--shard-index", type=int)
+    parser.add_argument("--shard-count", type=int)
     parser.add_argument("--self-test", action="store_true")
-    return parser.parse_args()
+    return parser.parse_args(argv)
 
 
 def self_test(topology: dict[str, Any]) -> None:
@@ -488,11 +498,16 @@ def main() -> int:
     unknown = selected_cases - {case["task_id"] for case in CASES}
     if unknown:
         raise SystemExit(f"unknown cases: {', '.join(sorted(unknown))}")
+    expected_specs = build_specs(topology, args.runs, current_only=args.current_only, selected_cases=selected_cases)
+    sharded = args.shard_index is not None or args.shard_count is not None
+    if sharded and (args.shard_index is None or args.shard_count is None or args.workers != 1):
+        raise SystemExit("shards require both --shard-index and --shard-count, and --workers 1")
+    specs = select_shard(expected_specs, args.shard_index, args.shard_count) if sharded else expected_specs
 
     repositories = resolve_repositories(args.repository_root.resolve(), args.repository)
     stamp = dt.datetime.now().strftime("%Y%m%d-%H%M%S")
     output = (args.output or ROOT / "benchmark-results" / f"tree-{stamp}").resolve()
-    output.mkdir(parents=True, exist_ok=True)
+    output.mkdir(parents=True, exist_ok=not sharded)
 
     baseline_ref = args.baseline_ref or topology.get("baseline_ref")
     baseline_dir: Path | None = None
@@ -504,7 +519,6 @@ def main() -> int:
             baseline_dir = bench.materialize_git_skill(str(baseline_ref), baseline_dir)
 
     eval_home = bench.prepare_eval_home(output / "eval-home")
-    specs = build_specs(topology, args.runs, current_only=args.current_only, selected_cases=selected_cases)
     args.project_paths = {}
     for name, repository in repositories.items():
         listing = bench.run_command(["git", "ls-tree", "-r", "--name-only", REPOSITORIES[name]["commit"]], repository)
@@ -512,7 +526,7 @@ def main() -> int:
             raise RuntimeError(f"cannot measure frozen project paths: {name}")
         args.project_paths[name] = listing.stdout.splitlines()
     measured_files = ["tree_validation.py", "tree_cases.py", "tree_topology.json", "tree_analysis.py",
-                      "run_benchmarks.py", "retrieval_metrics.py", "retrieval_analysis.py"]
+                      "run_benchmarks.py", "retrieval_metrics.py", "retrieval_analysis.py", "tree_shards.py"]
     codex_path = Path(bench.resolve_codex(args.codex))
     manifest = {
         "head": bench.run_command(["git", "rev-parse", "HEAD"], ROOT).stdout.strip(),
@@ -525,12 +539,22 @@ def main() -> int:
         "skill_bundle_sha256": bench.bundle_sha256(ROOT),
         "runtime_file_sha256": {str(path.relative_to(ROOT)).replace("\\", "/"): bench.sha256(path)
                                 for path in [ROOT / "SKILL.md", *sorted((ROOT / "references").rglob("*.md"))]},
+        "baseline_runtime_file_sha256": {
+            path.relative_to(baseline_dir).as_posix(): bench.sha256(path)
+            for path in ([baseline_dir / "SKILL.md", *sorted((baseline_dir / "references").rglob("*.md"))]
+                         if baseline_dir else [])
+        },
+        "baseline_bundle_sha256": bench.bundle_sha256(baseline_dir) if baseline_dir else None,
+        "topology_sha256": bench.sha256(args.topology.resolve()),
         "codex_sha256": bench.sha256(codex_path),
         "codex_version": bench.run_command([str(codex_path), "--version"], ROOT).stdout.strip(),
         "python": sys.version, "platform": platform.platform(),
         "path_sha256": retrieval_metrics.digest(os.environ.get("PATH", "").encode()),
         "build_conditions": "read-only source evidence tasks; no harness dependency installation or build",
     }
+    if sharded:
+        manifest.update({"expected_specs": expected_specs,
+                         "shard": {"index": args.shard_index, "count": args.shard_count, "max_cells": SHARD_SIZE}})
     (output / "manifest.json").write_text(json.dumps(manifest, indent=2) + "\n", encoding="utf-8")
     records: list[dict[str, Any]] = []
     with concurrent.futures.ThreadPoolExecutor(max_workers=args.workers) as pool:

@@ -13,7 +13,7 @@ import shlex
 from pathlib import Path
 from typing import Any, Iterable
 
-VERSION = "1.2"
+VERSION = "1.3"
 CATEGORIES = (
     "broad_inventory", "broad_search", "focused_search", "bounded_read",
     "whole_file_read", "dependency_source", "test_or_build", "other",
@@ -163,12 +163,52 @@ def output_data(item: dict[str, Any]) -> tuple[bytes | None, str]:
     return None, "unavailable"
 
 
+def convergence_uncertainty(body: str, tags: list[str], mentioned: bool,
+                            exit_code: Any, output_available: bool) -> tuple[list[str], bool]:
+    """Identify attribution gaps without evaluating scopes or script execution.
+
+    Existing category/read flags remain shape observations. These reasons tell
+    consumers when their convergence counts require transcript-level audit.
+    """
+    quoted = r"'(?:[^']|'')*'|\"(?:`.|[^\"])*\""
+    executable = re.sub(quoted, lambda m: " " * len(m[0]), body)
+    interpolated = re.sub(quoted, lambda m: " " * len(m[0]) if m[0][0] == "'" else m[0], body)
+    dynamic = bool(re.search(r"\$[\w{(]|@\s*\(", interpolated))
+    compound = bool(re.search(r"[;|{}\r\n]|&&", executable))
+    read = bool({"bounded_read", "whole_file_read"}.intersection(tags))
+    search = bool({"broad_inventory", "broad_search", "focused_search"}.intersection(tags))
+    reasons = []
+    if search and (dynamic or "," in executable):
+        reasons.append("search_scope_requires_audit")
+    uncertain_read = False
+    if read and mentioned:
+        if dynamic:
+            reasons.append("dynamic_project_read_target")
+        if compound:
+            reasons.append("compound_project_read_attribution")
+            if exit_code != 0:
+                reasons.append("compound_exit_status")
+        if "dependency_source" in tags:
+            reasons.append("mixed_project_dependency_read")
+        if not output_available:
+            reasons.append("missing_project_read_output")
+        uncertain_read = bool(set(reasons) - {"search_scope_requires_audit"})
+    elif read and dynamic:
+        reasons.append("unresolved_project_read_target")
+        uncertain_read = True
+    if read and {"broad_inventory", "broad_search"}.intersection(tags):
+        reasons.append("intra_event_convergence_order")
+    return reasons, uncertain_read
+
+
 def measure_transcript(path: Path, *, project_paths: Iterable[str] = ()) -> dict[str, Any]:
     paths = tuple(path_text(p) for p in project_paths)
     sources = {p for p in paths if Path(p).suffix.lower() in SOURCE_SUFFIXES}
     events: list[dict[str, Any]] = []
     seen: set[str] = set()
     candidate_seen = project_read_seen = False
+    candidate_possible = project_read_possible = False
+    candidate_confirmed = project_read_confirmed = False
     malformed = 0
     usage_seen = False
     usage_fields: set[str] = set()
@@ -213,6 +253,11 @@ def measure_transcript(path: Path, *, project_paths: Iterable[str] = ()) -> dict
         source_read = bool(mentioned and {"bounded_read", "whole_file_read"}.intersection(tags)
                            and "dependency_source" not in tags and item.get("exit_code", 0) == 0
                            and raw)
+        uncertainty, uncertain_read = convergence_uncertainty(
+            body, tags, bool(mentioned), item.get("exit_code", 0), raw is not None)
+        if decoding in {"invalid_shell_rendering", "unsupported_shell_arguments"}:
+            uncertainty.append("undecoded_command")
+            uncertain_read = True
         output_paths = {m.group(1).removeprefix("./") for m in re.finditer(r"(?:^|\n)([^\r\n:]+):\d+[:\-]", path_text(output))}
         source_hit = bool({"focused_search", "broad_search"}.intersection(tags) and sources.intersection(output_paths))
         truncated = bool(raw and (len(raw) == 1048576 or re.search(r"output.{0,40}truncat|truncat.{0,40}output", output, re.I)))
@@ -226,6 +271,10 @@ def measure_transcript(path: Path, *, project_paths: Iterable[str] = ()) -> dict
             "large_output": size is not None and size > 16384,
             "after_project_candidate": candidate_seen, "after_first_project_read": project_read_seen,
             "project_source_read": source_read, "project_source_candidate": source_hit or source_read,
+            "convergence_uncertainty": uncertainty,
+            "project_source_read_uncertain": uncertain_read,
+            "after_project_candidate_uncertain": candidate_possible and not candidate_confirmed,
+            "after_first_project_read_uncertain": project_read_possible and not project_read_confirmed,
             "mixed_category_attribution": len(tags) > 1, "possible_truncation": truncated,
         }
         events.append(row)
@@ -244,6 +293,10 @@ def measure_transcript(path: Path, *, project_paths: Iterable[str] = ()) -> dict
         totals["outputs_over_64k"] += int((size or 0) > 65536)
         candidate_seen |= source_hit or source_read
         project_read_seen |= source_read
+        project_read_possible |= source_read or uncertain_read
+        project_read_confirmed |= source_read and not uncertain_read
+        candidate_possible |= source_hit or source_read or uncertain_read
+        candidate_confirmed |= source_hit or (source_read and not uncertain_read)
     measured = sum(e["output_bytes"] is not None for e in events)
     missing_usage = sorted({"input_tokens", "cached_input_tokens", "output_tokens"} - usage_fields)
     return {
@@ -257,6 +310,10 @@ def measure_transcript(path: Path, *, project_paths: Iterable[str] = ()) -> dict
             "unclassified_output_bytes": sum(e["output_bytes"] or 0 for e in events if e["categories"] == ["other"]),
             "mixed_category_events": sum(e["mixed_category_attribution"] for e in events),
             "possible_truncation_events": sum(e["possible_truncation"] for e in events),
+            "convergence_uncertain_events": sum(bool(e["convergence_uncertainty"]) for e in events),
+            "convergence_requires_manual_audit": any(e["convergence_uncertainty"] or e["categories"] == ["other"] for e in events) or not sources,
+            "convergence_counts_are_estimates": True,
+            "convergence_count_scope": "command-shape observations, not exact script-level counts; audit flagged events and unknown categories before acceptance",
             "usage_seen": usage_seen, "missing_usage_fields": missing_usage,
             "project_path_count": len(paths), "project_source_path_count": len(sources),
             "byte_scope": "recorded UTF-8 output only; mixed category bytes overlap; semantic query equivalence requires audit",
