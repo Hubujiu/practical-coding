@@ -2,7 +2,7 @@ name: Validate skill
 
 on:
   push:
-    branches: [main]
+    branches: [main, experiment/evolvable-router-tree]
   pull_request:
 
 permissions:
