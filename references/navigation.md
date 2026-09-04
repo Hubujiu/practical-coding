@@ -1,34 +1,40 @@
 # Navigation
 
-Navigation is the detailed retrieval procedure, not an Event Router branch. Load it only when broad code discovery, structural mapping, external contract lookup, or bounded exhaustive coverage is substantial enough that the short Retrieval Policy in `SKILL.md` is insufficient.
+**Concern:** repository topology only  
+**Output:** the smallest bounded map that identifies where Retrieval should begin
 
-Use already-available capabilities only. Do not install a backend, add a persistent integration, or change project configuration solely to obtain retrieval for the current task.
+Load Navigation only when the current unresolved question is **which repository area should be searched**. Do not load it merely because a file path is unknown; R1 Ranked Discovery handles unknown locations when the intended behavior or concept is already known.
 
-## Retrieval ladder
+## Goal
 
-### Known target
+Reduce a broad or unfamiliar repository to a bounded scope such as one package, module, service, layer, or directory group.
 
-Read the identified file, symbol, route, test, error, or configuration directly. Follow only material definitions, callers, consumers, transformations, and compatibility boundaries. Stop when the requested behavior and minimum coherent surface are established.
+A useful result looks like:
 
-### Bounded or ranked source discovery
+```text
+platform API
+  -> progress-core lifecycle package
+  -> operation executor and state package
+```
 
-When location is unknown, prefer an already-available bounded/ranked primitive. Otherwise use ordinary filename, text, and symbol search.
+not a file inventory, semantic-search transcript, or repository tour.
 
-- Batch narrow queries rather than dumping the repository.
-- Use top-k, limits, pagination, and narrow scopes where available.
-- Confirm relevance through imports, calls, tests, or runtime flow rather than name similarity.
-- Read definitions first, then only the material neighbors.
+## Procedure
 
-### Structural retrieval
+1. Read the repository's own map first: root manifests, workspace/module declarations, package metadata, build files, and maintained architecture notes.
+2. Identify only the regions that can own the requested behavior or relationship.
+3. Exclude unrelated generated, vendored, fixture, example, and historical areas unless the task explicitly includes them.
+4. Return the bounded scope and the evidence that establishes the boundary.
+5. Continue with `references/retrieval/SKILL.md` at Direct Locate inside that scope.
 
-Use an already-available structural code index when the unresolved question is primarily relational and lexical reconstruction would be expensive: callers, callees, imports, implementations, inheritance, dependencies, or cross-file flow.
+## Boundary
 
-When Codebase Memory is available, confirm project identity/freshness, use the smallest graph query set, check index coverage once candidate paths are known, and read current source for material claims and every partial/stale/excluded range. If unavailable or insufficient, continue with bounded source discovery.
+Navigation does not:
 
-### External and exhaustive evidence
+- choose between search tools;
+- perform semantic or ranked discovery;
+- expand callers, tests, configuration, or related implementations;
+- trace call graphs, dependencies, control flow, or data flow;
+- claim exhaustive coverage unless the user explicitly requested it and coverage can be demonstrated.
 
-For a repository-wide claim, state the bounded scope, search systematically with pagination/coverage tracking, and disclose gaps. For an external API/protocol/license contract, use the smallest authoritative maintained source needed for the code decision.
-
-## Contract
-
-Search and graph output are evidence, not repository truth. Verify material conclusions in current source. Once the relevant relationship or boundary is known, stop expanding and contract to that surface.
+When a concrete path, symbol, identifier, or sufficiently narrow scope is already known, skip Navigation.

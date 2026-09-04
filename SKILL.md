@@ -1,19 +1,21 @@
 ---
 name: practical-coding
-description: "Use for implementing, fixing, refactoring, or reviewing code with the smallest correct change; execution capabilities disclose through a local router tree while retrieval expands independently."
+description: "Use for implementing, fixing, refactoring, reviewing, or explaining code with the smallest correct change; execution and retrieval disclose through separate local trees while host capabilities remain replaceable infrastructure."
 license: MIT
 metadata:
   author: Hubujiu
-  version: "1.9"
+  version: "2.0"
 ---
 
 # Practical Coding
 
-Use Core for every coding task. Core is the root of the automatic execution tree. A loaded node may disclose only its own immediate children; it must not know or select descendants owned by another node.
+Use Core for every coding task. Core is the root of the automatic execution tree. Retrieval is a separate progressive tree that expands only when current source evidence is insufficient. Host tools are capabilities beneath those policies, not routing nodes.
+
+A loaded node may disclose only its own immediate children. It must not know or select descendants owned by another node.
 
 ## Core
 
-**Tree depth: 0**
+**Execution tree depth: 0**
 
 - Read the request and touched code; define the smallest observable success.
 - Stop at the first rung that works: do nothing; reuse the nearest project primitive; standard library; platform feature; available dependency; one line; otherwise minimum local code.
@@ -22,12 +24,12 @@ Use Core for every coding task. Core is the root of the automatic execution tree
 - Add no speculative options, wrappers, aliases, configuration, scaffolding, helper layers, or one-implementation interfaces.
 - Make the smallest coherent reachable change. A standalone artifact needs no demo; a user-facing feature must be reachable. Preserve unrelated code and user changes.
 - Prefer deletion. Remove each new dependency, file, option, wrapper, comment, fallback, retry, test, or document not required by behavior, project contract, or verification.
-- Run the cheapest focused check once after the final edit. If no repository test exists, run one focused executable check, not a broad test runner. Prefer no-write check modes. Never repeat an unchanged check or replace a required build gate with diff inspection. Install declared dependencies only as a bounded prerequisite in isolation; otherwise report the missing prerequisite.
+- Run the cheapest focused check once after the final edit. If no repository test exists, run one focused executable check, not a broad test runner. Prefer no-write check modes. Never repeat an unchanged check or replace a required build gate with diff inspection. Install declared project dependencies only as a bounded prerequisite in isolation; otherwise report the missing prerequisite.
 - State only fresh evidence. Unless requested, finish with the outcome, changed surface, check, and remaining uncertainty—no process recap.
 
 ## Root Router
 
-Route only when Core cannot safely resolve the present blocker. These are the only automatic children known at depth 0:
+Route only when Core cannot safely resolve the present execution blocker. These are the only automatic execution children known at depth 0:
 
 1. An observed failure, regression, incorrect behavior, or failed check still lacks an evidenced cause: load `references/debugging.md`.
 2. Safe execution is blocked by an unknown contract or invariant; required producers and consumers must change together but their joint contract is unknown; a material security, irreversible-effect, persistence/migration, concurrency/transaction, or compatibility boundary remains unresolved; or sufficient evidence for a risky material claim is unknown: load `references/implementation.md`.
@@ -38,7 +40,7 @@ A routed node owns its next decision. Do not return to Core merely to discover a
 
 ## Convergence Rule
 
-Automatic routing may deepen execution only to resolve a current blocker. It must not reopen deliberation.
+Automatic execution routing may deepen only to resolve a current blocker. It must not reopen deliberation.
 
 - Do not automatically load Decision from Core or from any execution node.
 - When implementation exposes an ordinary technical choice, reuse the established project convention or choose the smallest sufficient reversible option and continue.
@@ -47,25 +49,33 @@ Automatic routing may deepen execution only to resolve a current blocker. It mus
 
 ## Manual Modes
 
-Manual modes are outside the automatic execution tree and never appear in an automatic capability path.
+Manual modes are outside both automatic trees and never appear in an automatic capability path.
 
 - Load `references/manual/decision.md` only when the current user explicitly asks to compare options, make a technical choice, recommend an architecture/dependency/API/data-model approach, or otherwise perform decision analysis.
 - Load `references/manual/clarification.md` only when the current user explicitly asks to be interviewed, grilled, questioned, or to clarify requirements before implementation.
 - A manual mode must not automatically route to another manual mode or into an automatic descendant. After the requested manual work is resolved, return to Core with the settled result as input.
 
-## Retrieval Policy
+## Retrieval Tree
 
-Retrieval is orthogonal to the execution tree. Expand only because current evidence is insufficient, not because execution depth increased.
+Retrieval is orthogonal to execution. Its depth represents the unresolved information problem, not the strength or brand of an available tool.
 
-1. Read a known path or symbol directly.
-2. Otherwise use an available bounded or ranked source search, falling back to filename, text, or symbol search.
-3. For unknown callers, dependencies, authoritative boundaries, or cross-file guarantees, prefer an available structural code index when it materially reduces exploration.
-4. For bounded exhaustive repository claims, use coverage-aware discovery and disclose gaps. For external contracts, use the smallest authoritative current source.
-5. Fall back without installing retrieval tooling; verify material conclusions in current source.
+When source evidence is needed, load `references/retrieval/SKILL.md`. Core knows only the Retrieval root; it does not know or select that root's descendants. Every retrieval node owns only its immediate child decision and returns as soon as the minimum evidence needed for the current claim has been established.
 
-Once candidate paths or symbols are known, stop inventory and read only relevant symbols or bounded line ranges; do not dump whole files or repeat broad discovery. Batch independent bounded reads only while each result stays focused.
+Do not choose a retrieval depth from Core in one global decision. Do not route by tool name. Do not preload deeper retrieval modules or copy the full benchmark topology into a runtime node.
 
-Routine lookup stays here. Load `references/navigation.md` only for substantial broad structural mapping or bounded exhaustive discovery. Retrieval does not become an execution-tree node merely because a reasoning node needs source evidence.
+Runtime retrieval uses the strongest already-available capability appropriate to the current node and falls back losslessly to bounded repository-native search. Material conclusions must be verified in current source. A benchmark profile may deliberately require concrete providers; that requirement belongs to the benchmark environment, not to the runtime tree.
+
+## Navigation Boundary
+
+Load `references/navigation.md` only when the unresolved question is which bounded repository area should be searched. Navigation returns a small topology map; it does not perform semantic evidence discovery, choose a search provider, or tour the repository.
+
+After the area is bounded, use the Retrieval tree to identify the concrete evidence. If the target is already known, skip Navigation, load the Retrieval root, and let that root start at R0.
+
+## Execution Output Layer
+
+Shell, test, build, and Git output may pass through an already-configured output-compaction layer. This is cross-cutting infrastructure, not Navigation, Retrieval, Verification, or execution depth. A host adapter should make it transparent when the host supports command hooks; otherwise expose only the thinnest wrapper instruction needed to use it.
+
+Compaction must preserve command semantics, exit status, failures, and enough evidence to verify the material claim. Never change the requested check merely to obtain shorter output. If compact output omits evidence needed for diagnosis, retrieve that bounded evidence without disabling compaction globally.
 
 ## Isolation Gate
 
@@ -73,10 +83,10 @@ Core and one small routed node use no worker. Use `references/delegation.md` onl
 
 ## Evolution Contract
 
-Runtime agents do not read `evolution/`. The tree is not a fixed taxonomy.
+Runtime agents do not read `evolution/`. Neither tree is a fixed taxonomy.
 
 - Every runtime node owns its behavior, current depth, and only its immediate-child router; a leaf says so explicitly.
-- Retrieval policy and maintenance workflows remain outside the automatic topology and require their own evidence; they must not be introduced as automatic nodes merely to expose more process.
+- Retrieval policy, capability providers, output transport, and maintenance workflows remain separate concerns. A provider must not become a tree node merely to expose a tool.
 - On an `experiment/*` branch, a proposed child may be staged only to collect controlled parent-versus-child and adaptive-routing evidence. Staging is not promotion.
 - Promote a staged child into a release topology only when a repeatable pre-load signal exists and parent-versus-child ablation shows quality-qualified net lift across multiple tasks or repositories.
 - Merge siblings when their boundary is persistently ambiguous and separation adds no net value.

@@ -56,7 +56,17 @@ if ($TreeSelfTest) {
     try {
         & python benchmarks/tree_validation.py --self-test
         if ($LASTEXITCODE -ne 0) { exit $LASTEXITCODE }
-        & python -m unittest benchmarks.test_tree_benchmarks
+        & python benchmarks/dependency_tree_validation.py --self-test
+        if ($LASTEXITCODE -ne 0) { exit $LASTEXITCODE }
+        & python benchmarks/retrieval_validation.py --self-test
+        if ($LASTEXITCODE -ne 0) { exit $LASTEXITCODE }
+        & python benchmarks/retrieval_analysis.py /dev/null --self-test
+        if ($LASTEXITCODE -ne 0) { exit $LASTEXITCODE }
+        & python -m unittest `
+            benchmarks.test_tree_benchmarks `
+            benchmarks.test_capability_environment `
+            benchmarks.test_dependency_tree_validation `
+            benchmarks.test_retrieval_analysis
         exit $LASTEXITCODE
     }
     finally {

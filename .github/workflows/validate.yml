@@ -25,10 +25,25 @@ jobs:
         run: skills-ref validate ./practical-coding
       - name: Run benchmark harness unit tests
         working-directory: practical-coding
-        run: python -m unittest benchmarks.test_benchmarks benchmarks.test_stability benchmarks.test_catalog benchmarks.test_ladder_analysis benchmarks.test_progressive_validation benchmarks.test_tree_benchmarks benchmarks.test_evolution_workflow
-      - name: Validate tree topology contract
+        run: >-
+          python -m unittest
+          benchmarks.test_benchmarks
+          benchmarks.test_stability
+          benchmarks.test_catalog
+          benchmarks.test_ladder_analysis
+          benchmarks.test_progressive_validation
+          benchmarks.test_tree_benchmarks
+          benchmarks.test_capability_environment
+          benchmarks.test_dependency_tree_validation
+          benchmarks.test_retrieval_analysis
+          benchmarks.test_evolution_workflow
+      - name: Validate execution and retrieval topology contracts
         working-directory: practical-coding
-        run: python benchmarks/tree_validation.py --self-test
+        run: |
+          python benchmarks/tree_validation.py --self-test
+          python benchmarks/dependency_tree_validation.py --self-test
+          python benchmarks/retrieval_validation.py --self-test
+          python benchmarks/retrieval_analysis.py /dev/null --self-test
       - name: Validate explicit evolution workflow contract
         working-directory: practical-coding
         run: python benchmarks/evolution_workflow_validation.py --self-test --output benchmark-results/evolution-workflow-contract.json
@@ -36,6 +51,28 @@ jobs:
         run: |
           test ! -e practical-coding/references/decision.md
           test -e practical-coding/references/manual/decision.md
+      - name: Check progressive Retrieval layout
+        run: |
+          test -e practical-coding/references/retrieval/SKILL.md
+          test -e practical-coding/references/retrieval/direct.md
+          test -e practical-coding/references/retrieval/discovery.md
+          test -e practical-coding/references/retrieval/evidence.md
+          test -e practical-coding/references/retrieval/structural.md
+          test -e practical-coding/benchmarks/capability_manifest.json
+      - name: Ensure removed ranked-search integration is absent from active surfaces
+        run: |
+          ! grep -R -i -E 'fff-style|pi-fff|\bFFF\b' \
+            practical-coding/SKILL.md \
+            practical-coding/AGENTS.md \
+            practical-coding/README.md \
+            practical-coding/README_zh.md \
+            practical-coding/CONTRIBUTING.md \
+            practical-coding/examples \
+            practical-coding/references \
+            practical-coding/agents \
+            practical-coding/docs/CAPABILITY_LAYER.md \
+            practical-coding/benchmarks/README.md \
+            practical-coding/benchmarks/capability_manifest.json
       - name: Check Codex default_prompt references the skill as $skill-name
         run: grep -qF '$practical-coding' practical-coding/agents/openai.yaml
       - name: Ensure retired execution-state experiment is absent
