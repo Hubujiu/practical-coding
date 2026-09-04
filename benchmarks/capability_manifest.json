@@ -11,35 +11,15 @@
       "id": "zvec-grep",
       "role": "ranked_retrieval",
       "binary": "zg",
-      "probe": [
-        "zg",
-        "--version"
-      ],
-      "prepare": [
-        "zg",
-        "index",
-        "--embedding",
-        "local/potion-code-16m-v2"
-      ],
+      "probe": ["zg", "--version"],
+      "prepare": ["zg", "index", "--embedding", "local/potion-code-16m-v2"],
       "timeout_seconds": 1200,
-      "retrieval_stages": [
-        "R1_DISCOVERY",
-        "R2_EVIDENCE"
-      ],
-      "workspace_owned_paths": [
-        ".zvec-grep/"
-      ],
-      "version_regex": "(?<![0-9])0\.2\.0(?![0-9])",
+      "retrieval_stages": ["R1_DISCOVERY", "R2_EVIDENCE"],
+      "workspace_owned_paths": [".zvec-grep/"],
+      "version_regex": "(?<![0-9])0\\.2\\.0(?![0-9])",
       "warmup_commands": [
         {
-          "command": [
-            "zg",
-            "query",
-            "--human",
-            "benchmark retrieval warm-up",
-            "--limit",
-            "1"
-          ],
+          "command": ["zg", "query", "--human", "benchmark retrieval warm-up", "--limit", "1"],
           "timeout_seconds": 600
         }
       ]
@@ -48,30 +28,15 @@
       "id": "codebase-memory-mcp",
       "role": "graph_retrieval",
       "binary": "codebase-memory-mcp",
-      "probe": [
-        "codebase-memory-mcp",
-        "--version"
-      ],
-      "prepare": [
-        "codebase-memory-mcp",
-        "cli",
-        "index_repository",
-        "--repo-path",
-        "{workspace}"
-      ],
+      "probe": ["codebase-memory-mcp", "--version"],
+      "prepare": ["codebase-memory-mcp", "cli", "index_repository", "--repo-path", "{workspace}"],
       "timeout_seconds": 1200,
-      "retrieval_stages": [
-        "R3_STRUCTURAL"
-      ],
+      "retrieval_stages": ["R3_STRUCTURAL"],
       "workspace_owned_paths": [],
-      "version_regex": "(?<![0-9])0\.10\.8(?![0-9])",
+      "version_regex": "(?<![0-9])0\\.10\\.8(?![0-9])",
       "warmup_commands": [
         {
-          "command": [
-            "codebase-memory-mcp",
-            "cli",
-            "list_projects"
-          ],
+          "command": ["codebase-memory-mcp", "cli", "list_projects"],
           "timeout_seconds": 120
         }
       ]
@@ -80,19 +45,12 @@
       "id": "rtk",
       "role": "execution_output",
       "binary": "rtk",
-      "probe": [
-        "rtk",
-        "--version"
-      ],
-      "prepare": [
-        "rtk",
-        "git",
-        "status"
-      ],
+      "probe": ["rtk", "--version"],
+      "prepare": ["rtk", "git", "status"],
       "timeout_seconds": 120,
       "retrieval_stages": [],
       "workspace_owned_paths": [],
-      "version_regex": "(?<![0-9])0\.47\.0(?![0-9])",
+      "version_regex": "(?<![0-9])0\\.47\\.0(?![0-9])",
       "warmup_commands": []
     }
   ],
@@ -102,36 +60,20 @@
       "commands": []
     },
     "cover-atelier": {
-      "required_binaries": [
-        "node",
-        "npm"
-      ],
+      "required_binaries": ["node", "npm"],
       "commands": [
         {
-          "command": [
-            "npm",
-            "ci",
-            "--no-audit",
-            "--no-fund"
-          ],
+          "command": ["npm", "ci", "--no-audit", "--no-fund"],
           "timeout_seconds": 1200
         },
         {
-          "command": [
-            "npm",
-            "test",
-            "--",
-            "src/lib/exportFilename.test.ts"
-          ],
+          "command": ["npm", "test", "--", "src/lib/exportFilename.test.ts"],
           "timeout_seconds": 600
         }
       ]
     },
     "super-agent": {
-      "required_binaries": [
-        "java",
-        "mvn"
-      ],
+      "required_binaries": ["java", "mvn"],
       "commands": [
         {
           "command": [
@@ -171,7 +113,5 @@
       "npm install"
     ]
   },
-  "runner_required_binaries": [
-    "git"
-  ]
+  "runner_required_binaries": ["git"]
 }
