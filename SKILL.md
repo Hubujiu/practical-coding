@@ -65,7 +65,7 @@ Do not choose a retrieval depth from Core in one global decision. Do not route b
 
 Runtime retrieval uses the strongest already-available capability appropriate to the current node and falls back losslessly to bounded repository-native search. Material conclusions must be verified in current source. A benchmark profile may deliberately require concrete providers; that requirement belongs to the benchmark environment, not to the runtime tree.
 
-Once candidate paths or symbols are known, stop inventory and switch to bounded line ranges or symbol reads. Do not dump whole files or repeat broad discovery. Batch independent bounded reads only when each source is required by a current claim.
+Once candidate paths or symbols are known, stop inventory and switch to bounded line ranges or symbol reads; do not dump whole files or repeat broad discovery. Batch independent bounded reads only when each source is required by a current claim.
 
 Use a structural code index only at R3, when the unresolved answer is a call, dependency, ownership, control/data-flow, or impact relationship. Provider output proposes evidence; current source establishes it.
 
