@@ -1,33 +1,23 @@
-# Practical Coding
+# Practical Coding maintenance
 
-This repository is an Agent Skill. Apply [`SKILL.md`](SKILL.md) when working from this checkout.
+This repository is an Agent Skill. Apply [`SKILL.md`](SKILL.md); it is the runtime authority. Do not duplicate its routers here or preload reference siblings. Execution, Retrieval, provider capabilities, output transport, and maintenance are separate concerns.
 
-## Runtime model
+## Boundaries
 
-1. Apply the Core and stay Direct unless one present unresolved event matches the Router.
-2. Route only Debugging, Decision, or Implementation; load at most one reasoning reference for the current event.
-3. Complete routing before diagnostic, decision-research, or change-mapping source work. The selected reference is the next read.
-4. Keep retrieval orthogonal. Unknown paths, callers, consumers, and data flow are retrieval questions, not Implementation events.
-5. Contract to the smallest affected surface as soon as the cause, choice, contract, invariant, or evidence boundary is established.
+Core knows only its immediate Debugging and Implementation children. They remain leaves until independent capability ablation earns a child. Retrieval expands through each loaded node's immediate-child router. Unknown locations or relationships alone do not activate Implementation. Decision and clarification stay explicit-only manual modes; alternatives found while coding do not activate them.
 
-## Event Router
+No automatic route opens maintenance workflows. Ordinary runtime does not read `evolution/`. Preserve the retired execution-state proposal and rejected experiments as historical evidence; do not reactivate them through synonyms or compatibility wrappers. Never add a provider-named node or restore the removed ranked-search integration.
 
-| Present unresolved event | Reference |
-|---|---|
-| Observed failure still lacks an evidenced cause | [`references/debugging.md`](references/debugging.md) |
-| Material user-owned implementation choice changes the next action | [`references/decision.md`](references/decision.md) |
-| Unknown contract/invariant, coordinated guarantee, material risk boundary, or evidence plan blocks safe execution | [`references/implementation.md`](references/implementation.md) |
+## Changes and evidence
 
-A known target and settled behavior/boundary/check stay Direct even when risk nouns are present. A read-only mapping request is Direct plus Retrieval.
+Read `CONTRIBUTING.md` for maintenance policy. Before changing runtime behavior, record evidence, one attributable hypothesis, and frozen validation under `evolution/`; consolidate repeated mechanisms in its wiki. Do not put benchmark case nouns or expected numeric routes into runtime wording. Promote/split/merge/collapse/remove nodes only after quality-qualified ablation, not symmetry or file count.
 
-Requirements interviewing is explicit-only through [`references/manual/clarification.md`](references/manual/clarification.md).
+Iteration uses n=1. Freeze the candidate before the complete n=3 baseline/no-skill comparison. Keep historical results immutable. A scorer fix invalidates both comparison arms, not just the candidate. Public regressions are not held-out generalization evidence.
 
-## Retrieval
+## Active evaluation
 
-Use known source, then bounded/ranked search, then an already-available structural capability when it materially reduces relationship discovery. Use exhaustive coverage or external authoritative sources only when the claim requires them. Source remains authoritative.
+`benchmarks/retrieval_validation.py` owns the measured runner for source analysis and executable delivery. `dependency_tree_validation.py` selects the execution axis; historical monkey-patch adapters are not active entry points. `release_gate.py` checks the complete engineering matrix and raw receipts. Commands, acceptance targets, and limitations are in `benchmarks/DELIVERY_READINESS.md`.
 
-Read [`references/navigation.md`](references/navigation.md) only for substantial retrieval. Missing graph/ranked capabilities fall back without installing or persisting tooling solely for retrieval.
+Every measured profile requires all pinned providers. Initialize indexes, download models, resolve dependencies, and warm first builds before measurement. Missing providers abort; never silently use mocks or fallback as provider evidence. Normal runtime still supports bounded native-source fallback.
 
-## Evolution
-
-`evolution/` is maintainer knowledge and must not enter ordinary runtime context. During Skill maintenance, record mechanisms and failed changes there before modifying another runtime rule. Iterations use n=1; only a frozen release candidate receives the complete n=3 matrix.
+Bind candidate, baseline, harness, model, provider versions, task matrix, and raw artifacts to the run. Missing telemetry is unknown, not zero. A path mentioned in a command is not a verified read. Preserve failures, exits, and material evidence through output compaction. Do not claim model performance from deterministic tests or label targets as measurements.

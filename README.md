@@ -1,74 +1,53 @@
 # Practical Coding
 
-Practical Coding is an Agent Skill for producing the smallest reliable coding change without turning every task into a heavyweight workflow.
+A compact Agent Skill for implementing, fixing, reviewing, and explaining code with the smallest correct change and fresh evidence.
 
-It uses one compact Core, three evidence-triggered reasoning modules, and an orthogonal retrieval policy:
+**Current branch: 2.1-rc1, an unpromoted candidate.** The prompts, measurement pipeline, and delivery regression gate have changed. There are no new measured model-quality or token-saving claims. [Delivery readiness](benchmarks/DELIVERY_READINESS.md) separates observed checks from [engineering targets](benchmarks/release_targets.json).
 
-```text
-Core / Direct
-├─ unresolved observed failure            → Debugging
-├─ unresolved material implementation choice → Decision
-└─ unresolved contract, invariant, or risk boundary → Implementation
+## Runtime
 
-Retrieval (independent):
-known target → bounded/ranked search → structural or authoritative evidence → bounded exhaustive coverage
+`SKILL.md` is the runtime authority. Core defines observable success, reuses existing primitives, preserves user changes, and chooses sufficient verification. It does not require a plan, interview, worker, new abstraction, or new test for every task. Read-only requests authorize no edits.
+
+```mermaid
+flowchart TD
+  Core[Core] -->|unexplained failure| Debugging[Debugging - leaf]
+  Core -->|unresolved contract or risk boundary| Implementation[Implementation - leaf]
+  Retrieval[Retrieval root] --> Direct[R0 Direct Locate]
+  Direct -->|target unknown or evidence insufficient| Discovery[R1 Ranked Discovery]
+  Discovery -->|distributed evidence missing| Evidence[R2 Evidence Expansion]
+  Evidence -->|relationship unresolved| Structural[R3 Structural Trace - leaf]
 ```
 
-## Runtime contract
+Execution and Retrieval are independent. Each loaded node owns only its immediate-child router. A known target and settled contract remain at Core even when risk-related words occur. Retrieval depth describes an evidence gap, not tool strength or file count. A known location passes through Discovery without a redundant discovery query. Reuse already-loaded guidance and stop when the current claim is sufficiently supported.
 
-The Core applies to every task:
+[Decision](references/manual/decision.md) and [Clarification](references/manual/clarification.md) are explicit-only manual modes outside the trees. Alternatives found during implementation do not activate them. [Navigation](references/navigation.md) maps an unresolved repository area; it does not discover evidence or trace graphs. [Delegation](references/delegation.md) is optional, bounded, and single-writer.
 
-- define the smallest observable success;
-- reuse established project primitives;
-- add no speculative abstractions, dependencies, configuration, validation, tests, or documentation;
-- preserve unrelated behavior and user changes;
-- verify with the cheapest check that can falsify the material claim.
+## Capabilities
 
-If no unresolved Event Router condition matches, stay Direct. A risk-related noun, multiple files, unknown paths, or caller discovery does not itself justify a reasoning module.
+Ranked search, graph retrieval, and command-output compaction are replaceable infrastructure, not tree nodes. Normal runtime supports bounded native-source fallback. The dependency-enabled benchmark deliberately requires all three pinned providers in [the manifest](benchmarks/capability_manifest.json): `zg` 0.2.0, `codebase-memory-mcp` 0.10.8, and `rtk` 0.47.0.
 
-When an event is present, load exactly one reference:
+Provider installation, downloads, indexes, dependency resolution, and first-build warmup occur before measured execution. Setup remains separately auditable and excluded from compared tokens, duration, and tool calls. Missing providers abort rather than silently selecting a fallback benchmark. See [capability boundaries](docs/CAPABILITY_LAYER.md).
 
-- [`references/debugging.md`](references/debugging.md) — an observed failure still lacks an evidenced cause;
-- [`references/decision.md`](references/decision.md) — a material user-owned implementation choice remains open;
-- [`references/implementation.md`](references/implementation.md) — safe execution is blocked by an unresolved contract, coordinated invariant, material risk boundary, or evidence plan.
+## Validation and delivery
 
-Requirements interviewing and `grill-me` behavior are explicit-only through [`references/manual/clarification.md`](references/manual/clarification.md). One unavoidable blocking question in an ordinary task is normal interaction, not an interview mode.
+The active runner is `benchmarks/retrieval_validation.py`. It supports source analysis and executable delivery suites, plus Retrieval or execution capability ceilings. `dependency_tree_validation.py` is an execution-axis compatibility entry point; it no longer installs global monkey patches.
 
-## Retrieval policy
+```sh
+# Deterministic evaluator and oracle checks; no model-quality claim.
+python benchmarks/benchmark_retrieval_integrity.py --output benchmark-results/evaluator.json
+python benchmarks/benchmark_readiness.py --output benchmark-results/readiness.json
 
-Retrieval is separate from reasoning. Use the cheapest available capability that supplies enough current context:
-
-1. read a known path or symbol;
-2. use bounded/ranked filename, text, or symbol search;
-3. use an already-available structural index for relationship questions when it saves work;
-4. use bounded exhaustive coverage only for explicit exhaustive claims, and authoritative external sources only for contracts the repository cannot establish;
-5. verify material conclusions against current source.
-
-[`references/navigation.md`](references/navigation.md) is the optional detailed procedure for substantial retrieval. Codebase Memory, LSP/AST, ranked search, and ordinary search are capabilities, not required dependencies.
-
-## Evolution discipline
-
-Runtime agents do not read `evolution/`. Maintainers record experiences, consolidate repeated mechanisms, freeze experiments before changing runtime rules, and preserve rejected changes.
-
-The rejected E/R depth and specialist-leaf experiment is retained under [`evolution/rejected/`](evolution/rejected/) with its n=3 evidence in [`benchmarks/results/progressive-tree/`](benchmarks/results/progressive-tree/). The replacement event-router experiment is documented in [`evolution/experiments/event-router-restoration.md`](evolution/experiments/event-router-restoration.md).
-
-The accepted v1.5 release evidence is published under [`benchmarks/results/v1.5/`](benchmarks/results/v1.5/). Its frozen current-only n=3 matrix had zero indeterminate cells: Delivery 54/54, Debug 40/42, Decision 29/30, Native Behavior 52/54, and 61/66 held-out quality cells across 22 real tasks. Event reasoning was 113/114; after correcting three retrieval expectations that contradicted the current structural-mapping contract, the public Router result was 107/114 (reasoning 113/114, retrieval 108/114). These are non-paired release results; they do not claim superiority over other skills.
-
-## Validation
-
-Public regression and real-repository held-out validation use `gpt-5.6-luna` at medium reasoning. Iteration runs use `n=1`; release claims require the complete current-only matrix at `n=3`.
-
-```powershell
-pwsh -NoProfile -File benchmarks/run.ps1 -SelfTest
-pwsh -NoProfile -File benchmarks/run.ps1 -ProgressiveSelfTest
-
-python benchmarks/run_catalog.py --profile full --runs 3 --workers 3 `
-  --arm practical-current --arm practical-native --output benchmark-results/public-final
-
-python benchmarks/progressive_validation.py --phase all --current-only --runs 3 --workers 3 `
-  --output benchmark-results/heldout-final
+# Show the planned matrix without invoking a model.
+python benchmarks/retrieval_validation.py --suite source --runs 3 --comparators-only --describe
+python benchmarks/retrieval_validation.py --suite delivery --runs 3 --comparators-only --describe
 ```
 
-Historical published evidence remains version-specific and non-paired unless its arms are rerun in one frozen matrix.
+The engineering gate covers 15 source tasks and 8 public code-delivery fixtures, three arms and three repetitions: 207 cells. These public regression tasks are not held-out generalization evidence. Their acceptance floors and cost limits are targets, not observed scores. Actual evaluation requires authenticated Codex, all pinned providers, and frozen source checkouts. [Reproduction commands and limitations](benchmarks/DELIVERY_READINESS.md) include the full paired run and gate.
 
-MIT License. See `THIRD_PARTY_NOTICES.md` for attribution.
+Raw transcripts, tool exits, source-content reads, setup receipts, candidate/baseline identities, and archived code support the results. Missing telemetry is unknown, not zero. The gate rejects incomplete or mixed experiments. Run model evaluation only in a disposable trusted environment without production secrets; the existing unattended Codex command is not a security containment boundary.
+
+## Evolution and history
+
+[AGENTS.md](AGENTS.md) and [CONTRIBUTING.md](CONTRIBUTING.md) describe maintenance. Ordinary runtime does not read `evolution/`. Freeze a hypothesis and tests before editing; use n=1 for iteration and n=3 only for a frozen candidate. Tree changes require quality-qualified capability ablation, not symmetry or additional process.
+
+Historical reports remain under `benchmarks/results/` and rejected experiments under `evolution/rejected/`. They are preserved evidence, not certification of the current candidate. MIT license; see [third-party notices](THIRD_PARTY_NOTICES.md).

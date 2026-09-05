@@ -1,42 +1,42 @@
 # Third-Party Notices
 
+Practical Coding does not vendor the provider source trees or release binaries listed below. Normal Skill use can fall back when a provider is absent. The dependency-enabled benchmark deliberately requires the declared executables so paired runs share one concrete capability surface.
+
+## zvec-ai/zvec-grep
+
+- Project: `zvec-ai/zvec-grep`
+- Executable used by the benchmark: `zg`
+- Frozen benchmark profile version: `0.2.0`
+- Source: https://github.com/zvec-ai/zvec-grep
+- License: Apache License 2.0
+- Role: local ranked lexical + semantic retrieval for R1 Ranked Discovery and bounded R2 Evidence Expansion.
+
+Provider results are candidate evidence, not repository truth. Material conclusions are checked in current source.
+
 ## DeusData/codebase-memory-mcp
 
-Practical Coding recognizes `DeusData/codebase-memory-mcp` as one optional mature structural-retrieval backend when it is already available in the host environment.
-
 - Project: `DeusData/codebase-memory-mcp`
+- Executable used by the benchmark: `codebase-memory-mcp`
+- Frozen benchmark profile version: `0.10.8`
 - Source: https://github.com/DeusData/codebase-memory-mcp
 - License: MIT
-- Upstream revision reviewed when the direct-backend policy was established: `010569fa6ce1bc5d6430f858129243ea1a2e3fd5`
+- Role: graph-aware callers, callees, dependencies, flows, and impact evidence for the R3 Structural Trace leaf.
 
-Practical Coding does not vendor the upstream source tree or release binaries, and it does not require Codebase Memory for normal operation. The Skill does not automatically install or persist the backend solely for retrieval; if no structural index is already available, retrieval falls back to bounded source search.
+Benchmark cells create distinct per-workspace graph identities while sharing one explicit account-daemon cache cohort for the run. The selected cohort is recorded; graph identity, freshness, and coverage must be checked, and material paths are verified in current source.
 
-This choice keeps parser accuracy, Tree-sitter grammars, Hybrid LSP resolution, semantic search, indexing, coverage reporting, concurrency, and graph queries owned and maintained upstream instead of being copied into a divergent Practical Coding implementation.
+## rtk-ai/rtk
 
-If Practical Coding later vendors upstream code or carries a source patch, retain the upstream copyright and MIT license terms with the copied/substantial portions.
+- Project: `rtk-ai/rtk`
+- Executable used by the benchmark: `rtk`
+- Frozen benchmark profile version: `0.47.0`
+- Source: https://github.com/rtk-ai/rtk
+- License: Apache License 2.0
+- Role: cross-cutting compaction of noisy shell, test, build, and Git output.
 
-The upstream MIT license is reproduced below for attribution.
+Output compaction is infrastructure rather than a Retrieval node. It must preserve command semantics, exit status, failures, and sufficient evidence for the current claim.
 
-```text
-MIT License
+## Distribution boundary
 
-Copyright (c) 2025 DeusData
+The repository records executable probes and setup commands in `benchmarks/capability_manifest.json`, but it does not redistribute provider binaries, embedding models, or cached indexes. Install each provider from its maintained upstream distribution and review its own license, security, data-handling, and configuration documentation.
 
-Permission is hereby granted, free of charge, to any person obtaining a copy
-of this software and associated documentation files (the "Software"), to deal
-in the Software without restriction, including without limitation the rights
-to use, copy, modify, merge, publish, distribute, sublicense, and/or sell
-copies of the Software, and to permit persons to whom the Software is
-furnished to do so, subject to the following conditions:
-
-The above copyright notice and this permission notice shall be included in all
-copies or substantial portions of the Software.
-
-THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND, EXPRESS OR
-IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF MERCHANTABILITY,
-FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT. IN NO EVENT SHALL THE
-AUTHORS OR COPYRIGHT HOLDERS BE LIABLE FOR ANY CLAIM, DAMAGES OR OTHER
-LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM,
-OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE
-SOFTWARE.
-```
+If Practical Coding later vendors upstream code or carries a source patch, retain all required copyright and license notices with the copied or substantial portions.

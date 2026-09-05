@@ -1,6 +1,6 @@
 interface:
   display_name: "Practical Coding"
-  short_description: "Small correct changes with event routing and bounded retrieval"
-  default_prompt: "Use $practical-coding. Apply the Core, route only a present unresolved Debugging, Decision, or Implementation event, and use the cheapest sufficient retrieval capability. Load at most one reasoning reference for the current event."
+  short_description: "Small correct changes, local routing, fresh evidence"
+  default_prompt: "Use $practical-coding for this task. Apply Core, disclose only the current node's required immediate child, and stop when the requested outcome has sufficient fresh evidence. Keep manual decision/interview modes explicit-only and preserve read-only scope."
 policy:
   allow_implicit_invocation: true

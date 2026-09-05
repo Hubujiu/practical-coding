@@ -1,0 +1,117 @@
+{
+  "schema_version": 1,
+  "profile": "retrieval-dependencies-v1",
+  "required_roles": [
+    "ranked_retrieval",
+    "graph_retrieval",
+    "execution_output"
+  ],
+  "providers": [
+    {
+      "id": "zvec-grep",
+      "role": "ranked_retrieval",
+      "binary": "zg",
+      "probe": ["zg", "--version"],
+      "prepare": ["zg", "index", "--embedding", "local/potion-code-16m-v2"],
+      "timeout_seconds": 1200,
+      "retrieval_stages": ["R1_DISCOVERY", "R2_EVIDENCE"],
+      "workspace_owned_paths": [".zvec-grep/"],
+      "version_regex": "(?<![0-9])0\\.2\\.0(?![0-9])",
+      "warmup_commands": [
+        {
+          "command": ["zg", "query", "--human", "benchmark retrieval warm-up", "--limit", "1"],
+          "timeout_seconds": 600
+        }
+      ]
+    },
+    {
+      "id": "codebase-memory-mcp",
+      "role": "graph_retrieval",
+      "binary": "codebase-memory-mcp",
+      "probe": ["codebase-memory-mcp", "--version"],
+      "prepare": ["codebase-memory-mcp", "cli", "index_repository", "--repo-path", "{workspace}"],
+      "timeout_seconds": 1200,
+      "retrieval_stages": ["R3_STRUCTURAL"],
+      "workspace_owned_paths": [],
+      "version_regex": "(?<![0-9])0\\.10\\.8(?![0-9])",
+      "warmup_commands": [
+        {
+          "command": ["codebase-memory-mcp", "cli", "list_projects"],
+          "timeout_seconds": 120
+        }
+      ]
+    },
+    {
+      "id": "rtk",
+      "role": "execution_output",
+      "binary": "rtk",
+      "probe": ["rtk", "--version"],
+      "prepare": ["rtk", "git", "status"],
+      "timeout_seconds": 120,
+      "retrieval_stages": [],
+      "workspace_owned_paths": [],
+      "version_regex": "(?<![0-9])0\\.47\\.0(?![0-9])",
+      "warmup_commands": []
+    }
+  ],
+  "repository_warmups": {
+    "personal-progress": {
+      "required_binaries": [],
+      "commands": []
+    },
+    "cover-atelier": {
+      "required_binaries": ["node", "npm"],
+      "commands": [
+        {
+          "command": ["npm", "ci", "--no-audit", "--no-fund"],
+          "timeout_seconds": 1200
+        },
+        {
+          "command": ["npm", "test", "--", "src/lib/exportFilename.test.ts"],
+          "timeout_seconds": 600
+        }
+      ]
+    },
+    "super-agent": {
+      "required_binaries": ["java", "mvn"],
+      "commands": [
+        {
+          "command": [
+            "mvn",
+            "-q",
+            "-pl",
+            "ai-example/ai-example-memory/ai-example-spring-ai-memory",
+            "-am",
+            "-DskipTests",
+            "compile"
+          ],
+          "timeout_seconds": 1800
+        }
+      ]
+    }
+  },
+  "measurement_contract": {
+    "setup_phase": "unmeasured",
+    "setup_included_in_comparison": false,
+    "setup_token_estimate": false,
+    "measured_phase_starts": "after_workspace_prepare",
+    "measured_fields": [
+      "input_tokens",
+      "cached_input_tokens",
+      "uncached_input_tokens",
+      "output_tokens",
+      "reasoning_output_tokens",
+      "total_tokens",
+      "duration_seconds",
+      "tool_calls"
+    ],
+    "forbidden_measured_setup_commands": [
+      "zg index",
+      "codebase-memory-mcp cli index_repository",
+      "rtk init",
+      "npm ci",
+      "npm install"
+    ]
+  },
+  "runner_required_binaries": ["git"]
+}

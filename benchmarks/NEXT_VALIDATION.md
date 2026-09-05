@@ -1,45 +1,45 @@
-# Release validation protocol — event-router restoration
+# Release validation protocol — evolvable local-router tree
 
-This protocol freezes the final validation for `experiment/progressive-ladders` after n=1 iteration.
+This protocol freezes final validation for `experiment/evolvable-router-tree` after n=1 mechanism iteration.
 
-## Candidate contract
+## Frozen candidate
 
-- Core plus Direct default;
-- exactly three adaptive reasoning modules: Debugging, Decision, Implementation;
-- retrieval orthogonal and cheapest-sufficient;
-- requirements interviewing explicit-only;
-- no numeric execution/retrieval runtime depths or specialist leaves.
+- Core owns only Debugging and Implementation as automatic children.
+- Debugging and Implementation are leaves; repeated ablation did not earn a depth-2 child.
+- Decision and Clarification remain explicit-only manual modes.
+- Retrieval remains orthogonal to execution-tree depth.
+- The deterministic scorer normalizes equivalent semantic acts, outcome wording, ordinary inflections, and Windows/POSIX reference paths without changing the frozen task prompts.
+
+Qualified n=1 artifact: `benchmark-results/tree-delivery-n1-retired-isolated-20260902` (58/58 determinate cells; adaptive 15/15; every capability ceiling 13/13; all traces/manual contracts valid).
 
 ## Iteration gate
 
-Use n=1 while changing a mechanism. Save the full result, classify failures as infrastructure, scorer/oracle, stochastic, routing, or genuine capability failures, and record reusable lessons under `evolution/`. Never add case-specific nouns to runtime text.
+Use n=1 while changing runtime wording, topology, cases, scorer contracts, or evidence normalization. Save each complete artifact, classify every failure, and write an immutable receipt before consolidating the reusable mechanism into `evolution/wiki/`. A scorer correction invalidates all affected model-backed results; rerun the complete matrix in a fresh directory.
 
-## Final gate
+## Final paired gate
 
-The candidate must be committed and unchanged before both commands run:
+Commit and freeze runtime, topology, cases, scorer, repository refs, model, and harness before running:
 
 ```powershell
-python benchmarks/run_catalog.py --profile full --runs 3 --workers 3 `
-  --arm practical-current --arm practical-native `
-  --output benchmark-results/event-router-final-public
+python benchmarks/tree_validation.py --runs 3 --workers 3 `
+  --output benchmark-results/tree-final
 
-python benchmarks/progressive_validation.py --phase all --current-only --runs 3 --workers 3 `
-  --output benchmark-results/event-router-final-heldout
+python benchmarks/tree_analysis.py benchmark-results/tree-final/results.jsonl `
+  --output benchmark-results/tree-final/analysis.json
 ```
 
 Required evidence:
 
-- zero indeterminate cells and at least three determinate repetitions per cell;
-- no Delivery correctness/safety/build regression;
-- Debug, Decision, and Native Behavior stable enough for a release claim;
-- Router reasoning and retrieval reported separately;
-- at least 20 held-out real tasks across multiple repositories;
-- zero spontaneous requirements-interview activation;
-- held-out quality and routing failures individually classified;
-- raw machine paths excluded from published compact artifacts.
+- every expected cell exists, is determinate, and has three unique repetitions;
+- adaptive delivered quality is strictly better than the frozen v1.5 baseline on the same cases and no worse than no-skill on required correctness/safety/reachability;
+- zero adaptive trace failures and zero spontaneous manual-mode activation;
+- both explicit manual tasks load the requested manual mode in every repetition;
+- parent-versus-child capability evidence uses all three repetitions before retaining, removing, promoting, or merging a node;
+- raw machine paths remain in ignored artifacts and are excluded from published compact reports;
+- report version, commit, model, harness, frozen repository refs, cell counts, pass counts, noninferiority results, and limitations separately.
 
-Historical v1.2 reports may be compared offline, but this current-only cycle cannot make a paired superiority claim against v1.2, no-skill, Ponytail, or combined skill arms.
+Router exactness and topology diagnostics do not override delivered quality. A favorable n=1 cell or incomplete split rerun is not release evidence.
 
 ## Merge gate
 
-Update the formal README and compact result artifacts from the final reports, run all unit/self/Skill validation, push the branch, and require PR CI success. If a genuine quality or stable reasoning regression remains, return to n=1 iteration and freeze the next mechanism change before editing runtime rules.
+Update the formal README and compact result artifacts from the complete n=3 report, run all unit/self/Skill validation, and require PR CI success before merge. If a genuine stable quality regression or unearned staged node remains, return to a new frozen n=1 hypothesis and repeat the gate; do not edit the n=3 artifact in place.

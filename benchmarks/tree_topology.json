@@ -1,0 +1,121 @@
+{
+  "schema_version": 5,
+  "root": "core",
+  "automatic_nodes": {
+    "core": {
+      "depth": 0,
+      "reference": "SKILL.md",
+      "parent": null,
+      "children": [
+        "debugging",
+        "implementation"
+      ]
+    },
+    "debugging": {
+      "depth": 1,
+      "reference": "references/debugging.md",
+      "parent": "core",
+      "children": []
+    },
+    "implementation": {
+      "depth": 1,
+      "reference": "references/implementation.md",
+      "parent": "core",
+      "children": []
+    }
+  },
+  "manual_modes": {
+    "decision": "references/manual/decision.md",
+    "clarification": "references/manual/clarification.md"
+  },
+  "retrieval_tree": {
+    "root": "retrieval",
+    "nodes": {
+      "retrieval": {
+        "depth": 0,
+        "stage": "root",
+        "trace_mode": "NONE",
+        "reference": "references/retrieval/SKILL.md",
+        "parent": null,
+        "children": [
+          "direct"
+        ]
+      },
+      "direct": {
+        "depth": 1,
+        "stage": "R0",
+        "trace_mode": "R0_DIRECT",
+        "reference": "references/retrieval/direct.md",
+        "parent": "retrieval",
+        "children": [
+          "discovery"
+        ]
+      },
+      "discovery": {
+        "depth": 2,
+        "stage": "R1",
+        "trace_mode": "R1_DISCOVERY",
+        "reference": "references/retrieval/discovery.md",
+        "parent": "direct",
+        "children": [
+          "evidence"
+        ]
+      },
+      "evidence": {
+        "depth": 3,
+        "stage": "R2",
+        "trace_mode": "R2_EVIDENCE",
+        "reference": "references/retrieval/evidence.md",
+        "parent": "discovery",
+        "children": [
+          "structural"
+        ]
+      },
+      "structural": {
+        "depth": 4,
+        "stage": "R3",
+        "trace_mode": "R3_STRUCTURAL",
+        "reference": "references/retrieval/structural.md",
+        "parent": "evidence",
+        "children": []
+      }
+    }
+  },
+  "retrieval_trace_modes": [
+    "NONE",
+    "R0_DIRECT",
+    "R1_DISCOVERY",
+    "R2_EVIDENCE",
+    "R3_STRUCTURAL"
+  ],
+  "retrieval_modes": [
+    "NONE",
+    "R0_DIRECT",
+    "R1_DISCOVERY",
+    "R2_EVIDENCE",
+    "R3_STRUCTURAL",
+    "TARGETED",
+    "BOUNDED",
+    "STRUCTURAL"
+  ],
+  "legacy_retrieval_modes": [
+    "TARGETED",
+    "BOUNDED",
+    "STRUCTURAL"
+  ],
+  "capability_manifest": "benchmarks/capability_manifest.json",
+  "baseline_ref": "ba4058b4ef47a42bf79c9963b25678a2389897c1",
+  "notes": [
+    "Execution depth describes disclosure depth, not task complexity.",
+    "Only parent-child edges in each tree are valid automatic routes.",
+    "Manual modes are never automatic descendants.",
+    "Debugging and Implementation remain execution leaves until benchmark evidence earns a child.",
+    "Retrieval is an independent progressive tree: root -> R0 direct -> R1 discovery -> R2 evidence -> R3 structural.",
+    "Retrieval depth describes the unresolved information problem, never provider strength.",
+    "Ranked retrieval, graph retrieval, and execution-output compaction are capability providers outside both trees.",
+    "Dependency-enabled comparisons require every provider and exclude setup, indexing, dependency resolution, and first-build warm-up from measured metrics.",
+    "Legacy retrieval labels remain parser-compatible for historical result files but are not emitted by the dependency-enabled runner.",
+    "The execution-state experiment is retired and is not an active runtime substrate.",
+    "The benchmark may recommend adding, removing, merging, promoting, splitting, or deepening nodes; the manifest is an experiment input, not a permanent taxonomy."
+  ]
+}

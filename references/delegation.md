@@ -1,24 +1,9 @@
 # Isolated Reference Delegation
 
-Load this protocol only inside a worker selected by the Isolation Gate. Also read exactly one assigned reference: Decision, Debugging, Implementation, or Navigation retrieval.
+Use only when isolation saves more context than the handoff costs. Read one assigned automatic reference or an explicitly requested manual reference; do not reconstruct the entire conversation or spawn another worker.
 
-## Worker contract
+The handoff supplies the requested outcome, active node/depth, known evidence, repository state, and bounded scope. Record starting HEAD and relevant dirty paths. Navigation/Debugging workers are read-only. Implementation writes only its assigned non-overlapping scope as sole writer; mapping-only assignments remain read-only. Manual Decision authorizes no implementation by itself.
 
-- Use the requirement, project constraints, known evidence, repository state, and allowed scope supplied by the root. Do not reconstruct the full conversation or rescan unrelated areas.
-- The root must not inspect or modify the delegated scope while this worker runs. If it changes, return `stale`.
-- Do only the assigned reference's work. Report a newly exposed blocker to the root instead of loading another reference or spawning another worker.
-- Decision, Debugging, and Navigation workers are read-only.
-- An Implementation worker is read-only when assigned mapping/evidence only. When explicitly assigned implementation, it writes only within its bounded non-overlapping scope and is the sole writer there.
-- Record starting HEAD and relevant dirty paths. Never commit, reset, checkout, clean, or overwrite user changes unless explicitly authorized.
+No overlapping writers. The owner must not change delegated inputs while work runs; if those inputs changed, return `stale`. Never commit, reset, checkout, clean, or overwrite user changes without authorization.
 
-## Compact return
-
-Return conclusions and evidence, not transcripts or raw search dumps:
-
-- assigned reference and status: complete, provisional, blocked, or stale;
-- starting repository state and exact paths/symbols in scope;
-- findings or changes backed by current source/tool evidence;
-- checks run and their freshness;
-- coverage limitations, unresolved items, and any newly exposed event for root routing.
-
-Do not persist the capsule unless the user requested an artifact.
+Return status (complete/provisional/blocked/stale), starting state, concrete findings or changes, fresh checks, and coverage gaps. Return new blockers to the active node's owner. Do not return raw transcripts or persist a capsule unless requested.

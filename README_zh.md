@@ -1,74 +1,53 @@
 # Practical Coding
 
-Practical Coding 是一个 Agent Skill：目标是交付最小、可靠的代码修改，同时避免把所有任务都变成重量级流程。
+一个精简的 Agent Skill：实现、修复、审查或解释代码，交付最小正确修改，并提供新鲜验证证据。
 
-运行时只有一个 Core、三个由证据触发的推理模块，以及一条独立的检索策略：
+**当前分支为 2.1-rc1 候选版，尚未通过模型交付认证。** 本轮优化了提示词、计量链路和代码交付回归门槛，没有宣称新的模型正确率或 token 节省实测结果。[交付验证说明](benchmarks/DELIVERY_READINESS.md)明确区分已执行检查与[工程目标](benchmarks/release_targets.json)。
 
-```text
-Core / Direct
-├─ 已观察失败但原因未证实            → Debugging
-├─ 会改变实现方向的重大选择尚未解决    → Decision
-└─ 契约、不变量、风险边界或证据计划未解决 → Implementation
+## 运行方式
 
-检索独立：
-已知目标 → 有界/排序搜索 → 结构或权威证据 → 有界穷举覆盖
+`SKILL.md` 是运行时规则的唯一权威入口。Core 定义可观察成功，复用已有能力，保留用户修改，并选择充分的验证。不强制每个任务都规划、采访、委派、增加抽象或新增测试。只读请求不授权修改代码。
+
+```mermaid
+flowchart TD
+  Core[Core] -->|失败原因尚未证实| Debugging[Debugging - 叶子]
+  Core -->|契约或风险边界未解决| Implementation[Implementation - 叶子]
+  Retrieval[Retrieval 根] --> Direct[R0 Direct Locate]
+  Direct -->|位置未知或证据不足| Discovery[R1 Ranked Discovery]
+  Discovery -->|缺少分布式证据| Evidence[R2 Evidence Expansion]
+  Evidence -->|关系尚未建立| Structural[R3 Structural Trace - 叶子]
 ```
 
-## 运行时契约
+执行树与检索树独立。每个节点只决定自己的直接子节点。已知目标、契约和检查的任务，即使包含安全或并发词汇，也可留在 Core。检索层级代表证据缺口，不代表工具品牌或文件数量。已知位置经过 Discovery 时不要求重复搜索；复用已加载规则，证据充分即停止。
 
-Core 始终适用：
+[Decision](references/manual/decision.md) 与 [Clarification](references/manual/clarification.md) 只由当前明确请求触发，不属于自动树。编码途中遇到方案选择，不会自动开启采访。[Navigation](references/navigation.md) 只定位仓库区域，不负责证据扩展或调用图。[委派](references/delegation.md) 可选，必须限制范围并保持单写者。
 
-- 先定义最小可观察成功；
-- 复用项目已经存在的 primitive；
-- 不添加推测性的抽象、依赖、配置、验证、测试或文档；
-- 保留无关行为和用户已有修改；
-- 用能证伪关键结论的最便宜检查验证。
+## 能力层与计量
 
-没有 Event Router 条件时保持 Direct。风险名词、文件数量、路径未知或需要找 caller，本身都不是推理升级理由。
+排序检索、图检索、命令输出压缩是可替换基础设施，不是路由节点。普通运行时允许有界源码检索回退；依赖 benchmark 则强制要求[清单](benchmarks/capability_manifest.json)中的三个固定版本工具：`zg` 0.2.0、`codebase-memory-mcp` 0.10.8、`rtk` 0.47.0。
 
-存在未解决事件时只加载一个 reference：
+安装、模型下载、首次建索引、依赖解析和首次构建预热必须先于测量。准备阶段可审计，但不计入比较 token、时长和工具调用。缺依赖时终止，不能用无依赖测试冒充。详见[能力边界](docs/CAPABILITY_LAYER.md)。
 
-- [`references/debugging.md`](references/debugging.md)：已观察失败仍没有证据化原因；
-- [`references/decision.md`](references/decision.md)：会改变实现方向的重大用户选择尚未解决；
-- [`references/implementation.md`](references/implementation.md)：安全执行被未知契约、协同不变量、重大风险边界或证据计划阻塞。
+## 验证与交付
 
-需求采访和 `grill-me` 只能由用户显式激活 [`references/manual/clarification.md`](references/manual/clarification.md)。普通任务里一个不可避免的阻塞问题不算进入采访模式。
+统一入口为 `benchmarks/retrieval_validation.py`，支持源码分析、可执行代码交付，以及检索树或执行树消融。`dependency_tree_validation.py` 只选择执行轴，不再修改历史 runner 的全局函数。
 
-## 检索策略
+```sh
+# 评测器与执行判定的确定性验证，不是模型成绩。
+python benchmarks/benchmark_retrieval_integrity.py --output benchmark-results/evaluator.json
+python benchmarks/benchmark_readiness.py --output benchmark-results/readiness.json
 
-检索与推理正交，始终使用能提供充分当前上下文的最便宜能力：
-
-1. 读取已知路径或 symbol；
-2. 使用有界/排序的文件名、文本或 symbol 搜索；
-3. 关系问题在确实节省探索成本时使用已经可用的结构索引；
-4. 只有明确穷举结论才做有界覆盖，仓库无法建立的外部契约才查询权威来源；
-5. 重要结论必须回到当前源码验证。
-
-[`references/navigation.md`](references/navigation.md) 只用于较重的检索过程。Codebase Memory、LSP/AST、排序搜索和普通搜索都是可选能力，不是依赖。
-
-## 演化纪律
-
-普通运行时不读取 `evolution/`。维护阶段才记录体验、合并重复机制、先冻结实验再修改运行时规则，并保留失败改进。
-
-被拒绝的 E/R 深度与专家叶子实验保存在 [`evolution/rejected/`](evolution/rejected/)，其 n=3 证据位于 [`benchmarks/results/progressive-tree/`](benchmarks/results/progressive-tree/)。替代实验记录在 [`evolution/experiments/event-router-restoration.md`](evolution/experiments/event-router-restoration.md)。
-
-已接受的 v1.5 发布证据位于 [`benchmarks/results/v1.5/`](benchmarks/results/v1.5/)。冻结的 current-only n=3 矩阵没有 indeterminate：Delivery 54/54、Debug 40/42、Decision 29/30、Native Behavior 52/54，22 个真实任务的 held-out 质量为 61/66。事件推理为 113/114；修正 3 个与当前“结构关系映射”合同矛盾的 Retrieval 期望后，公共 Router 为 107/114（reasoning 113/114、retrieval 108/114）。这些是非配对发布结果，不用于宣称优于其他 Skill。
-
-## 验证
-
-公共回归与真实仓库 held-out 使用 `gpt-5.6-luna`、medium reasoning。迭代阶段使用 `n=1`；发布结论必须完成 current-only 全矩阵 `n=3`。
-
-```powershell
-pwsh -NoProfile -File benchmarks/run.ps1 -SelfTest
-pwsh -NoProfile -File benchmarks/run.ps1 -ProgressiveSelfTest
-
-python benchmarks/run_catalog.py --profile full --runs 3 --workers 3 `
-  --arm practical-current --arm practical-native --output benchmark-results/public-final
-
-python benchmarks/progressive_validation.py --phase all --current-only --runs 3 --workers 3 `
-  --output benchmark-results/heldout-final
+# 只展示计划规模，不调用模型。
+python benchmarks/retrieval_validation.py --suite source --runs 3 --comparators-only --describe
+python benchmarks/retrieval_validation.py --suite delivery --runs 3 --comparators-only --describe
 ```
 
-历史报告只证明生成它的版本；除非在同一冻结矩阵中重跑，否则只能做非配对参照。
+工程门槛包含 15 个源码任务和 8 个公开代码交付任务，三个实验组、三轮，共 207 次运行。它们不是未见过的泛化测试。质量下限、成本上限均为目标，不能当成已取得的分数。真实评测需要已认证的 Codex、全部工具和冻结的源码仓库。[复现说明](benchmarks/DELIVERY_READINESS.md)给出了完整命令与限制。
 
-MIT License。第三方归属见 `THIRD_PARTY_NOTICES.md`。
+结果绑定原始转录、工具退出码、规则实际内容读取、初始化回执、候选与基线身份，以及归档代码。缺失遥测记为未知而非零；不完整或混用实验不能通过。必须在没有生产凭证的一次性可信环境运行模型评测；现有无人值守 Codex 命令不是安全隔离边界。
+
+## 演化与历史
+
+维护规则位于 [AGENTS.md](AGENTS.md) 和 [CONTRIBUTING.md](CONTRIBUTING.md)。普通任务不读取 `evolution/`。先冻结假设与验证，再修改规则；迭代使用 n=1，冻结候选后再使用 n=3。增加或合并节点必须由质量合格的消融结果支持，不能为层级对称而加层。
+
+历史结果保留在 `benchmarks/results/`，被否决的实验保留在 `evolution/rejected/`，不将其改写成当前候选的成绩。MIT 许可；见[第三方声明](THIRD_PARTY_NOTICES.md)。

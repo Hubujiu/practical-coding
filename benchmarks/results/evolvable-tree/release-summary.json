@@ -1,0 +1,28 @@
+{
+  "experiment": "evolvable-local-router-tree",
+  "status": "tree-n3-accepted-state-gate-pending",
+  "candidate_commit": "d85c72cc5aa239da32352309e723ed1e6fc80429",
+  "baseline_ref": "ba4058b4ef47a42bf79c9963b25678a2389897c1",
+  "model": "gpt-5.6-luna",
+  "reasoning": "medium",
+  "runs_per_cell": 3,
+  "tasks": 15,
+  "repositories": 3,
+  "cells": 252,
+  "determinate": 252,
+  "quality": {
+    "adaptive": {"passed": 45, "cells": 45, "stable_tasks": 15},
+    "baseline": {"passed": 45, "cells": 45, "stable_tasks": 15},
+    "no_skill": {"passed": 45, "cells": 45, "stable_tasks": 15},
+    "release_quality_gate": "PASS"
+  },
+  "discipline": {
+    "adaptive_trace_failures": 0,
+    "explicit_manual_contract_failures": 0,
+    "spontaneous_manual_count": 0
+  },
+  "parallelism": {"work_count": 2, "work_case_counts": [8, 7], "workers_per_work": 8},
+  "execution_state_model_gate": "PENDING",
+  "pending_reason": "No four-arm model-backed transport runner or final outbound header/cookie/proxy audit exists in the repository.",
+  "raw_artifacts": "ignored benchmark-results/tree-d85c72c-final-merged/"
+}

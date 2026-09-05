@@ -2,8 +2,11 @@ name: Validate skill
 
 on:
   push:
-    branches: [main]
+    branches: [main, experiment/evolvable-router-tree]
   pull_request:
+
+permissions:
+  contents: read
 
 jobs:
   validate:
@@ -13,6 +16,8 @@ jobs:
         with:
           # The spec requires the skill name to match its directory name.
           path: practical-coding
+          fetch-depth: 0
+          persist-credentials: false
       - uses: actions/setup-python@v5
         with:
           python-version: "3.12"
@@ -20,13 +25,113 @@ jobs:
         run: pip install "git+https://github.com/agentskills/agentskills.git#subdirectory=skills-ref"
       - name: Validate SKILL.md
         run: skills-ref validate ./practical-coding
-      - name: Run benchmark harness tests
+      - name: Run benchmark harness unit tests
         working-directory: practical-coding
-        run: python -m unittest benchmarks.test_benchmarks benchmarks.test_stability benchmarks.test_catalog benchmarks.test_ladder_analysis benchmarks.test_progressive_validation
+        run: >-
+          python -m unittest
+          benchmarks.test_benchmarks
+          benchmarks.test_stability
+          benchmarks.test_catalog
+          benchmarks.test_ladder_analysis
+          benchmarks.test_progressive_validation
+          benchmarks.test_tree_benchmarks
+          benchmarks.test_capability_environment
+          benchmarks.test_dependency_tree_validation
+          benchmarks.test_retrieval_analysis
+          benchmarks.test_retrieval_integrity
+          benchmarks.test_evolution_workflow
+          benchmarks.test_measured_transcript
+          benchmarks.test_measured_process
+          benchmarks.test_delivery_cases
+          benchmarks.test_active_runner
+          benchmarks.test_release_gate
+      - name: Validate execution and retrieval topology contracts
+        working-directory: practical-coding
+        run: |
+          python benchmarks/tree_validation.py --self-test
+          python benchmarks/dependency_tree_validation.py --self-test
+          python benchmarks/retrieval_validation.py --self-test
+          python benchmarks/retrieval_analysis.py /dev/null --self-test
+      - name: Validate explicit evolution workflow contract
+        working-directory: practical-coding
+        run: python benchmarks/evolution_workflow_validation.py --self-test --output benchmark-results/evolution-workflow-contract.json
+      - name: Check manual-only Decision layout
+        run: |
+          test ! -e practical-coding/references/decision.md
+          test -e practical-coding/references/manual/decision.md
+      - name: Check progressive Retrieval layout
+        run: |
+          test -e practical-coding/references/retrieval/SKILL.md
+          test -e practical-coding/references/retrieval/direct.md
+          test -e practical-coding/references/retrieval/discovery.md
+          test -e practical-coding/references/retrieval/evidence.md
+          test -e practical-coding/references/retrieval/structural.md
+          test -e practical-coding/benchmarks/capability_manifest.json
+      - name: Ensure removed ranked-search integration is absent from active surfaces
+        run: |
+          ! grep -R -i -E 'fff-style|pi-fff|\bFFF\b' \
+            practical-coding/SKILL.md \
+            practical-coding/AGENTS.md \
+            practical-coding/README.md \
+            practical-coding/README_zh.md \
+            practical-coding/CONTRIBUTING.md \
+            practical-coding/examples \
+            practical-coding/references \
+            practical-coding/agents \
+            practical-coding/docs/CAPABILITY_LAYER.md \
+            practical-coding/benchmarks/README.md \
+            practical-coding/benchmarks/capability_manifest.json
       - name: Check Codex default_prompt references the skill as $skill-name
         run: grep -qF '$practical-coding' practical-coding/agents/openai.yaml
+      - name: Ensure retired execution-state experiment is absent
+        run: |
+          retired_files="$({
+            find practical-coding/runtime practical-coding/tests practical-coding/benchmarks \
+              -maxdepth 1 -type f \
+              \( -name '*skill_state*' -o -name 'test_skill_state*' \) \
+              -print 2>/dev/null || true
+            find practical-coding/evolution/experiments \
+              -maxdepth 1 -type f -name 'skill-state-*' -print 2>/dev/null || true
+          })"
+          if test -n "$retired_files"; then
+            printf 'retired execution-state files remain on an active surface:\n%s\n' "$retired_files"
+            exit 1
+          fi
+          test ! -e practical-coding/docs/SKILL_STATE.md
+          test ! -e practical-coding/docs/SKILL_STATE_HOST.md
+          test ! -e practical-coding/docs/SKILL_STATE_INVARIANTS.md
+          test -e practical-coding/evolution/rejected/execution-state/README.md
+          ! grep -R -E \
+            'runtime/skill_state|SKILL_STATE_MODEL_GATE|state-history-free|Execution State Projection|"execution_state"' \
+            practical-coding/SKILL.md \
+            practical-coding/AGENTS.md \
+            practical-coding/README.md \
+            practical-coding/README_zh.md \
+            practical-coding/agents/openai.yaml \
+            practical-coding/benchmarks/README.md \
+            practical-coding/benchmarks/tree_topology.json
       - name: Ensure legacy local graph runtime is not reintroduced
         run: |
           test ! -e practical-coding/runtime/codebase_memory.py
           test ! -e practical-coding/runtime/_codebase_memory_impl.py
           ! grep -R "runtime/codebase_memory.py" practical-coding/SKILL.md practical-coding/AGENTS.md practical-coding/README.md practical-coding/references
+      - name: Run pinned evaluator regression benchmark
+        working-directory: practical-coding
+        run: python benchmarks/benchmark_retrieval_integrity.py --output benchmark-results/evaluator-regression.json
+      - name: Run prompt and executable-oracle controls
+        working-directory: practical-coding
+        run: python benchmarks/benchmark_readiness.py --output benchmark-results/readiness.json
+      - name: Package tracked source and revision
+        working-directory: practical-coding
+        run: |
+          mkdir -p benchmark-results
+          git rev-parse HEAD > benchmark-results/source-revision.txt
+          git archive --format=tar --output=benchmark-results/source.tar HEAD
+          sha256sum benchmark-results/source.tar > benchmark-results/source.sha256
+      - name: Upload auditable validation artifacts
+        uses: actions/upload-artifact@v4
+        with:
+          name: validation-${{ github.sha }}
+          path: practical-coding/benchmark-results/
+          if-no-files-found: error
+          retention-days: 7

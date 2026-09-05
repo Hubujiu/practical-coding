@@ -1,28 +1,23 @@
 # Implementation
 
-Load this module only when a change must coordinate an unmapped contract or invariant, touches a material risk boundary where direct execution would be unsafe, or when sufficient evidence for a risky change is unresolved. Produce only the change map and evidence plan the task needs; this is not a mandatory coding stage.
+**Tree depth: 1**
 
-## Work Locally
+Enter only when an unresolved governing contract, coordinated guarantee, or material risk/evidence boundary blocks safe change. Settled local changes stay at Core.
 
-- Identify the authoritative contract or invariant and the minimum producers, consumers, adapters, data, and checks that must move together.
-- Read only those paths and their material callers/dependencies; leave nearby cleanup opportunities and unrelated code alone.
-- For a risk boundary, identify the narrowest authoritative point that owns the guarantee before editing. A single-file change can still belong here when the boundary is material.
-- Preserve public compatibility unless the requirement authorizes a break. When migration is required, choose one authoritative internal representation and keep compatibility at the narrowest boundary.
-- Match project conventions and make the smallest coherent end-to-end diff.
+## Establish the Boundary
 
-## Keep Code Small
+Identify the authoritative invariant and minimum producers, consumers, adapters, state, and checks that must move together. Read only their material paths. Mapping/report-only requests authorize no implementation.
 
-Reuse existing helpers and patterns. Add an interface, adapter, wrapper, switch, or generic utility only for a demonstrated current boundary. Comments explain intent or constraints code cannot express.
+Preserve public compatibility unless a break is authorized. For migrations, choose one internal representation and keep temporary compatibility at the narrowest required boundary. Put validation where the guarantee is owned, before side effects.
 
-## Match Error Handling to Real Boundaries
+## Implement and Falsify
 
-Put validation once at the narrowest authoritative boundary. Add retries, fallbacks, broad catches, compatibility layers, or recovery only for a concrete failure mode. Preserve required safety, permission, integrity, and compatibility guarantees without expanding into unrelated hardening.
+Make the smallest reachable end-to-end change using existing primitives. Add retries, wrappers, fallbacks, or dependencies only for a demonstrated boundary; nearby extensibility is not a requirement.
 
-## Prove the Change
+Choose evidence that could falsify each material claim, not just the easiest green test. Preserve required build gates. Exercise old/new callers for compatibility, rollback/restart for persistence, race behavior for concurrency, and valid plus representative rejected inputs for permissions. Confirm rejection before side effects. Use broader integration checks only when the changed guarantee spans that boundary.
 
-Map each material claim or risk to the cheapest check that can falsify it: direct exercise or render; compile/type/lint; an existing focused test; one new focused test; a boundary integration test; the full suite only for a broad surface or required gate.
+Report checks actually executed and any missing prerequisites. Never infer behavioral correctness from a diff or a passing format check alone.
 
-For persistence or concurrency, exercise restart/rollback/race behavior when relevant. For compatibility, exercise materially affected old and new callers. For security or permissions, include one valid case and the smallest representative rejection cases, and verify rejection happens before side effects.
+## Local Router
 
-Claim only what fresh evidence supports. If the environment blocks an appropriate check, report the limitation and remaining uncertainty. If implementation exposes another event, return it to the router instead of loading another module here.
-
+This node is a leaf. Resolve ordinary technical choices with project convention or the smallest sufficient reversible option; do not automatically open Decision. Ask only a blocking user-owned choice with no safe default. Correct failures introduced by this candidate here. Return a genuinely different unexplained top-level failure to Core.
