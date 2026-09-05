@@ -67,13 +67,13 @@ Runtime retrieval uses the strongest already-available capability appropriate to
 
 Once candidate paths or symbols are known, stop inventory and switch to bounded line ranges or symbol reads; do not dump whole files or repeat broad discovery. Batch independent bounded reads only when each source is required by a current claim.
 
-Use a structural code index only at R3, when the unresolved answer is a call, dependency, ownership, control/data-flow, or impact relationship. Provider output proposes evidence; current source establishes it.
+Let the loaded Retrieval node own structural-index use; Core must not name or select a distant retrieval stage. Provider output proposes evidence; current source establishes it.
 
 ## Navigation Boundary
 
 Load `references/navigation.md` only when the unresolved question is which bounded repository area should be searched. Navigation returns a small topology map; it does not perform semantic evidence discovery, choose a search provider, or tour the repository.
 
-After the area is bounded, use the Retrieval tree to identify the concrete evidence. If the target is already known, skip Navigation, load the Retrieval root, and let that root start at R0.
+After the area is bounded, use the Retrieval tree to identify the concrete evidence. If the target is already known, skip Navigation, load the Retrieval root, and follow that root's immediate-child rule.
 
 ## Execution Output Layer
 

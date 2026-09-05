@@ -1,0 +1,78 @@
+{
+  "benchmark_kind": "evaluator-regression",
+  "model_executed": false,
+  "baseline_ref": "942f0aa17bdac381ad50c544683c88e6320e6cf1",
+  "baseline_blob": "654c6b6854f2d727731b7b83158399fdd9a43f77",
+  "candidate_analysis_sha256": "7032e39f1f61790130133f4fa1d6ebc02ff6bb45047eccd03bf01a3644520471",
+  "cases": [
+    {
+      "name": "complete_shallow_success",
+      "baseline_pass": true,
+      "candidate_pass": true
+    },
+    {
+      "name": "complete_lower_failure_then_success",
+      "baseline_pass": true,
+      "candidate_pass": true
+    },
+    {
+      "name": "empty_is_not_stable",
+      "baseline_pass": true,
+      "candidate_pass": true
+    },
+    {
+      "name": "false_is_not_success",
+      "baseline_pass": true,
+      "candidate_pass": true
+    },
+    {
+      "name": "missing_lower_ceiling_is_unknown",
+      "baseline_pass": false,
+      "candidate_pass": true
+    },
+    {
+      "name": "indeterminate_lower_ceiling_is_unknown",
+      "baseline_pass": false,
+      "candidate_pass": true
+    },
+    {
+      "name": "duplicate_repetition_rejected",
+      "baseline_pass": false,
+      "candidate_pass": true
+    },
+    {
+      "name": "noncontiguous_repetitions_rejected",
+      "baseline_pass": false,
+      "candidate_pass": true
+    },
+    {
+      "name": "setup_contamination_rejected",
+      "baseline_pass": false,
+      "candidate_pass": true
+    },
+    {
+      "name": "provider_ceiling_violation_rejected",
+      "baseline_pass": false,
+      "candidate_pass": true
+    },
+    {
+      "name": "adaptive_exposes_missing_ceiling_repetition",
+      "baseline_pass": false,
+      "candidate_pass": true
+    },
+    {
+      "name": "timeouts_remain_in_success_denominator",
+      "baseline_pass": false,
+      "candidate_pass": true
+    },
+    {
+      "name": "timeout_costs_remain_in_aggregate",
+      "baseline_pass": false,
+      "candidate_pass": true
+    }
+  ],
+  "baseline_passed": 4,
+  "candidate_passed": 13,
+  "total": 13,
+  "scope": "Synthetic evaluator counterexamples; no routing accuracy, LLM token saving, or provider-performance claim."
+}

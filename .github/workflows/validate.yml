@@ -36,6 +36,7 @@ jobs:
           benchmarks.test_capability_environment
           benchmarks.test_dependency_tree_validation
           benchmarks.test_retrieval_analysis
+          benchmarks.test_retrieval_integrity
           benchmarks.test_evolution_workflow
       - name: Validate execution and retrieval topology contracts
         working-directory: practical-coding

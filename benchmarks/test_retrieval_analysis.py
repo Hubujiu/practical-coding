@@ -35,6 +35,10 @@ class RetrievalAnalysisTests(unittest.TestCase):
 
     def test_any_failed_repetition_prevents_stable_pass(self) -> None:
         rows = [
+            row("t", "retrieval-cap:NONE", False, repetition=1),
+            row("t", "retrieval-cap:NONE", False, repetition=2),
+            row("t", "retrieval-cap:R0_DIRECT", False, repetition=1),
+            row("t", "retrieval-cap:R0_DIRECT", False, repetition=2),
             row("t", "retrieval-cap:R1_DISCOVERY", True, repetition=1),
             row("t", "retrieval-cap:R1_DISCOVERY", False, repetition=2),
             row("t", "retrieval-cap:R2_EVIDENCE", True, repetition=1),
@@ -47,6 +51,10 @@ class RetrievalAnalysisTests(unittest.TestCase):
 
     def test_missing_repetition_prevents_a_false_shallow_minimum(self) -> None:
         rows = [
+            row("t", "retrieval-cap:NONE", False, repetition=1),
+            row("t", "retrieval-cap:NONE", False, repetition=2),
+            row("t", "retrieval-cap:R0_DIRECT", False, repetition=1),
+            row("t", "retrieval-cap:R0_DIRECT", False, repetition=2),
             row("t", "retrieval-cap:R1_DISCOVERY", True, repetition=1),
             row("t", "retrieval-cap:R2_EVIDENCE", True, repetition=1),
             row("t", "retrieval-cap:R2_EVIDENCE", True, repetition=2),
@@ -55,7 +63,9 @@ class RetrievalAnalysisTests(unittest.TestCase):
             row("t", "adaptive", True, selected="R2_EVIDENCE", repetition=1),
         ]
         report = analysis.analyze(rows)
-        self.assertEqual(report["tasks"]["t"]["minimum_sufficient_retrieval_stage"], "R2_EVIDENCE")
+        # Missing R1/r2 cannot establish that R1 failed; R2 is not proven minimal.
+        self.assertIsNone(report["tasks"]["t"]["minimum_sufficient_retrieval_stage"])
+        self.assertEqual(report["adaptive_relation_counts"], {"minimum_unresolved": 1})
         self.assertFalse(report["tasks"]["t"]["stable_ceiling_pass"]["R1_DISCOVERY"])
 
     def test_no_passing_ceiling_is_quality_gap(self) -> None:

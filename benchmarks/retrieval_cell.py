@@ -12,6 +12,7 @@ from typing import Any, Mapping
 try:
     from . import capability_environment as capabilities
     from . import retrieval_trace
+    from .retrieval_integrity import IntegrityError, validate_cached_result
     from . import run_benchmarks as bench
     from . import tree_validation as base
     from .retrieval_prompt import (
@@ -22,13 +23,14 @@ try:
 except ImportError:  # direct script imports from the benchmarks directory
     import capability_environment as capabilities
     import retrieval_trace
+    from retrieval_integrity import IntegrityError, validate_cached_result
     import run_benchmarks as bench
     import tree_validation as base
     from retrieval_prompt import SETUP_COMMAND_RE, _cell_path, _provider_usage, provider_ceiling_violation, task_prompt
     from retrieval_topology import STAGE_INDEX, infer_trace, retrieval_declared_prefix, validate_trace
     from tree_cases import CASES, REPOSITORIES
 
-VERSION = "1.0"
+VERSION = "2.0"
 
 def run_cell(
     spec: tuple[str, str, int],
@@ -47,13 +49,22 @@ def run_cell(
     result_path = cell / "result.json"
     setup_path = cell / "capability-setup.json"
     manifest_sha = capabilities.manifest_fingerprint(manifest)
+    plan = getattr(args, "run_plan", None)
+    if plan is None or list(spec) not in plan.get("specs", []):
+        raise capabilities.CapabilitySetupError("cell requires a matching frozen run plan")
+    fingerprint = plan["experiment_fingerprint"]
     if result_path.is_file():
         if not setup_path.is_file():
             raise capabilities.CapabilitySetupError(f"measured result has no setup receipt: {result_path}")
         setup = json.loads(setup_path.read_text(encoding="utf-8"))
         if setup.get("manifest_sha256") != manifest_sha:
             raise capabilities.CapabilitySetupError(f"stale setup receipt: {setup_path}")
-        return json.loads(result_path.read_text(encoding="utf-8"))
+        record = json.loads(result_path.read_text(encoding="utf-8"))
+        try:
+            validate_cached_result(record, setup, plan, spec, manifest_sha)
+        except IntegrityError as exc:
+            raise capabilities.CapabilitySetupError(f"unsafe cached result {result_path}: {exc}") from exc
+        return record
 
     cell.mkdir(parents=True, exist_ok=True)
     workspace = cell / "workspace"
@@ -61,6 +72,7 @@ def run_cell(
         shutil.rmtree(workspace)
     base.prepare_workspace(repositories[case["repository"]], REPOSITORIES[case["repository"]]["commit"], workspace)
     setup = capabilities.prepare_workspace(workspace, case["repository"], manifest, preflight_report)
+    setup["experiment_fingerprint"] = fingerprint
     capabilities.write_report(setup_path, setup)
 
     if variant == "no-skill":
@@ -109,6 +121,7 @@ def run_cell(
 
     record: dict[str, Any] = {
         "schema_version": VERSION,
+        "experiment_fingerprint": fingerprint,
         "task_id": task_id,
         "repository": case["repository"],
         "family": case["family"],
@@ -121,6 +134,7 @@ def run_cell(
         "forced_after_completion": forced,
         "duration_seconds": duration,
         "tool_calls": parsed["tool_calls"],
+        "tool_output_bytes": sum(len(text.encode("utf-8")) for text in parsed.get("tool_outputs", [])),
         **parsed["usage"],
         "answer": parsed["answer"],
         "tool_commands": parsed["tool_commands"],

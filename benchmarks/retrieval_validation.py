@@ -8,7 +8,8 @@ import concurrent.futures
 import datetime as dt
 import json
 import os
-import statistics
+import shutil
+import subprocess
 import sys
 from pathlib import Path
 from typing import Any, Mapping
@@ -20,13 +21,15 @@ if str(HERE) not in sys.path:
 
 import capability_environment as capabilities
 import retrieval_cell as cell_runner
+from retrieval_analysis import arm_summary
+from retrieval_integrity import IntegrityError, make_plan, matrix_status, write_plan
 import retrieval_prompt as prompt_contract
 import retrieval_topology as topology_contract
 import run_benchmarks as bench
 import tree_validation as base
 from tree_cases import CASES
 
-VERSION = "1.0"
+VERSION = "2.0"
 MODEL = bench.MODEL
 REASONING = bench.REASONING
 STAGES = topology_contract.STAGES
@@ -49,24 +52,11 @@ _provider_usage = prompt_contract._provider_usage
 provider_ceiling_violation = prompt_contract.provider_ceiling_violation
 run_cell = cell_runner.run_cell
 
-def _mean(records: list[dict[str, Any]], key: str) -> float | None:
-    values = [float(record[key]) for record in records if record.get(key) is not None]
-    return statistics.mean(values) if values else None
-
-
 def summary(records: list[dict[str, Any]], runs: int, manifest: Mapping[str, Any], preflight_report: Mapping[str, Any]) -> dict[str, Any]:
-    arms: dict[str, Any] = {}
-    for variant in sorted({record["variant"] for record in records}):
-        selected = [record for record in records if record["variant"] == variant]
-        determinate = [record for record in selected if record.get("passed") is not None]
-        arms[variant] = {
-            "cells": len(selected),
-            "determinate": len(determinate),
-            "pass_rate": sum(record["passed"] is True for record in determinate) / len(determinate) if determinate else None,
-            "tokens_mean": _mean(determinate, "total_tokens"),
-            "duration_seconds_mean": _mean(determinate, "duration_seconds"),
-            "tool_calls_mean": _mean(determinate, "tool_calls"),
-        }
+    arms = {
+        variant: arm_summary([record for record in records if record["variant"] == variant])
+        for variant in sorted({record["variant"] for record in records})
+    }
     measured = [record for record in records if record.get("measurement_phase") == "measured"]
     return {
         "runs_per_cell": runs,
@@ -141,24 +131,48 @@ def main() -> int:
     if unknown:
         raise SystemExit(f"unknown cases: {', '.join(sorted(unknown))}")
 
+    codex = bench.resolve_codex(args.codex)
+    try:
+        probe = subprocess.run([codex, "--version"], capture_output=True, text=True,
+                               encoding="utf-8", errors="replace", timeout=30, check=True)
+    except (OSError, subprocess.SubprocessError) as exc:
+        raise capabilities.CapabilitySetupError(f"Codex preflight failed: {exc}") from exc
+    codex_version = (probe.stdout + probe.stderr).strip()
+    if not codex_version:
+        raise capabilities.CapabilitySetupError("Codex version probe returned no identity")
     preflight_report = capabilities.preflight(manifest, cwd=ROOT)
     repositories = base.resolve_repositories(args.repository_root.resolve(), args.repository)
     stamp = dt.datetime.now().strftime("%Y%m%d-%H%M%S")
     output = (args.output or ROOT / "benchmark-results" / f"retrieval-{stamp}").resolve()
     output.mkdir(parents=True, exist_ok=True)
-    capabilities.write_report(output / "capability-preflight.json", preflight_report)
 
     baseline_ref = args.baseline_ref or topology.get("baseline_ref")
     baseline_dir: Path | None = None
     if not args.current_only:
         if not baseline_ref:
             raise RuntimeError("baseline_ref is required unless --current-only is used")
-        baseline_dir = output / "baseline-skill"
-        if not (baseline_dir / "SKILL.md").is_file():
-            baseline_dir = bench.materialize_git_skill(str(baseline_ref), baseline_dir)
+        resolved = subprocess.run(
+            ["git", "rev-parse", "--verify", f"{baseline_ref}^{{commit}}"], cwd=ROOT,
+            capture_output=True, text=True, timeout=30, check=True,
+        )
+        baseline_ref = resolved.stdout.strip()
+        baseline_dir = output / "baseline-skill" / baseline_ref
+        # Re-extract the pinned source: a pre-existing directory is not a receipt.
+        if baseline_dir.exists():
+            shutil.rmtree(baseline_dir)
+        baseline_dir = bench.materialize_git_skill(str(baseline_ref), baseline_dir)
 
     eval_home = bench.prepare_eval_home(output / "eval-home")
     specs = build_specs(args.runs, current_only=args.current_only, selected_cases=selected_cases)
+    args.run_plan = make_plan(
+        ROOT, baseline_dir,
+        {"model": MODEL, "reasoning": REASONING, "timeout": args.timeout,
+         "codex": codex, "codex_version": codex_version, "baseline_ref": baseline_ref,
+         "runs": args.runs},
+        manifest, topology, preflight_report, specs,
+    )
+    write_plan(output / "run-plan.json", args.run_plan)
+    capabilities.write_report(output / "capability-preflight.json", preflight_report)
     records: list[dict[str, Any]] = []
     with concurrent.futures.ThreadPoolExecutor(max_workers=args.workers) as pool:
         futures = [
@@ -179,6 +193,10 @@ def main() -> int:
         for future in concurrent.futures.as_completed(futures):
             records.append(future.result())
 
+    final_plan = make_plan(ROOT, baseline_dir, args.run_plan["settings"], manifest,
+                           topology, preflight_report, specs)
+    if final_plan != args.run_plan:
+        raise IntegrityError("Skill or harness changed during measurement; choose a new --output directory")
     records.sort(key=lambda row: (row["task_id"], row["variant"], row["repetition"]))
     rows_path = output / "results.jsonl"
     rows_path.write_text("".join(json.dumps(row, ensure_ascii=False) + "\n" for row in records), encoding="utf-8")
@@ -191,16 +209,19 @@ def main() -> int:
             "topology": topology,
             "baseline_ref": baseline_ref,
             "results_jsonl": str(rows_path),
+            "run_plan": str(output / "run-plan.json"),
+            "experiment_fingerprint": args.run_plan["experiment_fingerprint"],
+            "matrix": matrix_status(records, args.run_plan),
         }
     )
     (output / "report.json").write_text(json.dumps(report, ensure_ascii=False, indent=2) + "\n", encoding="utf-8")
     print(json.dumps(report, ensure_ascii=False, indent=2))
-    return 0
+    return 0 if report["matrix"]["complete"] else 2
 
 
 if __name__ == "__main__":
     try:
         raise SystemExit(main())
-    except capabilities.CapabilityError as exc:
+    except (capabilities.CapabilityError, IntegrityError) as exc:
         print(f"retrieval benchmark setup failed: {exc}", file=sys.stderr)
         raise SystemExit(2)
