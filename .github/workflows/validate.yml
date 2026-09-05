@@ -16,6 +16,8 @@ jobs:
         with:
           # The spec requires the skill name to match its directory name.
           path: practical-coding
+          fetch-depth: 0
+          persist-credentials: false
       - uses: actions/setup-python@v5
         with:
           python-version: "3.12"
@@ -108,3 +110,20 @@ jobs:
           test ! -e practical-coding/runtime/codebase_memory.py
           test ! -e practical-coding/runtime/_codebase_memory_impl.py
           ! grep -R "runtime/codebase_memory.py" practical-coding/SKILL.md practical-coding/AGENTS.md practical-coding/README.md practical-coding/references
+      - name: Run pinned evaluator regression benchmark
+        working-directory: practical-coding
+        run: python benchmarks/benchmark_retrieval_integrity.py --output benchmark-results/evaluator-regression.json
+      - name: Package tracked source and revision
+        working-directory: practical-coding
+        run: |
+          mkdir -p benchmark-results
+          git rev-parse HEAD > benchmark-results/source-revision.txt
+          git archive --format=tar --output=benchmark-results/source.tar HEAD
+          sha256sum benchmark-results/source.tar > benchmark-results/source.sha256
+      - name: Upload auditable validation artifacts
+        uses: actions/upload-artifact@v4
+        with:
+          name: validation-${{ github.sha }}
+          path: practical-coding/benchmark-results/
+          if-no-files-found: error
+          retention-days: 7
