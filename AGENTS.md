@@ -1,53 +1,23 @@
-# Practical Coding
+# Practical Coding maintenance
 
-This repository is an Agent Skill. Apply [`SKILL.md`](SKILL.md) when working from this checkout.
+This repository is an Agent Skill. Apply [`SKILL.md`](SKILL.md); it is the runtime authority. Do not duplicate its routers here or preload reference siblings. Execution, Retrieval, provider capabilities, output transport, and maintenance are separate concerns.
 
-## Runtime model
+## Boundaries
 
-1. Apply Core at execution-tree depth 0.
-2. Core knows only its immediate automatic execution children: Debugging and Implementation.
-3. A loaded execution node owns only its own next-level router. Do not preload siblings or descendants and do not send descendant selection back to Core.
-4. Current Debugging and Implementation nodes are leaves until benchmark evidence earns a child.
-5. Retrieval is a separate progressive tree. Its depth describes the unresolved information problem, not execution complexity or tool strength.
-6. Host capabilities such as ranked search, graph retrieval, and output compaction are replaceable infrastructure outside both trees.
-7. Automatic routing must converge toward resolving the current blocker; it must not reopen deliberation.
+Core knows only its immediate Debugging and Implementation children. They remain leaves until independent capability ablation earns a child. Retrieval expands through each loaded node's immediate-child router. Unknown locations or relationships alone do not activate Implementation. Decision and clarification stay explicit-only manual modes; alternatives found while coding do not activate them.
 
-## Root Router
+No automatic route opens maintenance workflows. Ordinary runtime does not read `evolution/`. Preserve the retired execution-state proposal and rejected experiments as historical evidence; do not reactivate them through synonyms or compatibility wrappers. Never add a provider-named node or restore the removed ranked-search integration.
 
-| Present unresolved blocker | Immediate child |
-|---|---|
-| Observed failure still lacks an evidenced cause | [`references/debugging.md`](references/debugging.md) |
-| Unknown contract/invariant, coordinated guarantee, material risk boundary, or evidence requirement blocks safe execution | [`references/implementation.md`](references/implementation.md) |
+## Changes and evidence
 
-A known target and settled behavior/boundary/check stay at Core even when risk nouns are present. A read-only mapping request is Core plus Retrieval.
+Read `CONTRIBUTING.md` for maintenance policy. Before changing runtime behavior, record evidence, one attributable hypothesis, and frozen validation under `evolution/`; consolidate repeated mechanisms in its wiki. Do not put benchmark case nouns or expected numeric routes into runtime wording. Promote/split/merge/collapse/remove nodes only after quality-qualified ablation, not symmetry or file count.
 
-## Manual modes
+Iteration uses n=1. Freeze the candidate before the complete n=3 baseline/no-skill comparison. Keep historical results immutable. A scorer fix invalidates both comparison arms, not just the candidate. Public regressions are not held-out generalization evidence.
 
-Manual modes are outside the automatic trees:
+## Active evaluation
 
-- [`references/manual/decision.md`](references/manual/decision.md) only for an explicit current request to compare options, choose a technology/architecture/dependency/API/data model, or perform decision analysis;
-- [`references/manual/clarification.md`](references/manual/clarification.md) only for an explicit current request to be interviewed, grilled, questioned, or to clarify requirements before implementation.
+`benchmarks/retrieval_validation.py` owns the measured runner for source analysis and executable delivery. `dependency_tree_validation.py` selects the execution axis; historical monkey-patch adapters are not active entry points. `release_gate.py` checks the complete engineering matrix and raw receipts. Commands, acceptance targets, and limitations are in `benchmarks/DELIVERY_READINESS.md`.
 
-No automatic node may route to a manual mode. Ordinary technical choices discovered during execution use the established project convention or the smallest sufficient reversible option. If a user-owned choice has no safe default, ask the minimum blocking question in the current context without opening Decision.
+Every measured profile requires all pinned providers. Initialize indexes, download models, resolve dependencies, and warm first builds before measurement. Missing providers abort; never silently use mocks or fallback as provider evidence. Normal runtime still supports bounded native-source fallback.
 
-## Navigation and Retrieval
-
-Navigation answers **which bounded repository area** should be searched. Load [`references/navigation.md`](references/navigation.md) only when that map is genuinely unresolved; it must return a compact topology and stop.
-
-Retrieval answers **which concrete evidence** resolves the current claim. Load [`references/retrieval/SKILL.md`](references/retrieval/SKILL.md), then follow only the immediate child declared by the currently loaded node. The runtime root must not reproduce the complete topology from the benchmark manifest or select a distant descendant directly.
-
-Do not route by provider name. Runtime fallback remains lossless when a ranked or graph provider is unavailable. The dependency-enabled benchmark is different: it fails closed unless every provider in [`benchmarks/capability_manifest.json`](benchmarks/capability_manifest.json) is installed and successfully pre-initialized.
-
-## Execution output
-
-Output compaction is a cross-cutting execution layer. A host adapter should make it transparent where command hooks exist; otherwise use the thinnest wrapper instruction available. It may reduce noisy shell, test, build, and Git output, but it must preserve semantics, exit status, failures, and material verification evidence. It is never a Retrieval or execution-tree node.
-
-## Evolution
-
-`evolution/` is maintainer knowledge and must not enter ordinary runtime context. The trees are experiment results, not fixed taxonomies.
-
-Use [`benchmarks/tree_topology.json`](benchmarks/tree_topology.json), [`benchmarks/dependency_tree_validation.py`](benchmarks/dependency_tree_validation.py), [`benchmarks/retrieval_validation.py`](benchmarks/retrieval_validation.py), [`benchmarks/tree_analysis.py`](benchmarks/tree_analysis.py), and [`benchmarks/retrieval_analysis.py`](benchmarks/retrieval_analysis.py) for active dependency-enabled topology work. Cases must not encode a gold automatic node or fixed numeric execution level. Derive minimum-sufficient nodes by capability ablation, then use repeated routing ambiguity or quality failures to propose add/split/merge/promote/collapse/remove changes.
-
-Iterations use n=1. Only a frozen candidate receives the complete n=3 baseline/no-skill comparison. Provider installation, model download, first index, dependency resolution, and first build warm-up are setup work and are never included in benchmark token, duration, or tool-call comparisons.
-
-Preserve v1.5 and rejected experiments as historical evidence rather than rewriting them for the current topology. The execution-state/history-free proposal is retired under [`evolution/rejected/execution-state/`](evolution/rejected/execution-state/); do not restore it without a new frozen hypothesis and independent evidence.
+Bind candidate, baseline, harness, model, provider versions, task matrix, and raw artifacts to the run. Missing telemetry is unknown, not zero. A path mentioned in a command is not a verified read. Preserve failures, exits, and material evidence through output compaction. Do not claim model performance from deterministic tests or label targets as measurements.

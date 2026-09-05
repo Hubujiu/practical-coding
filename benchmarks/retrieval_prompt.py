@@ -3,6 +3,7 @@
 from __future__ import annotations
 
 import re
+import os
 from pathlib import Path
 from typing import Any, Mapping
 
@@ -56,7 +57,6 @@ def capability_note() -> str:
         "ranked retrieval via `zg query --human <intent> --limit <k>`, structural retrieval via "
         "`codebase-memory-mcp cli` (use `list_projects` before a project query), and noisy command output compaction via `rtk`. "
         "Do not install, initialize, download models, build indexes, or install project packages during measured execution. "
-        "Choose Retrieval depth by the unresolved information problem, never by provider name. "
         "All benchmark arms receive this same note.\n"
         "</benchmark-capabilities>"
     )
@@ -66,14 +66,24 @@ def task_prompt(case: Mapping[str, Any], loaded: str, variant: str, topology: Ma
     suffix = [capability_note()]
     if variant.startswith("retrieval-cap:"):
         suffix.append(retrieval_ceiling_instruction(topology, variant.split(":", 1)[1]))
-    if variant == "adaptive" or variant.startswith("retrieval-cap:"):
+    if variant.startswith("cap:"):
+        try:
+            from .tree_validation import ceiling_instruction
+        except ImportError:
+            from tree_validation import ceiling_instruction
+        suffix.append(ceiling_instruction(dict(topology), variant.split(":", 1)[1]))
+    if variant == "adaptive" or variant.startswith(("retrieval-cap:", "cap:")):
         suffix.append(instrumentation(topology))
+    shell = "Use PowerShell-compatible commands." if os.name == "nt" else "Use commands compatible with the host shell."
+    scope = ("Implement the requested change within the allowed task files."
+             if case.get("family") == "executable-delivery" else "Preserve a clean working tree; this is a read-only task.")
     return (
-        f"Frozen retrieval-tree task {case['task_id']} ({case['family']}).\n\n{case['prompt']}\n\n"
-        "Use PowerShell-compatible commands. Stay within this repository and preserve a clean working tree. "
-        "Cite concrete current-source paths/symbols and fresh command evidence when the task needs repository evidence.\n\n"
-        f"<benchmark-variant>{variant}</benchmark-variant>\n{loaded}\n\n" + "\n\n".join(suffix)
+        f"{case['prompt']}\n\n{shell} {scope} Stay inside the task repository except for explicitly supplied Skill references. "
+        "Do not access benchmark cases, scorers, reference solutions, or another arm's files. "
+        "Cite current source and fresh command results when evidence is required.\n\n"
+        f"{loaded}\n\n" + "\n\n".join(suffix)
     )
+
 
 
 def build_specs(runs: int, *, current_only: bool, selected_cases: set[str]) -> list[tuple[str, str, int]]:

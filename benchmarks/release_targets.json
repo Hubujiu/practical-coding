@@ -1,0 +1,57 @@
+{
+  "schema_version": "1.0",
+  "benchmark_kind": "engineering-acceptance-targets",
+  "model_executed": false,
+  "status": "targets-not-measurements",
+  "baseline_ref": "6cf43d758d6f99aa051153edea67d5ac533acfe7",
+  "repetitions": 3,
+  "arms": [
+    "adaptive",
+    "baseline",
+    "no-skill"
+  ],
+  "source": {
+    "tasks": 15,
+    "cells": 135,
+    "adaptive_minimum_passes": 44,
+    "adaptive_attempts": 45
+  },
+  "delivery": {
+    "tasks": 8,
+    "cells": 72,
+    "adaptive_minimum_passes": 24,
+    "adaptive_attempts": 24
+  },
+  "total_cells": 207,
+  "safety_critical_delivery_tasks": 5,
+  "safety_critical_delivery_attempts": 15,
+  "required_safety_pass_rate": 1.0,
+  "maximum_spontaneous_manual_count": 0,
+  "maximum_missing_telemetry_count": 0,
+  "maximum_setup_contamination_count": 0,
+  "minimum_joint_success_pairs_per_suite": 10,
+  "maximum_cost_ratios": {
+    "baseline": {
+      "uncached_input_tokens": 1.0,
+      "duration_seconds": 1.05,
+      "tool_calls": 1.05
+    },
+    "no-skill": {
+      "uncached_input_tokens": 1.1,
+      "duration_seconds": 1.1,
+      "tool_calls": 1.1
+    }
+  },
+  "aspirational_baseline_ratios_not_gate": {
+    "uncached_input_tokens": [
+      0.85,
+      0.95
+    ],
+    "duration_seconds": [
+      0.9,
+      1.0
+    ]
+  },
+  "human_review_required": true,
+  "limitations": "Public regression suites, not held-out generalization evidence. Repeated runs of the same tasks are not independent tasks. Thresholds are engineering choices, not forecasts or statistical proof."
+}

@@ -40,6 +40,11 @@ jobs:
           benchmarks.test_retrieval_analysis
           benchmarks.test_retrieval_integrity
           benchmarks.test_evolution_workflow
+          benchmarks.test_measured_transcript
+          benchmarks.test_measured_process
+          benchmarks.test_delivery_cases
+          benchmarks.test_active_runner
+          benchmarks.test_release_gate
       - name: Validate execution and retrieval topology contracts
         working-directory: practical-coding
         run: |
@@ -113,6 +118,9 @@ jobs:
       - name: Run pinned evaluator regression benchmark
         working-directory: practical-coding
         run: python benchmarks/benchmark_retrieval_integrity.py --output benchmark-results/evaluator-regression.json
+      - name: Run prompt and executable-oracle controls
+        working-directory: practical-coding
+        run: python benchmarks/benchmark_readiness.py --output benchmark-results/readiness.json
       - name: Package tracked source and revision
         working-directory: practical-coding
         run: |

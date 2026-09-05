@@ -1,34 +1,19 @@
 # Manual Decision
 
-This mode is outside the automatic execution tree.
-
-Load it only when the current user explicitly asks to compare options, choose a technology or architecture, recommend among dependencies/APIs/data models/compatibility strategies, or otherwise perform decision analysis. The existence of alternatives, ambiguity, risk, or a technical choice discovered during execution does not activate this mode.
-
-## Decision Frontier
-
-Resolve discoverable facts from the repository and authoritative sources before asking the user. Work only on choices whose prerequisites are already known. Ask only about user-owned scope, compatibility, risk tolerance, cost, or preference when at least two plausible answers lead to materially different next actions and choosing the wrong default costs more than one interaction.
-
-For each necessary question, explain why it matters, recommend one option with the reason, and state the strongest trade-off. Ask every independent decision on the current frontier in one round; defer dependent questions. If uncertainty is cheap and reversible, choose the repository or platform default.
-
-Use a compact stable shape when a user choice is needed:
-
-```text
-Q<n> — Decision: <one consequential question>
-Recommendation: <one position and why>
-Trade-off: <the strongest cost or viable alternative>
-```
+Outside both automatic trees. Enter only for the current explicit request to compare or select options. Alternatives, ambiguity, or risk discovered while coding do not activate this mode.
 
 ## Resolve
 
-1. State the exact decision and constraints that distinguish acceptable options.
-2. Check, in order: established project pattern, standard library, platform/framework, installed dependency, then mature maintained external implementation.
-3. Keep at most three viable options and compare only material fit, correctness, compatibility, operational, maintenance, and migration differences.
-4. Select the smallest option that fully satisfies current requirements. Do not create an abstraction, dependency, wrapper, or extension point without a present need.
+Establish the decision, constraints, and discoverable repository facts first. Prefer the established pattern, standard library/platform, installed dependency, then a maintained external implementation. Compare at most three viable options on differences that can change the outcome. Check authoritative sources for external API, maintenance, license, and compatibility claims.
 
-Research only when local evidence cannot resolve a lasting choice or an external dependency is being considered. Prefer official and maintained sources; verify API fit, maintenance, license, and known constraints.
+Recommend the smallest option that satisfies current requirements and state its strongest trade-off. Ask only user-owned questions whose plausible answers materially change the decision and have no safe reversible default. Batch independent questions; do not ask facts the repository can answer.
 
-When the requested decision is resolved, stop this mode. Return the settled result to Core as input. Do not route directly from this file to Debugging, Implementation, Clarification, or any descendant.
+When a user choice is required, use:
 
-## Durable Decisions
+```text
+Q<n> — Decision: <consequential question>
+Recommendation: <position and reason>
+Trade-off: <strongest cost or viable alternative>
+```
 
-Record the decision only if its reason is not evident in code, future maintainers will likely reconsider it, and the project already has an appropriate mechanism or the user requested one.
+Stop when the decision is resolved and return it to Core. Do not chain into another manual mode or execution child. Implementation requires authorization. Record a durable decision only when requested or required by an established project mechanism.

@@ -7,6 +7,7 @@ from __future__ import annotations
 
 import hashlib
 import json
+import os
 from collections import Counter
 from pathlib import Path
 from typing import Any, Mapping, Sequence
@@ -94,7 +95,7 @@ def write_plan(path: Path, plan: Mapping[str, Any]) -> None:
 
 def validate_cached_result(
     record: Mapping[str, Any], setup: Mapping[str, Any], plan: Mapping[str, Any],
-    spec: tuple[str, str, int], manifest_sha: str,
+    spec: tuple[str, str, int], manifest_sha: str, *, cell_dir: Path | None = None,
 ) -> None:
     verify_plan(plan)
     fingerprint = plan.get("experiment_fingerprint")
@@ -110,6 +111,30 @@ def validate_cached_result(
     if (record.get("measurement_phase") != "measured"
             or record.get("setup_included_in_comparison") is not False):
         raise IntegrityError("cached result violates setup/measurement separation")
+
+    if cell_dir is not None:
+        if setup.get("cell") != list(spec):
+            raise IntegrityError("setup receipt has the wrong cell identity")
+        validate_artifacts(record, cell_dir)
+
+
+def artifact_hashes(cell_dir: Path) -> dict[str, str]:
+    names = ("prompt.txt", "round1.jsonl", "round1.stderr.txt", "capability-setup.json")
+    if (cell_dir / "submission.json").exists():
+        names += ("submission.json",)
+    return {name: hashlib.sha256((cell_dir / name).read_bytes()).hexdigest() for name in names}
+
+
+def validate_artifacts(record: Mapping[str, Any], cell_dir: Path) -> None:
+    expected = record.get("artifact_sha256")
+    if not isinstance(expected, dict) or expected != artifact_hashes(cell_dir):
+        raise IntegrityError("raw transcript, prompt, or setup evidence changed or is missing")
+
+
+def write_result(path: Path, record: Mapping[str, Any]) -> None:
+    temporary = path.with_suffix(path.suffix + ".tmp")
+    temporary.write_text(json.dumps(record, ensure_ascii=False, indent=2, allow_nan=False) + "\n", encoding="utf-8")
+    os.replace(temporary, path)
 
 
 def matrix_status(rows: list[dict[str, Any]], plan: Mapping[str, Any] | None) -> dict[str, Any]:
@@ -127,7 +152,8 @@ def matrix_status(rows: list[dict[str, Any]], plan: Mapping[str, Any] | None) ->
         flags = ("measured_setup_violation", "capability_ceiling_violation")
         observations = ("routing_trace_valid", "retrieval_reference_observation_ok")
         if (
-            "passed" not in row or (row["passed"] is not None and type(row["passed"]) is not bool)
+            (row.get("schema_version") == "3.0" and row.get("measurement_qualified") is not True)
+            or "passed" not in row or (row["passed"] is not None and type(row["passed"]) is not bool)
             or type(row.get("repetition")) is not int or row["repetition"] < 1
             or row.get("measurement_phase") != "measured"
             or row.get("setup_included_in_comparison") is not False

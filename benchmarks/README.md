@@ -1,174 +1,55 @@
 # Practical Coding benchmark chain
 
-The active experiment uses two independent evolvable trees:
+## Active 2.1-rc1 entry points
 
-- the automatic execution tree starts at Core and currently exposes Debugging and Implementation leaves;
-- the Retrieval tree progresses from R0 Direct Locate through R1 Ranked Discovery and R2 Evidence Expansion to the R3 Structural Trace leaf.
+| Entry | Purpose |
+| --- | --- |
+| `retrieval_validation.py` | Shared dependency-enabled source/delivery runner with Retrieval or execution ceilings |
+| `dependency_tree_validation.py` | Compatibility entry selecting the execution axis; no global monkey patches |
+| `release_gate.py` | Complete paired engineering gate with raw-evidence checks and replayed code oracles |
+| `benchmark_readiness.py` | Prompt-byte comparison and known-bad/reference-code oracle controls, not model scores |
+| `benchmark_retrieval_integrity.py` | Pinned old-versus-current evaluator regression checks |
 
-Decision and requirements interviewing are explicit-only manual modes. Ranked search, graph retrieval, and execution-output compaction are providers outside both trees.
+[DELIVERY_READINESS.md](DELIVERY_READINESS.md) is the current command and evidence contract. [release_targets.json](release_targets.json) contains unmeasured engineering targets. Running a gate without measured directories returns `not_run`, not a generated score.
 
-The accepted v1.5 flat Event Router and rejected fixed E/R ladder remain historical baselines. Do not use their fixed labels, numeric depths, or gold routes as the acceptance oracle for this experiment.
+## Experiment design
 
-## Active questions
+Execution and Retrieval are independent local trees. Current execution leaves are Debugging and Implementation. Retrieval progresses through Direct Locate, Ranked Discovery, Evidence Expansion, and Structural Trace. No task encodes a gold automatic node; capability ceilings determine minimum sufficient disclosure through measured ablation. Manual activation is explicit-only.
 
-1. Does the candidate deliver a correct, safe, evidence-backed result at least as reliably as the v1.5 baseline and no-skill arm?
-2. Which automatic execution nodes are minimum-sufficient under parent-versus-child ceilings?
-3. Does adaptive execution disclosure stop without spontaneous manual Decision or Clarification activation?
-4. Does Retrieval start at R0 and escalate only through the current node's immediate child?
-5. Does each Retrieval stage stop at the minimum current-source evidence required by the task?
-6. With the required provider surface held constant, does the candidate improve quality or measured context cost?
-7. Do repeated failures or boundary ambiguity justify growing, splitting, merging, promoting, collapsing, moving, or removing a node?
+The source suite preserves 15 frozen real-repository analysis tasks. Its largely lexical/source oracle and requested successful probes do not certify code delivery. The delivery suite adds eight public Python change tasks with independent post-run executable assertions. These public regressions are not held-out generalization evidence.
 
-## Runtime topology
+The full engineering comparison is 23 tasks × three arms × three repetitions = 207 cells. `--comparators-only` selects adaptive/baseline/no-skill without diagnostic ceilings. Use n=1 for iterative screening; only a frozen candidate receives the repeated full comparison. Changes to prompts, scorer, model, provider versions, or task matrix require new output directories and new paired evidence.
 
-- `tree_topology.json` — execution nodes, manual modes, Retrieval nodes and edges, trace modes, dependency profile, and frozen baseline ref;
-- `tree_cases.py` — topology-neutral real-repository tasks with no expected automatic execution route;
-- `tree_validation.py` — underlying quality/scoring runner and historical-compatible execution trace parser;
-- `dependency_tree_validation.py` — required active execution-tree runner that injects fail-closed provider setup before every measured turn;
-- `retrieval_trace.py` — canonical R0–R3 parser plus observed Retrieval-reference extraction;
-- `retrieval_validation.py` — independent Retrieval-stage ceiling runner;
-- `retrieval_analysis.py` — minimum-sufficient Retrieval-depth and provider-use analysis;
-- `tree_analysis.py` — minimum-sufficient execution-node and topology-change analysis;
-- `TREE_EVOLUTION.md` — interpretation and mutation rules.
+## Required capabilities and measurement boundary
 
-`tree_validation.py` remains directly runnable for historical reproduction and deterministic topology self-tests. Provider-enabled cost claims must use `dependency_tree_validation.py`.
+[capability_manifest.json](capability_manifest.json) pins ranked search, graph retrieval, and output compaction providers. All three are required for every measured profile, including the explicitly named Python delivery-fixture profile. There is no allow-missing mode. Normal runtime fallback remains separate from benchmark capability requirements.
 
-## Required capability profile
+Setup installs no model-facing prompt and ends before measured execution: provider probes, model assets, indexes, dependency resolution, and first test/build warmup. Setup receipts are retained separately and excluded from compared tokens, duration, and tool calls. No setup token estimate is used. Measured setup attempts are violations.
 
-`capability_manifest.json` declares the exact environment:
+Missing usage is unknown rather than zero. Failed and timed-out attempts remain visible. A printed command is not a successful probe; policy reads need successful reader events and matching current content. Candidate/baseline snapshots, model/reasoning, harness, settings, schedule, and raw artifacts are identity-bound. Cached results require matching receipts; aggregate data must match each cell. The release gate replays submitted-code oracles from archived source.
 
-| Role | Required executable | Purpose |
-|---|---|---|
-| ranked retrieval | `zg` | R1 candidate discovery and bounded R2 support |
-| graph retrieval | `codebase-memory-mcp` | R3 relationship tracing |
-| execution output | `rtk` | compact noisy shell/test/build/Git evidence |
-| repository warm-up | `node`/`npm`, `java`/`mvn` where declared | dependency and first-build parity |
+Cost reports distinguish all attempts from matched joint successes. Joint-success comparisons have selection bias and are not overall cost savings. n=3 repeats of a public task are not independent tasks and do not prove statistical non-inferiority.
 
-The active runner has no allow-missing mode. It resolves and probes every required executable before model cells are created. A provider setup or repository warm-up failure aborts the run rather than silently switching capability surfaces.
+## Reproduction
 
-## Measurement contract
-
-Every cell has an auditable setup receipt at:
-
-```text
-cells/<task>/<variant>/rNNN/capability-setup.json
-```
-
-The setup phase includes:
-
-- provider probes and local runtime/model initialization;
-- workspace `zg` indexing;
-- a per-workspace Codebase Memory graph in one explicit shared daemon/cache cohort;
-- `rtk` command-path verification;
-- repository-specific dependency resolution and first test/build warm-up;
-- post-setup clean-tree validation.
-
-Setup is marked `included_in_comparison: false`. It occurs before `run_codex`, produces no token estimate, and is absent from the `results.jsonl` measured usage fields. Only the later Codex transcript contributes input/output tokens, tool calls, and measured duration.
-
-All paired arms receive the same initialized providers and repository warm-up. A baseline may choose not to use a provider, but it may not receive a colder environment.
-
-The runner rejects reuse of a measured result without a matching setup receipt. It also marks measured provider installation/indexing commands as contract violations, including `zg index`, Codebase Memory indexing, `rtk init`, and package installation.
-
-## Retrieval trace contract
-
-The dependency runner emits only canonical modes:
-
-```text
-NONE
-R0_DIRECT
-R1_DISCOVERY
-R2_EVIDENCE
-R3_STRUCTURAL
-```
-
-A trace that reports a stage must list the actually loaded Retrieval references as a complete root-to-stage prefix. For example, `R2_EVIDENCE` requires:
-
-```text
-references/retrieval/SKILL.md
-references/retrieval/direct.md
-references/retrieval/discovery.md
-references/retrieval/evidence.md
-```
-
-Legacy `TARGETED`, `BOUNDED`, and `STRUCTURAL` values remain parser-compatible only so historical result files can still be read. The active dependency runner does not emit them.
-
-`NONE` means no Retrieval policy reference was loaded; repository-native exact reads remain available as the no-tree control. `R0_DIRECT` begins by loading the Retrieval root followed by `direct.md`.
-
-For active arms, the declared Retrieval prefix must exactly match Retrieval reference paths observed in command execution. A self-reported stage cannot stand in for an unread node, and a hidden deeper read is a trace failure.
-
-## Deterministic validation
-
-These checks do not claim that external providers are installed; they validate topology, fail-closed preflight, setup separation and shared-cohort handling, receipt structure, and measurement boundaries with controlled shims:
-
-```powershell
-python benchmarks/dependency_tree_validation.py --self-test
+```sh
+# Deterministic controls, no model or external providers required.
 python benchmarks/retrieval_validation.py --self-test
-python benchmarks/retrieval_analysis.py /dev/null --self-test
-python -m unittest `
-  benchmarks.test_tree_benchmarks `
-  benchmarks.test_capability_environment `
-  benchmarks.test_dependency_tree_validation `
-  benchmarks.test_retrieval_analysis
+python benchmarks/dependency_tree_validation.py --self-test
+python benchmarks/benchmark_retrieval_integrity.py --output benchmark-results/evaluator.json
+python benchmarks/benchmark_readiness.py --output benchmark-results/readiness.json
+
+# Planned dimensions only.
+python benchmarks/retrieval_validation.py --suite source --runs 3 --comparators-only --describe
+python benchmarks/retrieval_validation.py --suite delivery --runs 3 --comparators-only --describe
 ```
 
-CI runs these deterministic checks. The full model benchmark is intentionally not disguised as a unit test.
+For actual runs provision authenticated Codex, the pinned providers, and source repositories/commits from `tree_cases.py`. Use the full paired commands in [DELIVERY_READINESS.md](DELIVERY_READINESS.md). Supply the same available `--model` and `--reasoning` across suites; unavailable models must fail rather than be silently substituted.
 
-## Model-backed iteration
+Run only in a disposable trusted environment. The unattended Codex command is not a security containment boundary. Keep production secrets, unrelated writable checkouts, authentication files, and eval-home out of public artifacts.
 
-Install and verify the frozen dependency profile first. Exact accepted provider versions live in `capability_manifest.json`; preflight rejects a different provider version instead of mixing it into an older result set:
+## Historical evidence
 
-```powershell
-zg --version
-codebase-memory-mcp --version
-rtk --version
-git --version
-node --version
-npm --version
-java -version
-mvn --version
-```
+Existing task cases, results, prior comparisons, and rejected experiments remain immutable evidence, not current release certification. Historical scripts such as `tree_validation.py`, `run_benchmarks.py`, and the retired monkey-patch adapter still explain old reports; use the active entry points above for new measurements. `retrieval_analysis.py` and `tree_analysis.py` provide diagnostic topology analysis; those reports do not replace the complete engineering gate.
 
-Use `n=1` while changing topology, node content, provider contracts, cases, or scoring:
-
-```powershell
-python benchmarks/retrieval_validation.py --current-only --runs 1 --workers 3 `
-  --output benchmark-results/retrieval-tree-n1
-python benchmarks/retrieval_analysis.py benchmark-results/retrieval-tree-n1/results.jsonl `
-  --output benchmark-results/retrieval-tree-n1/analysis.json
-```
-
-Only after freezing the candidate should it run `n=3` with baseline and no-skill arms:
-
-```powershell
-python benchmarks/retrieval_validation.py --runs 3 --workers 3 `
-  --output benchmark-results/retrieval-tree-final
-python benchmarks/retrieval_analysis.py benchmark-results/retrieval-tree-final/results.jsonl `
-  --output benchmark-results/retrieval-tree-final/analysis.json
-```
-
-## Interpretation
-
-Delivered quality gates the candidate. Exact historical route labels do not.
-
-For each non-manual task, the execution-tree runner exposes Core and every root-to-node capability ceiling. The analyzer marks stable passing ceilings, removes qualified descendants whose ancestor already passes, and reports the remaining set as the task's minimum-sufficient set. More than one minimum node is allowed.
-
-Adaptive execution traces are reported as:
-
-- `exact_minimum` — stopped on a derived minimum node;
-- `over_disclosure` — went deeper than a sufficient ancestor;
-- `under_disclosure` — stopped above a node needed by ceiling evidence;
-- `alternate_branch` — selected a different branch;
-- `quality_gap` — no current node ceiling solves the task reliably.
-
-Retrieval disclosure is analyzed separately through canonical stage traces, loaded-reference prefixes, provider-use counts, quality, and measured cost. A provider can be present without being used; presence is held constant, while stage and provider selection remain behavior under test.
-
-Manual modes retain a separate contract: ordinary tasks must have zero spontaneous manual activation; explicit requests must load the corresponding `references/manual/` mode.
-
-## Historical baselines
-
-- `progressive_validation.py`, `progressive_cases.py`, and `ladder_analysis.py` reproduce previous fixed E/R and flat Event Router experiments.
-- `results/progressive-tree/` and `../evolution/rejected/` preserve rejected fixed-depth evidence.
-- `results/v1.5/` preserves the accepted flat-router evidence frozen by `tree_topology.json`.
-- `../evolution/rejected/execution-state/` preserves the retired execution-state/history-free experiment.
-
-Do not rewrite historical contracts to make the current tree appear better. New topology or capability-policy claims require a frozen candidate, appropriate ablation, identical provider setup across arms, and real-repository evidence.
+The earlier [Retrieval integrity audit](RETRIEVAL_INTEGRITY.md), [reproduction notes](REPRODUCING.md), and [tree evolution](TREE_EVOLUTION.md) describe their own historical contracts. Where commands differ, the active readiness document takes precedence. Never rewrite old results after a scorer change; invalidate the comparison and rerun both arms.

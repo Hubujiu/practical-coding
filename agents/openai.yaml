@@ -1,6 +1,6 @@
 interface:
   display_name: "Practical Coding"
-  short_description: "Small correct changes with progressive execution and retrieval"
-  default_prompt: "Use $practical-coding. Apply Core as the automatic execution root and route only a present Debugging or Implementation blocker. Keep Retrieval as its own progressive path: start at Direct Locate, then disclose only the current node's immediate child when the information problem remains unresolved. Use Navigation only to bound a repository area. Treat ranked search, graph retrieval, and command-output compaction as replaceable capabilities outside both trees. Decision and Clarification are explicit-only manual modes. Stop at the minimum current-source evidence and run the cheapest focused check that can falsify the material claim."
+  short_description: "Small correct changes, local routing, fresh evidence"
+  default_prompt: "Use $practical-coding for this task. Apply Core, disclose only the current node's required immediate child, and stop when the requested outcome has sufficient fresh evidence. Keep manual decision/interview modes explicit-only and preserve read-only scope."
 policy:
   allow_implicit_invocation: true

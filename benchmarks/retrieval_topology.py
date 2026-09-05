@@ -6,9 +6,11 @@ from typing import Any, Mapping
 
 try:
     from . import retrieval_trace
+    from .measured_transcript import canonical_reference
     from . import tree_validation as base
 except ImportError:  # direct script imports from the benchmarks directory
     import retrieval_trace
+    from measured_transcript import canonical_reference
     import tree_validation as base
 
 STAGES = ("NONE", "R0_DIRECT", "R1_DISCOVERY", "R2_EVIDENCE", "R3_STRUCTURAL")
@@ -68,12 +70,12 @@ def retrieval_declared_prefix(topology: Mapping[str, Any], stage: str) -> list[s
 
 
 def retrieval_prefix(topology: Mapping[str, Any], stage: str) -> list[str]:
-    return [base.canonical_reference(reference) for reference in retrieval_declared_prefix(topology, stage)]
+    return [canonical_reference(reference) for reference in retrieval_declared_prefix(topology, stage)]
 
 
 def allowed_references(topology: Mapping[str, Any]) -> set[str]:
     refs = base.allowed_references(dict(topology))
-    refs.update(base.canonical_reference(spec["reference"]) for spec in retrieval_nodes(topology).values())
+    refs.update(canonical_reference(spec["reference"]) for spec in retrieval_nodes(topology).values())
     return refs
 
 
@@ -88,8 +90,20 @@ def validate_trace(topology: Mapping[str, Any], trace: Mapping[str, Any], ceilin
     manual = trace.get("manual")
     if manual != "none" and manual not in topology.get("manual_modes", {}):
         return False
-    refs = [base.canonical_reference(ref) for ref in trace.get("references_loaded", [])]
+    refs = [canonical_reference(ref) for ref in trace.get("references_loaded", [])]
     if any(ref not in allowed_references(topology) for ref in refs):
+        return False
+    path = list(trace.get("path") or [])
+    expected_execution = [canonical_reference(topology["automatic_nodes"][name]["reference"])
+                          for name in path if name != topology["root"]]
+    execution_set = {canonical_reference(spec["reference"]) for name, spec in topology["automatic_nodes"].items()
+                     if name != topology["root"]}
+    if [ref for ref in refs if ref in execution_set] != expected_execution:
+        return False
+    expected_manual = [] if manual == "none" else [canonical_reference(topology["manual_modes"][manual])]
+    if [ref for ref in refs if "/manual/" in ref] != expected_manual:
+        return False
+    if len(refs) != len(set(refs)):
         return False
     retrieval_refs = [ref for ref in refs if ref.startswith("references/retrieval/")]
     expected = retrieval_prefix(topology, mode)
@@ -102,15 +116,15 @@ def infer_trace(topology: Mapping[str, Any], commands: list[str]) -> dict[str, A
     trace = base.infer_trace_from_commands(dict(topology), commands)
     observed = retrieval_trace.observed_references(commands)
     mode_by_ref = {
-        base.canonical_reference(spec["reference"]): spec["trace_mode"]
+        canonical_reference(spec["reference"]): spec["trace_mode"]
         for spec in retrieval_nodes(topology).values()
     }
     modes = [mode_by_ref[reference] for reference in observed if reference in mode_by_ref]
     trace["retrieval"] = max(modes, key=lambda mode: STAGE_INDEX[mode]) if modes else "NONE"
     non_retrieval = [
-        base.canonical_reference(reference)
+        canonical_reference(reference)
         for reference in trace.get("references_loaded", [])
-        if not base.canonical_reference(reference).startswith("references/retrieval/")
+        if not canonical_reference(reference).startswith("references/retrieval/")
     ]
     trace["references_loaded"] = [*non_retrieval, *observed]
     return trace
@@ -129,5 +143,6 @@ def instrumentation(topology: Mapping[str, Any]) -> str:
         "Manual modes are not path nodes. Retrieval references must be the complete actually loaded root-to-stage prefix. "
         "refs=none only when no Practical Coding reference beyond SKILL.md was loaded. "
         "Report behavior actually used; do not infer a preferred route from task wording. "
+        "For policy references use direct file reads with visible contents; list canonical references/... paths in actual load order. "
         "Do not mention this instrumentation elsewhere."
     )
